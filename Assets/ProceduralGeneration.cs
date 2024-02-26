@@ -69,7 +69,7 @@ public class ProceduralGeneration : MonoBehaviour
         bgMap = StoneGeneration(bgMap);               // Генерируем мир
         //bgMap = CavesGeneration(bgMap);               // Генерируем пещеры
 
-        //map = StructuresGeneration(map);
+        map = StructuresGeneration(map);
 
         RenderMap(map, tilemap, groundTile, bgMap);        // Показываем изменения
     }
@@ -226,40 +226,40 @@ public class ProceduralGeneration : MonoBehaviour
         return map;
     }
 
-    //public int[,] StructuresGeneration(int[,] map)     // Генерация структур (деревья)
-    //{
-    //    float perlinHeight;   // Высота перлина
+    public int[,] StructuresGeneration(int[,] map)     // Генерация структур (деревья)
+    {
+        float perlinHeight;   // Высота перлина
 
-    //    //for (int i = 0; i < width; i++)
-    //    //{
-    //    //    for (int j = 0; j < height; j++)
-    //    //    {
-    //    //        perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes, (j + seed) / cavessmothes);
+        //for (int i = 0; i < width; i++)
+        //{
+        //    for (int j = 0; j < height; j++)
+        //    {
+        //        perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes, (j + seed) / cavessmothes);
 
-    //    //        if (perlinHeight < 0.4 && map[i, j] == 3)
-    //    //        {
-    //    //            //Debug.Log("asdasdasd");
-    //    //            map[i, j] = 4;
-    //    //        }
-    //    //    }
-    //    //}
+        //        if (perlinHeight < 0.4 && map[i, j] == 3)
+        //        {
+        //            //Debug.Log("asdasdasd");
+        //            map[i, j] = 4;
+        //        }
+        //    }
+        //}
 
-    //    for (int i = 0; i < width; i++)
-    //    {
-    //        for (int j = 0; j < height; j++)
-    //        {
-    //            perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes, (j + seed) / cavessmothes);
-    //            //Debug.Log(perlinHeight);
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes, (j + seed) / cavessmothes);
+                //Debug.Log(perlinHeight);
 
-    //            if (perlinHeight < 0.4 && map[i, j] == 2)
-    //            {
-    //                map[i, j] = 5;
-    //                Debug.Log(map[i, j]);
-    //            }
-    //        }
-    //    }
-    //    return map;
-    //}
+                if (perlinHeight < 0.4 && map[i, j] == 2)
+                {
+                    map[i, j] = 5;
+                    Debug.Log(map[i, j]);
+                }
+            }
+        }
+        return map;
+    }
 
     // Расстановка тайлов в зависимости от сида
     public void RenderMap(int[,] map, Tilemap groundTilemap, List<TileBase> groundTileBase, int[,] bgMap)   // Массив, тайлмап, тайлы блока (список блоков)

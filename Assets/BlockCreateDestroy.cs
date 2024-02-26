@@ -1,18 +1,40 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class BlockCreateDestroy : MonoBehaviour
 {
-    // Start is called before the first frame update
+    // Карта тайлов и блок
+    public Tilemap tilemap;
+    public TileBase[] Block;
     void Start()
     {
         
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
-        
+        // При нажатии пкм устанавливаем блок
+        if (Input.GetMouseButtonDown(1))
+        {
+            SetTile();
+        }
+    }
+
+    void SetTile()
+    {
+        // Позиция курсора
+        Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        int x = (int)Tilepos.x;
+        int y = (int)Tilepos.y;
+        Vector3Int[] block = new Vector3Int[1];
+        block[0] = new Vector3Int(x, y);
+        // Устанавливаем блок в позици курсора
+        tilemap.SetTiles(block, Block);
+        //Debug.Log("Tile");
+        //tilemap.SetTilesBlock();
     }
 }
