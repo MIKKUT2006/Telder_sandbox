@@ -9,11 +9,12 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] int height, width;     // Ширина и высота (мира)
     [SerializeField] float smoothes;        // Мягкость
     [SerializeField] float cavessmothes;        // Мягкость Пещер
+    [SerializeField] float stonesmothes;        // Мягкость Камня
+
     [SerializeField] float ironOre;        // Мягкость железной руды
 
     [SerializeField] float seed;            // Сид мира
     [SerializeField] List<TileBase> groundTile;   // Тайл
-    [SerializeField] int chunkSize = 32;
     [SerializeField] TileBase lightTile;
     [SerializeField] Tilemap tilemap;       // Карта тайлов
     [SerializeField] Tilemap bgTilemap;       // Карта тайлов заднего фона
@@ -22,6 +23,10 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] int[,] map; // Двумерный массив карты
     [SerializeField] int[,] bgMap; // Двумерный массив карты заднего плана
     [SerializeField] int[,] lightMap; // Двумерный массив карты заднего плана
+
+    [SerializeField] int chunkSize = 32;
+    [SerializeField] List<GameObject> Chunks;
+    [SerializeField] GameObject mainTilemap;
 
     [SerializeField] List<GameObject> Trees;
 
@@ -80,7 +85,15 @@ public class ProceduralGeneration : MonoBehaviour
 
         for (int i = 0; i < numChunks; i++)
         {
+            //Debug.Log(i);
+            GameObject newChunk = new GameObject();
+            newChunk.name = i.ToString();
 
+            //newChunk.transform.parent = transform;
+            newChunk.AddComponent<Tilemap>();
+            newChunk.AddComponent<TilemapRenderer>();
+
+            Chunks.Add(newChunk);
         }
     }
 
@@ -158,7 +171,7 @@ public class ProceduralGeneration : MonoBehaviour
         int perlinHeight;   // Высота перлина
         for (int i = 0; i < width; i++)
         {
-            perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes / 0.5f, seed * 2) * height / 3);
+            perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / stonesmothes / 0.5f, seed * 3) * height / 2.1f);
             perlinHeight += height / 3;
 
             for (int j = 0; j <= perlinHeight; j++)
@@ -288,7 +301,15 @@ public class ProceduralGeneration : MonoBehaviour
                     //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
                     //    break;
                     case 1:
-                        groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);       // Устанавливаем тайл земли
+                        //groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);       // Устанавливаем тайл земли
+                        int chunkCoord = (i / chunkSize);   // Получаем координату чанка
+                        int ostatok = chunkCoord % 10;
+                        if (ostatok != 0)
+                        {
+                            chunkCoord -= (chunkCoord - ostatok) + 1;
+                        }
+                        //chunkCoord /= chunkSize;
+                        Chunks[chunkCoord].GetComponent<Tilemap>().SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);
                         break;
                     case 2:
                         groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);       // Устанавливаем тайл травы
