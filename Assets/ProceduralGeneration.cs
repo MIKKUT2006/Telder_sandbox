@@ -170,11 +170,11 @@ public class ProceduralGeneration : MonoBehaviour
             for (int j = 0; j < height; j++)
             {
                 perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes, (j + seed) / cavessmothes);
-                
-                if (perlinHeight < 0.4 && map[i,j] == 3)
+
+                if (perlinHeight < 0.4 && map[i, j] == 3)
                 {
                     map[i, j] = 4;
-                    lightMap[i, j] = 4;
+                    //lightMap[i, j] = 4;
                     Debug.Log(lightMap[i, j]);
                 }
             }
@@ -286,9 +286,9 @@ public class ProceduralGeneration : MonoBehaviour
                     case 3:
                         groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
                         break;
-                    case 4:
-                        lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
-                        break;
+                    //case 4:
+                    //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
+                    //    break;
                     case 5:
                         Vector3 pos = new Vector3(i + 0.5f, j + 3, 0);
                         groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);      // Устанавливаем деревья
