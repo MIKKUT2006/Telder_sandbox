@@ -11,9 +11,9 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] float cavessmothes;        // Мягкость Пещер
     [SerializeField] float ironOre;        // Мягкость железной руды
 
-
     [SerializeField] float seed;            // Сид мира
     [SerializeField] List<TileBase> groundTile;   // Тайл
+    [SerializeField] int chunkSize = 32;
     [SerializeField] TileBase lightTile;
     [SerializeField] Tilemap tilemap;       // Карта тайлов
     [SerializeField] Tilemap bgTilemap;       // Карта тайлов заднего фона
@@ -50,7 +50,7 @@ public class ProceduralGeneration : MonoBehaviour
     void Generation()
     {
 
-
+        CreateChunks();                                        // Создаём чанки
         lightMap = GenerateArray(width, height, true, true);   // Генерируем массив
         lightTilemap.ClearAllTiles();                    // Очищаем все тайлы перед генерацией
 
@@ -72,6 +72,16 @@ public class ProceduralGeneration : MonoBehaviour
         map = StructuresGeneration(map);
 
         RenderMap(map, tilemap, groundTile, bgMap);        // Показываем изменения
+    }
+
+    public void CreateChunks()
+    {
+        int numChunks = width / chunkSize;
+
+        for (int i = 0; i < numChunks; i++)
+        {
+
+        }
     }
 
     void DestroyStructures()
