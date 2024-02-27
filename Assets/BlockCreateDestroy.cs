@@ -21,6 +21,11 @@ public class BlockCreateDestroy : MonoBehaviour
         {
             SetTile();
         }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            BreakTile();
+        }
     }
 
     void SetTile()
@@ -34,6 +39,21 @@ public class BlockCreateDestroy : MonoBehaviour
         block[0] = new Vector3Int(x, y);
         // Устанавливаем блок в позици курсора
         tilemap.SetTiles(block, Block);
+        //Debug.Log("Tile");
+        //tilemap.SetTilesBlock();
+    }
+
+    void BreakTile()
+    {
+        // Позиция курсора
+        Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        int x = (int)Tilepos.x;
+        int y = (int)Tilepos.y;
+        Vector3Int block = new Vector3Int(x, y);
+        //block[0] = 
+        // Устанавливаем блок в позици курсора
+        tilemap.SetTile(block, null);
         //Debug.Log("Tile");
         //tilemap.SetTilesBlock();
     }

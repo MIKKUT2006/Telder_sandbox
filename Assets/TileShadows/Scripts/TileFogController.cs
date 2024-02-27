@@ -110,43 +110,43 @@ namespace TileShadows
         void LateUpdate()
         {
             // Left click draws/erases solid tiles
-            if (Input.GetMouseButtonUp(0))
-            {
-                    DrawOrEraseSingleTile();
-            }
+            //if (Input.GetMouseButtonUp(0))
+            //{
+            //        DrawOrEraseSingleTile();
+            //}
         }
 
 
 
-        void DrawOrEraseSingleTile()
-        {
-            // Get mouse position
-            Vector2 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //void DrawOrEraseSingleTile()
+        //{
+        //    // Get mouse position
+        //    Vector2 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-            int x = (int)((pos.x));
-            int y = (int)((pos.y));
+        //    int x = (int)((pos.x));
+        //    int y = (int)((pos.y));
 
-            if (x != 0 && y != 0 && x != _tilemapSize - 1 && y != _tilemapSize - 1)
-            {
-                if ((x > 0 && x < _tiles.GetLength(0)) && (y > 0 && y < _tiles.GetLength(1)))
-                {
-                    if (_tiles[x, y].TileType == TileType.SOLID)
-                    {
-                        // Set Air
-                        _tiles[x, y].TileType = TileType.AIR;
-                        _tilemapAir.SetTile(new Vector3Int(x, y), _tileAir);
-                        _tilemapSolid.SetTile(new Vector3Int(x,y), null);
-                    }
-                    else
-                    {
-                        // Set Solid
-                        _tiles[x, y].TileType = TileType.SOLID;
-                        _tilemapSolid.SetTile(new Vector3Int(x, y), _tileSolid);
-                        _tilemapAir.SetTile(new Vector3Int(x, y), null);
-                    }
-                }
-            }
-        }
+        //    if (x != 0 && y != 0 && x != _tilemapSize - 1 && y != _tilemapSize - 1)
+        //    {
+        //        if ((x > 0 && x < _tiles.GetLength(0)) && (y > 0 && y < _tiles.GetLength(1)))
+        //        {
+        //            if (_tiles[x, y].TileType == TileType.SOLID)
+        //            {
+        //                // Set Air
+        //                _tiles[x, y].TileType = TileType.AIR;
+        //                _tilemapAir.SetTile(new Vector3Int(x, y), _tileAir);
+        //                _tilemapSolid.SetTile(new Vector3Int(x,y), null);
+        //            }
+        //            else
+        //            {
+        //                // Set Solid
+        //                _tiles[x, y].TileType = TileType.SOLID;
+        //                _tilemapSolid.SetTile(new Vector3Int(x, y), _tileSolid);
+        //                _tilemapAir.SetTile(new Vector3Int(x, y), null);
+        //            }
+        //        }
+        //    }
+        //}
 
     }
 

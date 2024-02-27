@@ -27,6 +27,7 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] int chunkSize = 16;
     [SerializeField] Tilemap[] Chunks;
     [SerializeField] GameObject[] ChunksGameobject;
+    [SerializeField] GameObject chunkPrefab;
 
     [SerializeField] GameObject mainTilemap;
 
@@ -88,6 +89,7 @@ public class ProceduralGeneration : MonoBehaviour
         Chunks = new Tilemap[numChunks];
         ChunksGameobject = new GameObject[numChunks];
 
+        // Цикл на количество чанков
         for (int i = 0; i < numChunks; i++)
         {
             //Debug.Log(i);
@@ -95,16 +97,18 @@ public class ProceduralGeneration : MonoBehaviour
             Chunks[i] = newChunk;
 
 
-            GameObject Chunk = new GameObject();
+            GameObject Chunk = Instantiate(chunkPrefab);
             Chunk.name = i.ToString();
 
             Chunk.transform.parent = transform;
-            newChunk.GetComponent<GameObject>() = Chunks[i];
-            //test = Chunks[i];
-            //newChunk.AddComponent<TilemapRenderer>();
-            ChunksGameobject[i] = Chunks[i].gameObject;
 
             ChunksGameobject[i] = Chunk;
+            //newChunk.GetComponent<GameObject>() = Chunks[i];
+            //test = Chunks[i];
+            //newChunk.AddComponent<TilemapRenderer>();
+            //ChunksGameobject[i] = Chunks[i].gameObject;
+
+            //ChunksGameobject[i] = chunkPrefab;
 
         }
     }
@@ -210,7 +214,7 @@ public class ProceduralGeneration : MonoBehaviour
                 {
                     map[i, j] = 4;
                     //lightMap[i, j] = 4;
-                    Debug.Log(lightMap[i, j]);
+                    //Debug.Log(lightMap[i, j]);
                 }
             }
         }
@@ -289,7 +293,7 @@ public class ProceduralGeneration : MonoBehaviour
                 if (perlinHeight < 0.4 && map[i, j] == 2)
                 {
                     map[i, j] = 5;
-                    Debug.Log(map[i, j]);
+                    //Debug.Log(map[i, j]);
                 }
             }
         }
@@ -303,6 +307,10 @@ public class ProceduralGeneration : MonoBehaviour
 
         for (int i = 0; i < width; i++)
         {
+            // Получаем координату чанка
+            int chunkCoord = Mathf.RoundToInt(i / chunkSize);   // Получаем координату чанка
+            chunkCoord = chunkCoord * chunkSize;
+
             for (int j = 0; j < height; j++)
             {
                 //Debug.Log(map[i, j]);
@@ -313,31 +321,35 @@ public class ProceduralGeneration : MonoBehaviour
                     //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
                     //    break;
                     case 1:
-                        //groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);       // Устанавливаем тайл земли
-                        int chunkCoord = Mathf.RoundToInt(i / chunkSize);   // Получаем координату чанка
-                        chunkCoord = chunkCoord * chunkSize;
+                        groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);       // Устанавливаем тайл земли
+
                         //int ostatok = chunkCoord % 10;
                         //if (ostatok != 0)
                         //{
                         //    chunkCoord -= (chunkCoord - ostatok) + 1;
                         //}
-                        Debug.Log($"{i}, {j}, 0)");
+                        //Debug.Log($"{i}, {j}, 0)");
                         //chunkCoord /= chunkSize;
-                        Tilemap tilemap = Chunks[2].GetComponent<Tilemap>();
-                        tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);
+                        
+                        
                         try
                         {
-                            tilemap.SetTile(new Vector3Int(9, 9, 0), groundTileBase[0]);
-                            tilemap.SetTile(new Vector3Int(999, 999, 0), groundTileBase[0]);
-                            tilemap.SetTile(new Vector3Int(200, 200, 0), groundTileBase[0]);
-                            tilemap.SetTile(new Vector3Int(49, 49, 0), groundTileBase[0]);
-                            tilemap.SetTile(new Vector3Int(50, 50, 0), groundTileBase[0]);
+                            Tilemap tilemap = ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+                            //tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);
+                            Chunks[i] = tilemap;
+
+                            //tilemap.SetTile(new Vector3Int(9, 9, 0), groundTileBase[0]);
+                            //tilemap.SetTile(new Vector3Int(999, 999, 0), groundTileBase[0]);
+                            //tilemap.SetTile(new Vector3Int(200, 200, 0), groundTileBase[0]);
+                            //tilemap.SetTile(new Vector3Int(49, 49, 0), groundTileBase[0]);
+                            //tilemap.SetTile(new Vector3Int(50, 50, 0), groundTileBase[0]);
 
                         }
                         catch (System.Exception ex)
                         {
                             Debug.Log(ex);
                         }
+
                         break;
                     case 2:
                         groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);       // Устанавливаем тайл травы
