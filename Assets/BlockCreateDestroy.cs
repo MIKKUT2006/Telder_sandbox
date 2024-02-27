@@ -8,9 +8,12 @@ public class BlockCreateDestroy : MonoBehaviour
     // Карта тайлов и блок
     public Tilemap tilemap;
     public TileBase[] Block;
+    public TileBase Light;
+
+    int chunkSize;
     void Start()
     {
-        
+        chunkSize = ProceduralGeneration.chunkSize;
     }
 
     // Update is called once per frame
@@ -35,10 +38,27 @@ public class BlockCreateDestroy : MonoBehaviour
 
         int x = (int)Tilepos.x;
         int y = (int)Tilepos.y;
-        Vector3Int[] block = new Vector3Int[1];
-        block[0] = new Vector3Int(x, y);
+        Vector3Int[] blockPosition = new Vector3Int[1];
+
+        // Получаем координату чанка
+        int chunkCoord = x / chunkSize;   // Получаем координату чанка
+                                          //chunkCoord = chunkCoord * chunkSize;
+        int ostatok = chunkCoord % 100;
+        if (ostatok != 0)
+        {
+            chunkCoord -= (chunkCoord - ostatok) + 1;
+        }
+        Tilemap tilemap = ProceduralGeneration.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+
+        blockPosition[0] = new Vector3Int(x, y);
         // Устанавливаем блок в позици курсора
-        tilemap.SetTiles(block, Block);
+
+        if (tilemap.GetTile(blockPosition[0]) == null)
+        {
+            tilemap.SetTiles(blockPosition, Block);
+        }
+
+        ProceduralGeneration.Chunks[chunkCoord] = tilemap;
         //Debug.Log("Tile");
         //tilemap.SetTilesBlock();
     }
@@ -50,11 +70,31 @@ public class BlockCreateDestroy : MonoBehaviour
 
         int x = (int)Tilepos.x;
         int y = (int)Tilepos.y;
-        Vector3Int block = new Vector3Int(x, y);
-        //block[0] = 
+        Vector3Int blockPosition = new Vector3Int(x, y);
+
+        // Получаем координату чанка
+        int chunkCoord = x / chunkSize;   // Получаем координату чанка
+                                          //chunkCoord = chunkCoord * chunkSize;
+        int ostatok = chunkCoord % 100;
+        if (ostatok != 0)
+        {
+            chunkCoord -= (chunkCoord - ostatok) + 1;
+        }
+        Tilemap tilemap = ProceduralGeneration.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+        if (tilemap.GetTile(blockPosition) != null)
+        {
+        // Сохраняем изменения
         // Устанавливаем блок в позици курсора
-        tilemap.SetTile(block, null);
-        //Debug.Log("Tile");
-        //tilemap.SetTilesBlock();
+        tilemap.SetTile(blockPosition, null);
+        ProceduralGeneration.Chunks[chunkCoord] = tilemap;
+        // Сохраняем изменения
+        // Сохраняем изменения
+        Tilemap lightTilemap = ProceduralGeneration.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+            // Устанавливаем блок в позици курсора
+            lightTilemap.SetTile(blockPosition, Light);
+        ProceduralGeneration.lightChunks[chunkCoord] = lightTilemap;
+        }
+        // Сохраняем изменения
     }
 }
+

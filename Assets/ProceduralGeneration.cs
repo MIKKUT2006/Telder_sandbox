@@ -25,11 +25,16 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] int[,] bgMap; // Двумерный массив карты заднего плана
     [SerializeField] int[,] lightMap; // Двумерный массив карты заднего плана
 
-    [SerializeField] int chunkSize = 20;
-    [SerializeField] Tilemap[] Chunks;
-    [SerializeField] GameObject[] ChunksGameobject;
+    [SerializeField] public static int chunkSize = 20;
+    [SerializeField] public static Tilemap[] Chunks;
+    [SerializeField] public static GameObject[] ChunksGameobject;
     [SerializeField] GameObject chunkPrefab;
     int numChunks;
+
+    [SerializeField] public static Tilemap[] lightChunks;
+    [SerializeField] public static GameObject[] lightChunksGameobject;
+    [SerializeField] GameObject lightchunkPrefab;
+
 
     [SerializeField] GameObject mainTilemap;
 
@@ -84,34 +89,34 @@ public class ProceduralGeneration : MonoBehaviour
         RenderMap(map, tilemap, groundTile, bgMap);        // Показываем изменения
     }
 
-    public void CreateChunks()
+    public void CreateChunks()                            // Создание чанков
     {
-        numChunks = width / chunkSize;
+        numChunks = width / chunkSize;                    // Устанавливаем количество чанков
 
         Chunks = new Tilemap[numChunks];
         ChunksGameobject = new GameObject[numChunks];
 
+        lightChunks = new Tilemap[numChunks];
+        lightChunksGameobject = new GameObject[numChunks];
+
         // Цикл на количество чанков
         for (int i = 0; i < numChunks; i++)
         {
-            //Debug.Log(i);
+            //------------------
             Tilemap newChunk = new Tilemap();
             Chunks[i] = newChunk;
-
-
             GameObject Chunk = Instantiate(chunkPrefab);
             Chunk.name = i.ToString();
-
             Chunk.transform.parent = transform;
-
             ChunksGameobject[i] = Chunk;
-            //newChunk.GetComponent<GameObject>() = Chunks[i];
-            //test = Chunks[i];
-            //newChunk.AddComponent<TilemapRenderer>();
-            //ChunksGameobject[i] = Chunks[i].gameObject;
-
-            //ChunksGameobject[i] = chunkPrefab;
-
+            //------------------
+            Tilemap newlightChunk = new Tilemap();
+            lightChunks[i] = newlightChunk;
+            GameObject lightChunk = Instantiate(lightchunkPrefab);
+            lightChunk.name = i.ToString();
+            lightChunk.transform.parent = transform;
+            lightChunksGameobject[i] = lightChunk;
+            //=================
         }
     }
 
@@ -160,6 +165,17 @@ public class ProceduralGeneration : MonoBehaviour
         int perlinHeight;   // Высота перлина
         for (int i = 0; i < width; i++)
         {
+            // Получаем координату чанка
+            int chunkCoord = i / chunkSize;   // Получаем координату чанка
+            //chunkCoord = chunkCoord * chunkSize;
+
+            int ostatok = chunkCoord % 100;
+            if (ostatok != 0)
+            {
+                chunkCoord -= (chunkCoord - ostatok) + 1;
+            }
+            Tilemap lighttilemap = lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+
             perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes, seed) * height / 2);
             perlinHeight += height / 2;
 
@@ -177,10 +193,11 @@ public class ProceduralGeneration : MonoBehaviour
             }
             for (int g = perlinHeight; g < height; g++)
             {
-                lightTilemap.SetTile(new Vector3Int(i, g, 0), lightTile);
+                lighttilemap.SetTile(new Vector3Int(i, g, 0), lightTile);
             }
+            lightChunks[chunkCoord] = tilemap;
         }
-            
+
         return map;
     }
 
@@ -319,6 +336,7 @@ public class ProceduralGeneration : MonoBehaviour
                 chunkCoord -= (chunkCoord - ostatok) + 1;
             }
             Tilemap tilemap = ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+            Tilemap lighttilemap = lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
             for (int j = 0; j < height; j++)
             {
@@ -366,8 +384,6 @@ public class ProceduralGeneration : MonoBehaviour
                 {
                     bgTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
                 }
-
-
                 
                 //if (map[i, j] == 4)
                 //{

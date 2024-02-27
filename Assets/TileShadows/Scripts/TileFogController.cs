@@ -41,35 +41,35 @@ namespace TileShadows
         {
 
             // Store info about the tiles in the scene
-            _tiles = new TileData[_tilemapSize, _tilemapSize];
+            //_tiles = new TileData[_tilemapSize, _tilemapSize];
 
-            for (int x = 0; x < _tilemapSize; x++)
-            {
-                for (int y = 0; y< _tilemapSize; y++)
-                {
-                    TileData tile = new TileData();
+            //for (int x = 0; x < _tilemapSize; x++)
+            //{
+            //    for (int y = 0; y< _tilemapSize; y++)
+            //    {
+            //        TileData tile = new TileData();
 
-                    if (x <= 1 || x >= _tilemapSize-1 || y <= 1 || y >= _tilemapSize - 1)
-                    {
-                        tile.TileType = TileType.SOLID;
-                        _tiles[x, y] = tile;
-                        _tilemapSolid.SetTile(new Vector3Int(x, y), _tileSolid);
-                    }
-                    else if (_tilemapSolid.GetTile(new Vector3Int( x, y)) != null)
-                    {
-                        //Solid
-                        tile.TileType = TileType.SOLID;
-                        _tiles[x, y] = tile;
-                    }
-                    else
-                    {
-                        // Air
-                        tile.TileType = TileType.AIR;
-                        _tiles[x, y] = tile;
-                        _tilemapAir.SetTile(new Vector3Int(x, y), _tileAir);
-                    }
-                }
-            }
+            //        if (x <= 1 || x >= _tilemapSize-1 || y <= 1 || y >= _tilemapSize - 1)
+            //        {
+            //            tile.TileType = TileType.SOLID;
+            //            _tiles[x, y] = tile;
+            //            _tilemapSolid.SetTile(new Vector3Int(x, y), _tileSolid);
+            //        }
+            //        else if (_tilemapSolid.GetTile(new Vector3Int( x, y)) != null)
+            //        {
+            //            //Solid
+            //            tile.TileType = TileType.SOLID;
+            //            _tiles[x, y] = tile;
+            //        }
+            //        else
+            //        {
+            //            // Air
+            //            tile.TileType = TileType.AIR;
+            //            _tiles[x, y] = tile;
+            //            _tilemapAir.SetTile(new Vector3Int(x, y), _tileAir);
+            //        }
+            //    }
+            //}
 
             SetLights();
         }

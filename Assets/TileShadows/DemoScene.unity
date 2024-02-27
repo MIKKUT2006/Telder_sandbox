@@ -403,7 +403,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shader: {fileID: 4800000, guid: 09755a4891f8d4526a7e0690a23dec7b, type: 3}
-  spriteLightRT: {fileID: 386036157}
+  spriteLightRT: {fileID: 265773511}
   intensity: 1.51
 --- !u!20 &255704880
 Camera:
@@ -531,7 +531,7 @@ MonoBehaviour:
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
---- !u!84 &386036157
+--- !u!84 &265773511
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -545,8 +545,8 @@ RenderTexture:
   m_DownscaleFallback: 0
   m_IsAlphaChannelOptional: 0
   serializedVersion: 5
-  m_Width: 1184
-  m_Height: 458
+  m_Width: 1189
+  m_Height: 516
   m_AntiAliasing: 1
   m_MipCount: -1
   m_DepthStencilFormat: 0
@@ -691,7 +691,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 256
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 386036157}
+  m_TargetTexture: {fileID: 265773511}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -998,7 +998,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 4d4b978d9954b774e87e041486b16d2c, type: 2}
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
@@ -1091,7 +1091,7 @@ MonoBehaviour:
   _tilemapSolid: {fileID: 2090741419}
   _tilemapAir: {fileID: 1864097605}
   _tilemapSize: 32
-  _tileSolid: {fileID: 11400000, guid: f0b8f13638c204b46b2338dc83375931, type: 2}
+  _tileSolid: {fileID: 11400000, guid: 26672d862324c254cad86cb45102bb38, type: 2}
   _tileAir: {fileID: 11400000, guid: e2f3e7d8008be456e8e6578cd5c04b82, type: 2}
   _lightUpdateDelay: 1
 --- !u!4 &1052456950
@@ -12666,10 +12666,8 @@ MonoBehaviour:
   tilemap: {fileID: 2090741419}
   bgTilemap: {fileID: 871577615}
   lightTilemap: {fileID: 1864097605}
-  chunkSize: 20
-  Chunks: []
-  ChunksGameobject: []
   chunkPrefab: {fileID: 2090741413}
+  lightchunkPrefab: {fileID: 1864097602}
   mainTilemap: {fileID: 2090741413}
   Trees:
   - {fileID: 5553958308023403279, guid: 7ed3137b609481c42b637187594ca9ea, type: 3}
@@ -12969,6 +12967,7 @@ MonoBehaviour:
   tilemap: {fileID: 2090741419}
   Block:
   - {fileID: 11400000, guid: 26672d862324c254cad86cb45102bb38, type: 2}
+  Light: {fileID: 11400000, guid: 0500c9fb9e867ee47846b2a0ff543739, type: 2}
 --- !u!4 &1707679387
 Transform:
   m_ObjectHideFlags: 0
@@ -13156,7 +13155,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &1864097603
 Transform:
