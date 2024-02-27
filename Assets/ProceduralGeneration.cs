@@ -7,7 +7,9 @@ using static UnityEngine.Rendering.VolumeComponent;
 
 public class ProceduralGeneration : MonoBehaviour
 {
-    [SerializeField] int height, width;     // Ширина и высота (мира)
+    [SerializeField] public static int height = 400;
+    public static int width = 400;     // Ширина и высота (мира)
+
     [SerializeField] float smoothes;        // Мягкость
     [SerializeField] float cavessmothes;        // Мягкость Пещер
     [SerializeField] float stonesmothes;        // Мягкость Камня
@@ -21,7 +23,7 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] Tilemap bgTilemap;       // Карта тайлов заднего фона
     [SerializeField] Tilemap lightTilemap;       // Карта тайлов для освещения
 
-    [SerializeField] int[,] map; // Двумерный массив карты
+    [SerializeField] public static int[,] map; // Двумерный массив карты
     [SerializeField] int[,] bgMap; // Двумерный массив карты заднего плана
     [SerializeField] int[,] lightMap; // Двумерный массив карты заднего плана
 
