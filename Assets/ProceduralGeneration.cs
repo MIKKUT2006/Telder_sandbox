@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using static UnityEngine.Rendering.VolumeComponent;
 
 public class ProceduralGeneration : MonoBehaviour
 {
@@ -24,10 +25,11 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] int[,] bgMap; // Двумерный массив карты заднего плана
     [SerializeField] int[,] lightMap; // Двумерный массив карты заднего плана
 
-    [SerializeField] int chunkSize = 16;
+    [SerializeField] int chunkSize = 20;
     [SerializeField] Tilemap[] Chunks;
     [SerializeField] GameObject[] ChunksGameobject;
     [SerializeField] GameObject chunkPrefab;
+    int numChunks;
 
     [SerializeField] GameObject mainTilemap;
 
@@ -84,7 +86,7 @@ public class ProceduralGeneration : MonoBehaviour
 
     public void CreateChunks()
     {
-        int numChunks = width / chunkSize;
+        numChunks = width / chunkSize;
 
         Chunks = new Tilemap[numChunks];
         ChunksGameobject = new GameObject[numChunks];
@@ -308,8 +310,15 @@ public class ProceduralGeneration : MonoBehaviour
         for (int i = 0; i < width; i++)
         {
             // Получаем координату чанка
-            int chunkCoord = Mathf.RoundToInt(i / chunkSize);   // Получаем координату чанка
-            chunkCoord = chunkCoord * chunkSize;
+            int chunkCoord = i / chunkSize;   // Получаем координату чанка
+            //chunkCoord = chunkCoord * chunkSize;
+
+            int ostatok = chunkCoord % 100;
+            if (ostatok != 0)
+            {
+                chunkCoord -= (chunkCoord - ostatok) + 1;
+            }
+            Tilemap tilemap = ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
             for (int j = 0; j < height; j++)
             {
@@ -321,82 +330,29 @@ public class ProceduralGeneration : MonoBehaviour
                     //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
                     //    break;
                     case 1:
-                        groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);       // Устанавливаем тайл земли
-
-                        //int ostatok = chunkCoord % 10;
-                        //if (ostatok != 0)
-                        //{
-                        //    chunkCoord -= (chunkCoord - ostatok) + 1;
-                        //}
-                        //Debug.Log($"{i}, {j}, 0)");
-                        //chunkCoord /= chunkSize;
-                        
-                        
-                        try
-                        {
-                            Tilemap tilemap = ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-                            //tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);
-                            Chunks[i] = tilemap;
-
-                            //tilemap.SetTile(new Vector3Int(9, 9, 0), groundTileBase[0]);
-                            //tilemap.SetTile(new Vector3Int(999, 999, 0), groundTileBase[0]);
-                            //tilemap.SetTile(new Vector3Int(200, 200, 0), groundTileBase[0]);
-                            //tilemap.SetTile(new Vector3Int(49, 49, 0), groundTileBase[0]);
-                            //tilemap.SetTile(new Vector3Int(50, 50, 0), groundTileBase[0]);
-
-                        }
-                        catch (System.Exception ex)
-                        {
-                            Debug.Log(ex);
-                        }
-
+                            tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);
                         break;
                     case 2:
-                        groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);       // Устанавливаем тайл травы
+                        tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);            // Устанавливаем тайл травы
+
                         break;
                     case 3:
-                        groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
+                        tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
                         break;
                     //case 4:
                     //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
                     //    break;
                     case 5:
                         Vector3 pos = new Vector3(i + 0.5f, j + 3, 0);
-                        groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);      // Устанавливаем деревья
+                        tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);      // Устанавливаем деревья
                         Instantiate(Trees[0], pos, Quaternion.identity);
                         break;
                     case 6:
-                        groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[4]);       // Устанавливаем тайл железной руды
+                        tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[4]);       // Устанавливаем тайл железной руды
                         break;
                 }
-                //if (map[i,j] == 1)
-                //{
-                //}
-                //if (map[i, j] == 2)
-                //{
-                //    groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);       // Устанавливаем тайл травы
-                //}
-                //if (map[i, j] == 3)
-                //{
-                //    groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
-                //}
-                //if (map[i, j] == 6)
-                //{
-                //    groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
-                //}
-                // Деревья
-                //if (map[i, j] == 5)
-                //{
-                //    Vector3 pos = new Vector3(i+0.5f, j+3, 0);
-                //    groundTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);       // Устанавливаем тестовый тайл
 
-                //    Instantiate(Trees[0], pos, Quaternion.identity);
-                //}
-
-                //if (lightMap[i, j] == 4)
-                //{
-                //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);
-                //}
+                Chunks[chunkCoord] = tilemap;
 
                 if (bgMap[i, j] == 1)
                 {
