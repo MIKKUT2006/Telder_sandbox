@@ -181,7 +181,7 @@ public class ProceduralGeneration : MonoBehaviour
             perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes, seed) * height / 2);
             perlinHeight += height / 2;
 
-            for (int j = 0; j <= perlinHeight; j++)
+            for (int j = 0; j <= perlinHeight + 1; j++)
             {
                 if (j < perlinHeight)
                 {
@@ -191,6 +191,11 @@ public class ProceduralGeneration : MonoBehaviour
                 if (j == perlinHeight)
                 {
                     map[i, j] = 2;
+                }
+
+                if (j > perlinHeight)
+                {
+                    map[i, j] = 0;
                 }
             }
             for (int g = perlinHeight; g < height; g++)

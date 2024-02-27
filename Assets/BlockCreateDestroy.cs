@@ -97,18 +97,20 @@ public class BlockCreateDestroy : MonoBehaviour
             {
                 ProceduralGeneration.map[x, y] = 4;
                 lightTilemap.SetTile(blockPosition, Light);
-                if (ProceduralGeneration.map[x, y - 1] == 4)
+                if (ProceduralGeneration.map[x, y - 1] == 4 || ProceduralGeneration.map[x, y - 1] == 0)
                 {
+                    //Debug.Log("asd " + ProceduralGeneration.map[x, y]);
+
                     for (int i = 0; i < ProceduralGeneration.height; i++)
                     {
                         Debug.Log(ProceduralGeneration.map[x, i]);
-                        if (ProceduralGeneration.map[x, i] == 0 && ProceduralGeneration.map[x, i] == 4)
+                        if (ProceduralGeneration.map[x, i] == 0 || ProceduralGeneration.map[x, i] == 4)
                         {
                             lightTilemap.SetTile(new Vector3Int(x,i), Light);
                         }
                         else
                         {
-                            return;
+                            break;
                         }
                     }
                 }
