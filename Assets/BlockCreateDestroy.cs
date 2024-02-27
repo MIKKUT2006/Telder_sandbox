@@ -13,7 +13,7 @@ public class BlockCreateDestroy : MonoBehaviour
     int chunkSize;
     void Start()
     {
-        //chunkSize = ProceduralGeneration.chunkSize;
+        chunkSize = ProceduralGeneration.chunkSize;
     }
 
     // Update is called once per frame
@@ -33,87 +33,61 @@ public class BlockCreateDestroy : MonoBehaviour
 
     void SetTile()
     {
-        //// Позиция курсора
-        //Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        // Позиция курсора
+        Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-        //int x = (int)Tilepos.x;
-        //int y = (int)Tilepos.y;
-        //Vector3Int[] blockPosition = new Vector3Int[1];
+        int x = (int)Tilepos.x;
+        int y = (int)Tilepos.y;
+        Vector3Int[] blockPosition = new Vector3Int[1];
 
-        //// Получаем координату чанка
-        //int chunkCoord = x / chunkSize;   // Получаем координату чанка
-        //                                  //chunkCoord = chunkCoord * chunkSize;
-        //int ostatok = chunkCoord % 100;
-        //if (ostatok != 0)
-        //{
-        //    chunkCoord -= (chunkCoord - ostatok) + 1;
-        //}
-        //Tilemap tilemap = ProceduralGeneration.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-        ////Tilemap lightTilemap = ProceduralGeneration.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+        // Получаем координату чанка
+        int chunkCoord = x / chunkSize;   // Получаем координату чанка
+                                          //chunkCoord = chunkCoord * chunkSize;
+        int ostatok = chunkCoord % 100;
+        if (ostatok != 0)
+        {
+            chunkCoord -= (chunkCoord - ostatok) + 1;
+        }
+        Tilemap tilemap = ProceduralGeneration.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+        Tilemap lightTilemap = ProceduralGeneration.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
-        //blockPosition[0] = new Vector3Int(x, y);
-        //// Устанавливаем блок в позици курсора
+        blockPosition[0] = new Vector3Int(x, y);
+        // Устанавливаем блок в позици курсора
 
-        //if (tilemap.GetTile(blockPosition[0]) == null)
-        //{
-        //    tilemap.SetTiles(blockPosition, Block);
-        //    //lightTilemap.SetTile(blockPosition[0], null);
-        //    ProceduralGeneration.map[x, y] = 1;
-        //}
-        //ProceduralGeneration.Chunks[chunkCoord] = tilemap;
+        if (tilemap.GetTile(blockPosition[0]) == null)
+        {
+            tilemap.SetTiles(blockPosition, Block);
+            lightTilemap.SetTile(blockPosition[0], null);
+        }
+
+        ProceduralGeneration.Chunks[chunkCoord] = tilemap;
     }
 
     void BreakTile()
     {
-        //// Позиция курсора
-        //Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        // Позиция курсора
+        Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-        //int x = (int)Tilepos.x;
-        //int y = (int)Tilepos.y;
-        //Vector3Int blockPosition = new Vector3Int(x, y);
+        int x = (int)Tilepos.x;
+        int y = (int)Tilepos.y;
+        Vector3Int blockPosition = new Vector3Int(x, y);
 
-        //// Получаем координату чанка
-        //int chunkCoord = x / chunkSize;   // Получаем координату чанка
-        //                                  //chunkCoord = chunkCoord * chunkSize;
-        //int ostatok = chunkCoord % 100;
-        //if (ostatok != 0)
-        //{
-        //    chunkCoord -= (chunkCoord - ostatok) + 1;
-        //}
-        //Tilemap tilemap = ProceduralGeneration.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-        //if (tilemap.GetTile(blockPosition) != null)
-        //{
-        //    Tilemap lightTilemap = ProceduralGeneration.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-
-        //    if (ProceduralGeneration.map[x, y + 1] == 0)                    // Если мы ломаем блок освещенныый солнцем, то заместо его появляется свет
-        //    {
-        //        if (ProceduralGeneration.map[x, y - 1] == 4)
-        //        {
-        //            for (int i = y; i < ProceduralGeneration.height; i++)
-        //            {
-        //                if (ProceduralGeneration.map[x, i] == 4)
-        //                {
-        //                    lightTilemap.SetTile(blockPosition, Light);
-        //                }
-        //                else
-        //                {
-        //                    break;
-        //                }
-        //            }
-        //        }
-        //        tilemap.SetTile(blockPosition, null);
-        //        lightTilemap.SetTile(blockPosition, Light);
-        //        ProceduralGeneration.map[x, y] = 0;
-        //    }
-        //    else
-        //    {
-        //        //Debug.Log(ProceduralGeneration.map[x, y + 1]);
-        //        tilemap.SetTile(blockPosition, null);
-        //        ProceduralGeneration.map[x, y] = 4;
-        //    }
-        //    ProceduralGeneration.Chunks[chunkCoord] = tilemap;
-        //    ProceduralGeneration.lightChunks[chunkCoord] = lightTilemap;
-        //}
+        // Получаем координату чанка
+        int chunkCoord = x / chunkSize;   // Получаем координату чанка
+        int ostatok = chunkCoord % 100;
+        if (ostatok != 0)
+        {
+            chunkCoord -= (chunkCoord - ostatok) + 1;
+        }
+        Tilemap tilemap = ProceduralGeneration.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+        if (tilemap.GetTile(blockPosition) != null)
+        {
+        tilemap.SetTile(blockPosition, null);
+        ProceduralGeneration.Chunks[chunkCoord] = tilemap;
+        Tilemap lightTilemap = ProceduralGeneration.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+        lightTilemap.SetTile(blockPosition, Light);
+        ProceduralGeneration.lightChunks[chunkCoord] = lightTilemap;
+        }
     }
 }
 

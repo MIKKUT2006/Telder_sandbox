@@ -23,16 +23,16 @@ public class ProceduralGeneration : MonoBehaviour
 
     [SerializeField] int[,] map; // Двумерный массив карты
     [SerializeField] int[,] bgMap; // Двумерный массив карты заднего плана
-    [SerializeField] int[,] lightMap; // Двумерный массив карты света
+    [SerializeField] int[,] lightMap; // Двумерный массив карты заднего плана
 
-    [SerializeField] int chunkSize = 20;
-    [SerializeField] Tilemap[] Chunks;
-    [SerializeField] GameObject[] ChunksGameobject;
+    [SerializeField] public static int chunkSize = 20;
+    [SerializeField] public static Tilemap[] Chunks;
+    [SerializeField] public static GameObject[] ChunksGameobject;
     [SerializeField] GameObject chunkPrefab;
     int numChunks;
 
-    [SerializeField] Tilemap[] lightChunks;
-    [SerializeField] GameObject[] lightChunksGameobject;
+    [SerializeField] public static Tilemap[] lightChunks;
+    [SerializeField] public static GameObject[] lightChunksGameobject;
     [SerializeField] GameObject lightchunkPrefab;
 
 
@@ -43,10 +43,10 @@ public class ProceduralGeneration : MonoBehaviour
     // 1 = трава
     // 2 = земля
     // 3 = камень
-    // 4 = пустота ПЕЩЕРЫ
+    // 4 = пустота
     // 5 = трава с деревьями
-    // 6 = железная руда
-    // 7 = трава
+    // 1 = трава
+    // 1 = трава
 
 
     void Start()
@@ -102,29 +102,21 @@ public class ProceduralGeneration : MonoBehaviour
         // Цикл на количество чанков
         for (int i = 0; i < numChunks; i++)
         {
-            try
-            {
-                //------------------
-                Tilemap newChunk = new Tilemap();
-                Chunks[i] = newChunk;
-                GameObject Chunk = Instantiate(chunkPrefab);
-                Chunk.name = i.ToString();
-                Chunk.transform.parent = transform;
-                ChunksGameobject[i] = Chunk;
-                //------------------
-                Tilemap newlightChunk = new Tilemap();
-                lightChunks[i] = newlightChunk;
-                GameObject lightChunk = Instantiate(lightchunkPrefab);
-                lightChunk.name = i.ToString();
-                lightChunk.transform.parent = transform;
-                lightChunksGameobject[i] = lightChunk;
-                //=================
-            }
-            catch (System.Exception ex)
-            {
-                Debug.Log(ex);
-            }
-            
+            //------------------
+            Tilemap newChunk = new Tilemap();
+            Chunks[i] = newChunk;
+            GameObject Chunk = Instantiate(chunkPrefab);
+            Chunk.name = i.ToString();
+            Chunk.transform.parent = transform;
+            ChunksGameobject[i] = Chunk;
+            //------------------
+            Tilemap newlightChunk = new Tilemap();
+            lightChunks[i] = newlightChunk;
+            GameObject lightChunk = Instantiate(lightchunkPrefab);
+            lightChunk.name = i.ToString();
+            lightChunk.transform.parent = transform;
+            lightChunksGameobject[i] = lightChunk;
+            //=================
         }
     }
 
@@ -187,7 +179,7 @@ public class ProceduralGeneration : MonoBehaviour
             perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes, seed) * height / 2);
             perlinHeight += height / 2;
 
-            for (int j = 0; j <= perlinHeight + 1; j++)
+            for (int j = 0; j <= perlinHeight; j++)
             {
                 if (j < perlinHeight)
                 {
@@ -198,12 +190,7 @@ public class ProceduralGeneration : MonoBehaviour
                 {
                     map[i, j] = 2;
                 }
-                if (j > perlinHeight)
-                {
-                    map[i, j] = 0;
-                }
             }
-
             for (int g = perlinHeight; g < height; g++)
             {
                 lighttilemap.SetTile(new Vector3Int(i, g, 0), lightTile);
@@ -354,11 +341,12 @@ public class ProceduralGeneration : MonoBehaviour
             for (int j = 0; j < height; j++)
             {
                 //Debug.Log(map[i, j]);
+
                 switch (map[i, j])
                 {
-                    case 0:
-                        lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл солнца
-                        break;
+                    //case 0:
+                    //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
+                    //    break;
                     case 1:
                             tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);
                         break;
