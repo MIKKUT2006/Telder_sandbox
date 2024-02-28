@@ -93,20 +93,32 @@ public class BlockCreateDestroy : MonoBehaviour
 
             //ProceduralGeneration.lightChunks[chunkCoord] = lightTilemap;
             Tilemap lightTilemap = ProceduralGeneration.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+            ProceduralGeneration.map[x, y] = 0;             // —тавим освещенность сломанному блоку
+
+
+
             if (ProceduralGeneration.map[x, y + 1] == 0)        // ѕроверка на освещенность солнцем блока
             {
                 ProceduralGeneration.map[x, y] = 4;
                 lightTilemap.SetTile(blockPosition, Light);
-                if (ProceduralGeneration.map[x, y - 1] == 4 || ProceduralGeneration.map[x, y - 1] == 0)
+                if (ProceduralGeneration.map[x, y - 1] == 4)
                 {
-                    //Debug.Log("asd " + ProceduralGeneration.map[x, y]);
+                    Debug.Log("asd " + ProceduralGeneration.map[x, y]);
+                    Debug.Log($"{x} { y -1}");
 
-                    for (int i = 0; i < ProceduralGeneration.height; i++)
+                    lightTilemap.SetTile(new Vector3Int(x, y - 1), Light);
+
+
+                    for (int i = y; i > 0; i--)
                     {
                         Debug.Log(ProceduralGeneration.map[x, i]);
-                        if (ProceduralGeneration.map[x, i] == 0 || ProceduralGeneration.map[x, i] == 4)
+                        Debug.Log(x + ":" + i);
+
+                        if (ProceduralGeneration.map[x, i] == 4)
                         {
                             lightTilemap.SetTile(new Vector3Int(x,i), Light);
+                            ProceduralGeneration.map[x, i] = 0;             // —тавим освещенность сломанному блоку
+                            //ProceduralGeneration.map[x, i + 1] = 4;             // —тавим освещенность сломанному блоку
                         }
                         else
                         {
@@ -116,6 +128,7 @@ public class BlockCreateDestroy : MonoBehaviour
                 }
                 ProceduralGeneration.map[x, y] = 0;             // —тавим освещенность сломанному блоку
             }
+
             tilemap.SetTile(blockPosition, null);
             ProceduralGeneration.Chunks[chunkCoord] = tilemap;
             ProceduralGeneration.lightChunks[chunkCoord] = lightTilemap;
