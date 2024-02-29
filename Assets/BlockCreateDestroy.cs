@@ -12,11 +12,14 @@ public class BlockCreateDestroy : MonoBehaviour
 
     int chunkSize;
     bool isDig = false;
+    bool isblockDig = false;
     int blockSolid;
     int digLevel = 1;
+    Vector2 blockPos;
     void Start()
     {
         chunkSize = ProceduralGeneration.chunkSize;
+        StartCoroutine(DigBlocks());
     }
 
     // Update is called once per frame
@@ -31,7 +34,6 @@ public class BlockCreateDestroy : MonoBehaviour
         if (Input.GetMouseButton(0))
         {
             isDig = true;
-            StartCoroutine(DigBlocks());
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -45,9 +47,9 @@ public class BlockCreateDestroy : MonoBehaviour
         if (isDig == true)
         {
             BreakTile();
-            //StartCoroutine(DigBlocks());
         }
         yield return new WaitForSeconds(0.5f);
+        StartCoroutine(DigBlocks());
     }
 
     void SetTile()
@@ -102,14 +104,31 @@ public class BlockCreateDestroy : MonoBehaviour
         Tilemap tilemap = ProceduralGeneration.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
         if (tilemap.GetTile(blockPosition) != null)
         {
-            blockSolid = BlocksData.blocksSolidity[ProceduralGeneration.map[x, y]];                 // Получаем прочность блока
-            if (blockSolid > 0)
+            if (blockPos == new Vector2(x, y))
             {
-                blockSolid -= digLevel;
-                //Debug.Log(blockSolid);
+                Debug.Log("Выбран этот же блок");
             }
             else
             {
+                if (isblockDig == false)                                                                    // Если мы только выбрал блок, чтобы сломать
+                {
+                    blockSolid = BlocksData.blocksSolidity[ProceduralGeneration.map[x, y]];                 // Получаем прочность блока
+                    isblockDig = true;
+                }
+                else
+                {
+
+                }
+            }
+
+            if (blockSolid > 0)
+            {
+                blockSolid -= digLevel;
+                Debug.Log(blockSolid);
+            }
+            else
+            {
+                isblockDig = false;
                 Tilemap lightTilemap = ProceduralGeneration.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 //ProceduralGeneration.map[x, y] = 4;             // Ставим освещенность сломанному блоку
 
