@@ -93,9 +93,7 @@ public class BlockCreateDestroy : MonoBehaviour
 
             //ProceduralGeneration.lightChunks[chunkCoord] = lightTilemap;
             Tilemap lightTilemap = ProceduralGeneration.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-            ProceduralGeneration.map[x, y] = 0;             // —тавим освещенность сломанному блоку
-
-
+            //ProceduralGeneration.map[x, y] = 4;             // —тавим освещенность сломанному блоку
 
             if (ProceduralGeneration.map[x, y + 1] == 0)        // ѕроверка на освещенность солнцем блока
             {
@@ -103,8 +101,8 @@ public class BlockCreateDestroy : MonoBehaviour
                 lightTilemap.SetTile(blockPosition, Light);
                 if (ProceduralGeneration.map[x, y - 1] == 4)
                 {
-                    Debug.Log("asd " + ProceduralGeneration.map[x, y]);
-                    Debug.Log($"{x} { y -1}");
+                    //Debug.Log("asd " + ProceduralGeneration.map[x, y]);
+                    //Debug.Log($"{x} { y -1}");
 
                     lightTilemap.SetTile(new Vector3Int(x, y - 1), Light);
 
@@ -126,7 +124,12 @@ public class BlockCreateDestroy : MonoBehaviour
                         }
                     }
                 }
-                ProceduralGeneration.map[x, y] = 0;             // —тавим освещенность сломанному блоку
+                //ProceduralGeneration.map[x, y] = 4;             // —тавим освещенность сломанному блоку
+                ProceduralGeneration.map[x, y] = 0;
+            }
+            else
+            {
+                ProceduralGeneration.map[x, y] = 4;             // —тавим освещенность сломанному блоку
             }
 
             tilemap.SetTile(blockPosition, null);
