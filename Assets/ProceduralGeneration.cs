@@ -37,8 +37,8 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] public static GameObject[] lightChunksGameobject;
     [SerializeField] GameObject lightchunkPrefab;
 
-
     [SerializeField] GameObject mainTilemap;
+    [SerializeField] Tilemap testhouse;
 
     [SerializeField] List<GameObject> Trees;
 
@@ -327,6 +327,14 @@ public class ProceduralGeneration : MonoBehaviour
         return map;
     }
 
+
+    //void structurs()
+    //{
+    //    for (int i = 0; i < testhouse.size; i++)
+    //    {
+
+    //    }
+    //}
     // Расстановка тайлов в зависимости от сида
     public void RenderMap(int[,] map, Tilemap groundTilemap, List<TileBase> groundTileBase, int[,] bgMap)   // Массив, тайлмап, тайлы блока (список блоков)
     {
@@ -349,6 +357,10 @@ public class ProceduralGeneration : MonoBehaviour
             for (int j = 0; j < height; j++)
             {
                 //Debug.Log(map[i, j]);
+
+                // Проверка на создание структур
+                //tilemap.SetTiles(testhouse.GetTilesBlock, testhouse.GetTransformMatrix);
+                
 
                 switch (map[i, j])
                 {

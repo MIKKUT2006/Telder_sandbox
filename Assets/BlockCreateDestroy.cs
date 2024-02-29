@@ -124,7 +124,7 @@ public class BlockCreateDestroy : MonoBehaviour
             if (blockSolid > 0)
             {
                 blockSolid -= digLevel;
-                Debug.Log(blockSolid);
+                //Debug.Log(blockSolid);
             }
             else
             {
@@ -146,8 +146,8 @@ public class BlockCreateDestroy : MonoBehaviour
 
                         for (int i = y; i > 0; i--)
                         {
-                            Debug.Log(ProceduralGeneration.map[x, i]);
-                            Debug.Log(x + ":" + i);
+                            //Debug.Log(ProceduralGeneration.map[x, i]);
+                            //Debug.Log(x + ":" + i);
 
                             if (ProceduralGeneration.map[x, i] == 4)
                             {
