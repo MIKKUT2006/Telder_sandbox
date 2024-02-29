@@ -42,6 +42,7 @@ public class ProceduralGeneration : MonoBehaviour
 
     [SerializeField] List<GameObject> Trees;
 
+    // 0 = солнечный свет
     // 1 = трава
     // 2 = земля
     // 3 = камень
