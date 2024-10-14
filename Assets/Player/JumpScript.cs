@@ -33,4 +33,12 @@ public class JumpScript : MonoBehaviour
             jump = true;
         }
     }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer == 3)
+        {
+            jump = false;
+        }
+    }
 }

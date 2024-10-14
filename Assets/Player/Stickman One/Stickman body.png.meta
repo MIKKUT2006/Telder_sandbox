@@ -141,9 +141,9 @@ TextureImporter:
       name: Player_1
       rect:
         serializedVersion: 2
-        x: 72
+        x: 62
         y: 60
-        width: 19
+        width: 20
         height: 28
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -162,10 +162,10 @@ TextureImporter:
       name: Player_2
       rect:
         serializedVersion: 2
-        x: 93
-        y: 54
-        width: 14
-        height: 40
+        x: 92
+        y: 53
+        width: 19
+        height: 41
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -183,9 +183,9 @@ TextureImporter:
       name: Player_3
       rect:
         serializedVersion: 2
-        x: 112
-        y: 60
-        width: 19
+        x: 121
+        y: 57
+        width: 20
         height: 28
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -204,9 +204,9 @@ TextureImporter:
       name: Player_4
       rect:
         serializedVersion: 2
-        x: 79
+        x: 75
         y: 18
-        width: 19
+        width: 23
         height: 28
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -227,7 +227,7 @@ TextureImporter:
         serializedVersion: 2
         x: 105
         y: 18
-        width: 19
+        width: 23
         height: 28
       alignment: 0
       pivot: {x: 0.5, y: 0.5}

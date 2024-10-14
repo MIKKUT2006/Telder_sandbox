@@ -1,46 +1,69 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Burst.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using static UnityEditor.PlayerSettings;
+using UnityEngine.WSA;
 using static UnityEngine.Rendering.VolumeComponent;
 
 public class ProceduralGeneration : MonoBehaviour
 {
-    [SerializeField] public static int height = 400;
-    public static int width = 400;     // Ширина и высота (мира)
+    // ТЕСТЫ
+    public static int X, Y;
+    [System.Serializable]
+    public class Column
+    {
+        public bool[] rows = new bool[Y];
+    }
 
-    [SerializeField] float smoothes;        // Мягкость
-    [SerializeField] float cavessmothes;        // Мягкость Пещер
-    [SerializeField] float stonesmothes;        // Мягкость Камня
+    public Column[] columns = new Column[X];
+    // ТЕСТЫ
 
-    [SerializeField] float ironOre;        // Мягкость железной руды
+    // Префаб для чанка
+    [SerializeField] public GameObject chunkPrefab;
+    [SerializeField] public GameObject lightchunkPrefab;
+    [SerializeField] public GameObject bgchunkPrefab;
 
-    [SerializeField] float seed;            // Сид мира
-    [SerializeField] List<TileBase> groundTile;   // Тайл
-    [SerializeField] TileBase lightTile;
-    [SerializeField] Tilemap tilemap;       // Карта тайлов
-    [SerializeField] Tilemap bgTilemap;       // Карта тайлов заднего фона
-    [SerializeField] Tilemap lightTilemap;       // Карта тайлов для освещения
+    // Список блоков в структуре
+    [Header("генерация структур")]
+    [SerializeField] public Tilemap testStructure;
+    [SerializeField] public Tilemap mapleHouse;
 
-    [SerializeField] public static int[,] map; // Двумерный массив карты
-    [SerializeField] int[,] bgMap; // Двумерный массив карты заднего плана
-    [SerializeField] int[,] lightMap; // Двумерный массив карты заднего плана
+    [Header("Размеры мира")]
+    [SerializeField] public int height = 400;       // высота (мира)
+    [SerializeField] public int width = 800;        // Ширина (мира)
 
-    [SerializeField] public static int chunkSize = 20;
-    [SerializeField] public static Tilemap[] Chunks;
-    [SerializeField] public static GameObject[] ChunksGameobject;
-    [SerializeField] GameObject chunkPrefab;
-    int numChunks;
+    [Header("Мягкость земли, пещер, камня")]
+    [SerializeField] float smoothes;                // Мягкость
+    [SerializeField] float cavessmothes;            // Мягкость Пещер
+    [SerializeField] float stonesmothes;            // Мягкость Камня
 
-    [SerializeField] public static Tilemap[] lightChunks;
-    [SerializeField] public static GameObject[] lightChunksGameobject;
-    [SerializeField] GameObject lightchunkPrefab;
+    [Header ("Мягкость генерации руд")]
+    [SerializeField] float ironOre;                 // Мягкость железной руды
+    [SerializeField] float teleportiumOre;          // Мягкость камня пространства
+
+    [SerializeField] float seed;                    // Сид мира
+    [SerializeField] List<TileBase> groundTile;     // Тайл
+    [SerializeField] TileBase lightTile;            // Тайл освещения
+    [SerializeField] Tilemap tilemap;               // Карта тайлов
+    [SerializeField] Tilemap bgTilemap;             // Карта тайлов заднего фона
+    [SerializeField] Tilemap lightTilemap;          // Карта тайлов для освещения
+
+    [SerializeField] public static int[,] map;      // Двумерный массив карты
+    [SerializeField] int[,] bgMap;                  // Двумерный массив карты заднего плана
+    [SerializeField] int[,] lightMap;               // Двумерный массив карты заднего плана
+
+    
 
     [SerializeField] GameObject mainTilemap;
     [SerializeField] Tilemap testhouse;
 
     [SerializeField] List<GameObject> Trees;
+
+
 
     // 0 = солнечный свет
     // 1 = трава
@@ -51,10 +74,23 @@ public class ProceduralGeneration : MonoBehaviour
     // 1 = трава
     // 1 = трава
 
+    // Для проверки работы шума перлина
+    public int x = 0, y = 0;
+    public int worldSeed;
 
     void Start()
     {
         Generation();
+        HelperClass.chunkPrefab = chunkPrefab;
+        HelperClass.lightchunkPrefab = lightchunkPrefab;
+        HelperClass.bgchunkPrefab = bgchunkPrefab;
+
+        HelperClass.worldHeight = height;
+        HelperClass.worldWidth = width;
+        //seed = HelperClass.worldSeed;
+        //HelperClass.worldSeed = (int)seed;
+
+        Debug.Log(Mathf.PerlinNoise((x + worldSeed) / cavessmothes, (y + worldSeed) / cavessmothes));
     }
 
     // Update is called once per frame
@@ -64,68 +100,87 @@ public class ProceduralGeneration : MonoBehaviour
         {
             Generation();
         }
+
+        if (Input.GetKeyDown("t"))
+        {
+            Debug.Log(Mathf.PerlinNoise((x + worldSeed) / cavessmothes, (y + worldSeed) / cavessmothes));
+        }
     }
     void Generation()
     {
 
-        CreateChunks();                                        // Создаём чанки
-        lightMap = GenerateArray(width, height, true, true);   // Генерируем массив
-        lightTilemap.ClearAllTiles();                    // Очищаем все тайлы перед генерацией
+        CreateChunks();                                         // Создаём чанки
+        lightMap = GenerateArray(width, height, true, true);    // Генерируем массив
+        lightTilemap.ClearAllTiles();                           // Очищаем все тайлы перед генерацией
 
         // Основной план
-        tilemap.ClearAllTiles();                    // Очищаем все тайлы перед генерацией
-        map = GenerateArray(width, height, true, false);   // Генерируем массив
-        map = TerrainGeneration(map);               // Генерируем мир
-        map = StoneGeneration(map);               // Генерируем камень
-        map = CavesGeneration(map);               // Генерируем пещеры
-        map = OresGeneration(map);               // Генерируем руды
+        tilemap.ClearAllTiles();                                // Очищаем все тайлы перед генерацией
+        map = GenerateArray(width, height, true, false);        // Генерируем массив
+        map = TerrainGeneration(map);                           // Генерируем мир
+        map = StoneGeneration(map);                             // Генерируем камень
+        map = CavesGeneration(map);                             // Генерируем пещеры
+        map = OresGeneration(map);                              // Генерируем руды
         DestroyStructures();
         // Задниий план
-        bgTilemap.ClearAllTiles();                    // Очищаем все тайлы перед генерацией
-        bgMap = GenerateArray(width, height, true, true);   // Генерируем массив
-        bgMap = TerrainGeneration(bgMap);               // Генерируем мир
-        bgMap = StoneGeneration(bgMap);               // Генерируем мир
-        //bgMap = CavesGeneration(bgMap);               // Генерируем пещеры
+        bgTilemap.ClearAllTiles();                              // Очищаем все тайлы перед генерацией
+        bgMap = GenerateArray(width, height, true, true);       // Генерируем массив
+        bgMap = TerrainGeneration(bgMap);                       // Генерируем мир
+        bgMap = StoneGeneration(bgMap);                         // Генерируем мир
+        bgMap = GrassGeneration(bgMap);                         // Генерируем мир
+        //bgMap = CavesGeneration(bgMap);                       // Генерируем пещеры
 
-        map = StructuresGeneration(map);
+        map = TreesGeneration(map);
+        //StructuresGeneration(testStructure);
+        LightGeneraion(map);
 
-        RenderMap(map, tilemap, groundTile, bgMap);        // Показываем изменения
+        RenderMap(map, tilemap, groundTile, bgMap);             // Показываем изменения
+        StructuresGeneration(testStructure, 12);
+        StructuresGeneration(mapleHouse, 2);
     }
 
-    public void CreateChunks()                            // Создание чанков
+    public void CreateChunks()                                  // Создание чанков
     {
-        numChunks = width / chunkSize;                    // Устанавливаем количество чанков
+        HelperClass.numChunks = width / HelperClass.chunkSize;  // Устанавливаем количество чанков
 
-        Chunks = new Tilemap[numChunks];
-        ChunksGameobject = new GameObject[numChunks];
+        HelperClass.Chunks = new Tilemap[HelperClass.numChunks];
+        HelperClass.ChunksGameobject = new GameObject[HelperClass.numChunks];
 
-        lightChunks = new Tilemap[numChunks];
-        lightChunksGameobject = new GameObject[numChunks];
+        HelperClass.lightChunks = new Tilemap[HelperClass.numChunks];
+        HelperClass.lightChunksGameobject = new GameObject[HelperClass.numChunks];
+
+        HelperClass.bgChunks = new Tilemap[HelperClass.numChunks];
+        HelperClass.bgChunksGameobject = new GameObject[HelperClass.numChunks];
 
         // Цикл на количество чанков
-        for (int i = 0; i < numChunks; i++)
+        for (int i = 0; i < HelperClass.numChunks; i++)
         {
             //------------------
             Tilemap newChunk = new Tilemap();
-            Chunks[i] = newChunk;
+            HelperClass.Chunks[i] = newChunk;
             GameObject Chunk = Instantiate(chunkPrefab);
             Chunk.name = i.ToString();
             Chunk.transform.parent = transform;
-            ChunksGameobject[i] = Chunk;
+            HelperClass.ChunksGameobject[i] = Chunk;
             //------------------
             Tilemap newlightChunk = new Tilemap();
-            lightChunks[i] = newlightChunk;
+            HelperClass.lightChunks[i] = newlightChunk;
             GameObject lightChunk = Instantiate(lightchunkPrefab);
             lightChunk.name = i.ToString();
             lightChunk.transform.parent = transform;
-            lightChunksGameobject[i] = lightChunk;
+            HelperClass.lightChunksGameobject[i] = lightChunk;
+            //------------------
+            GameObject bgChunk = Instantiate(bgchunkPrefab);
+            HelperClass.bgChunks[i] = bgChunk.GetComponent<Tilemap>();
+            bgChunk.name = i.ToString();
+            bgChunk.transform.parent = transform;
+            HelperClass.bgChunksGameobject[i] = bgChunk;
             //=================
         }
     }
 
     void DestroyStructures()
     {
-        List <GameObject> trees = GameObject.FindGameObjectsWithTag("tree").ToList();
+        List<GameObject> trees = GameObject.FindGameObjectsWithTag("tree").ToList();
 
         foreach (var item in trees)
         {
@@ -137,8 +192,8 @@ public class ProceduralGeneration : MonoBehaviour
     // Чтобы не создавать вручную весь массив
     public int[,] GenerateArray(int width, int height, bool useArray, bool bg)
     {
-        int[,] map = new int[width, height]; // Устанавливаем размеры мира
-        int[,] bgMap = new int[width, height]; // Устанавливаем размеры мира
+        int[,] map = new int[width, height];                // Устанавливаем размеры мира
+        int[,] bgMap = new int[width, height];              // Устанавливаем размеры мира
 
         // Генерируем мир по ширине
         for (int i = 0; i < width; i++)
@@ -146,7 +201,7 @@ public class ProceduralGeneration : MonoBehaviour
             // Генерируем мир по высоте
             for (int j = 0; j < height; j++)
             {
-                map[i, j] = (useArray) ? 0 : 1;     // Если в массиве карты false = 0, true = 1
+                map[i, j] = (useArray) ? 0 : 1;             // Если в массиве карты false = 0, true = 1
                 bgMap[i, j] = (useArray) ? 0 : 1;
             }
         }
@@ -169,18 +224,20 @@ public class ProceduralGeneration : MonoBehaviour
         for (int i = 0; i < width; i++)
         {
             // Получаем координату чанка
-            int chunkCoord = i / chunkSize;   // Получаем координату чанка
-            //chunkCoord = chunkCoord * chunkSize;
+            int chunkCoord = i / HelperClass.chunkSize;   // Получаем координату чанка
 
             int ostatok = chunkCoord % 100;
             if (ostatok != 0)
             {
                 chunkCoord -= (chunkCoord - ostatok) + 1;
             }
-            Tilemap lighttilemap = lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+            Tilemap lighttilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
-            perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes, seed) * height / 2);
+            //perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes / 2, HelperClass.worldSeed / 2) * height / 2);
+            perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes / 2, HelperClass.worldSeed + height) * height / 2.5f);
+            //Debug.Log(HelperClass.worldSeed);
             perlinHeight += height / 2;
+            //perlinHeight = perlinHeight / 2;
 
             for (int j = 0; j <= perlinHeight + 1; j++)
             {
@@ -194,16 +251,49 @@ public class ProceduralGeneration : MonoBehaviour
                     map[i, j] = 2;
                 }
 
-                if (j > perlinHeight)
+                //if (j > perlinHeight)
+                //{
+                //    map[i, j] = 0;
+                //}
+            }
+        }
+
+        // Дополнительные горы
+        for (int i = 0; i < width; i++)
+        {
+            // Получаем координату чанка
+            int chunkCoord = i / HelperClass.chunkSize;   // Получаем координату чанка
+
+            int ostatok = chunkCoord % 100;
+            if (ostatok != 0)
+            {
+                chunkCoord -= (chunkCoord - ostatok) + 1;
+            }
+            Tilemap lighttilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+
+            //perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes / 2, HelperClass.worldSeed / 2) * height / 2);
+            perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes / 4, HelperClass.worldSeed + height) * height / 2f);
+            //Debug.Log(HelperClass.worldSeed);
+            perlinHeight += height / 2;
+            //perlinHeight = perlinHeight / 2;
+
+            for (int j = 0; j <= perlinHeight + 1; j++)
+            {
+                if (j < perlinHeight)
+                {
+                    map[i, j] = 1;
+                }
+
+                if (j == perlinHeight && map[i, j + 1] < 1)
+                {
+                    map[i, j] = 2;
+                }
+
+                if (j > perlinHeight && map[i, j + 1] < 1)
                 {
                     map[i, j] = 0;
                 }
             }
-            for (int g = perlinHeight; g < height; g++)
-            {
-                lighttilemap.SetTile(new Vector3Int(i, g, 0), lightTile);
-            }
-            lightChunks[chunkCoord] = tilemap;
         }
 
         return map;
@@ -214,12 +304,12 @@ public class ProceduralGeneration : MonoBehaviour
         int perlinHeight;   // Высота перлина
         for (int i = 0; i < width; i++)
         {
-            perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / stonesmothes / 0.5f, seed * 3) * height / 2.1f);
+            perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / stonesmothes / 0.5f, HelperClass.worldSeed * 3) * height / 2.3f);
             perlinHeight += height / 3;
 
             for (int j = 0; j <= perlinHeight; j++)
             {
-                if (j < perlinHeight)
+                if (j < perlinHeight && map[i,j] == 1)
                 {
                     map[i, j] = 3;
                 }
@@ -230,31 +320,46 @@ public class ProceduralGeneration : MonoBehaviour
 
     public int[,] CavesGeneration(int[,] map)     // Генерация пещер
     {
-        float perlinHeight;   // Высота перлина
+        float perlinHeightCaves;   // Высота перлина
+        float perlinHeightGround;   // Высота перлина поверхностных пещер
+        float perlinHeightOres;   // Высота перлина руд
+        float perlinHeightTeleportium;
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
             {
-                perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes, (j + seed) / cavessmothes);
-
-                if (perlinHeight < 0.4 && map[i, j] == 3)
+                perlinHeightCaves = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes, (j + HelperClass.worldSeed) / cavessmothes);
+                //perlinHeightCaves = Mathf.PerlinNoise((i + 10000), (j + 10000));
+                //Debug.Log(HelperClass.worldSeed);
+                if (perlinHeightCaves < 0.4 && map[i, j] == 3)
                 {
                     map[i, j] = 4;
                     //lightMap[i, j] = 4;
                     //Debug.Log(lightMap[i, j]);
                 }
-            }
-        }
 
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes / 2, (j + seed) / cavessmothes / 2);
-
-                if (perlinHeight < 0.4 && map[i, j] <= 2)
+                perlinHeightGround = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes / 2, (j + HelperClass.worldSeed) / cavessmothes / 2);
+                if (perlinHeightGround < 0.4 && map[i, j] <= 2 && map[i, j] != 0)
                 {
                     map[i, j] = 4;
+                }
+
+                // Генерация руды
+                perlinHeightOres = Mathf.PerlinNoise((i + HelperClass.worldSeed / 2) / ironOre, (j + HelperClass.worldSeed / 2) / ironOre);
+                //Debug.Log(perlinHeightOres);
+                if (perlinHeightOres > 0.8 && map[i, j] == 3)
+                {
+                    map[i, j] = 6;
+                }
+
+                // Генерация руды телепортации
+                perlinHeightTeleportium = Mathf.PerlinNoise((i + HelperClass.worldSeed) / teleportiumOre / 0.5f, (j + HelperClass.worldSeed) / teleportiumOre / 0.5f);
+
+                //perlinHeightTeleportium = Mathf.RoundToInt(Mathf.PerlinNoise(j / stonesmothes, seed * 3) * height / 2.1f);
+                //Debug.Log(perlinHeightTeleportium);
+                if (perlinHeightTeleportium > 0.87 && map[i, j] == 3)
+                {
+                    map[i, j] = 7;
                 }
             }
         }
@@ -263,58 +368,44 @@ public class ProceduralGeneration : MonoBehaviour
 
     public int[,] OresGeneration(int[,] map)     // Генерация пещер
     {
-        float perlinHeight;   // Высота перлина
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                perlinHeight = Mathf.PerlinNoise((i + seed) / ironOre, (j + seed) / ironOre);
-
-                if (perlinHeight > 0.8 && map[i, j] == 3)
-                {
-                    map[i, j] = 6;
-                }
-            }
-        }
-
+        //float perlinHeight;   // Высота перлина
         //for (int i = 0; i < width; i++)
         //{
         //    for (int j = 0; j < height; j++)
         //    {
-        //        perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes / 2, (j + seed) / cavessmothes / 2);
+        //        perlinHeight = Mathf.PerlinNoise((i + seed) / ironOre, (j + seed) / ironOre);
 
-        //        if (perlinHeight < 0.4 && map[i, j] <= 2)
+        //        if (perlinHeight > 0.8 && map[i, j] == 3)
         //        {
-        //            map[i, j] = 4;
+        //            map[i, j] = 6;
         //        }
         //    }
         //}
+
+        ////for (int i = 0; i < width; i++)
+        ////{
+        ////    for (int j = 0; j < height; j++)
+        ////    {
+        ////        perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes / 2, (j + seed) / cavessmothes / 2);
+
+        ////        if (perlinHeight < 0.4 && map[i, j] <= 2)
+        ////        {
+        ////            map[i, j] = 4;
+        ////        }
+        ////    }
+        ////}
         return map;
     }
 
-    public int[,] StructuresGeneration(int[,] map)     // Генерация структур (деревья)
+    public int[,] TreesGeneration(int[,] map)     // Генерация и травы
     {
         float perlinHeight;   // Высота перлина
-
-        //for (int i = 0; i < width; i++)
-        //{
-        //    for (int j = 0; j < height; j++)
-        //    {
-        //        perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes, (j + seed) / cavessmothes);
-
-        //        if (perlinHeight < 0.4 && map[i, j] == 3)
-        //        {
-        //            //Debug.Log("asdasdasd");
-        //            map[i, j] = 4;
-        //        }
-        //    }
-        //}
 
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
             {
-                perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes, (j + seed) / cavessmothes);
+                perlinHeight = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes, (j + HelperClass.worldSeed) / cavessmothes);
                 //Debug.Log(perlinHeight);
 
                 if (perlinHeight < 0.4 && map[i, j] == 2)
@@ -327,23 +418,32 @@ public class ProceduralGeneration : MonoBehaviour
         return map;
     }
 
-
-    //void structurs()
-    //{
-    //    for (int i = 0; i < testhouse.size; i++)
-    //    {
-
-    //    }
-    //}
-    // Расстановка тайлов в зависимости от сида
-    public void RenderMap(int[,] map, Tilemap groundTilemap, List<TileBase> groundTileBase, int[,] bgMap)   // Массив, тайлмап, тайлы блока (список блоков)
+    public int[,] GrassGeneration(int[,] map)     // Генерация травы
     {
-        //lightTilemap = groundTilemap;
+        float perlinHeight;   // Высота перлина
 
         for (int i = 0; i < width; i++)
         {
+            for (int j = 0; j < height; j++)
+            {
+                perlinHeight = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes, (j + HelperClass.worldSeed) / cavessmothes);
+
+                if (perlinHeight < 0.5 && map[i, j] == 2)
+                {
+                    bgMap[i, j + 1] = 8;
+                }
+            }
+        }
+        return map;
+    }
+
+    public int[,] LightGeneraion(int[,] map)
+    {
+        //int perlinHeight;   // Высота перлина
+        for (int i = 0; i < width; i++)
+        {
             // Получаем координату чанка
-            int chunkCoord = i / chunkSize;   // Получаем координату чанка
+            int chunkCoord = i / HelperClass.chunkSize;   // Получаем координату чанка
             //chunkCoord = chunkCoord * chunkSize;
 
             int ostatok = chunkCoord % 100;
@@ -351,16 +451,104 @@ public class ProceduralGeneration : MonoBehaviour
             {
                 chunkCoord -= (chunkCoord - ostatok) + 1;
             }
-            Tilemap tilemap = ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-            Tilemap lighttilemap = lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+            Tilemap lighttilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+
+            //perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes, seed) * height / 2);
+            //perlinHeight += height / 2;
+
+            for (int j = height-1; j > 0; j--)
+            {
+                //Debug.Log(i + ":" + j);
+                if (map[i, j] != 0 && map[i, j] != 4)
+                {
+                    //Debug.Log(map[i, j]);
+                    //map[i, j] = 0;
+                    lighttilemap.SetTile(new Vector3Int(i, j, 0), lightTile);
+
+                    HelperClass.lightChunks[chunkCoord] = tilemap;
+                    break;
+                }
+
+                if (map[i, j] == 4)
+                {
+                    //Debug.Log(map[i, j]);
+                    //map[i, j] = 0;
+                    lighttilemap.SetTile(new Vector3Int(i, j, 0), lightTile);
+
+                    HelperClass.lightChunks[chunkCoord] = tilemap;
+                }
+            }
+            //for (int g = perlinHeight; g < height; g++)
+            //{
+            //    lighttilemap.SetTile(new Vector3Int(i, g, 0), lightTile);
+            //}
+            //lightChunks[chunkCoord] = tilemap;
+        }
+        return map;
+    }
+
+    public void StructuresGeneration(Tilemap structureTilemap, int structureCount)
+    {
+        
+        for (int i = 0; i < structureCount; i++)
+        {
+            BoundsInt bounds = structureTilemap.cellBounds;
+            int structureCoordX = (int)Random.RandomRange(0, width);
+            int structureCoordY = (int)Random.RandomRange(0, 100);
+            for (int x = bounds.xMin; x < bounds.xMax; x++)
+            {
+                for (int y = bounds.yMin; y < bounds.yMax; y++)
+                {
+                    Vector3Int tilePos = new Vector3Int(x, y, 0);
+                    TileBase tile = structureTilemap.GetTile(tilePos);
+
+                    if (tile != null)
+                    {
+                        //Debug.Log("Tile at position " + tilePos + " is " + tile.name);
+                        tilePos.x += structureCoordX;
+                        tilePos.y += structureCoordY;
+
+                        int chunkCoord = tilePos.x / HelperClass.chunkSize;
+
+                        int ostatok = chunkCoord % 100;
+                        if (ostatok != 0)
+                        {
+                            chunkCoord -= (chunkCoord - ostatok) + 1;
+                        }
+
+                        Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+
+                        tilemap.SetTile(tilePos, tile);
+                    }
+                }
+            }
+        }
+    }
+    public void RenderMap(int[,] map, Tilemap groundTilemap, List<TileBase> groundTileBase, int[,] bgMap)   // Массив, тайлмап, тайлы блока (список блоков)
+    {
+        //lightTilemap = groundTilemap;
+
+        for (int i = 0; i < width; i++)
+        {
+            // Получаем координату чанка
+            int chunkCoord = i / HelperClass.chunkSize;   // Получаем координату чанка
+                                              //chunkCoord = chunkCoord * chunkSize;
+
+            int ostatok = chunkCoord % 100;
+            if (ostatok != 0)
+            {
+                chunkCoord -= (chunkCoord - ostatok) + 1;
+            }
+            Tilemap tileMap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+            Tilemap lightTileMap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+            Tilemap bgTileMap = HelperClass.bgChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
             for (int j = 0; j < height; j++)
             {
-                //Debug.Log(map[i, j]);
-
-                // Проверка на создание структур
-                //tilemap.SetTiles(testhouse.GetTilesBlock, testhouse.GetTransformMatrix);
-                
+                if (map[i, j] == 0)
+                {
+                    lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTile);
+                }
 
                 switch (map[i, j])
                 {
@@ -368,43 +556,53 @@ public class ProceduralGeneration : MonoBehaviour
                     //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
                     //    break;
                     case 1:
-                            tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);
                         break;
                     case 2:
-                        tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);            // Устанавливаем тайл травы
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);            // Устанавливаем тайл травы
 
                         break;
                     case 3:
-                        tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
                         break;
                     //case 4:
                     //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
                     //    break;
                     case 5:
                         Vector3 pos = new Vector3(i + 0.5f, j + 3, 0);
-                        tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);      // Устанавливаем деревья
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);      // Устанавливаем деревья
                         Instantiate(Trees[0], pos, Quaternion.identity);
                         break;
                     case 6:
-                        tilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[4]);       // Устанавливаем тайл железной руды
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[4]);       // Устанавливаем тайл железной руды
                         break;
+                    case 7:
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[5]);       // Устанавливаем тайл руды камня пространства
+                        break;
+                    //case 8:
+                    //    bgTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[6]);       // Устанавливаем тайл травы
+                    //    break;
                 }
 
-                Chunks[chunkCoord] = tilemap;
+                HelperClass.Chunks[chunkCoord] = tileMap;
 
                 if (bgMap[i, j] == 1)
                 {
-                    bgTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);       // Устанавливаем тайл земли
+                    bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);       // Устанавливаем тайл земли
                 }
                 if (bgMap[i, j] == 2)
                 {
-                    bgTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);       // Устанавливаем тайл травы
+                    bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);       // Устанавливаем тайл травы
                 }
                 if (bgMap[i, j] == 3)
                 {
-                    bgTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
+                    bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
                 }
-                
+                if (bgMap[i, j] == 8)
+                {
+                    bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[6]);       // Устанавливаем тайл травы
+                }
+
                 //if (map[i, j] == 4)
                 //{
                 //    Debug.Log("asd");
@@ -413,4 +611,16 @@ public class ProceduralGeneration : MonoBehaviour
             }
         }
     }
-}
+    }
+//public class Script : MonoBehaviour
+//{
+//    public static int X, Y;
+//    [System.Serializable]
+//    public class Column
+//    {
+//        public bool[] rows = new bool[Y];
+//    }
+
+//    public Column[] columns = new Column[X];
+
+//}
