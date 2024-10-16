@@ -41,7 +41,9 @@ public class InputScript : MonoBehaviour
         HelperClass.playerInventoryGameObject = inventoryGameObject;
         inventoryGameObject.SetActive(false);
         HelperClass.equippedItem = gameObject.transform.Find("Player_1").transform.Find("Item").gameObject;
-        
+        HelperClass.itemName = GameObject.FindGameObjectWithTag("ItemName").GetComponent<TextMeshProUGUI>();
+
+
     }
     void Start()
     {

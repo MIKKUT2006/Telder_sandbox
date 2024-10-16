@@ -7,6 +7,7 @@ TagManager:
   - tree
   - Inventory
   - InventoryLight
+  - ItemName
   layers:
   - Default
   - TransparentFX

@@ -13,6 +13,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     Sprite tempSprite = null;
     AllItemsAndBlocks tempItem = null;
     int tempItemCount = 0;
+    
     private void Awake()
     {
         cellImage = GetComponent<Image>();
@@ -68,6 +69,10 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                 // Выбор предмета в инвентаре
                 HelperClass.selectedInventoryCell = int.Parse(gameObject.name);
                 HelperClass.equippedCellAnimator = GetComponent<Animation>();
+                if (HelperClass.playerInventory[int.Parse(gameObject.name)] != null)
+                {
+                    HelperClass.itemName.text = HelperClass.playerInventory[int.Parse(gameObject.name)].name;
+                }
                 Debug.Log(HelperClass.equippedCellAnimator);
                 if (HelperClass.equippedCellImage != null)
                 {
