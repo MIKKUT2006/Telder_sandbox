@@ -15,6 +15,7 @@ public class MenuButtonsScript : MonoBehaviour
     [SerializeField] private Button settingsBtn;
     [SerializeField] private GameObject btnSelection;
 
+    [SerializeField] private GameObject loadPanel;
     [SerializeField] private GameObject selectWorldsPanel;
     [SerializeField] private GameObject settingPanel;
 
@@ -24,6 +25,10 @@ public class MenuButtonsScript : MonoBehaviour
 
     public void CreateWorld()
     {
+        // Показываем сообщение о загрузке мира
+        loadPanel.SetActive(true);
+        selectWorldsPanel.SetActive(false);
+        // Запускам сцену игрового мира
         SceneManager.LoadScene("WorldOne");
         HelperClass.worldSeed = int.Parse(WorldSeed.text);
     }
