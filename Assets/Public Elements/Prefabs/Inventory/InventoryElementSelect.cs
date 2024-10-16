@@ -28,8 +28,8 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                 // Проверка, что уже есть предмет в этом слоте
                 if (HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled == true)
                 {
-                    //
-                    if (HelperClass.playerInventory[int.Parse(gameObject.name)].name == ItemOnCursor.selecteditem.name)
+                    // Проверка, что предмет в слоте совпадает с предметом в курсоре
+                    if (HelperClass.playerInventory[int.Parse(gameObject.name)].blockIndex == ItemOnCursor.selecteditem.blockIndex)
                     {
                         //Debug.Log(HelperClass.playerInventory[int.Parse(gameObject.name)].name);
 
@@ -47,9 +47,12 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                 else
                 {
                     HelperClass.playerInventory[int.Parse(gameObject.name)] = InventoryItemClone(ItemOnCursor.selecteditem);
-                    HelperClass.playerInventory[int.Parse(gameObject.name)].count++;
+                    HelperClass.playerInventory[int.Parse(gameObject.name)].count = 1;
+                    Debug.Log($"Количество в ячейке {HelperClass.playerInventory[int.Parse(gameObject.name)].count}");
                     ItemOnCursor.selecteditem.count--;
+                    Debug.Log($"В курсоре осталось {ItemOnCursor.selecteditem.count} предмета");
                     HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[int.Parse(gameObject.name)].count.ToString();
+                    HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
                     HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled = true;
                     HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite = ItemOnCursor.sprite;
 
@@ -114,9 +117,10 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                 }
                 else
                 {
-                    Debug.Log("Вы взяли предмет " + HelperClass.playerInventory[int.Parse(gameObject.name)].name);
+                    
                     //AllItemsAndBlocks tempItem = HelperClass.playerInventory[int.Parse(gameObject.name)];
                     ItemOnCursor.selecteditem = InventoryItemClone(HelperClass.playerInventory[int.Parse(gameObject.name)]);
+                    Debug.Log("Вы взяли предмет " + HelperClass.playerInventory[int.Parse(gameObject.name)].name + " В количестве: " + ItemOnCursor.selecteditem.count);
                     //ItemOnCursor.selecteditem = HelperClass.playerInventory[int.Parse(gameObject.name)];
                     HelperClass.playerInventory[int.Parse(gameObject.name)] = null;
                     Debug.Log(ItemOnCursor.selecteditem.name);
