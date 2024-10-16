@@ -21,6 +21,9 @@ public class InputScript : MonoBehaviour
     private GameObject inventoryGameObject;
     private GameObject inventoryLightGameObject;
 
+    // Панель паузы
+    [SerializeField] private GameObject pausePanel;
+
     // Объект для выделения выбранного блока
     [SerializeField] GameObject selectedBlock;
 
@@ -70,6 +73,12 @@ public class InputScript : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             playerSpeed = playerDefaultSpeed;
+        }
+
+        // Окткрытие окна паузы
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            pausePanel.SetActive(true);
         }
 
         // Открытие инвентаря на нажатие клавиши I
