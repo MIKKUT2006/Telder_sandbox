@@ -159,6 +159,7 @@ public class BlockCreateDestroy : MonoBehaviour
                                 HelperClass.playerInventory[HelperClass.selectedInventoryCell] = null;
                                 HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = false;
                                 HelperClass.Cursor.SetActive(false);
+                                HelperClass.itemName.text = "";
                             }
 
                             digSound.clip = place;

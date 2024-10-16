@@ -27,7 +27,7 @@ public class CollectItem : MonoBehaviour
             {
                 Debug.Log("ячейка номер" + InventoryCell);
                 Debug.Log("В инвентаре " + HelperClass.playerInventory[i]);
-                if (HelperClass.playerInventory[i] != null && HelperClass.playerInventory[i] == BlocksData.allBlocks.Find(x => x.blockIndex == int.Parse(gameObject.name)))
+                if (HelperClass.playerInventory[i] != null && HelperClass.playerInventory[i].name == BlocksData.allBlocks.Find(x => x.blockIndex == int.Parse(gameObject.name)).name)
                 {
                     HelperClass.playerInventory[i].count++;
                     Debug.Log($"В инвентаре {HelperClass.playerInventory[i].count} предмета {HelperClass.playerInventory[i].name}");

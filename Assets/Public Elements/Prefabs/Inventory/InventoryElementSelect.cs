@@ -69,9 +69,14 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                 // Выбор предмета в инвентаре
                 HelperClass.selectedInventoryCell = int.Parse(gameObject.name);
                 HelperClass.equippedCellAnimator = GetComponent<Animation>();
+
                 if (HelperClass.playerInventory[int.Parse(gameObject.name)] != null)
                 {
                     HelperClass.itemName.text = HelperClass.playerInventory[int.Parse(gameObject.name)].name;
+                }
+                else
+                {
+                    HelperClass.itemName.text = "";
                 }
                 Debug.Log(HelperClass.equippedCellAnimator);
                 if (HelperClass.equippedCellImage != null)
