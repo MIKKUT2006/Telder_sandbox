@@ -44,7 +44,7 @@ public class Cell {
 	public CellType Type { get; private set; }
 
 	// Neighboring cells
-	public Cell Top;
+	public Cell Top { get; set; }
 	public Cell Bottom { get; set; }
 	public Cell Left { get; set; }
 	public Cell Right { get; set; }

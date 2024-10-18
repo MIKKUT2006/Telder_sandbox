@@ -8,7 +8,7 @@ using System.Collections;
 
 public class Grid : MonoBehaviour {
 
-	public int Size = 8000;
+	private int Size = 200;
 
 	public Cell[,] Cells;
 
@@ -37,7 +37,7 @@ public class Grid : MonoBehaviour {
 
 		StartCoroutine(DelayExecuteSim(UpdateDelayTime));
 
-		Cells = HelperClass.Cells;
+		//Cells = HelperClass.Cells;
 	}
 
 	void CreateGrid() {
@@ -70,9 +70,9 @@ public class Grid : MonoBehaviour {
 
 	// Sets neighboring cell references
 	void UpdateNeighbors() {
-		for (int x = 0; x < Size; x++) {
+		for (int x = 0; x < Cells.GetLength(0) - 1; x++) {
 
-			for (int y = 0; y < Size; y++) {
+			for (int y = 0; y < Cells.GetLength(1) - 1; y++) {
 
 				// Left most cells do not have left neighbor
 				if (x > 0 )
@@ -92,6 +92,9 @@ public class Grid : MonoBehaviour {
                 // Top most cells do not have top neighbor
                 if (y < Size - 1)
                 {
+					Debug.Log($"x={x}");
+					Debug.Log($"y={y}");
+					Debug.Log($"клетка равна {Cells[x, y].Top}");
                     Cells[x, y].Top = Cells[x, y + 1];
                 }
 
@@ -143,10 +146,13 @@ public class Grid : MonoBehaviour {
 
 		// Right click places liquid
 		if (Input.GetMouseButton(1)) {
+			Debug.Log($"Позиция х= {x}, позиция y= {y} а размеры клеток {Cells.GetLength(0)}, {Cells.GetLength(1)}");
+
+
 			if ((x > 0 && x < Cells.GetLength(0)) && (y > 0 && y < Cells.GetLength(1)))
 			{
 				//Debug.Log(Cells[100, 100]);
-				Cells[x, y].AddLiquid(5);
+				Cells[x, y].AddLiquid(2);
 			}
 
 		}
@@ -159,19 +165,19 @@ public class Grid : MonoBehaviour {
     {
         yield return new WaitForSeconds(time);
 
-        
+        // Массив позиций тайлов (размер массива = ширина * высоту мира)
         Vector3Int[] positions = new Vector3Int[Cells.GetLength(0) * Cells.GetLength(1)];
         TileBase[] tileArray = new TileBase[positions.Length];
 
         int posIndex = 0;
 
-		Debug.Log(Cells[10, 10].CellUpdate(LiquidTilemap, WaterTiles, BlockTile));
+		//Debug.Log(Cells[10, 10].CellUpdate(LiquidTilemap, WaterTiles, BlockTile));
         // Определите спрайт для каждой ячейки
         for (int cx = 0; cx < Cells.GetLength(0); cx++)
         {
             for (int cy = 0; cy < Cells.GetLength(1); cy++)
             {
-                tileArray[cx * Size + cy] = Cells[cx, cy].CellUpdate(LiquidTilemap, WaterTiles, BlockTile);
+                tileArray[cx + cy] = Cells[cx, cy].CellUpdate(LiquidTilemap, WaterTiles, BlockTile);
                 positions[posIndex] = new Vector3Int(cx, cy, 0);
                 posIndex++;
             }

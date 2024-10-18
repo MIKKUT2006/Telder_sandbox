@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -109,7 +110,7 @@ public class BlockCreateDestroy : MonoBehaviour
                     chunkCoord -= (chunkCoord - ostatok) + 1;
                 }
                 Debug.Log($"позиция курсора: {x}, координата чанка: {chunkCoord}");
-                Debug.Log($"Чанк, где поставят блок: {HelperClass.ChunksGameobject[chunkCoord].name}");
+                Debug.Log($"Чанк, где поставят блок: {HelperClass.ChunksGameobject[0].name} (тут должэен юыть 0)");
                 Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 //Tilemap bgTilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 Tilemap lightTilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
@@ -117,10 +118,43 @@ public class BlockCreateDestroy : MonoBehaviour
                 blockPosition[0] = new Vector3Int(x, y);
                 // Устанавливаем блок в позици курсора
 
-                // Вывод блока в позиции курсора
-                //Debug.Log((tilemap.GetTile(blockPosition[0])));
+                Debug.Log((tilemap.GetTile(blockPosition[0])));
 
-                // Проверка на то, что нет блока
+                // Самый крайний чанк слева
+                if (chunkCoord == 0) {
+                    if ((tilemap.GetTile(blockPosition[0]) == null) && ((HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y - 1)) != null)
+                    || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y + 1)) != null)
+                    || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x - 1, y)) != null)
+                    || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x + 1, y)) != null)
+                    || (HelperClass.Chunks[chunkCoord + 1].GetTile(new Vector3Int(x + 1, y)) != null)
+                    || (HelperClass.Chunks[chunkCoord + 1].GetTile(new Vector3Int(x - 1, y)) != null)
+                    || (HelperClass.bgChunks[chunkCoord].GetTile(new Vector3Int(x, y)) != null)
+                    )
+                    )
+                    {
+                        Debug.Log("Крайний чанк");
+                        placeTile(x, y, blockPosition, chunkCoord);
+                        return;
+                    }
+                }
+                // Самый крайний справа
+                if (chunkCoord == HelperClass.Chunks.Count() - 1) {
+                    if ((tilemap.GetTile(blockPosition[0]) == null) && ((HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y - 1)) != null)
+                    || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y + 1)) != null)
+                    || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x - 1, y)) != null)
+                    || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x + 1, y)) != null)
+                    || (HelperClass.Chunks[chunkCoord - 1].GetTile(new Vector3Int(x + 1, y)) != null)
+                    || (HelperClass.Chunks[chunkCoord - 1].GetTile(new Vector3Int(x - 1, y)) != null)
+                    || (HelperClass.bgChunks[chunkCoord].GetTile(new Vector3Int(x, y)) != null)
+                    )
+                    )
+                    {
+                        placeTile(x, y, blockPosition, chunkCoord);
+                        return;
+                    }
+                        
+                }
+                // Остальные чанки
                 if ((tilemap.GetTile(blockPosition[0]) == null) && ((HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y - 1)) != null)
                     || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y + 1)) != null)
                     || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x - 1, y)) != null)
@@ -129,46 +163,51 @@ public class BlockCreateDestroy : MonoBehaviour
                     || (HelperClass.Chunks[chunkCoord + 1].GetTile(new Vector3Int(x - 1, y)) != null)
                     || (HelperClass.Chunks[chunkCoord - 1].GetTile(new Vector3Int(x + 1, y)) != null)
                     || (HelperClass.Chunks[chunkCoord - 1].GetTile(new Vector3Int(x - 1, y)) != null)
-                    || (HelperClass.bgChunksGameobject[chunkCoord].GetComponent<Tilemap>().GetTile(new Vector3Int(x, y)) != null)
+                    || (HelperClass.bgChunks[chunkCoord].GetTile(new Vector3Int(x, y)) != null)
                     )
                     )
                 {
-                    ProceduralGeneration.map[x, y] = 2;
-                    if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null)
-                    {
-                        if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count > 0 && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
-                        {
-                            // Устанавливаем тайл в карте тайлов
-                            TileBase[] tileBases = new TileBase[1];
-                            UnityEngine.Tilemaps.Tile tile = new UnityEngine.Tilemaps.Tile();
-                            tile.sprite = Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
-                            tileBases[0] = tile;
-                            tilemap.SetTiles(blockPosition, tileBases);
-                            // Устанавливаем в массиве блоков нужный айди блока из инвентаря
-                            ProceduralGeneration.map[x,y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
-                            // Проигрываем анимацию использования предмета в инвентаре
-                            //HelperClass.equippedCellAnimator.Play("UseItem");
-                            // Уменьшаем количество блока в инвентаре
-                            HelperClass.playerInventory[HelperClass.selectedInventoryCell].count -= 1;
-                            Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[HelperClass.selectedInventoryCell].count.ToString();
-                            // Очищаем всё, если больше нет блоков
-                            if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count == 0)
-                            {
-                                Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = false;
-                                Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = false;
-                                HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = null;
-                                HelperClass.playerInventory[HelperClass.selectedInventoryCell] = null;
-                                HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = false;
-                                HelperClass.Cursor.SetActive(false);
-                                HelperClass.itemName.text = "";
-                            }
-
-                            digSound.clip = place;
-                            digSound.Play();
-                            HelperClass.Chunks[chunkCoord] = tilemap;
-                        }
-                    }
+                    placeTile(x, y, blockPosition, chunkCoord);
+                    return;
                 }
+            }
+        }
+    }
+
+    private void placeTile(int x, int y, Vector3Int[] blockPosition, int chunkCoord)
+    {
+        //ProceduralGeneration.map[x, y] = 2;
+        if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null)
+        {
+            if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count > 0 && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
+            {
+                // Уменьшаем количество блока в инвентаре
+                HelperClass.playerInventory[HelperClass.selectedInventoryCell].count -= 1;
+                // Устанавливаем тайл в карте тайлов
+                TileBase[] tileBases = new TileBase[1];
+                UnityEngine.Tilemaps.Tile tile = new UnityEngine.Tilemaps.Tile();
+                tile.sprite = Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
+                tileBases[0] = tile;
+                HelperClass.Chunks[chunkCoord].SetTiles(blockPosition, tileBases);
+                // Устанавливаем в массиве блоков нужный айди блока из инвентаря
+                ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
+                
+                Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[HelperClass.selectedInventoryCell].count.ToString();
+                // Очищаем всё, если больше нет блоков
+                if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count == 0)
+                {
+                    Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = false;
+                    Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = false;
+                    HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = null;
+                    HelperClass.playerInventory[HelperClass.selectedInventoryCell] = null;
+                    HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = false;
+                    HelperClass.Cursor.SetActive(false);
+                    HelperClass.itemName.text = "";
+                }
+
+                digSound.clip = place;
+                digSound.Play();
+                //HelperClass.Chunks[chunkCoord] = tilemap;
             }
         }
     }

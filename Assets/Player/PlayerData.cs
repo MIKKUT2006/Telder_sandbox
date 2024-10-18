@@ -19,7 +19,7 @@ public class PlayerData : MonoBehaviour
     // Переменные игрока
     void Start()
     {
-        healthBar = GameObject.FindGameObjectWithTag("HealthBar").gameObject.GetComponent<Image>();
+        //healthBar = GameObject.FindGameObjectWithTag("HealthBar").gameObject.GetComponent<Image>();
     }
 
     // Update is called once per frame

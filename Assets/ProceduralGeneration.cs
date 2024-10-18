@@ -154,6 +154,8 @@ public class ProceduralGeneration : MonoBehaviour
         // Цикл на количество чанков
         for (int i = 0; i < HelperClass.numChunks; i++)
         {
+            // Генерация чанков с пустыми чанками 1- и x+1 по краям локации
+
             //------------------
             Tilemap newChunk = new Tilemap();
             HelperClass.Chunks[i] = newChunk;
@@ -161,20 +163,21 @@ public class ProceduralGeneration : MonoBehaviour
             Chunk.name = i.ToString();
             Chunk.transform.parent = transform;
             HelperClass.ChunksGameobject[i] = Chunk;
-            //------------------
+
             Tilemap newlightChunk = new Tilemap();
             HelperClass.lightChunks[i] = newlightChunk;
             GameObject lightChunk = Instantiate(lightchunkPrefab);
             lightChunk.name = i.ToString();
             lightChunk.transform.parent = transform;
             HelperClass.lightChunksGameobject[i] = lightChunk;
-            //------------------
+
             GameObject bgChunk = Instantiate(bgchunkPrefab);
             HelperClass.bgChunks[i] = bgChunk.GetComponent<Tilemap>();
             bgChunk.name = i.ToString();
             bgChunk.transform.parent = transform;
             HelperClass.bgChunksGameobject[i] = bgChunk;
-            //=================
+            //------------------
+
         }
     }
 
