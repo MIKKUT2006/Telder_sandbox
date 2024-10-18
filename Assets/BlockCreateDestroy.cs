@@ -94,7 +94,7 @@ public class BlockCreateDestroy : MonoBehaviour
                 // Позиция курсора
                 Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 Tilepos = CursorGameObject.transform.position;
-                Debug.Log(CursorGameObject.transform.position);
+                //Debug.Log(CursorGameObject.transform.position);
 
                 int x = (int)Tilepos.x;
                 int y = (int)Tilepos.y;
@@ -108,7 +108,8 @@ public class BlockCreateDestroy : MonoBehaviour
                 {
                     chunkCoord -= (chunkCoord - ostatok) + 1;
                 }
-
+                Debug.Log($"позиция курсора: {x}, координата чанка: {chunkCoord}");
+                Debug.Log($"Чанк, где поставят блок: {HelperClass.ChunksGameobject[chunkCoord].name}");
                 Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 //Tilemap bgTilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 Tilemap lightTilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
@@ -117,7 +118,7 @@ public class BlockCreateDestroy : MonoBehaviour
                 // Устанавливаем блок в позици курсора
 
                 // Вывод блока в позиции курсора
-                Debug.Log((tilemap.GetTile(blockPosition[0])));
+                //Debug.Log((tilemap.GetTile(blockPosition[0])));
 
                 // Проверка на то, что нет блока
                 if ((tilemap.GetTile(blockPosition[0]) == null) && ((HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y - 1)) != null)

@@ -33,8 +33,8 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] public Tilemap mapleHouse;
 
     [Header("–азмеры мира")]
-    [SerializeField] public int height = 400;       // высота (мира)
-    [SerializeField] public int width = 800;        // Ўирина (мира)
+    [SerializeField] public int height = 100;       // высота (мира)
+    [SerializeField] public int width = 200;        // Ўирина (мира)
 
     [Header("ћ€гкость земли, пещер, камн€")]
     [SerializeField] float smoothes;                // ћ€гкость
@@ -78,7 +78,7 @@ public class ProceduralGeneration : MonoBehaviour
     public int x = 0, y = 0;
     public int worldSeed;
 
-    void Start()
+    void Awake()
     {
         Generation();
         HelperClass.chunkPrefab = chunkPrefab;
@@ -244,11 +244,13 @@ public class ProceduralGeneration : MonoBehaviour
                 if (j < perlinHeight)
                 {
                     map[i, j] = 1;
+                    //HelperClass.Cells[i, j].SetType(CellType.Solid);
                 }
 
                 if (j == perlinHeight)
                 {
                     map[i, j] = 2;
+                    //HelperClass.Cells[i, j].SetType(CellType.Solid);
                 }
 
                 //if (j > perlinHeight)

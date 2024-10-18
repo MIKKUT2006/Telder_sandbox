@@ -71,41 +71,41 @@ namespace TileShadows
             //    }
             //}
 
-            SetLights();
+            //SetLights();
         }
 
         
-        void SetLights()
-        {
-            // Bulk Set Tiles
-            Vector3Int[] positions = new Vector3Int[_tilemapSize * _tilemapSize];
-            TileBase[] tileArraySolid = new TileBase[positions.Length];
-            TileBase[] tileArrayAir = new TileBase[positions.Length];
-            int posIndex = 0;
+        //void SetLights()
+        //{
+        //    // Bulk Set Tiles
+        //    Vector3Int[] positions = new Vector3Int[_tilemapSize * _tilemapSize];
+        //    TileBase[] tileArraySolid = new TileBase[positions.Length];
+        //    TileBase[] tileArrayAir = new TileBase[positions.Length];
+        //    int posIndex = 0;
 
-            for (int x = 0; x < _tiles.GetLength(0); x++)
-            {
-                for (int y = 0; y < _tiles.GetLength(1); y++)
-                {
+        //    for (int x = 0; x < _tiles.GetLength(0); x++)
+        //    {
+        //        for (int y = 0; y < _tiles.GetLength(1); y++)
+        //        {
 
-                    if(_tiles[x,y].TileType == TileType.SOLID)
-                    {
-                        tileArraySolid[x * _tilemapSize + y] = _tileSolid;
-                        tileArrayAir[x * _tilemapSize + y] = null;
-                    }
-                    else
-                    {
-                        tileArrayAir[x * _tilemapSize + y] = _tileAir;
-                        tileArraySolid[x * _tilemapSize + y] = null;
-                    }
+        //            if(_tiles[x,y].TileType == TileType.SOLID)
+        //            {
+        //                tileArraySolid[x * _tilemapSize + y] = _tileSolid;
+        //                tileArrayAir[x * _tilemapSize + y] = null;
+        //            }
+        //            else
+        //            {
+        //                tileArrayAir[x * _tilemapSize + y] = _tileAir;
+        //                tileArraySolid[x * _tilemapSize + y] = null;
+        //            }
 
-                    positions[posIndex] = new Vector3Int(x, y, 0);
-                    posIndex++;
-                }
-            }
-            _tilemapAir.SetTiles(positions, tileArrayAir);
-            _tilemapSolid.SetTiles(positions, tileArraySolid);
-        }
+        //            positions[posIndex] = new Vector3Int(x, y, 0);
+        //            posIndex++;
+        //        }
+        //    }
+        //    _tilemapAir.SetTiles(positions, tileArrayAir);
+        //    _tilemapSolid.SetTiles(positions, tileArraySolid);
+        //}
 
         void LateUpdate()
         {

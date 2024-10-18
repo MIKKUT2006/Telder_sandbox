@@ -18,6 +18,9 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static Tilemap[] Chunks;
     [SerializeField] public static GameObject[] ChunksGameobject;
     [SerializeField] public static GameObject chunkPrefab;
+    // Клетки с жидкостью/твердым блоком
+    [SerializeField] public static Cell[,] Cells;
+
     // Чанки освещения
     [SerializeField] public static Tilemap[] lightChunks;
     [SerializeField] public static GameObject[] lightChunksGameobject;
