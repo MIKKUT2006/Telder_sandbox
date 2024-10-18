@@ -47,9 +47,9 @@ public class Grid : MonoBehaviour {
 		Cells = new Cell[200, 500];
 
 		// Cells
-		for (int x = 0; x < Cells.GetLength(0); x++)
+		for (int x = 0; x < 500; x++)
 		{
-			for (int y = 0; y < Cells.GetLength(1); y++)
+			for (int y = 0; y < 200; y++)
 			{
 				LiquidTilemap.SetTile(new Vector3Int(x,y,0), null);
 				
@@ -60,15 +60,14 @@ public class Grid : MonoBehaviour {
 				
 
 				// Add border
-				if (x == 0 || y == 0 || x == 500 || y == 200)
+				if (x == 0 || y == 0 || x == 500 - 1 || y == 200 - 1)
 				{
                     Debug.Log($"{x} {y}");
                     LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
 					cell.SetType(CellType.Solid);
 				}
-				
-                Cells [x, y] = cell;
-			}
+                    Cells[y, x] = cell;
+            }
 		}
 		UpdateNeighbors ();
 	}
