@@ -201,13 +201,12 @@ public class BlockCreateDestroy : MonoBehaviour
                     HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = null;
                     HelperClass.playerInventory[HelperClass.selectedInventoryCell] = null;
                     HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = false;
-                    HelperClass.Cursor.SetActive(false);
+                    HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
                     HelperClass.itemName.text = "";
                 }
 
                 digSound.clip = place;
                 digSound.Play();
-                //HelperClass.Chunks[chunkCoord] = tilemap;
             }
         }
     }
