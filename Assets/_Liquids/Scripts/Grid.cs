@@ -8,7 +8,7 @@ using System.Collections;
 
 public class Grid : MonoBehaviour {
 
-	private int Size = 200;
+	private int Size = 100;
 
 	public Cell[,] Cells;
 
@@ -36,13 +36,15 @@ public class Grid : MonoBehaviour {
 		LiquidSimulator.Initialize (Cells);
 
 		StartCoroutine(DelayExecuteSim(UpdateDelayTime));
+        //Cells = HelperClass.Cells;
+        Size = Cells.GetLength(0) * Cells.GetLength(1);
 
-		//Cells = HelperClass.Cells;
-	}
+        //
+    }
 
 	void CreateGrid() {
-
-		Cells = new Cell[200, 100];
+		// Устанавливаем размеры сетки клеток
+		Cells = new Cell[200, 500];
 
 		// Cells
 		for (int x = 0; x < Cells.GetLength(0); x++)
@@ -55,10 +57,13 @@ public class Grid : MonoBehaviour {
 
 				cell.Set (x, y);
 
+				
+
 				// Add border
-				if (x == 0 || y == 0 || x == Cells.GetLength(0) - 1 || y == Cells.GetLength(1) - 1)
+				if (x == 0 || y == 0 || x == 500 || y == 200)
 				{
-					LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
+                    Debug.Log($"{x} {y}");
+                    LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
 					cell.SetType(CellType.Solid);
 				}
 				
@@ -68,11 +73,11 @@ public class Grid : MonoBehaviour {
 		UpdateNeighbors ();
 	}
 
-	// Sets neighboring cell references
-	void UpdateNeighbors() {
-		for (int x = 0; x < Cells.GetLength(0) - 1; x++) {
+    // Устанавливает ссылки на соседние ячейки
+    void UpdateNeighbors() {
+		for (int x = 0; x < Cells.GetLength(0); x++) {
 
-			for (int y = 0; y < Cells.GetLength(1) - 1; y++) {
+			for (int y = 0; y < Cells.GetLength(1); y++) {
 
 				// Left most cells do not have left neighbor
 				if (x > 0 )
@@ -92,9 +97,9 @@ public class Grid : MonoBehaviour {
                 // Top most cells do not have top neighbor
                 if (y < Size - 1)
                 {
-					Debug.Log($"x={x}");
-					Debug.Log($"y={y}");
-					Debug.Log($"клетка равна {Cells[x, y].Top}");
+					//Debug.Log($"x={x}");
+					//Debug.Log($"y={y}");
+					//Debug.Log($"клетка равна {Cells[x, y].Top}");
                     Cells[x, y].Top = Cells[x, y + 1];
                 }
 
@@ -146,18 +151,15 @@ public class Grid : MonoBehaviour {
 
 		// Right click places liquid
 		if (Input.GetMouseButton(1)) {
-			Debug.Log($"Позиция х= {x}, позиция y= {y} а размеры клеток {Cells.GetLength(0)}, {Cells.GetLength(1)}");
+			//Debug.Log($"Позиция х= {x}, позиция y= {y} а размеры клеток {Cells.GetLength(0)}, {Cells.GetLength(1)}");
 
 
 			if ((x > 0 && x < Cells.GetLength(0)) && (y > 0 && y < Cells.GetLength(1)))
 			{
-				//Debug.Log(Cells[100, 100]);
+				Debug.Log(Cells[1, 1]);
 				Cells[x, y].AddLiquid(2);
 			}
-
 		}
-
-		
     }
 
 
