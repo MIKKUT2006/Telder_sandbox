@@ -89,11 +89,11 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                 HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
                 if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
                 {
-                    HelperClass.Cursor.SetActive(true);
+                    HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = true;
                 }
                 else
                 {
-                    HelperClass.Cursor.SetActive(false);
+                    HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
                 }
             }
         }

@@ -15,7 +15,7 @@ public class Cursor : MonoBehaviour
         //tilemap = GetComponent<Tilemap>();
         cellSize = Vector3Int.RoundToInt(tilemap.cellSize);
         HelperClass.Cursor = gameObject;
-        HelperClass.Cursor.SetActive(false);
+        HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
     }
 
     void Update()
