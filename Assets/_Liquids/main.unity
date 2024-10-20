@@ -419,7 +419,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28a7676b45d5681489f6ca73238e6755, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Size: 32
   LiquidSimulator: {fileID: 266323816}
   LiquidTilemap: {fileID: 171327500}
   BlockTile: {fileID: 11400000, guid: f3b2eae69d108410c9ef1d80c759a5de, type: 2}

@@ -56,9 +56,9 @@ public class LiquidSimulator :MonoBehaviour{
 		}
 
 		// Main loop
-		for (int x = 0; x < cells.GetLength(0); x++)
+		for (int x = 0; x < 200; x++)
 		{
-			for (int y = 0; y < cells.GetLength(1); y++)
+			for (int y = 0; y < 100; y++)
 			{
 				// Get reference to Cell and reset flow
 				Cell cell = cells [x, y];
@@ -214,9 +214,9 @@ public class LiquidSimulator :MonoBehaviour{
 		}
 			
 		// Update Cell values
-		for (int x = 0; x < cells.GetLength (0); x++)
+		for (int x = 0; x < 200; x++)
 		{
-			for (int y = 0; y < cells.GetLength (1); y++)
+			for (int y = 0; y < 100; y++)
 			{
 
 				cells [x, y].Liquid += Diffs [x, y];

@@ -8,8 +8,8 @@ using UnityEngine.UI;
 public class HelperClass : MonoBehaviour
 {
     // Параметры мира
-    [SerializeField] public static int worldHeight;
-    [SerializeField] public static int worldWidth;
+    [SerializeField] public static int worldHeight = 100;
+    [SerializeField] public static int worldWidth = 200;
     [SerializeField] public static int worldSeed;
     [SerializeField] public static int chunkSize = 20;
     [SerializeField] public static int numChunks;

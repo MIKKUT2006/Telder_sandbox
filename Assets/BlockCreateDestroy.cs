@@ -109,16 +109,14 @@ public class BlockCreateDestroy : MonoBehaviour
                 {
                     chunkCoord -= (chunkCoord - ostatok) + 1;
                 }
-                Debug.Log($"позиция курсора: {x}, координата чанка: {chunkCoord}");
-                Debug.Log($"Чанк, где поставят блок: {HelperClass.ChunksGameobject[0].name} (тут должэен юыть 0)");
+                //Debug.Log($"позиция курсора: {x}, координата чанка: {chunkCoord}");
+                //Debug.Log($"Чанк, где поставят блок: {HelperClass.ChunksGameobject[0].name} (тут должэен юыть 0)");
                 Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 //Tilemap bgTilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 Tilemap lightTilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
                 blockPosition[0] = new Vector3Int(x, y);
                 // Устанавливаем блок в позици курсора
-
-                Debug.Log((tilemap.GetTile(blockPosition[0])));
 
                 // Самый крайний чанк слева
                 if (chunkCoord == 0) {
@@ -132,7 +130,7 @@ public class BlockCreateDestroy : MonoBehaviour
                     )
                     )
                     {
-                        Debug.Log("Крайний чанк");
+                        //Debug.Log("Крайний чанк");
                         placeTile(x, y, blockPosition, chunkCoord);
                         return;
                     }
