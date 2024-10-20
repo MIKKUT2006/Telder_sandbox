@@ -54,13 +54,15 @@ public class Grid : MonoBehaviour
     }
     public void CreateWaterTiles()
     {
+        // Шум перлина для водных пещер
+        float perlinHeightCaves;
         for (int x = 0; x < Size; x++)
         {
             for (int y = 0; y < HelperClass.worldHeight; y++)
             {
-                // Add border
+                perlinHeightCaves = Mathf.PerlinNoise((x + HelperClass.worldSeed) / 2, (y + HelperClass.worldSeed) / 2);
 
-                if (y <= HelperClass.worldHeight)
+                if (y <= HelperClass.worldHeight && perlinHeightCaves < 0.4)
                 {
                     if (ProceduralGeneration.map[x, y] == 4)
                     {
@@ -113,11 +115,6 @@ public class Grid : MonoBehaviour
                     {
                         LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
                         cell.SetType(CellType.Solid);
-                    }
-
-                    if (ProceduralGeneration.map[x, y] == 4)
-                    {
-                        HelperClass.Cells[x, y].AddLiquid(5);
                     }
                 }
                 HelperClass.Cells[x, y] = cell;

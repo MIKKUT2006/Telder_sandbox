@@ -130,6 +130,7 @@ public class ProceduralGeneration : MonoBehaviour
         map = StoneGeneration(map);                             // Генерируем камень
         map = CavesGeneration(map);                             // Генерируем пещеры
         map = OresGeneration(map);                              // Генерируем руды
+        map = BarrierGeneration(map);
         DestroyStructures();
         // Задниий план
         bgTilemap.ClearAllTiles();                              // Очищаем все тайлы перед генерацией
@@ -234,6 +235,23 @@ public class ProceduralGeneration : MonoBehaviour
     // как рабоает генерация: мы получаем от формулы шума перлина высоту, до которой генерируется земля, всё, что выше = 0
     // Как сгенерировали один столбик, переходит к следующему
     //-----
+
+    public int[,] BarrierGeneration(int[,] map)
+    {
+        //for (int x = 0; x < HelperClass.worldWidth; x++)
+        //{
+        //    for (int y = 0; y < HelperClass.worldHeight; y++)
+        //    {
+        //        // Add border
+        //        if (x == 0 || y == 0 || x == HelperClass.worldWidth - 1 || y == HelperClass.worldHeight - 1)
+        //        {
+        //            map[x, y] = 8;
+        //        }
+        //    }
+        //}
+        return map;
+    }
+
     public int[,] TerrainGeneration(int[,] map)     // Генерация земли
     {
         int perlinHeight;   // Высота перлина
@@ -257,7 +275,7 @@ public class ProceduralGeneration : MonoBehaviour
 
             for (int j = 0; j <= perlinHeight + 1; j++)
             {
-                
+
                 if (j < perlinHeight)
                 {
                     map[i, j] = 1;
@@ -615,9 +633,9 @@ public class ProceduralGeneration : MonoBehaviour
                     case 7:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[5]);       // Устанавливаем тайл руды камня пространства
                         break;
-                    //case 8:
-                    //    bgTilemap.SetTile(new Vector3Int(i, j, 0), groundTileBase[6]);       // Устанавливаем тайл травы
-                    //    break;
+                    case 8:
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[7]);       // Устанавливаем тайл барьера
+                        break;
                 }
 
                 HelperClass.Chunks[chunkCoord] = tileMap;

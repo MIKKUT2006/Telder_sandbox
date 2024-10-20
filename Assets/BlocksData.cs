@@ -27,6 +27,7 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(5, "Трава с деревьями", 3, true, 100),
          new AllItemsAndBlocks(6, "Железная руда", 20, true, 100),
          new AllItemsAndBlocks(7, "Руда телепортиума", 30, true, 100),
+         new AllItemsAndBlocks(8, "Баррьер", int.MaxValue, true, 100),
     };
 }
 
