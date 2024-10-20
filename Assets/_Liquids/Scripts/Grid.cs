@@ -49,8 +49,26 @@ public class Grid : MonoBehaviour
 
         
         LiquidSimulator.Initialize(HelperClass.Cells);
-
         StartCoroutine(DelayExecuteSim(UpdateDelayTime));
+        CreateWaterTiles();
+    }
+    public void CreateWaterTiles()
+    {
+        for (int x = 0; x < Size; x++)
+        {
+            for (int y = 0; y < HelperClass.worldHeight; y++)
+            {
+                // Add border
+
+                if (y <= HelperClass.worldHeight)
+                {
+                    if (ProceduralGeneration.map[x, y] == 4)
+                    {
+                        HelperClass.Cells[x, y].AddLiquid(1);
+                    }
+                }
+            }
+        }
     }
 
     public static void CreateGrid()
@@ -95,6 +113,11 @@ public class Grid : MonoBehaviour
                     {
                         LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
                         cell.SetType(CellType.Solid);
+                    }
+
+                    if (ProceduralGeneration.map[x, y] == 4)
+                    {
+                        HelperClass.Cells[x, y].AddLiquid(5);
                     }
                 }
                 HelperClass.Cells[x, y] = cell;

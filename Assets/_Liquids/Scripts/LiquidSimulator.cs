@@ -214,8 +214,17 @@ public class LiquidSimulator : MonoBehaviour
                         Diffs[x, y] -= flow;
 
                         // ТУТИ КОД ЗАКОММЕНТИРОВАН!
+                        try
+                        {
+                            Debug.Log(Diffs[x, y]);
+                            Diffs[x, y - 1] += flow;
+                        }
+                        catch (System.Exception)
+                        {
 
-                        //Diffs[x, y - 1] += flow;
+                            throw;
+                        }
+
                         cell.FlowDirections[(int)FlowDirection.Top] = true;
                         cell.Top.Settled = false;
                     }

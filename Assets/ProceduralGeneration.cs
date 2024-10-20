@@ -361,6 +361,7 @@ public class ProceduralGeneration : MonoBehaviour
                 if (perlinHeightCaves < 0.4 && map[i, j] == 3)
                 {
                     map[i, j] = 4;
+                    //HelperClass.Cells[i, j].AddLiquid(5);
                     //lightMap[i, j] = 4;
                     //Debug.Log(lightMap[i, j]);
                 }
@@ -390,12 +391,11 @@ public class ProceduralGeneration : MonoBehaviour
                 }
 
                 // Генерация водных пещер
-                perlinHeightWaterCaves = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes, (j + HelperClass.worldSeed) / cavessmothes);
+                perlinHeightWaterCaves = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes, (j + HelperClass.worldSeed)/ cavessmothes);
                 //Debug.Log(perlinHeightOres);
                 if (perlinHeightWaterCaves > 0.8 && map[i, j] == 3)
                 {
-                    map[i, j] = 1;
-                    HelperClass.Cells[i, j].AddLiquid(5);
+                    map[i, j] = 4;
                 }
             }
         }

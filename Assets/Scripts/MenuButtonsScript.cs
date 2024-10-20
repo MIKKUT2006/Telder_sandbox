@@ -29,8 +29,8 @@ public class MenuButtonsScript : MonoBehaviour
         loadPanel.SetActive(true);
         selectWorldsPanel.SetActive(false);
         // Запускам сцену игрового мира
-        SceneManager.LoadScene("WorldOne");
         HelperClass.worldSeed = int.Parse(WorldSeed.text);
+        SceneManager.LoadScene("WorldOne");
     }
     public void OpenWorldsPanel()
     {
