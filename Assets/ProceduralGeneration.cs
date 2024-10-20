@@ -350,6 +350,7 @@ public class ProceduralGeneration : MonoBehaviour
         float perlinHeightGround;   // Высота перлина поверхностных пещер
         float perlinHeightOres;   // Высота перлина руд
         float perlinHeightTeleportium;
+        float perlinHeightWaterCaves;
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
@@ -386,6 +387,15 @@ public class ProceduralGeneration : MonoBehaviour
                 if (perlinHeightTeleportium > 0.87 && map[i, j] == 3)
                 {
                     map[i, j] = 7;
+                }
+
+                // Генерация водных пещер
+                perlinHeightWaterCaves = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes, (j + HelperClass.worldSeed) / cavessmothes);
+                //Debug.Log(perlinHeightOres);
+                if (perlinHeightWaterCaves > 0.8 && map[i, j] == 3)
+                {
+                    map[i, j] = 1;
+                    HelperClass.Cells[i, j].AddLiquid(5);
                 }
             }
         }
@@ -533,7 +543,7 @@ public class ProceduralGeneration : MonoBehaviour
                         //Debug.Log("Tile at position " + tilePos + " is " + tile.name);
                         tilePos.x += structureCoordX;
                         tilePos.y += structureCoordY;
-
+                        //map[x, y] = 3;
                         int chunkCoord = tilePos.x / HelperClass.chunkSize;
 
                         int ostatok = chunkCoord % 100;

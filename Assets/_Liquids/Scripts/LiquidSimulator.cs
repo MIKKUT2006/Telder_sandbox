@@ -212,7 +212,10 @@ public class LiquidSimulator : MonoBehaviour
                     {
                         remainingValue -= flow;
                         Diffs[x, y] -= flow;
-                        Diffs[x, y - 1] += flow;
+
+                        // ТУТИ КОД ЗАКОММЕНТИРОВАН!
+
+                        //Diffs[x, y - 1] += flow;
                         cell.FlowDirections[(int)FlowDirection.Top] = true;
                         cell.Top.Settled = false;
                     }

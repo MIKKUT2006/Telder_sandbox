@@ -91,7 +91,7 @@ public class Grid : MonoBehaviour
 
                 if (y <= HelperClass.worldHeight)
                 {
-                    if (ProceduralGeneration.map[x, y] == 1)
+                    if (ProceduralGeneration.map[x, y] != 4 && ProceduralGeneration.map[x, y] != 0)
                     {
                         LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
                         cell.SetType(CellType.Solid);
@@ -147,39 +147,39 @@ public class Grid : MonoBehaviour
         int y = (int)((pos.y));
 
         // Check if we are filling or erasing walls
-        if (Input.GetMouseButtonDown(0))
-        {
-            if ((x > 0 && x < HelperClass.Cells.GetLength(0)) && (y > 0 && y < HelperClass.Cells.GetLength(1)))
-            {
-                if (HelperClass.Cells[x, y].Type == CellType.Blank)
-                {
-                    Fill = true;
-                }
-                else
-                {
-                    Fill = false;
-                }
-            }
-        }
+        //if (Input.GetMouseButtonDown(0))
+        //{
+        //    if ((x > 0 && x < HelperClass.Cells.GetLength(0)) && (y > 0 && y < HelperClass.Cells.GetLength(1)))
+        //    {
+        //        if (HelperClass.Cells[x, y].Type == CellType.Blank)
+        //        {
+        //            Fill = true;
+        //        }
+        //        else
+        //        {
+        //            Fill = false;
+        //        }
+        //    }
+        //}
 
-        // Left click draws/erases walls
-        if (Input.GetMouseButton(0))
-        {
-            if (x != 0 && y != 0 && x != Size - 1 && y != Size - 1)
-            {
-                if ((x > 0 && x < HelperClass.Cells.GetLength(0)) && (y > 0 && y < HelperClass.Cells.GetLength(1)))
-                {
-                    if (Fill)
-                    {
-                        HelperClass.Cells[x, y].SetType(CellType.Solid);
-                    }
-                    else
-                    {
-                        HelperClass.Cells[x, y].SetType(CellType.Blank);
-                    }
-                }
-            }
-        }
+        //// Left click draws/erases walls
+        //if (Input.GetMouseButton(0))
+        //{
+        //    if (x != 0 && y != 0 && x != Size - 1 && y != Size - 1)
+        //    {
+        //        if ((x > 0 && x < HelperClass.Cells.GetLength(0)) && (y > 0 && y < HelperClass.Cells.GetLength(1)))
+        //        {
+        //            if (Fill)
+        //            {
+        //                HelperClass.Cells[x, y].SetType(CellType.Solid);
+        //            }
+        //            else
+        //            {
+        //                HelperClass.Cells[x, y].SetType(CellType.Blank);
+        //            }
+        //        }
+        //    }
+        //}
 
         // Right click places liquid
         if (Input.GetMouseButton(1))
