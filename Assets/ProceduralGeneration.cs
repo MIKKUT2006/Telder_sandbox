@@ -8,6 +8,7 @@ using UnityEngine.Tilemaps;
 using static UnityEditor.PlayerSettings;
 using UnityEngine.WSA;
 using static UnityEngine.Rendering.VolumeComponent;
+using System.Drawing;
 
 public class ProceduralGeneration : MonoBehaviour
 {
@@ -52,6 +53,8 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] Tilemap bgTilemap;             // Карта тайлов заднего фона
     [SerializeField] Tilemap lightTilemap;          // Карта тайлов для освещения
 
+    [SerializeField] Cell cell;
+
     [SerializeField] public static int[,] map;      // Двумерный массив карты
     [SerializeField] int[,] bgMap;                  // Двумерный массив карты заднего плана
     [SerializeField] int[,] lightMap;               // Двумерный массив карты заднего плана
@@ -80,7 +83,12 @@ public class ProceduralGeneration : MonoBehaviour
 
     void Awake()
     {
+        HelperClass.Cells = new Cell[HelperClass.worldWidth, HelperClass.worldWidth];
+
+        cell = new Cell();
         Generation();
+        Grid.CreateGrid();
+
         HelperClass.chunkPrefab = chunkPrefab;
         HelperClass.lightchunkPrefab = lightchunkPrefab;
         HelperClass.bgchunkPrefab = bgchunkPrefab;
@@ -91,6 +99,8 @@ public class ProceduralGeneration : MonoBehaviour
         //HelperClass.worldSeed = (int)seed;
 
         Debug.Log(Mathf.PerlinNoise((x + worldSeed) / cavessmothes, (y + worldSeed) / cavessmothes));
+        
+
     }
 
     // Update is called once per frame
@@ -136,6 +146,9 @@ public class ProceduralGeneration : MonoBehaviour
         RenderMap(map, tilemap, groundTile, bgMap);             // Показываем изменения
         StructuresGeneration(testStructure, 12);
         StructuresGeneration(mapleHouse, 2);
+
+       
+        Debug.Log("Всё готово");
     }
 
     public void CreateChunks()                                  // Создание чанков
@@ -244,10 +257,18 @@ public class ProceduralGeneration : MonoBehaviour
 
             for (int j = 0; j <= perlinHeight + 1; j++)
             {
+                
                 if (j < perlinHeight)
                 {
                     map[i, j] = 1;
+                    // Устанавливаем твердый блок для физики воды
                     //HelperClass.Cells[i, j].SetType(CellType.Solid);
+                    //cell.Set(i, j);
+                    //cell.SetType(CellType.Solid);
+
+                    //HelperClass.Cells[i, j] = cell;
+                    ////HelperClass.Cells[100, 100].SetType(CellType.Solid);
+                    ////HelperClass.Cells[120, 120].SetType(CellType.Solid);
                 }
 
                 if (j == perlinHeight)

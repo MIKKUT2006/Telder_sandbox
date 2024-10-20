@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Drawing;
 
-public class LiquidSimulator :MonoBehaviour{
+public class LiquidSimulator : MonoBehaviour
+{
 
-	// Max and min cell liquid values
-	public float MaxValue = 1.0f;
+    // Max and min cell liquid values
+    public float MaxValue = 1.0f;
     public float MinValue = 0.005f;
 
     // Extra liquid a cell can store than the cell above it
@@ -21,216 +22,243 @@ public class LiquidSimulator :MonoBehaviour{
     // Keep track of modifications to cell liquid values
     public float[,] Diffs;
 
-	public void Initialize(Cell[,] cells) {
+    public void Initialize(Cell[,] cells)
+    {
 
-		Diffs = new float[cells.Length, cells.Length];
+        Diffs = new float[cells.GetLength(0), cells.GetLength(1)];
 
-	}
+    }
 
-	// Calculate how much liquid should flow to destination with pressure
-	float CalculateVerticalFlowValue(float remainingLiquid, Cell destination)
-	{
-		float sum = remainingLiquid + destination.Liquid;
-		float value = 0;
+    // Calculate how much liquid should flow to destination with pressure
+    float CalculateVerticalFlowValue(float remainingLiquid, Cell destination)
+    {
+        float sum = remainingLiquid + destination.Liquid;
+        float value = 0;
 
-		if (sum <= MaxValue) {
-			value = MaxValue;
-		} else if (sum < 2 * MaxValue + MaxCompression) {
-			value = (MaxValue * MaxValue + sum * MaxCompression) / (MaxValue + MaxCompression);
-		} else {
-			value = (sum + MaxCompression) / 2f;
-		}
+        if (sum <= MaxValue)
+        {
+            value = MaxValue;
+        }
+        else if (sum < 2 * MaxValue + MaxCompression)
+        {
+            value = (MaxValue * MaxValue + sum * MaxCompression) / (MaxValue + MaxCompression);
+        }
+        else
+        {
+            value = (sum + MaxCompression) / 2f;
+        }
 
-		return value;
-	}
+        return value;
+    }
 
-	// Run one simulation step
-	public void Simulate(ref Cell[,] cells) {
+    // Run one simulation step
+    public void Simulate(ref Cell[,] cells)
+    {
 
-		float flow = 0;
+        float flow = 0;
 
-		// Reset the diffs array
-		for (int x = 0; x < cells.Length; x++) {
-			for (int y = 0; y < cells.Length; y++) {
-				Diffs [x, y] = 0;
-			}
-		}
+        // Reset the diffs array
+        for (int x = 0; x < cells.GetLength(0); x++)
+        {
+            for (int y = 0; y < cells.GetLength(1); y++)
+            {
+                Diffs[x, y] = 0;
+            }
+        }
 
-		// Main loop
-		for (int x = 0; x < cells.Length; x++)
-		{
-			for (int y = 0; y < cells.Length; y++)
-			{
-				// Get reference to Cell and reset flow
-				Cell cell = cells [x, y];
-				cell.ResetFlowDirections ();
+        // Main loop
+        for (int x = 0; x < cells.GetLength(0); x++)
+        {
+            for (int y = 0; y < cells.GetLength(1); y++)
+            {
+                // Get reference to Cell and reset flow
+                Cell cell = cells[x, y];
+                cell.ResetFlowDirections();
 
-				// Validate cell
-				if (cell.Type == CellType.Solid) {
-					cell.Liquid = 0;
-					continue;
-				}
-				if (cell.Liquid == 0)
-					continue;
+                // Validate cell
+                if (cell.Type == CellType.Solid)
+                {
+                    cell.Liquid = 0;
+                    continue;
+                }
+                if (cell.Liquid == 0)
+                    continue;
 
-				if (cell.Settled) 
-					continue;
+                if (cell.Settled)
+                    continue;
 
-				if (cell.Liquid < MinValue) {
-					cell.Liquid = 0;
-					continue;
-				}
+                if (cell.Liquid < MinValue)
+                {
+                    cell.Liquid = 0;
+                    continue;
+                }
 
-				// Keep track of how much liquid this cell started off with
-				float startValue = cell.Liquid;
-				float remainingValue = cell.Liquid;
-				flow = 0;
+                // Keep track of how much liquid this cell started off with
+                float startValue = cell.Liquid;
+                float remainingValue = cell.Liquid;
+                flow = 0;
 
-				// Flow to bottom cell
-				if (cell.Bottom != null && cell.Bottom.Type == CellType.Blank) {
+                // Flow to bottom cell
+                if (cell.Bottom != null && cell.Bottom.Type == CellType.Blank)
+                {
 
-					// Determine rate of flow
-					flow = CalculateVerticalFlowValue(cell.Liquid, cell.Bottom) - cell.Bottom.Liquid;
-					if (cell.Bottom.Liquid > 0 && flow > MinFlow)
-						flow *= FlowSpeed; 
+                    // Determine rate of flow
+                    flow = CalculateVerticalFlowValue(cell.Liquid, cell.Bottom) - cell.Bottom.Liquid;
+                    if (cell.Bottom.Liquid > 0 && flow > MinFlow)
+                        flow *= FlowSpeed;
 
-					// Constrain flow
-					flow = Mathf.Max (flow, 0);
-					if (flow > Mathf.Min(MaxFlow, cell.Liquid)) 
-						flow = Mathf.Min(MaxFlow, cell.Liquid);
+                    // Constrain flow
+                    flow = Mathf.Max(flow, 0);
+                    if (flow > Mathf.Min(MaxFlow, cell.Liquid))
+                        flow = Mathf.Min(MaxFlow, cell.Liquid);
 
-					// Update temp values
-					if (flow != 0) {
-						remainingValue -= flow;
-						Diffs [x, y] -= flow;
-						Diffs [x, y - 1] += flow;
-						cell.FlowDirections[(int)FlowDirection.Bottom] = true;
-						cell.Bottom.Settled = false;
-					} 
-				}
+                    // Update temp values
+                    if (flow != 0)
+                    {
+                        remainingValue -= flow;
+                        Diffs[x, y] -= flow;
+                        Diffs[x, y - 1] += flow;
+                        cell.FlowDirections[(int)FlowDirection.Bottom] = true;
+                        cell.Bottom.Settled = false;
+                    }
+                }
 
-				// Check to ensure we still have liquid in this cell
-				if (remainingValue < MinValue) {
-					Diffs [x, y] -= remainingValue;
-					continue;
-				}
+                // Check to ensure we still have liquid in this cell
+                if (remainingValue < MinValue)
+                {
+                    Diffs[x, y] -= remainingValue;
+                    continue;
+                }
 
-				// Flow to left cell
-				if (cell.Left != null && cell.Left.Type == CellType.Blank) {
+                // Flow to left cell
+                if (cell.Left != null && cell.Left.Type == CellType.Blank)
+                {
 
-					// Calculate flow rate
-					flow = (remainingValue - cell.Left.Liquid) / 4f;
-					if (flow > MinFlow)
-						flow *= FlowSpeed;
+                    // Calculate flow rate
+                    flow = (remainingValue - cell.Left.Liquid) / 4f;
+                    if (flow > MinFlow)
+                        flow *= FlowSpeed;
 
-					// constrain flow
-					flow = Mathf.Max (flow, 0);
-					if (flow > Mathf.Min(MaxFlow, remainingValue)) 
-						flow = Mathf.Min(MaxFlow, remainingValue);
+                    // constrain flow
+                    flow = Mathf.Max(flow, 0);
+                    if (flow > Mathf.Min(MaxFlow, remainingValue))
+                        flow = Mathf.Min(MaxFlow, remainingValue);
 
-					// Adjust temp values
-					if (flow != 0) {
-						remainingValue -= flow;
-						Diffs [x, y] -= flow;
-						Diffs [x - 1, y] += flow;
-						cell.FlowDirections[(int)FlowDirection.Left] = true;
-						cell.Left.Settled = false;
-					} 
-				}
+                    // Adjust temp values
+                    if (flow != 0)
+                    {
+                        remainingValue -= flow;
+                        Diffs[x, y] -= flow;
+                        Diffs[x - 1, y] += flow;
+                        cell.FlowDirections[(int)FlowDirection.Left] = true;
+                        cell.Left.Settled = false;
+                    }
+                }
 
-				// Check to ensure we still have liquid in this cell
-				if (remainingValue < MinValue) {
-					Diffs [x, y] -= remainingValue;
-					continue;
-				}
-				
-				// Flow to right cell
-				if (cell.Right != null && cell.Right.Type == CellType.Blank) {
+                // Check to ensure we still have liquid in this cell
+                if (remainingValue < MinValue)
+                {
+                    Diffs[x, y] -= remainingValue;
+                    continue;
+                }
 
-					// calc flow rate
-					flow = (remainingValue - cell.Right.Liquid) / 3f;										
-					if (flow > MinFlow)
-						flow *= FlowSpeed; 
+                // Flow to right cell
+                if (cell.Right != null && cell.Right.Type == CellType.Blank)
+                {
 
-					// constrain flow
-					flow = Mathf.Max (flow, 0);
-					if (flow > Mathf.Min(MaxFlow, remainingValue)) 
-						flow = Mathf.Min(MaxFlow, remainingValue);
-					
-					// Adjust temp values
-					if (flow != 0) {
-						remainingValue -= flow;
-						Diffs [x, y] -= flow;
-						Diffs [x + 1, y] += flow;
-						cell.FlowDirections[(int)FlowDirection.Right] = true;
-						cell.Right.Settled = false;
-					} 
-				}
+                    // calc flow rate
+                    flow = (remainingValue - cell.Right.Liquid) / 3f;
+                    if (flow > MinFlow)
+                        flow *= FlowSpeed;
 
-				// Check to ensure we still have liquid in this cell
-				if (remainingValue < MinValue) {
-					Diffs [x, y] -= remainingValue;
-					continue;
-				}
-				
-				// Flow to Top cell
-				if (cell.Top != null && cell.Top.Type == CellType.Blank) {
+                    // constrain flow
+                    flow = Mathf.Max(flow, 0);
+                    if (flow > Mathf.Min(MaxFlow, remainingValue))
+                        flow = Mathf.Min(MaxFlow, remainingValue);
 
-					flow = remainingValue - CalculateVerticalFlowValue (remainingValue, cell.Top); 
-					if (flow > MinFlow)
-						flow *= FlowSpeed; 
+                    // Adjust temp values
+                    if (flow != 0)
+                    {
+                        remainingValue -= flow;
+                        Diffs[x, y] -= flow;
+                        Diffs[x + 1, y] += flow;
+                        cell.FlowDirections[(int)FlowDirection.Right] = true;
+                        cell.Right.Settled = false;
+                    }
+                }
 
-					// constrain flow
-					flow = Mathf.Max (flow, 0);
-					if (flow > Mathf.Min(MaxFlow, remainingValue)) 
-						flow = Mathf.Min(MaxFlow, remainingValue);
+                // Check to ensure we still have liquid in this cell
+                if (remainingValue < MinValue)
+                {
+                    Diffs[x, y] -= remainingValue;
+                    continue;
+                }
 
-					// Adjust values
-					if (flow != 0) {
-						remainingValue -= flow;
-						Diffs [x, y] -= flow;
-						Diffs [x, y - 1] += flow;
-						cell.FlowDirections[(int)FlowDirection.Top] = true;
-						cell.Top.Settled = false;
-					} 
-				}
+                // Flow to Top cell
+                if (cell.Top != null && cell.Top.Type == CellType.Blank)
+                {
 
-				// Check to ensure we still have liquid in this cell
-				if (remainingValue < MinValue) {
-					Diffs [x, y] -= remainingValue;
-					continue;
-				}
+                    flow = remainingValue - CalculateVerticalFlowValue(remainingValue, cell.Top);
+                    if (flow > MinFlow)
+                        flow *= FlowSpeed;
 
-				// Check if cell is settled
-				if (startValue == remainingValue) {
-					cell.SettleCount++;
-					if (cell.SettleCount >= 10) {
-						cell.ResetFlowDirections ();
-						cell.Settled = true;
-					}
-				} else {
-					cell.UnsettleNeighbors ();
-				}
-			}
-		}
-			
-		// Update Cell values
-		for (int x = 0; x < cells.Length; x++)
-		{
-			for (int y = 0; y < cells.Length; y++)
-			{
+                    // constrain flow
+                    flow = Mathf.Max(flow, 0);
+                    if (flow > Mathf.Min(MaxFlow, remainingValue))
+                        flow = Mathf.Min(MaxFlow, remainingValue);
 
-				cells [x, y].Liquid += Diffs [x, y];
+                    // Adjust values
+                    if (flow != 0)
+                    {
+                        remainingValue -= flow;
+                        Diffs[x, y] -= flow;
+                        Diffs[x, y - 1] += flow;
+                        cell.FlowDirections[(int)FlowDirection.Top] = true;
+                        cell.Top.Settled = false;
+                    }
+                }
 
-				if (cells [x, y].Liquid < MinValue)
-				{
+                // Check to ensure we still have liquid in this cell
+                if (remainingValue < MinValue)
+                {
+                    Diffs[x, y] -= remainingValue;
+                    continue;
+                }
 
-					cells [x, y].Liquid = 0;
-					cells [x, y].Settled = false;	//default empty cell to unsettled
+                // Check if cell is settled
+                if (startValue == remainingValue)
+                {
+                    cell.SettleCount++;
+                    if (cell.SettleCount >= 10)
+                    {
+                        cell.ResetFlowDirections();
+                        cell.Settled = true;
+                    }
+                }
+                else
+                {
+                    cell.UnsettleNeighbors();
+                }
+            }
+        }
 
-				}				
-			}
-		}			
-	}
+        // Update Cell values
+        for (int x = 0; x < cells.GetLength(0); x++)
+        {
+            for (int y = 0; y < cells.GetLength(1); y++)
+            {
+
+                cells[x, y].Liquid += Diffs[x, y];
+
+                if (cells[x, y].Liquid < MinValue)
+                {
+
+                    cells[x, y].Liquid = 0;
+                    cells[x, y].Settled = false;    //default empty cell to unsettled
+
+                }
+            }
+        }
+    }
 
 }

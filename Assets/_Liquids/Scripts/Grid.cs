@@ -6,50 +6,58 @@ using System;
 using System.Reflection;
 using System.Collections;
 
-public class Grid : MonoBehaviour {
+public class Grid : MonoBehaviour
+{
 
-	private int Size = 100;
+    public static int Size = 64;
 
-	public Cell[,] Cells;
+    public static Cell[,] Cells;
 
-	public LiquidSimulator LiquidSimulator;
+    public static LiquidSimulator LiquidSimulator;
 
-	public Cell CellPrefab;
+    public static Cell CellPrefab;
 
-	public Tilemap LiquidTilemap;
-	public Tile BlockTile;
-	public Tile[] WaterTiles;
+    public static Tilemap LiquidTilemap;
+    [SerializeField] static Tile BlockTile;
+    [SerializeField] public Tile[] WaterTiles;
 
     bool Fill;
 
-	public float UpdateDelayTime = 0.5f;
+    public float UpdateDelayTime = 0.5f;
 
-    void Start() {
 
-		// Generate our cells 
-		CreateGrid();
+    private void Awake()
+    {
+        // Находим игровые объекты по тегам
+        LiquidSimulator = GameObject.Find("LiquidSimulator").GetComponent<LiquidSimulator>();
+        //CellPrefab = GameObject.Find("").GetComponent<Cell>();
+        BlockTile = Resources.Load<Tile>("Tiles");
+        LiquidTilemap = GameObject.Find("Liquid Tilemap").GetComponent<Tilemap>();
+        //BlockTile = GameObject.Find("").GetComponent<Tilemap>();
+    }
+    void Start()
+    {
 
-		// Initialize the liquid simulator
-		if(LiquidSimulator == null)
-			LiquidSimulator = new LiquidSimulator();
+        Size = HelperClass.worldWidth;
+        Cells = HelperClass.Cells;
+        // Generate our cells 
+        CreateGrid();
 
-		LiquidSimulator.Initialize (Cells);
+        // Initialize the liquid simulator
+        if (LiquidSimulator == null)
+            LiquidSimulator = new LiquidSimulator();
 
-		
-        //Cells = HelperClass.Cells;
-        Size = Cells.GetLength(0) * Cells.GetLength(1);
         
-        //
+        LiquidSimulator.Initialize(HelperClass.Cells);
+
+        StartCoroutine(DelayExecuteSim(UpdateDelayTime));
     }
 
-    void CreateGrid()
+    public static void CreateGrid()
     {
-        Cells = new Cell[Size, Size];
-        Debug.Log(HelperClass.worldWidth);
-        Debug.Log(HelperClass.worldHeight);
+        
+
         // Cells
-        Debug.Log(Cells.GetLength(0));
-		Debug.Log(Cells.GetLength(1));
         for (int x = 0; x < Size; x++)
         {
             for (int y = 0; y < Size; y++)
@@ -66,125 +74,142 @@ public class Grid : MonoBehaviour {
                     LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
                     cell.SetType(CellType.Solid);
                 }
-				Cells[x, y] = cell;
-				//Cells[x, y].SetType(CellType.Solid);
 
+                HelperClass.Cells[x, y] = cell;
             }
         }
+
+        for (int x = 0; x < Size; x++)
+        {
+            for (int y = 0; y < HelperClass.worldHeight; y++)
+            {
+                Cell cell = new Cell();
+
+                cell.Set(x, y);
+
+                // Add border
+
+                if (y <= HelperClass.worldHeight)
+                {
+                    if (ProceduralGeneration.map[x, y] == 1)
+                    {
+                        LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
+                        cell.SetType(CellType.Solid);
+                    }
+                }
+                HelperClass.Cells[x, y] = cell;
+            }
+        }
+
         UpdateNeighbors();
-        StartCoroutine(DelayExecuteSim(UpdateDelayTime));
     }
 
-    // Устанавливает ссылки на соседние ячейки
-    void UpdateNeighbors() {
-		for (int x = 0; x < Size; x++) {
+    // Sets neighboring cell references
+    static void UpdateNeighbors()
+    {
+        for (int x = 0; x < Size; x++)
+        {
 
-			for (int y = 0; y < Size; y++) {
+            for (int y = 0; y < Size; y++)
+            {
 
-				// Left most cells do not have left neighbor
-				if (x > 0 )
-				{
-					Cells[x, y].Left = Cells [x - 1, y];
-				}
-				// Right most cells do not have right neighbor
-				if (x < Size - 1)
-				{
-					Cells[x, y].Right = Cells [x + 1, y];
-				}
+                // Left most cells do not have left neighbor
+                if (x > 0)
+                {
+                    HelperClass.Cells[x, y].Left = HelperClass.Cells[x - 1, y];
+                }
+                // Right most cells do not have right neighbor
+                if (x < Size - 1)
+                {
+                    HelperClass.Cells[x, y].Right = HelperClass.Cells[x + 1, y];
+                }
                 // bottom most cells do not have bottom neighbor
                 if (y > 0)
                 {
-                    Cells[x, y].Bottom = Cells[x, y - 1];
+                    HelperClass.Cells[x, y].Bottom = HelperClass.Cells[x, y - 1];
                 }
                 // Top most cells do not have top neighbor
                 if (y < Size - 1)
                 {
-                    Cells[x, y].Top = Cells[x, y + 1];
+                    HelperClass.Cells[x, y].Top = HelperClass.Cells[x, y + 1];
                 }
 
-            }
-		}
-	}
-
-	void LateUpdate() {
-
-		Vector2 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-		int x = (int)((pos.x));
-		int y = (int)((pos.y));
-
-		//Check if we are filling or erasing walls
-		if (Input.GetMouseButtonDown(0))
-		{
-			if ((x > 0 && x < Size) && (y > 0 && y < Size))
-			{
-				if (Cells[x, y].Type == CellType.Blank)
-				{
-					Fill = true;
-				}
-				else
-				{
-					Fill = false;
-				}
-			}
-		}
-
-		// Left click draws/erases walls
-		if (Input.GetMouseButton(0))
-		{
-			//if (x != 0 && y != 0 && x != Cells.GetLength(0) - 1 && y != Cells.GetLength(1) - 1)
-			//{
-				//if ((x > 0 && x < Cells.GetLength(0)) && (y > 0 && y < Cells.GetLength(1)))
-				//{
-				if (Fill)
-				{
-					Debug.Log(Cells[x, y]);
-					Cells[x, y].SetType(CellType.Solid);
-				}
-				else
-				{
-					Cells[x, y].SetType(CellType.Blank);
-				}
-				//}
-			//}
-		}
-
-		// Right click places liquid
-		if (Input.GetMouseButton(1)) {
-			//if ((x > 0 && x < Cells.GetLength(0)) && (y > 0 && y < Cells.GetLength(1)))
-			//{
-			//	Debug.Log(Cells[1, 1]);
-			//	Cells[x, y].AddLiquid(2);
-			//}
-
-            if ((x > 0 && x < Size) && (y > 0 && y < Size))
-            {
-                //Debug.Log(Cells[1, 1]);
-                Cells[x, y].AddLiquid(5);
             }
         }
     }
 
+    void LateUpdate()
+    {
 
-	// Обновление текучей воды
-	IEnumerator DelayExecuteSim(float time)
-	{
-		yield return new WaitForSeconds(time);
+        Vector2 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-		// Массив позиций тайлов (размер массива = ширина * высоту мира)
-		Vector3Int[] positions = new Vector3Int[Cells.GetLength(0) * Cells.GetLength(1)];
-		// Массив тайлов с водой или блоками
-		TileBase[] tileArray = new TileBase[positions.Length];
+        int x = (int)((pos.x));
+        int y = (int)((pos.y));
 
-		int posIndex = 0;
-
-        //Debug.Log(Cells[10, 10].CellUpdate(LiquidTilemap, WaterTiles, BlockTile));
-        // Определите спрайт для каждой ячейки
-        for (int cx = 0; cx < Cells.GetLength(0); cx++)
+        // Check if we are filling or erasing walls
+        if (Input.GetMouseButtonDown(0))
         {
-            for (int cy = 0; cy < Cells.GetLength(1); cy++)
+            if ((x > 0 && x < HelperClass.Cells.GetLength(0)) && (y > 0 && y < HelperClass.Cells.GetLength(1)))
             {
-                tileArray[cx * Size + cy] = Cells[cx, cy].CellUpdate(LiquidTilemap, WaterTiles, BlockTile);
+                if (HelperClass.Cells[x, y].Type == CellType.Blank)
+                {
+                    Fill = true;
+                }
+                else
+                {
+                    Fill = false;
+                }
+            }
+        }
+
+        // Left click draws/erases walls
+        if (Input.GetMouseButton(0))
+        {
+            if (x != 0 && y != 0 && x != Size - 1 && y != Size - 1)
+            {
+                if ((x > 0 && x < HelperClass.Cells.GetLength(0)) && (y > 0 && y < HelperClass.Cells.GetLength(1)))
+                {
+                    if (Fill)
+                    {
+                        HelperClass.Cells[x, y].SetType(CellType.Solid);
+                    }
+                    else
+                    {
+                        HelperClass.Cells[x, y].SetType(CellType.Blank);
+                    }
+                }
+            }
+        }
+
+        // Right click places liquid
+        if (Input.GetMouseButton(1))
+        {
+            if ((x > 0 && x < HelperClass.Cells.GetLength(0)) && (y > 0 && y < HelperClass.Cells.GetLength(1)))
+            {
+                HelperClass.Cells[x, y].AddLiquid(5);
+            }
+        }
+
+
+    }
+
+
+    IEnumerator DelayExecuteSim(float time)
+    {
+        yield return new WaitForSeconds(time);
+
+
+        Vector3Int[] positions = new Vector3Int[Size * Size];
+        TileBase[] tileArray = new TileBase[positions.Length];
+
+        int posIndex = 0;
+
+        // Determine sprite for each cell
+        for (int cx = 0; cx < HelperClass.Cells.GetLength(0); cx++)
+        {
+            for (int cy = 0; cy < HelperClass.Cells.GetLength(1); cy++)
+            {
+                tileArray[cx * Size + cy] = HelperClass.Cells[cx, cy].CellUpdate(LiquidTilemap, WaterTiles, BlockTile);
                 positions[posIndex] = new Vector3Int(cx, cy, 0);
                 posIndex++;
             }
@@ -193,13 +218,13 @@ public class Grid : MonoBehaviour {
 
         LiquidTilemap.SetTiles(positions, tileArray);
 
-		yield return 0;
+        yield return 0;
 
-		// Run our liquid simulation 
-		LiquidSimulator.Simulate(ref Cells);
+        // Run our liquid simulation 
+        LiquidSimulator.Simulate(ref HelperClass.Cells);
 
-		// Repeat
-		yield return StartCoroutine(DelayExecuteSim(UpdateDelayTime));
-	}
+        // Repeat
+        yield return StartCoroutine(DelayExecuteSim(UpdateDelayTime));
+    }
 
 }
