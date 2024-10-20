@@ -37,22 +37,22 @@ public class Grid : MonoBehaviour {
 
 		
         //Cells = HelperClass.Cells;
-        Size = Cells.GetLength(0);
+        Size = Cells.GetLength(0) * Cells.GetLength(1);
         
         //
     }
 
     void CreateGrid()
     {
-        Cells = new Cell[HelperClass.worldWidth, HelperClass.worldHeight];
+        Cells = new Cell[Size, Size];
         Debug.Log(HelperClass.worldWidth);
         Debug.Log(HelperClass.worldHeight);
         // Cells
         Debug.Log(Cells.GetLength(0));
 		Debug.Log(Cells.GetLength(1));
-        for (int x = 0; x < Cells.GetLength(0); x++)
+        for (int x = 0; x < Size; x++)
         {
-            for (int y = 0; y < Cells.GetLength(1); y++)
+            for (int y = 0; y < Size; y++)
             {
                 LiquidTilemap.SetTile(new Vector3Int(x, y, 0), null);
 
@@ -61,7 +61,7 @@ public class Grid : MonoBehaviour {
                 cell.Set(x, y);
 
                 // Add border
-                if (x == 0 || y == 0 || x == Cells.GetLength(0) - 1 || y == Cells.GetLength(1) - 1)
+                if (x == 0 || y == 0 || x == Size - 1 || y == Size - 1)
                 {
                     LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
                     cell.SetType(CellType.Solid);
@@ -77,9 +77,9 @@ public class Grid : MonoBehaviour {
 
     // Устанавливает ссылки на соседние ячейки
     void UpdateNeighbors() {
-		for (int x = 0; x < Cells.GetLength(0); x++) {
+		for (int x = 0; x < Size; x++) {
 
-			for (int y = 0; y < Cells.GetLength(1); y++) {
+			for (int y = 0; y < Size; y++) {
 
 				// Left most cells do not have left neighbor
 				if (x > 0 )
@@ -87,7 +87,7 @@ public class Grid : MonoBehaviour {
 					Cells[x, y].Left = Cells [x - 1, y];
 				}
 				// Right most cells do not have right neighbor
-				if (x < Cells.GetLength(0) - 1)
+				if (x < Size - 1)
 				{
 					Cells[x, y].Right = Cells [x + 1, y];
 				}
@@ -97,7 +97,7 @@ public class Grid : MonoBehaviour {
                     Cells[x, y].Bottom = Cells[x, y - 1];
                 }
                 // Top most cells do not have top neighbor
-                if (y < Cells.GetLength(1) - 1)
+                if (y < Size - 1)
                 {
                     Cells[x, y].Top = Cells[x, y + 1];
                 }
@@ -116,7 +116,7 @@ public class Grid : MonoBehaviour {
 		//Check if we are filling or erasing walls
 		if (Input.GetMouseButtonDown(0))
 		{
-			if ((x > 0 && x < Cells.GetLength(0)) && (y > 0 && y < Cells.GetLength(1)))
+			if ((x > 0 && x < Size) && (y > 0 && y < Size))
 			{
 				if (Cells[x, y].Type == CellType.Blank)
 				{
@@ -138,6 +138,7 @@ public class Grid : MonoBehaviour {
 				//{
 				if (Fill)
 				{
+					Debug.Log(Cells[x, y]);
 					Cells[x, y].SetType(CellType.Solid);
 				}
 				else
@@ -156,7 +157,7 @@ public class Grid : MonoBehaviour {
 			//	Cells[x, y].AddLiquid(2);
 			//}
 
-            if ((x > 0 && x < Cells.GetLength(0)) && (y > 0 && y < Cells.GetLength(1)))
+            if ((x > 0 && x < Size) && (y > 0 && y < Size))
             {
                 //Debug.Log(Cells[1, 1]);
                 Cells[x, y].AddLiquid(5);
@@ -177,20 +178,20 @@ public class Grid : MonoBehaviour {
 
 		int posIndex = 0;
 
-		//Debug.Log(Cells[10, 10].CellUpdate(LiquidTilemap, WaterTiles, BlockTile));
-		// Определите спрайт для каждой ячейки
-		//for (int cx = 0; cx < Cells.GetLength(0); cx++)
-		//{
-		//	for (int cy = 0; cy < Cells.GetLength(1); cy++)
-		//	{
-		//		tileArray[cx * Size + cy] = Cells[cx, cy].CellUpdate(LiquidTilemap, WaterTiles, BlockTile);
-		//		positions[posIndex] = new Vector3Int(cx, cy, 0);
-		//		posIndex++;
-		//	}
+        //Debug.Log(Cells[10, 10].CellUpdate(LiquidTilemap, WaterTiles, BlockTile));
+        // Определите спрайт для каждой ячейки
+        for (int cx = 0; cx < Cells.GetLength(0); cx++)
+        {
+            for (int cy = 0; cy < Cells.GetLength(1); cy++)
+            {
+                tileArray[cx * Size + cy] = Cells[cx, cy].CellUpdate(LiquidTilemap, WaterTiles, BlockTile);
+                positions[posIndex] = new Vector3Int(cx, cy, 0);
+                posIndex++;
+            }
 
-		//}
+        }
 
-		//LiquidTilemap.SetTiles(positions, tileArray);
+        LiquidTilemap.SetTiles(positions, tileArray);
 
 		yield return 0;
 

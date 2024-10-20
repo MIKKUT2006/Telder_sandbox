@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Drawing;
 
 public class LiquidSimulator :MonoBehaviour{
 
@@ -22,7 +23,7 @@ public class LiquidSimulator :MonoBehaviour{
 
 	public void Initialize(Cell[,] cells) {
 
-		Diffs = new float[cells.GetLength (0), cells.GetLength (1)];
+		Diffs = new float[cells.Length, cells.Length];
 
 	}
 
@@ -49,16 +50,16 @@ public class LiquidSimulator :MonoBehaviour{
 		float flow = 0;
 
 		// Reset the diffs array
-		for (int x = 0; x < cells.GetLength (0); x++) {
-			for (int y = 0; y < cells.GetLength (1); y++) {
+		for (int x = 0; x < cells.Length; x++) {
+			for (int y = 0; y < cells.Length; y++) {
 				Diffs [x, y] = 0;
 			}
 		}
 
 		// Main loop
-		for (int x = 0; x < 200; x++)
+		for (int x = 0; x < cells.Length; x++)
 		{
-			for (int y = 0; y < 100; y++)
+			for (int y = 0; y < cells.Length; y++)
 			{
 				// Get reference to Cell and reset flow
 				Cell cell = cells [x, y];
@@ -214,9 +215,9 @@ public class LiquidSimulator :MonoBehaviour{
 		}
 			
 		// Update Cell values
-		for (int x = 0; x < 200; x++)
+		for (int x = 0; x < cells.Length; x++)
 		{
-			for (int y = 0; y < 100; y++)
+			for (int y = 0; y < cells.Length; y++)
 			{
 
 				cells [x, y].Liquid += Diffs [x, y];
