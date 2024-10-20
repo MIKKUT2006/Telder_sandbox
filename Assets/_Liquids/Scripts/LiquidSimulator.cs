@@ -25,7 +25,7 @@ public class LiquidSimulator : MonoBehaviour
     public void Initialize(Cell[,] cells)
     {
 
-        Diffs = new float[cells.GetLength(0), cells.GetLength(1)];
+        Diffs = new float[cells.GetLength(0), cells.GetLength(0)];
 
     }
 
@@ -60,7 +60,7 @@ public class LiquidSimulator : MonoBehaviour
         // Reset the diffs array
         for (int x = 0; x < cells.GetLength(0); x++)
         {
-            for (int y = 0; y < cells.GetLength(1); y++)
+            for (int y = 0; y < cells.GetLength(0); y++)
             {
                 Diffs[x, y] = 0;
             }
@@ -69,7 +69,7 @@ public class LiquidSimulator : MonoBehaviour
         // Main loop
         for (int x = 0; x < cells.GetLength(0); x++)
         {
-            for (int y = 0; y < cells.GetLength(1); y++)
+            for (int y = 0; y < cells.GetLength(0); y++)
             {
                 // Get reference to Cell and reset flow
                 Cell cell = cells[x, y];
@@ -214,15 +214,9 @@ public class LiquidSimulator : MonoBehaviour
                         Diffs[x, y] -= flow;
 
                         // ТУТИ КОД ЗАКОММЕНТИРОВАН!
-                        try
+                        if (y != 0)
                         {
-                            Debug.Log(Diffs[x, y]);
                             Diffs[x, y - 1] += flow;
-                        }
-                        catch (System.Exception)
-                        {
-
-                            throw;
                         }
 
                         cell.FlowDirections[(int)FlowDirection.Top] = true;
