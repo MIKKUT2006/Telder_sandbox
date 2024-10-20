@@ -54,7 +54,7 @@ public class Cell {
 	public bool[] FlowDirections = new bool[4];
 
 	// Liquid colors
-	Color Color = Color.cyan;
+	Color Color = Color.white;
 	Color DarkColor = new Color (0, 0.1f, 0.2f, 1);
 	bool ShowFlow;
 	bool RenderDownFlowingLiquid;
