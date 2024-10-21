@@ -60,13 +60,13 @@ public class Grid : MonoBehaviour
         {
             for (int y = 0; y < HelperClass.worldHeight; y++)
             {
-                perlinHeightCaves = Mathf.PerlinNoise((x + HelperClass.worldSeed) / 2, (y + HelperClass.worldSeed) / 2);
+                perlinHeightCaves = Mathf.PerlinNoise((x + HelperClass.worldSeed) / 10 / 2, (y + HelperClass.worldSeed) / 10 / 2);
 
                 if (y <= HelperClass.worldHeight && perlinHeightCaves < 0.4)
                 {
                     if (ProceduralGeneration.map[x, y] == 4)
                     {
-                        HelperClass.Cells[x, y].AddLiquid(1);
+                        HelperClass.Cells[x, y].AddLiquid(3);
                     }
                 }
             }

@@ -374,8 +374,6 @@ public class ProceduralGeneration : MonoBehaviour
             for (int j = 0; j < height; j++)
             {
                 perlinHeightCaves = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes, (j + HelperClass.worldSeed) / cavessmothes);
-                //perlinHeightCaves = Mathf.PerlinNoise((i + 10000), (j + 10000));
-                //Debug.Log(HelperClass.worldSeed);
                 if (perlinHeightCaves < 0.4 && map[i, j] == 3)
                 {
                     map[i, j] = 4;
@@ -409,12 +407,12 @@ public class ProceduralGeneration : MonoBehaviour
                 }
 
                 // Генерация водных пещер
-                perlinHeightWaterCaves = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes, (j + HelperClass.worldSeed)/ cavessmothes);
-                //Debug.Log(perlinHeightOres);
-                if (perlinHeightWaterCaves > 0.8 && map[i, j] == 3)
-                {
-                    map[i, j] = 4;
-                }
+                //perlinHeightWaterCaves = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes / 2, (j + HelperClass.worldSeed)/ cavessmothes / 2);
+                ////Debug.Log(perlinHeightOres);
+                //if (perlinHeightWaterCaves > 0.8 && map[i, j] == 3)
+                //{
+                //    map[i, j] = 4;
+                //}
             }
         }
         return map;
