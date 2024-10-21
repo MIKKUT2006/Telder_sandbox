@@ -569,7 +569,8 @@ public class ProceduralGeneration : MonoBehaviour
                         }
 
                         Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-
+                        //Debug.Log(HelperClass.Cells.GetLength(0));
+                        //HelperClass.Cells[x, y].SetType(CellType.Solid);
                         tilemap.SetTile(tilePos, tile);
                     }
                 }
