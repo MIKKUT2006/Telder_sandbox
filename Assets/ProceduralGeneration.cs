@@ -623,9 +623,10 @@ public class ProceduralGeneration : MonoBehaviour
                     //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
                     //    break;
                     case 5:
-                        Vector3 pos = new Vector3(i + 0.5f, j + 3, 0);
+                        Vector3 pos = new Vector3(i + 0.5f, j + 5, 0);
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);      // Устанавливаем деревья
-                        Instantiate(Trees[0], pos, Quaternion.identity);
+
+                        Instantiate(Trees[(int)Random.RandomRange(0, Trees.Count())], pos, Quaternion.identity);
                         break;
                     case 6:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[4]);       // Устанавливаем тайл железной руды
