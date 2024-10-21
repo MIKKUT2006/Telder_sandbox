@@ -189,7 +189,10 @@ public class BlockCreateDestroy : MonoBehaviour
                 HelperClass.Chunks[chunkCoord].SetTiles(blockPosition, tileBases);
                 // Устанавливаем в массиве блоков нужный айди блока из инвентаря
                 ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
-                
+
+                // Устанавливаем значение твердого блока для потоков воды
+                HelperClass.Cells[x, y].SetType(CellType.Solid);
+
                 Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[HelperClass.selectedInventoryCell].count.ToString();
                 // Очищаем всё, если больше нет блоков
                 if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count == 0)
@@ -281,6 +284,9 @@ public class BlockCreateDestroy : MonoBehaviour
             }
             else
             {
+                // Устанавливаем значение пустого блока для потоков воды
+                HelperClass.Cells[x, y].SetType(CellType.Blank);
+
                 Vector3 newpos = new Vector3(x + 0.5f, y + 0.5f);
                 GameObject newBlock = Instantiate(BlockGameObject, newpos, Quaternion.identity);
                 newBlock.name = blockId.ToString();
@@ -301,6 +307,8 @@ public class BlockCreateDestroy : MonoBehaviour
                     //BlockGameObjectSprite.sprite = sprite;
                     newBlock.GetComponent<SpriteRenderer>().sprite = sprite;
                 }
+
+                
 
                 Debug.Log("Блок сломан");
                 isblockDig = false;
