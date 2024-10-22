@@ -46,8 +46,10 @@ public class AllItemsAndBlocks
     public int startDurable = 0;
     public int durable = 0;
 
-    // Конструкторы класса для оружия
+    // Поле для хранения пути к изображению
+    public string imagePath;
 
+    // Конструкторы класса для оружия
     public AllItemsAndBlocks(int _blockIndex, string _name, int _blocksSolidity, int _damage, string _description)
     {
         blockIndex = _blockIndex;

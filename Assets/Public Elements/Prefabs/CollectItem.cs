@@ -53,6 +53,7 @@ public class CollectItem : MonoBehaviour
                 Debug.Log("В инвентарь был добавлен: " + HelperClass.playerInventory[InventoryCell].name);
                 Inventory.transform.Find(InventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
                 Inventory.transform.Find(InventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = gameObject.GetComponent<SpriteRenderer>().sprite;
+                HelperClass.playerInventory[InventoryCell].imagePath = "Assets/Blocks/Firstworld/" + gameObject.GetComponent<SpriteRenderer>().sprite.name + ".png";
                 Destroy(gameObject);
                 if (HelperClass.selectedInventoryCell == InventoryCell)
                 {

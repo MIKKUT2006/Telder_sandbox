@@ -1,6 +1,8 @@
 using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using TMPro;
 using Unity.VisualScripting;
@@ -42,9 +44,44 @@ public class InputScript : MonoBehaviour
         inventoryGameObject.SetActive(false);
         HelperClass.equippedItem = gameObject.transform.Find("Player_1").transform.Find("Item").gameObject;
         HelperClass.itemName = GameObject.FindGameObjectWithTag("ItemName").GetComponent<TextMeshProUGUI>();
-
-
+        if (HelperClass.isNewGame == false) {
+            LoadInventoryImages();
+        }
+        
     }
+
+    // Загружаем иконки инвентаря и текст количества предметов
+    void LoadInventoryImages()
+    {
+        for (int i = 0; i < HelperClass.playerInventory.Count(); i++)
+        {
+            if (HelperClass.playerInventory[i] != null)
+            {
+                if (!string.IsNullOrEmpty(HelperClass.playerInventory[i].imagePath) && File.Exists(HelperClass.playerInventory[i].imagePath) && HelperClass.playerInventory[i].imagePath != null)
+                {
+                    // Загрузка текстуры из файла
+                    byte[] imageData = File.ReadAllBytes(HelperClass.playerInventory[i].imagePath);
+                    Texture2D texture = new Texture2D(64, 64);
+                    texture.LoadImage(imageData); // Загружает данные изображения в текстуру
+
+                    // Создание спрайта из текстуры
+                    Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+
+                    inventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
+                    inventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().sprite = newSprite;
+
+                    inventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
+                    inventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();
+                }
+                else
+                {
+                    Debug.LogError("Ошибка: Неверный путь к изображению или файл не найден: " + HelperClass.playerInventory[i].imagePath);
+                }
+            }
+        }
+        
+    }
+
     void Start()
     {
         //gameObject.transform.position = new Vector3(HelperClass.worldWidth / 2, HelperClass.worldHeight, 0);
