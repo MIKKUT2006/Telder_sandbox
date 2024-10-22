@@ -86,40 +86,41 @@ public class ProceduralGeneration : MonoBehaviour
         HelperClass.Cells = new Cell[HelperClass.worldWidth, HelperClass.worldWidth];
 
         cell = new Cell();
-        Generation();
+
+        // Создаём чанки
+        CreateChunks();         
+        // Проверяем на создание нового мира или загрузуку существующего
+        if (HelperClass.isNewGame == true)
+        {
+            Generation();
+
+            HelperClass.worldHeight = height;
+            HelperClass.worldWidth = width;
+        }
+        else
+        {
+            map = HelperClass.map;
+            bgMap = HelperClass.bgMap;
+            lightMap = HelperClass.lightMap;
+
+            height = HelperClass.worldHeight;
+            width = HelperClass.worldWidth;
+        }
+
+        RenderMap(map, tilemap, groundTile, bgMap);             // Показываем изменения
+
         Grid.CreateGrid();
 
         HelperClass.chunkPrefab = chunkPrefab;
         HelperClass.lightchunkPrefab = lightchunkPrefab;
         HelperClass.bgchunkPrefab = bgchunkPrefab;
 
-        HelperClass.worldHeight = height;
-        HelperClass.worldWidth = width;
-        //seed = HelperClass.worldSeed;
-        //HelperClass.worldSeed = (int)seed;
-
         Debug.Log(Mathf.PerlinNoise((x + worldSeed) / cavessmothes, (y + worldSeed) / cavessmothes));
-        
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKeyDown("h"))
-        {
-            Generation();
-        }
-
-        if (Input.GetKeyDown("t"))
-        {
-            Debug.Log(Mathf.PerlinNoise((x + worldSeed) / cavessmothes, (y + worldSeed) / cavessmothes));
-        }
     }
     void Generation()
     {
 
-        CreateChunks();                                         // Создаём чанки
+        
         lightMap = GenerateArray(width, height, true, true);    // Генерируем массив
         lightTilemap.ClearAllTiles();                           // Очищаем все тайлы перед генерацией
 
@@ -138,17 +139,13 @@ public class ProceduralGeneration : MonoBehaviour
         bgMap = TerrainGeneration(bgMap);                       // Генерируем мир
         bgMap = StoneGeneration(bgMap);                         // Генерируем мир
         bgMap = GrassGeneration(bgMap);                         // Генерируем мир
-        //bgMap = CavesGeneration(bgMap);                       // Генерируем пещеры
 
         map = TreesGeneration(map);
         //StructuresGeneration(testStructure);
         LightGeneraion(map);
 
-        RenderMap(map, tilemap, groundTile, bgMap);             // Показываем изменения
         StructuresGeneration(testStructure, 12);
         StructuresGeneration(mapleHouse, 2);
-
-       
         Debug.Log("Всё готово");
     }
 

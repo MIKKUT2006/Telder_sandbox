@@ -7,7 +7,13 @@ using UnityEngine.UI;
 
 public class HelperClass : MonoBehaviour
 {
+    // Двумерный массив карты
+    [SerializeField] public static int[,] map;
+    [SerializeField] public static int[,] bgMap;   
+    [SerializeField] public static int[,] lightMap;
+
     // Параметры мира
+    [SerializeField] public static bool isNewGame = true;
     [SerializeField] public static int worldHeight = 100;
     [SerializeField] public static int worldWidth = 200;
     [SerializeField] public static int worldSeed;
@@ -18,6 +24,7 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static Tilemap[] Chunks;
     [SerializeField] public static GameObject[] ChunksGameobject;
     [SerializeField] public static GameObject chunkPrefab;
+
     // Клетки с жидкостью/твердым блоком
     [SerializeField] public static Cell[,] Cells;
 
@@ -25,6 +32,7 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static Tilemap[] lightChunks;
     [SerializeField] public static GameObject[] lightChunksGameobject;
     [SerializeField] public static GameObject lightchunkPrefab;
+
     // Чанки заднего плана
     [SerializeField] public static Tilemap[] bgChunks;
     [SerializeField] public static GameObject[] bgChunksGameobject;

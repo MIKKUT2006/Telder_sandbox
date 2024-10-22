@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -61,17 +62,60 @@ public class MenuButtonsScript : MonoBehaviour
         multiplayerPanel.SetActive(false);
     }
 
-    public void LoadWorld()
-    {
-        createNewWorldPanel.SetActive(false);
-        loadWorldPanel.SetActive(true);
-        multiplayerPanel.SetActive(false);
-    }
-
     public void Multiplayer()
     {
         createNewWorldPanel.SetActive(false);
         loadWorldPanel.SetActive(false);
         multiplayerPanel.SetActive(true);
     }
+
+    public void LoadWorld()
+    {
+        createNewWorldPanel.SetActive(false);
+        loadWorldPanel.SetActive(true);
+        multiplayerPanel.SetActive(false);
+
+        // Тестовая загрузка игрового мира
+        HelperClass.isNewGame = false;
+        HelperClass.map =  LoadJson(Application.persistentDataPath + "/map.json");
+        HelperClass.bgMap =  LoadJson(Application.persistentDataPath + "/bgMap.json");
+        HelperClass.lightMap =  LoadJson(Application.persistentDataPath + "/lightMap.json");
+
+        SceneManager.LoadScene("WorldOne");
+    }
+
+    // Функция для чтения мира с json
+    int[,] LoadJson(string path)
+    {
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            int[] loadedArray = JsonUtility.FromJson<Wrapper<int>>(json).Items;
+
+            // Преобразование одномерного массива обратно в двумерный
+            int[,] map = new int[HelperClass.worldWidth, HelperClass.worldHeight];
+            Debug.Log(map.GetLength(0));
+
+            for (int i = 0; i < HelperClass.worldWidth; i++)
+            {
+                for (int j = 0; j < HelperClass.worldHeight; j++)
+                {
+                    map[i, j] = loadedArray[i * HelperClass.worldHeight + j];
+                }
+            }
+            return map;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    [System.Serializable]
+    private class Wrapper<T>
+    {
+        public T[] Items;
+    }
+
+    
 }
