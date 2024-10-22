@@ -20,22 +20,19 @@ public class PauseButtonsScripts : MonoBehaviour
         // Путь к файлу
         string mapPath = Application.persistentDataPath + "/map.json";
         string bgMapPath = Application.persistentDataPath + "/bgMap.json";
-        string lightMapPath = Application.persistentDataPath + "/lightMap.json";
 
         // Проверяем, существует ли файл
         if (!File.Exists(mapPath))
         {
             // Если файл не существует, создаем и записываем JSON
-            JsonFile(mapPath);
-            JsonFile(bgMapPath);
-            JsonFile(lightMapPath);
+            JsonFile(mapPath, ProceduralGeneration.map);
+            JsonFile(bgMapPath, ProceduralGeneration.bgMap);
             Debug.Log("JSON файл создан: " + mapPath);
         }
         else
         {
-            JsonFile(mapPath);
-            JsonFile(bgMapPath);
-            JsonFile(lightMapPath);
+            JsonFile(mapPath, ProceduralGeneration.map);
+            JsonFile(bgMapPath, ProceduralGeneration.bgMap);
             Debug.Log("Файл перезаписан: " + mapPath);
         }
 
@@ -43,10 +40,10 @@ public class PauseButtonsScripts : MonoBehaviour
         SceneManager.LoadScene("_MainMenu");
     }
     // Метод создания json файла
-    void JsonFile(string path)
+    void JsonFile(string path, int[,] map)
     {
         // Преобразование массива в JSON
-        string json = JsonHelper.ToJson(ProceduralGeneration.map);
+        string json = JsonHelper.ToJson(map);
 
         // Запись JSON в файл
         File.WriteAllText(path, json);

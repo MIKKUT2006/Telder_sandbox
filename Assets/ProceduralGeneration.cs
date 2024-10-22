@@ -56,8 +56,8 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] Cell cell;
 
     [SerializeField] public static int[,] map;      // Двумерный массив карты
-    [SerializeField] int[,] bgMap;                  // Двумерный массив карты заднего плана
-    [SerializeField] int[,] lightMap;               // Двумерный массив карты заднего плана
+    [SerializeField] public static int[,] bgMap;    // Двумерный массив карты заднего плана
+    //[SerializeField] int[,] lightMap;             // Двумерный массив карты заднего плана
 
     
 
@@ -101,13 +101,15 @@ public class ProceduralGeneration : MonoBehaviour
         {
             map = HelperClass.map;
             bgMap = HelperClass.bgMap;
-            lightMap = HelperClass.lightMap;
 
             height = HelperClass.worldHeight;
             width = HelperClass.worldWidth;
+
+            Debug.Log(bgMap.GetLength(0));
         }
 
         RenderMap(map, tilemap, groundTile, bgMap);             // Показываем изменения
+        LightGeneraion(map);
 
         Grid.CreateGrid();
 
@@ -121,7 +123,7 @@ public class ProceduralGeneration : MonoBehaviour
     {
 
         
-        lightMap = GenerateArray(width, height, true, true);    // Генерируем массив
+        //lightMap = GenerateArray(width, height, true, true);    // Генерируем массив
         lightTilemap.ClearAllTiles();                           // Очищаем все тайлы перед генерацией
 
         // Основной план
@@ -142,8 +144,6 @@ public class ProceduralGeneration : MonoBehaviour
 
         map = TreesGeneration(map);
         //StructuresGeneration(testStructure);
-        LightGeneraion(map);
-
         StructuresGeneration(testStructure, 12);
         StructuresGeneration(mapleHouse, 2);
         Debug.Log("Всё готово");
@@ -649,29 +649,13 @@ public class ProceduralGeneration : MonoBehaviour
                 {
                     bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
                 }
-                if (bgMap[i, j] == 8)
-                {
-                    bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[6]);       // Устанавливаем тайл травы
-                }
 
-                //if (map[i, j] == 4)
+
+                //if (bgMap[i, j] == 8)
                 //{
-                //    Debug.Log("asd");
-                //    groundTilemap.SetTile(new Vector3Int(i, j, 0), null);       // Устанавливаем пустоту (пещеры)
+                //    bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[6]);       // Устанавливаем тайл травы
                 //}
             }
         }
     }
-    }
-//public class Script : MonoBehaviour
-//{
-//    public static int X, Y;
-//    [System.Serializable]
-//    public class Column
-//    {
-//        public bool[] rows = new bool[Y];
-//    }
-
-//    public Column[] columns = new Column[X];
-
-//}
+}

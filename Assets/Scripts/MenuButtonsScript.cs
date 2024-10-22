@@ -79,7 +79,6 @@ public class MenuButtonsScript : MonoBehaviour
         HelperClass.isNewGame = false;
         HelperClass.map =  LoadJson(Application.persistentDataPath + "/map.json");
         HelperClass.bgMap =  LoadJson(Application.persistentDataPath + "/bgMap.json");
-        HelperClass.lightMap =  LoadJson(Application.persistentDataPath + "/lightMap.json");
 
         SceneManager.LoadScene("WorldOne");
     }
@@ -107,6 +106,7 @@ public class MenuButtonsScript : MonoBehaviour
         }
         else
         {
+            Debug.Log("Файл не найден");
             return null;
         }
     }

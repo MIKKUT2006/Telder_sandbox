@@ -10,7 +10,7 @@ public class HelperClass : MonoBehaviour
     // Двумерный массив карты
     [SerializeField] public static int[,] map;
     [SerializeField] public static int[,] bgMap;   
-    [SerializeField] public static int[,] lightMap;
+    //[SerializeField] public static int[,] lightMap;
 
     // Параметры мира
     [SerializeField] public static bool isNewGame = true;
