@@ -34,6 +34,7 @@ public class InputScript : MonoBehaviour
 
     // Тестовые поля
     private bool inventoryOpen = false;
+    private float pixelsPerUnit = 16;
 
     private void Awake()
     {
@@ -61,11 +62,17 @@ public class InputScript : MonoBehaviour
                 {
                     // Загрузка текстуры из файла
                     byte[] imageData = File.ReadAllBytes(HelperClass.playerInventory[i].imagePath);
-                    Texture2D texture = new Texture2D(64, 64);
+                    Texture2D texture = new Texture2D(16, 16);
                     texture.LoadImage(imageData); // Загружает данные изображения в текстуру
+                    texture.filterMode = FilterMode.Point;
+
+                    // Рассчитываем размеры спрайта с учетом pixelsPerUnit
+                    float width = texture.width / 16;
+                    float height = texture.height / 16;
 
                     // Создание спрайта из текстуры
-                    Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                    Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                    
 
                     inventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
                     inventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().sprite = newSprite;
@@ -73,10 +80,10 @@ public class InputScript : MonoBehaviour
                     inventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
                     inventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();
                 }
-                else
-                {
-                    Debug.LogError("Ошибка: Неверный путь к изображению или файл не найден: " + HelperClass.playerInventory[i].imagePath);
-                }
+                //else
+                //{
+                //    Debug.LogError("Ошибка: Неверный путь к изображению или файл не найден: " + HelperClass.playerInventory[i].imagePath);
+                //}
             }
         }
         
