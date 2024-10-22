@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 public class PauseButtonsScripts : MonoBehaviour
 {
@@ -20,19 +22,21 @@ public class PauseButtonsScripts : MonoBehaviour
         // Путь к файлу
         string mapPath = Application.persistentDataPath + "/map.json";
         string bgMapPath = Application.persistentDataPath + "/bgMap.json";
-
+        string playerInventoryPath = Application.persistentDataPath + "/playerInventory.json";
         // Проверяем, существует ли файл
         if (!File.Exists(mapPath))
         {
             // Если файл не существует, создаем и записываем JSON
-            JsonFile(mapPath, ProceduralGeneration.map);
-            JsonFile(bgMapPath, ProceduralGeneration.bgMap);
+            JsonWorld(mapPath, ProceduralGeneration.map);
+            JsonWorld(bgMapPath, ProceduralGeneration.bgMap);
+            JsonInventory(playerInventoryPath, HelperClass.playerInventory);
             Debug.Log("JSON файл создан: " + mapPath);
         }
         else
         {
-            JsonFile(mapPath, ProceduralGeneration.map);
-            JsonFile(bgMapPath, ProceduralGeneration.bgMap);
+            JsonWorld(mapPath, ProceduralGeneration.map);
+            JsonWorld(bgMapPath, ProceduralGeneration.bgMap);
+            JsonInventory(playerInventoryPath, HelperClass.playerInventory);
             Debug.Log("Файл перезаписан: " + mapPath);
         }
 
@@ -40,7 +44,7 @@ public class PauseButtonsScripts : MonoBehaviour
         SceneManager.LoadScene("_MainMenu");
     }
     // Метод создания json файла
-    void JsonFile(string path, int[,] map)
+    void JsonWorld(string path, int[,] map)
     {
         // Преобразование массива в JSON
         string json = JsonHelper.ToJson(map);
@@ -48,10 +52,20 @@ public class PauseButtonsScripts : MonoBehaviour
         // Запись JSON в файл
         File.WriteAllText(path, json);
     }
+
+    // Метод создания json файла
+    void JsonInventory(string path, AllItemsAndBlocks[] inventory)
+    {
+        // Преобразование массива в JSON
+        string json = JsonHelperArray.ToJson(inventory);
+
+        // Запись JSON в файл
+        File.WriteAllText(path, json);
+    }
 }
 
 
-// Класс для записи массива в json
+// Класс для записи двумерного массива в json
 public static class JsonHelper
 {
     public static string ToJson<T>(T[,] array)
@@ -66,6 +80,24 @@ public static class JsonHelper
             }
         }
         return JsonUtility.ToJson(new Wrapper<T> { Items = list.ToArray() });
+    }
+
+    [System.Serializable]
+    private class Wrapper<T>
+    {
+        public T[] Items;
+    }
+}
+
+// Класс для записи одномерного массива в json
+public static class JsonHelperArray
+{
+    public static string ToJson(AllItemsAndBlocks[] array)
+    {
+        // Сериализация двумерного массива в JSON
+        List<AllItemsAndBlocks> list = array.ToList();
+
+        return JsonUtility.ToJson(new Wrapper<AllItemsAndBlocks> { Items = list.ToArray() });
     }
 
     [System.Serializable]

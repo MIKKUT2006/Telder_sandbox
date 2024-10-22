@@ -79,6 +79,7 @@ public class MenuButtonsScript : MonoBehaviour
         HelperClass.isNewGame = false;
         HelperClass.map =  LoadJson(Application.persistentDataPath + "/map.json");
         HelperClass.bgMap =  LoadJson(Application.persistentDataPath + "/bgMap.json");
+        HelperClass.playerInventory = LoadInventory(Application.persistentDataPath + "/playerInventory.json");
 
         SceneManager.LoadScene("WorldOne");
     }
@@ -103,6 +104,21 @@ public class MenuButtonsScript : MonoBehaviour
                 }
             }
             return map;
+        }
+        else
+        {
+            Debug.Log("Файл не найден");
+            return null;
+        }
+    }
+
+    AllItemsAndBlocks[] LoadInventory(string path)
+    {
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            AllItemsAndBlocks[] loadedArray = JsonUtility.FromJson<Wrapper<AllItemsAndBlocks>>(json).Items;
+            return loadedArray;
         }
         else
         {

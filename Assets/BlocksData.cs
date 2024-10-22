@@ -30,7 +30,7 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(8, "Баррьер", int.MaxValue, true, 100),
     };
 }
-
+[System.Serializable]
 public class AllItemsAndBlocks
 {
     public int blockIndex;
@@ -47,6 +47,7 @@ public class AllItemsAndBlocks
     public int durable = 0;
 
     // Конструкторы класса для оружия
+
     public AllItemsAndBlocks(int _blockIndex, string _name, int _blocksSolidity, int _damage, string _description)
     {
         blockIndex = _blockIndex;
