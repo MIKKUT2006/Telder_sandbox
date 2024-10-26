@@ -53,27 +53,27 @@ public class InputScript : MonoBehaviour
 
 
         // Тестовое подключение к бд
-        SqlDataBase db = new SqlDataBase("sql7.freemysqlhosting.net", "sql7740887", "sql7740887", "iE9GIRF1ma");
+        //SqlDataBase db = new SqlDataBase("sql7.freemysqlhosting.net", "sql7740887", "sql7740887", "iE9GIRF1ma");
         //db.RunQuery("Insert into users (login, password) values ('SVO','ANTISVO')");
         //db.SelectQuery("Select * from users", out DataTable dataTable);
 
         //Debug.Log(dataTable.Rows);
 
-        MySqlConnection mySqlConnection = new MySqlConnection("Database=sql7740887; Data Source = sql7.freemysqlhosting.net; " +
-            "User Id=sql7740887; Password=iE9GIRF1ma; port=3306; charset=utf8");
+        //MySqlConnection mySqlConnection = new MySqlConnection("Database=sql7740887; Data Source = sql7.freemysqlhosting.net; " +
+        //    "User Id=sql7740887; Password=iE9GIRF1ma; port=3306; charset=utf8");
 
-        mySqlConnection.Open();
+        //mySqlConnection.Open();
 
-        string sql = "Select * from users";
-        MySqlCommand mySqlCommand = new MySqlCommand(sql, mySqlConnection);
-        MySqlDataReader mySqlDataReader = mySqlCommand.ExecuteReader();
-        while (mySqlDataReader.Read())
-        {
-            string login = mySqlDataReader.GetString("login");
-            Debug.Log(login);
-        }
+        //string sql = "Select * from users";
+        //MySqlCommand mySqlCommand = new MySqlCommand(sql, mySqlConnection);
+        //MySqlDataReader mySqlDataReader = mySqlCommand.ExecuteReader();
+        //while (mySqlDataReader.Read())
+        //{
+        //    string login = mySqlDataReader.GetString("login");
+        //    Debug.Log(login);
+        //}
         
-        Debug.Log(mySqlCommand.ToString());
+        //Debug.Log(mySqlCommand.ToString());
 
     }
 

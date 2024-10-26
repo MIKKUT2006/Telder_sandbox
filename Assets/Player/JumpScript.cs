@@ -28,17 +28,35 @@ public class JumpScript : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D collision)
     {
+        // Слой земли
         if (collision.gameObject.layer == 3)
         {
             jump = true;
         }
+        
+
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        // Слой воды
+        //if (collision.gameObject.layer == 4)
+        //{
+        //    rb.gravityScale = 0.5f;
+        //}
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        // Слой земли
         if (collision.gameObject.layer == 3)
         {
             jump = false;
         }
+        // Слой воды
+        //if (collision.gameObject.layer == 4)
+        //{
+        //    rb.gravityScale = 1;
+        //}
     }
 }

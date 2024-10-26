@@ -1,3 +1,4 @@
+using MySql.Data.MySqlClient;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -7,6 +8,13 @@ using UnityEngine.UI;
 
 public class HelperClass : MonoBehaviour
 {
+    // Подключение к бд
+    [SerializeField] public static MySqlConnection mySqlConnection
+        = new MySqlConnection("Database=sql7740887; Data Source = sql7.freemysqlhosting.net; " +
+        "User Id=sql7740887; Password=iE9GIRF1ma; port=3306; charset=utf8");
+    [SerializeField] public static string login = null;
+
+
     // Двумерный массив карты
     [SerializeField] public static int[,] map;
     [SerializeField] public static int[,] bgMap;   
