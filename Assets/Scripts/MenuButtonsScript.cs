@@ -28,6 +28,10 @@ public class MenuButtonsScript : MonoBehaviour
     [SerializeField] private GameObject createNewWorldPanel;
     [SerializeField] private GameObject multiplayerPanel;
 
+    // Панель выбора сохранённых миров
+    [SerializeField] private GameObject worldsListContent;
+    [SerializeField] private GameObject worldElement;
+
     // РАБОТА С БД
     // Поля логина и пароля
     [SerializeField] private TMP_InputField registrationLoginText;
@@ -133,9 +137,30 @@ public class MenuButtonsScript : MonoBehaviour
                 createNewWorldPanel.SetActive(true);
                 loadWorldPanel.SetActive(false);
                 multiplayerPanel.SetActive(false);
+
+                // Загрузка всех миров игрока из бд
+
+                HelperClass.mySqlConnection.Close();
+                HelperClass.mySqlConnection.Open();
+                string sql = $"Select * from worlds WHERE user_id = {HelperClass.userId}";
+                MySqlCommand mySqlCommand = new MySqlCommand(sql, HelperClass.mySqlConnection);
+                MySqlDataReader WorldsDataReader = mySqlCommand.ExecuteReader();
+                // Создание списка миров
+                while (WorldsDataReader.Read())
+                {
+                    string name = WorldsDataReader.GetString("name");
+                    int id = WorldsDataReader.GetInt32("id");
+                    
+                    GameObject worldEl = Instantiate(worldElement);
+                    worldEl.name = id.ToString();
+                    worldEl.GetComponentInChildren<TextMeshProUGUI>().text = name;
+                    worldEl.transform.SetParent(worldsListContent.transform);
+                    worldEl.transform.localScale = new Vector3(1f,1f,1f);
+                    worldEl.transform.position = new Vector3(0,0,0);
+
+                }
             }
             mySqlDataReader.Close();
-            HelperClass.mySqlConnection.Close();
         }
         else
         {
@@ -211,12 +236,12 @@ public class MenuButtonsScript : MonoBehaviour
         multiplayerPanel.SetActive(false);
 
         // Тестовая загрузка игрового мира
-        HelperClass.isNewGame = false;
-        HelperClass.map =  LoadJson(Application.persistentDataPath + "/map.json");
-        HelperClass.bgMap =  LoadJson(Application.persistentDataPath + "/bgMap.json");
-        HelperClass.playerInventory = LoadInventory(Application.persistentDataPath + "/playerInventory.json");
+        //HelperClass.isNewGame = false;
+        //HelperClass.map =  LoadJson(Application.persistentDataPath + "/map.json");
+        //HelperClass.bgMap =  LoadJson(Application.persistentDataPath + "/bgMap.json");
+        //HelperClass.playerInventory = LoadInventory(Application.persistentDataPath + "/playerInventory.json");
 
-        SceneManager.LoadScene("WorldOne");
+        //SceneManager.LoadScene("WorldOne");
     }
 
     // Функция для чтения мира с json
