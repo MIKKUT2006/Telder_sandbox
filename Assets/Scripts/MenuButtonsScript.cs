@@ -154,13 +154,16 @@ public class MenuButtonsScript : MonoBehaviour
                     GameObject worldEl = Instantiate(worldElement);
                     worldEl.name = id.ToString();
                     worldEl.GetComponentInChildren<TextMeshProUGUI>().text = name;
+                    worldEl.GetComponentInChildren<Button>().name = id.ToString();
                     worldEl.transform.SetParent(worldsListContent.transform);
                     worldEl.transform.localScale = new Vector3(1f,1f,1f);
                     worldEl.transform.position = new Vector3(0,0,0);
 
                 }
+                mySqlDataReader.Close();
             }
             mySqlDataReader.Close();
+            HelperClass.mySqlConnection.Close();
         }
         else
         {
@@ -186,10 +189,10 @@ public class MenuButtonsScript : MonoBehaviour
     private void CreateWorldInDB()
     {
         HelperClass.mySqlConnection.Open();
-        string regQuery = $"Insert into worlds (name, height, width, user_id) values ('{WorldName.text}'," +
+        string createWorldDb = $"Insert into worlds (name, height, width, user_id) values ('{WorldName.text}'," +
             $" '{HelperClass.worldHeight}', '{HelperClass.worldWidth}', {HelperClass.userId})";
-        MySqlCommand mySqlCommand = new MySqlCommand(regQuery, HelperClass.mySqlConnection);
-        Debug.Log(mySqlCommand.ExecuteNonQuery());
+        MySqlCommand createWorldCommand = new MySqlCommand(createWorldDb, HelperClass.mySqlConnection);
+        Debug.Log(createWorldCommand.ExecuteNonQuery());
         HelperClass.mySqlConnection.Close();
     }
 

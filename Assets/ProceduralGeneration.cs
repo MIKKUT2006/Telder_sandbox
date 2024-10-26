@@ -105,7 +105,7 @@ public class ProceduralGeneration : MonoBehaviour
             height = HelperClass.worldHeight;
             width = HelperClass.worldWidth;
 
-            Debug.Log(bgMap.GetLength(0));
+            //Debug.Log(bgMap.GetLength(0));
         }
 
         RenderMap(map, tilemap, groundTile, bgMap);             // Показываем изменения

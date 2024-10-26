@@ -46,10 +46,10 @@ public class PauseButtonsScripts : MonoBehaviour
             Debug.Log("Файл перезаписан: " + mapPath);
         }
         HelperClass.mySqlConnection.Open();
-        string regQuery = $"UPDATE worlds SET data = '{GetJson(ProceduralGeneration.map)}' WHERE user_id = {HelperClass.userId} AND name = {HelperClass.worldName}";
+        string regQuery = $"UPDATE worlds SET data = '{GetJson(ProceduralGeneration.map)}', bg_data  = '{GetJson(ProceduralGeneration.bgMap)}' WHERE user_id = {HelperClass.userId} AND name = '{HelperClass.worldName}'";
         MySqlCommand mySqlCommand = new MySqlCommand(regQuery, HelperClass.mySqlConnection);
         Debug.Log(mySqlCommand.ExecuteNonQuery());
-
+        HelperClass.mySqlConnection.Close();
         // Загрузка сцены меню
         SceneManager.LoadScene("_MainMenu");
     }

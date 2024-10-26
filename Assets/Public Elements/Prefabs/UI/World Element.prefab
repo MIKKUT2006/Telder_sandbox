@@ -87,6 +87,7 @@ GameObject:
   - component: {fileID: 2021788932504029216}
   - component: {fileID: 3188196310320992738}
   - component: {fileID: 7796341367817885572}
+  - component: {fileID: 2863071712871880023}
   m_Layer: 10
   m_Name: play
   m_TagString: Untagged
@@ -109,10 +110,10 @@ RectTransform:
   - {fileID: 6066410069838594340}
   m_Father: {fileID: 981839267082584770}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 554.15, y: -50}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2021788932504029216
 CanvasRenderer:
@@ -196,18 +197,30 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
+      - m_Target: {fileID: 2863071712871880023}
+        m_TargetAssemblyTypeName: LoadWorldBtnScript, Assembly-CSharp
+        m_MethodName: loadWorld
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &2863071712871880023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5400320337777380344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2611f559166dfe146bfb7b4ae85e54c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5647995590531745489
 GameObject:
   m_ObjectHideFlags: 0
@@ -317,10 +330,10 @@ RectTransform:
   - {fileID: 4965158671026926692}
   m_Father: {fileID: 981839267082584770}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 654.15, y: -50}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5306247150613511705
 CanvasRenderer:
@@ -417,7 +430,6 @@ GameObject:
   - component: {fileID: 2078586430456636627}
   - component: {fileID: 9000515239290702977}
   - component: {fileID: 7135263197717710219}
-  - component: {fileID: 3752995882810798954}
   m_Layer: 10
   m_Name: World Element
   m_TagString: Untagged
@@ -445,7 +457,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 362.075, y: -60}
-  m_SizeDelta: {x: 704.15, y: 100}
+  m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8795341800492003354
 MonoBehaviour:
@@ -525,18 +537,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &3752995882810798954
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8237536245566729913}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2611f559166dfe146bfb7b4ae85e54c7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &9113445792098693596
 GameObject:
   m_ObjectHideFlags: 0
@@ -569,10 +569,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 981839267082584770}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 252.075, y: -50}
-  m_SizeDelta: {x: 504.15, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 504.15, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4277573470994064398
 CanvasRenderer:
