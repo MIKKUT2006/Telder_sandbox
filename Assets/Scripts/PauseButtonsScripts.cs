@@ -1,3 +1,4 @@
+using MySql.Data.MySqlClient;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,11 @@ using UnityEngine.UIElements;
 public class PauseButtonsScripts : MonoBehaviour
 {
     [SerializeField] private GameObject pausePanel;
+
+    private void Awake()
+    {
+        
+    }
     public void Resume()
     {
         pausePanel.SetActive(false);
@@ -39,16 +45,27 @@ public class PauseButtonsScripts : MonoBehaviour
             JsonInventory(playerInventoryPath, HelperClass.playerInventory);
             Debug.Log("Файл перезаписан: " + mapPath);
         }
+        HelperClass.mySqlConnection.Open();
+        string regQuery = $"UPDATE worlds SET data = '{GetJson(ProceduralGeneration.map)}' WHERE user_id = {HelperClass.userId} AND name = {HelperClass.worldName}";
+        MySqlCommand mySqlCommand = new MySqlCommand(regQuery, HelperClass.mySqlConnection);
+        Debug.Log(mySqlCommand.ExecuteNonQuery());
 
         // Загрузка сцены меню
         SceneManager.LoadScene("_MainMenu");
     }
+
+    string GetJson(int[,] map)
+    {
+        // Преобразование массива в JSON
+        string json = JsonHelper.ToJson(map);
+        return json;
+    }
+
     // Метод создания json файла
     void JsonWorld(string path, int[,] map)
     {
         // Преобразование массива в JSON
         string json = JsonHelper.ToJson(map);
-
         // Запись JSON в файл
         File.WriteAllText(path, json);
     }

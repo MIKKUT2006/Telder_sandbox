@@ -2,6 +2,7 @@ using MySql.Data.MySqlClient;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -37,13 +38,12 @@ public class MenuButtonsScript : MonoBehaviour
 
     [SerializeField] private GameObject registrationPanel;
     [SerializeField] private GameObject authorizationPanel;
-    
 
     private int userId;
 
     private void Start()
     {
-        HelperClass.mySqlConnection.Open();
+        
 
         if (HelperClass.login == null)
         {
@@ -53,22 +53,38 @@ public class MenuButtonsScript : MonoBehaviour
         }
     }
 
+
+    public void OpenAuthorizationPanel()
+    {
+        authorizationPanel.SetActive(true);
+        registrationPanel.SetActive(false);
+    }
+    public void OpenRegistrationPanel()
+    {
+        authorizationPanel.SetActive(false);
+        registrationPanel.SetActive(true);
+    }
+
     // Регистрация
     public void Registration()
     {
         // Проверка на пустые поля
         if (registrationLoginText.text != "" || registrationPasswordText.text != "")
         {
-            string sql = $"Insert into users (login, password) values ('{registrationLoginText.text}', '{registrationPasswordText.text}')";
-            MySqlCommand mySqlCommand = new MySqlCommand(sql, HelperClass.mySqlConnection);
+            HelperClass.mySqlConnection.Open();
+            string regQuery = $"Insert into users (login, password) values ('{registrationLoginText.text}', '{registrationPasswordText.text}')";
+            MySqlCommand mySqlCommand = new MySqlCommand(regQuery, HelperClass.mySqlConnection);
             Debug.Log(mySqlCommand.ExecuteNonQuery());
 
-            string test = $"Select * from users Where login = '{registrationLoginText.text}'";
-            MySqlCommand testmySqlCommand = new MySqlCommand(test, HelperClass.mySqlConnection);
-            MySqlDataReader mySqlDataReader = testmySqlCommand.ExecuteReader();
+            string getRegUserQuery = $"Select * from users Where login = '{registrationLoginText.text}'";
+            MySqlCommand getRegUser = new MySqlCommand(getRegUserQuery, HelperClass.mySqlConnection);
+            MySqlDataReader mySqlDataReader = getRegUser.ExecuteReader();
             mySqlDataReader.Read();
-            userId = mySqlDataReader.GetInt32("id");
+            HelperClass.userId = mySqlDataReader.GetInt32("id");
             Debug.Log($"Успешная регистрация: {mySqlDataReader.GetString("login")}");
+
+            HelperClass.login = mySqlDataReader.GetString("login");
+            mySqlDataReader.Close();
 
             // Показ бокового меню
             buttonsPanel.SetActive(true);
@@ -81,6 +97,8 @@ public class MenuButtonsScript : MonoBehaviour
             createNewWorldPanel.SetActive(true);
             loadWorldPanel.SetActive(false);
             multiplayerPanel.SetActive(false);
+
+            HelperClass.mySqlConnection.Close();
         }
         else
         {
@@ -91,7 +109,38 @@ public class MenuButtonsScript : MonoBehaviour
     // Авторизация
     public void Authorization()
     {
+        if (enterLoginText.text != "" || enterPasswordText.text != "")
+        {
+            HelperClass.mySqlConnection.Open();
+            string auth = $"Select * from users Where login = '{enterLoginText.text}'";
+            MySqlCommand getRegUser = new MySqlCommand(auth, HelperClass.mySqlConnection);
+            MySqlDataReader mySqlDataReader = getRegUser.ExecuteReader();
+            mySqlDataReader.Read();
 
+            if (mySqlDataReader.GetString("password") == enterPasswordText.text)
+            {
+                // Получаем id пользователя
+                HelperClass.userId = mySqlDataReader.GetInt32("id");
+
+                // Показ бокового меню
+                buttonsPanel.SetActive(true);
+
+                // Открытие панели выбора миров
+                selectWorldsPanel.SetActive(true);
+                registrationPanel.SetActive(false);
+                authorizationPanel.SetActive(false);
+
+                createNewWorldPanel.SetActive(true);
+                loadWorldPanel.SetActive(false);
+                multiplayerPanel.SetActive(false);
+            }
+            mySqlDataReader.Close();
+            HelperClass.mySqlConnection.Close();
+        }
+        else
+        {
+            Debug.Log("Не все поля заполнены!");
+        }
     }
 
     public void CreateWorld()
@@ -101,8 +150,24 @@ public class MenuButtonsScript : MonoBehaviour
         selectWorldsPanel.SetActive(false);
         // Запускам сцену игрового мира
         HelperClass.worldSeed = int.Parse(WorldSeed.text);
+
+        // Создаем новый мир в бд
+        CreateWorldInDB();
+        HelperClass.worldName = WorldName.text;
+
         SceneManager.LoadScene("WorldOne");
     }
+
+    private void CreateWorldInDB()
+    {
+        HelperClass.mySqlConnection.Open();
+        string regQuery = $"Insert into worlds (name, height, width, user_id) values ('{WorldName.text}'," +
+            $" '{HelperClass.worldHeight}', '{HelperClass.worldWidth}', {HelperClass.userId})";
+        MySqlCommand mySqlCommand = new MySqlCommand(regQuery, HelperClass.mySqlConnection);
+        Debug.Log(mySqlCommand.ExecuteNonQuery());
+        HelperClass.mySqlConnection.Close();
+    }
+
     public void OpenWorldsPanel()
     {
         // Нажатие на кнопку "Играть"

@@ -13,6 +13,7 @@ public class HelperClass : MonoBehaviour
         = new MySqlConnection("Database=sql7740887; Data Source = sql7.freemysqlhosting.net; " +
         "User Id=sql7740887; Password=iE9GIRF1ma; port=3306; charset=utf8");
     [SerializeField] public static string login = null;
+    [SerializeField] public static int userId;
 
 
     // Двумерный массив карты
@@ -27,6 +28,9 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static int worldSeed;
     [SerializeField] public static int chunkSize = 20;
     [SerializeField] public static int numChunks;
+
+    [SerializeField] public static string worldName;
+    [SerializeField] public static int worldId;
 
     // Чанки блоков
     [SerializeField] public static Tilemap[] Chunks;
