@@ -47,8 +47,11 @@ public class PauseButtonsScripts : MonoBehaviour
         }
         HelperClass.mySqlConnection.Open();
         Debug.Log($"айди пользователя {HelperClass.userId}");
-        string saveWorld = $"UPDATE worlds SET data = '{GetJson(ProceduralGeneration.map)}', bg_data  = '{GetJson(ProceduralGeneration.bgMap)}'" +
-            $" WHERE user_id = {HelperClass.userId} AND name = '{HelperClass.worldName}', inventory = '{GetInventoryJson(HelperClass.playerInventory)}'";
+        string saveWorld = $"UPDATE worlds SET data = '{GetJson(ProceduralGeneration.map)}'," +
+            $" bg_data  = '{GetJson(ProceduralGeneration.bgMap)}'," +
+            $" inventory = '{GetInventoryJson(HelperClass.playerInventory)}'" +
+            $" WHERE user_id = {HelperClass.userId} AND name = '{HelperClass.worldName}'";
+
         MySqlCommand mySqlCommand = new MySqlCommand(saveWorld, HelperClass.mySqlConnection);
         Debug.Log(mySqlCommand.ExecuteNonQuery());
         HelperClass.mySqlConnection.Close();

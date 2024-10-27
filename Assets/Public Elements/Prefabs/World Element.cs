@@ -30,6 +30,7 @@ public class LoadWorldBtnScript : MonoBehaviour
         HelperClass.worldName = worldReader.GetString("name");
         HelperClass.map = LoadJson(worldReader.GetString("data"));
         HelperClass.bgMap = LoadJson(worldReader.GetString("bg_data"));
+        HelperClass.playerInventory = LoadInventory(worldReader.GetString("inventory"));
         worldReader.Close();
         HelperClass.mySqlConnection.Close();
         HelperClass.isNewGame = false;
@@ -37,22 +38,28 @@ public class LoadWorldBtnScript : MonoBehaviour
     }
     int[,] LoadJson(string json)
     {
-            int[] loadedArray = JsonUtility.FromJson<Wrapper<int>>(json).Items;
+        int[] loadedArray = JsonUtility.FromJson<Wrapper<int>>(json).Items;
 
-            // Преобразование одномерного массива обратно в двумерный
-            int[,] map = new int[HelperClass.worldWidth, HelperClass.worldHeight];
-            Debug.Log(map.GetLength(0));
+        // Преобразование одномерного массива обратно в двумерный
+        int[,] map = new int[HelperClass.worldWidth, HelperClass.worldHeight];
+        Debug.Log(map.GetLength(0));
 
-            for (int i = 0; i < HelperClass.worldWidth; i++)
+        for (int i = 0; i < HelperClass.worldWidth; i++)
+        {
+            for (int j = 0; j < HelperClass.worldHeight; j++)
             {
-                for (int j = 0; j < HelperClass.worldHeight; j++)
-                {
-                    map[i, j] = loadedArray[i * HelperClass.worldHeight + j];
-                }
+                map[i, j] = loadedArray[i * HelperClass.worldHeight + j];
             }
-            return map;
+        }
+        return map;
     }
-    
+
+    AllItemsAndBlocks[] LoadInventory(string json)
+    {
+        AllItemsAndBlocks[] loadedArray = JsonUtility.FromJson<Wrapper<AllItemsAndBlocks>>(json).Items;
+        return loadedArray;
+    }
+
     [System.Serializable]
     public class Wrapper<T>
     {
