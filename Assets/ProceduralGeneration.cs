@@ -57,16 +57,13 @@ public class ProceduralGeneration : MonoBehaviour
 
     [SerializeField] public static int[,] map;      // Двумерный массив карты
     [SerializeField] public static int[,] bgMap;    // Двумерный массив карты заднего плана
+    [SerializeField] public static int[,] biomeMap;    // Двумерный массив биомов
     //[SerializeField] int[,] lightMap;             // Двумерный массив карты заднего плана
-
-    
 
     [SerializeField] GameObject mainTilemap;
     [SerializeField] Tilemap testhouse;
 
     [SerializeField] List<GameObject> Trees;
-
-
 
     // 0 = солнечный свет
     // 1 = трава
@@ -119,8 +116,6 @@ public class ProceduralGeneration : MonoBehaviour
     }
     void Generation()
     {
-
-        
         //lightMap = GenerateArray(width, height, true, true);    // Генерируем массив
         lightTilemap.ClearAllTiles();                           // Очищаем все тайлы перед генерацией
 
