@@ -55,6 +55,12 @@ public class MenuButtonsScript : MonoBehaviour
             selectWorldsPanel.SetActive(false);
             registrationPanel.SetActive(true);
         }
+        else
+        {
+            buttonsPanel.SetActive(false);
+            selectWorldsPanel.SetActive(true);
+            registrationPanel.SetActive(false);
+        }
     }
 
 

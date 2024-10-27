@@ -15,9 +15,12 @@ public class LoadWorldBtnScript : MonoBehaviour
         MySqlDataReader worldReader = world.ExecuteReader();
         worldReader.Read();
         // Загрузка мира из бд
+        HelperClass.worldId = worldReader.GetInt32("id");
+        HelperClass.worldName = worldReader.GetString("name");
         HelperClass.map = LoadJson(worldReader.GetString("data"));
         HelperClass.bgMap = LoadJson(worldReader.GetString("bg_data"));
-
+        worldReader.Close();
+        HelperClass.mySqlConnection.Close();
         HelperClass.isNewGame = false;
         SceneManager.LoadScene("WorldOne");
     }
