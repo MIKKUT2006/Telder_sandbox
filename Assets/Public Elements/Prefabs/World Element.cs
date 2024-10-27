@@ -4,9 +4,20 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class LoadWorldBtnScript : MonoBehaviour
 {
+    public void DeleteWorld()
+    {
+        HelperClass.mySqlConnection.Open();
+        string deleteWorld = $"Delete from worlds Where id = '{gameObject.name}'";
+        MySqlCommand world = new MySqlCommand(deleteWorld, HelperClass.mySqlConnection);
+        world.ExecuteNonQuery();
+        Destroy(gameObject.GetComponentInParent<HorizontalLayoutGroup>().gameObject);
+        HelperClass.mySqlConnection.Close();
+    }
+
     public void loadWorld()
     {
         HelperClass.mySqlConnection.Open();

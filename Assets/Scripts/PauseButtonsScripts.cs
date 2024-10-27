@@ -47,7 +47,8 @@ public class PauseButtonsScripts : MonoBehaviour
         }
         HelperClass.mySqlConnection.Open();
         Debug.Log($"айди пользователя {HelperClass.userId}");
-        string saveWorld = $"UPDATE worlds SET data = '{GetJson(ProceduralGeneration.map)}', bg_data  = '{GetJson(ProceduralGeneration.bgMap)}' WHERE user_id = {HelperClass.userId} AND name = '{HelperClass.worldName}'";
+        string saveWorld = $"UPDATE worlds SET data = '{GetJson(ProceduralGeneration.map)}', bg_data  = '{GetJson(ProceduralGeneration.bgMap)}'" +
+            $" WHERE user_id = {HelperClass.userId} AND name = '{HelperClass.worldName}', inventory = '{GetInventoryJson(HelperClass.playerInventory)}'";
         MySqlCommand mySqlCommand = new MySqlCommand(saveWorld, HelperClass.mySqlConnection);
         Debug.Log(mySqlCommand.ExecuteNonQuery());
         HelperClass.mySqlConnection.Close();
@@ -55,10 +56,18 @@ public class PauseButtonsScripts : MonoBehaviour
         SceneManager.LoadScene("_MainMenu");
     }
 
+    // Методы для json для бд
     string GetJson(int[,] map)
     {
         // Преобразование массива в JSON
         string json = JsonHelper.ToJson(map);
+        return json;
+    }
+
+    string GetInventoryJson(AllItemsAndBlocks[] inventory)
+    {
+        // Преобразование массива в JSON
+        string json = JsonHelperArray.ToJson(inventory);
         return json;
     }
 
