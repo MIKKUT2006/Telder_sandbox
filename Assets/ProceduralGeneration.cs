@@ -58,8 +58,11 @@ public class ProceduralGeneration : MonoBehaviour
 
     [SerializeField] public static int[,] map;      // Двумерный массив карты
     [SerializeField] public static int[,] bgMap;    // Двумерный массив карты заднего плана
-    [SerializeField] public static int[,] biomeMap;    // Двумерный массив биомов
-    //[SerializeField] int[,] lightMap;             // Двумерный массив карты заднего плана
+    //[SerializeField] public static int[,] biomeMap;    // Двумерный массив биомов
+
+    private enum Biomes { Desert, Forest, Crystal, None }
+    private Biomes[] biomeMap;
+
 
     [SerializeField] GameObject mainTilemap;
     [SerializeField] Tilemap testhouse;
@@ -85,6 +88,8 @@ public class ProceduralGeneration : MonoBehaviour
         HelperClass.worldWidth = width;
         HelperClass.worldHeight = height;
         HelperClass.Cells = new Cell[HelperClass.worldWidth, HelperClass.worldWidth];
+
+        biomeMap = new Biomes[width];
 
         cell = new Cell();
 
@@ -246,52 +251,68 @@ public class ProceduralGeneration : MonoBehaviour
         return map;
     }
 
+    public int[,] BiomeGeneration(int[,] map)
+    {
+        float biomeNoiseScale = 0.1f; // Масштаб шума для биомов
+        float heightOffset = 10f; // Смещение высоты для вариативности
+
+        // Генерирование биомов
+        for (int x = 0; x < width; x++)
+        {
+            // Генерация биома для текущего столбца
+            float biomeValue = Mathf.PerlinNoise(x * biomeNoiseScale, 0);
+
+            if (biomeValue < 0.33f)
+            {
+                biomeMap[x] = Biomes.Desert; // Пустыня
+            }
+            else if (biomeValue < 0.66f)
+            {
+                biomeMap[x] = Biomes.Forest; // Лес
+            }
+            else
+            {
+                biomeMap[x] = Biomes.Crystal; // Кристалл
+            }
+        }
+        return map;
+    }
+
     public int[,] TerrainGeneration(int[,] map)     // Генерация земли
     {
         int perlinHeight;           // Высота перлина
-        float perlinHeightBiome;    // Высота перлина для биома
-
         for (int i = 0; i < width; i++)
         {
-            // Получаем координату чанка
-            //int chunkCoord = i / HelperClass.chunkSize;   // Получаем координату чанка
-            //int ostatok = chunkCoord % 100;
-            //if (ostatok != 0)
-            //{
-            //    chunkCoord -= (chunkCoord - ostatok) + 1;
-            //}
-            //Tilemap lighttilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-
             perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes / 2, HelperClass.worldSeed + height) * height / 2.5f);
             perlinHeight += height / 2;
-
-            perlinHeightBiome = Mathf.RoundToInt(Mathf.PerlinNoise(i / biomeSmoothes, HelperClass.worldSeed * 4 + height) * height / 4f);
-            perlinHeightBiome += height / 2f;
-            Debug.Log($"{perlinHeight} svo {perlinHeightBiome}");
-            //Debug.Log(perlinHeightBiome);
             for (int j = 0; j <= perlinHeight + 1; j++)
             {
-
                 if (j < perlinHeight)
                 {
-                    map[i, j] = 1;
+                    switch (biomeMap[i])
+                    {
+                        case Biomes.Forest:
+                            map[i, j] = 1;
+                            break;
+                        case Biomes.Desert:
+                            map[i, j] = 9;
+                            break;
+                    }
                 }
 
                 if (j == perlinHeight)
                 {
-                    map[i, j] = 2;
-                }
-            }
-
-            if (perlinHeightBiome >= perlinHeight)
-            {
-                Debug.Log("Биом доступен");
-                for (int j = 0; j < perlinHeightBiome; j++)
-                {
-                    if (j < Mathf.RoundToInt(perlinHeightBiome))
+                    switch (biomeMap[i])
                     {
-                        map[i, j] = 9;
+                        case Biomes.Forest:
+                            map[i, j] = 2;
+                            break;
+                        case Biomes.Desert:
+                            map[i, j] = 9;
+                            break;
                     }
+
+                    
                 }
             }
         }
@@ -413,26 +434,26 @@ public class ProceduralGeneration : MonoBehaviour
         return map;
     }
 
-    public int[,] BiomeGeneration(int[,] map)     // Генерация биомов
-    {
-        float perlinHeightBiome;
-        for (int x = 0; x < width; x++)
-        {
-            perlinHeightBiome = Mathf.RoundToInt(Mathf.PerlinNoise(x / biomeSmoothes, HelperClass.worldSeed * 4 + height) * height / 4f);
-            perlinHeightBiome += height / 1.8f;
-            for (int y = 0; y < perlinHeightBiome; y++)
-            {
-                //  && (map[x, y] == 2 || map[x, y] == 1)
-                // && (y > (height / 3) * 2)
-                // && (map[x, y] == 1 || map[x, y] == 2)
-                if (y < Mathf.RoundToInt(perlinHeightBiome) )
-                {
-                    map[x, y] = 9;
-                }
-            }
-        }
-        return map;
-    }
+    //public int[,] BiomeGeneration(int[,] map)     // Генерация биомов
+    //{
+    //    float perlinHeightBiome;
+    //    for (int x = 0; x < width; x++)
+    //    {
+    //        perlinHeightBiome = Mathf.RoundToInt(Mathf.PerlinNoise(x / biomeSmoothes, HelperClass.worldSeed * 4 + height) * height / 4f);
+    //        perlinHeightBiome += height / 1.8f;
+    //        for (int y = 0; y < perlinHeightBiome; y++)
+    //        {
+    //            //  && (map[x, y] == 2 || map[x, y] == 1)
+    //            // && (y > (height / 3) * 2)
+    //            // && (map[x, y] == 1 || map[x, y] == 2)
+    //            if (y < Mathf.RoundToInt(perlinHeightBiome) )
+    //            {
+    //                map[x, y] = 9;
+    //            }
+    //        }
+    //    }
+    //    return map;
+    //}
 
     public int[,] TreesGeneration(int[,] map)     // Генерация и травы
     {
