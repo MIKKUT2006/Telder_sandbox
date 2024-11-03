@@ -113,7 +113,7 @@ public class InputScript : MonoBehaviour
 
     private IEnumerator FadeToBackground(Sprite newBackground)
     {
-        tempBackgroundImage = backgroundImage;
+        tempBackgroundImage.sprite = backgroundImage.sprite;
 
         //// Плавное затухание текущего фона
         yield return StartCoroutine(FadeOut());
