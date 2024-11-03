@@ -40,6 +40,7 @@ public class InputScript : MonoBehaviour
     public Sprite forestBackground; // Фон для леса
     public Sprite crystalBackground; // Фон для кристального биома
     public SpriteRenderer backgroundImage;
+    public SpriteRenderer tempBackgroundImage;
     Biomes currentBiome;
     private float fadeDuration = 3.0f; // Длительность фейда в секундах
 
@@ -112,6 +113,8 @@ public class InputScript : MonoBehaviour
 
     private IEnumerator FadeToBackground(Sprite newBackground)
     {
+        tempBackgroundImage = backgroundImage;
+
         //// Плавное затухание текущего фона
         yield return StartCoroutine(FadeOut());
 
