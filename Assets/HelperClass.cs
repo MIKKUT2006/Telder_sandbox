@@ -37,6 +37,10 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static GameObject[] ChunksGameobject;
     [SerializeField] public static GameObject chunkPrefab;
 
+    // Список биомов
+    public enum Biomes { Desert, Forest, Crystal, None }
+    public static Biomes[] biomeMap;
+
     // Клетки с жидкостью/твердым блоком
     [SerializeField] public static Cell[,] Cells;
 

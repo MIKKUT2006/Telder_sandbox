@@ -13,6 +13,7 @@ using UnityEngine.UI;
 using PUSHKA.MySQL;
 using System.Data;
 using MySql.Data.MySqlClient;
+using static HelperClass;
 public class InputScript : MonoBehaviour
 {
     [SerializeField] Rigidbody2D rb;
@@ -34,6 +35,14 @@ public class InputScript : MonoBehaviour
     [SerializeField] public Tilemap tilemap;
     private Vector3 cellSize;
 
+    // Фоны для биомов
+    public Sprite desertBackground; // Фон для пустыни
+    public Sprite forestBackground; // Фон для леса
+    public Sprite crystalBackground; // Фон для кристального биома
+    public SpriteRenderer backgroundImage;
+    Biomes currentBiome;
+    private float fadeDuration = 3.0f; // Длительность фейда в секундах
+
     // Тестовые поля
     private bool inventoryOpen = false;
     private float pixelsPerUnit = 16;
@@ -51,6 +60,8 @@ public class InputScript : MonoBehaviour
             LoadInventoryImages();
         }
 
+        //spriteRenderer = GetComponent<SpriteRenderer>();
+        SetBackground(Biomes.Desert); // Установка начального биома, можно изменить в зависимости от логики
 
         // Тестовое подключение к бд
         //SqlDataBase db = new SqlDataBase("sql7.freemysqlhosting.net", "sql7740887", "sql7740887", "iE9GIRF1ma");
@@ -72,9 +83,67 @@ public class InputScript : MonoBehaviour
         //    string login = mySqlDataReader.GetString("login");
         //    Debug.Log(login);
         //}
-        
+
         //Debug.Log(mySqlCommand.ToString());
 
+    }
+
+    // Вызывайте этот метод при смене биома
+    public void UpdateBiome(Biomes newBiome)
+    {
+        SetBackground(newBiome);
+    }
+
+    public void SetBackground(Biomes currentBiome)
+    {
+        switch (currentBiome)
+        {
+            case Biomes.Desert:
+                StartCoroutine(FadeToBackground(desertBackground));
+                break;
+            case Biomes.Forest:
+                StartCoroutine(FadeToBackground(forestBackground));
+                break;
+            case Biomes.Crystal:
+                StartCoroutine(FadeToBackground(crystalBackground));
+                break;
+        }
+    }
+
+    private IEnumerator FadeToBackground(Sprite newBackground)
+    {
+        //// Плавное затухание текущего фона
+        yield return StartCoroutine(FadeOut());
+
+        // Смена фона
+        backgroundImage.sprite = newBackground;
+
+        // Плавное появление нового фона
+        yield return StartCoroutine(FadeIn());
+    }
+
+    private IEnumerator FadeOut()
+    {
+        Color color = backgroundImage.color;
+        for (float t = 0; t < fadeDuration; t += Time.deltaTime)
+        {
+            float normalizedTime = t / fadeDuration;
+            backgroundImage.color = new Color(color.r, color.g, color.b, 1 - normalizedTime);
+            yield return null;
+        }
+        backgroundImage.color = new Color(color.r, color.g, color.b, 0); // Убедитесь, что альфа-канал правильно установлен
+    }
+
+    private IEnumerator FadeIn()
+    {
+        Color color = backgroundImage.color;
+        for (float t = 0; t < fadeDuration; t += Time.deltaTime)
+        {
+            float normalizedTime = t / fadeDuration;
+            backgroundImage.color = new Color(color.r, color.g, color.b, normalizedTime);
+            yield return null;
+        }
+        backgroundImage.color = new Color(color.r, color.g, color.b, 1); // Убедитесь, что альфа-канал снова установлен
     }
 
     // Загружаем иконки инвентаря и текст количества предметов
@@ -124,6 +193,8 @@ public class InputScript : MonoBehaviour
     void Update()
     {
         rb.velocity = new Vector2 (Input.GetAxis("Horizontal") * playerSpeed, rb.velocity.y);
+
+        GetCurrentBiome(transform.position);
 
         if (Input.GetKeyDown(KeyCode.P))
         {
@@ -217,6 +288,25 @@ public class InputScript : MonoBehaviour
             HelperClass.selectedInventoryCell = 9;
             equipInventoryCell();
         }
+    }
+
+    // Получаем биом в котором находимся
+    public Biomes GetCurrentBiome(Vector2 position)
+    {
+        int xIndex = Mathf.RoundToInt(position.x); // Получаем индекс по X
+
+        // Проверяем, не выходит ли за границы массива
+        if (xIndex >= 0 && xIndex < HelperClass.worldWidth)
+        {
+            if (currentBiome != biomeMap[xIndex])
+            {
+                currentBiome = biomeMap[xIndex];
+                SetBackground(currentBiome);
+            }
+            return biomeMap[xIndex]; // Возвращаем биом для текущей позиции
+        }
+
+        return Biomes.None; // Если позиция вне границ, возвращаем None
     }
 
     private void equipInventoryCell()

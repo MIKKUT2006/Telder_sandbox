@@ -58,10 +58,9 @@ public class ProceduralGeneration : MonoBehaviour
 
     [SerializeField] public static int[,] map;      // Двумерный массив карты
     [SerializeField] public static int[,] bgMap;    // Двумерный массив карты заднего плана
-    //[SerializeField] public static int[,] biomeMap;    // Двумерный массив биомов
 
-    private enum Biomes { Desert, Forest, Crystal, None }
-    private Biomes[] biomeMap;
+    //private enum Biomes { Desert, Forest, Crystal, None }
+    //private Biomes[] biomeMap;
 
 
     [SerializeField] GameObject mainTilemap;
@@ -89,7 +88,7 @@ public class ProceduralGeneration : MonoBehaviour
         HelperClass.worldHeight = height;
         HelperClass.Cells = new Cell[HelperClass.worldWidth, HelperClass.worldWidth];
 
-        biomeMap = new Biomes[width];
+        HelperClass.biomeMap = new HelperClass.Biomes[width];
 
         cell = new Cell();
 
@@ -263,15 +262,15 @@ public class ProceduralGeneration : MonoBehaviour
             Debug.Log(biomeValue);
             if (biomeValue < 0.44f)
             {
-                biomeMap[x] = Biomes.Desert; // Пустыня
+                HelperClass.biomeMap[x] = HelperClass.Biomes.Desert; // Пустыня
             }
             else if (biomeValue < 0.66f)
             {
-                biomeMap[x] = Biomes.Forest; // Лес
+                HelperClass.biomeMap[x] = HelperClass.Biomes.Forest; // Лес
             }
             else
             {
-                biomeMap[x] = Biomes.Crystal; // Кристалл
+                HelperClass.biomeMap[x] = HelperClass.Biomes.Crystal; // Кристалл
             }
         }
     }
@@ -287,15 +286,15 @@ public class ProceduralGeneration : MonoBehaviour
             {
                 if (j < perlinHeight)
                 {
-                    switch (biomeMap[i])
+                    switch (HelperClass.biomeMap[i])
                     {
-                        case Biomes.Forest:
+                        case HelperClass.Biomes.Forest:
                             map[i, j] = 1;
                             break;
-                        case Biomes.Desert:
+                        case HelperClass.Biomes.Desert:
                             map[i, j] = 9;
                             break;
-                        case Biomes.Crystal:
+                        case HelperClass.Biomes.Crystal:
                             map[i, j] = 10;
                             break;
                     }
@@ -303,15 +302,15 @@ public class ProceduralGeneration : MonoBehaviour
 
                 if (j == perlinHeight)
                 {
-                    switch (biomeMap[i])
+                    switch (HelperClass.biomeMap[i])
                     {
-                        case Biomes.Forest:
+                        case HelperClass.Biomes.Forest:
                             map[i, j] = 2;
                             break;
-                        case Biomes.Desert:
+                        case HelperClass.Biomes.Desert:
                             map[i, j] = 9;
                             break;
-                        case Biomes.Crystal:
+                        case HelperClass.Biomes.Crystal:
                             map[i, j] = 10;
                             break;
                     }
@@ -343,15 +342,15 @@ public class ProceduralGeneration : MonoBehaviour
             {
                 if (j < perlinHeight)
                 {
-                    switch (biomeMap[i])
+                    switch (HelperClass.biomeMap[i])
                     {
-                        case Biomes.Forest:
+                        case HelperClass.Biomes.Forest:
                             map[i, j] = 1;
                             break;
-                        case Biomes.Desert:
+                        case HelperClass.Biomes.Desert:
                             map[i, j] = 9;
                             break;
-                        case Biomes.Crystal:
+                        case HelperClass.Biomes.Crystal:
                             map[i, j] = 10;
                             break;
                     }
@@ -383,15 +382,15 @@ public class ProceduralGeneration : MonoBehaviour
             {
                 if (j < perlinHeight && (map[i,j] == 1 || map[i, j] != 2))
                 {
-                    switch (biomeMap[i])
+                    switch (HelperClass.biomeMap[i])
                     {
-                        case Biomes.Forest:
+                        case HelperClass.Biomes.Forest:
                             map[i, j] = 3;
                             break;
-                        case Biomes.Desert:
+                        case HelperClass.Biomes.Desert:
                             map[i, j] = 9;
                             break;
-                        case Biomes.Crystal:
+                        case HelperClass.Biomes.Crystal:
                             map[i, j] = 10;
                             break;
                     }
@@ -439,11 +438,11 @@ public class ProceduralGeneration : MonoBehaviour
                 }
 
                 // Генерация руды телепортации
-                perlinHeightTeleportium = Mathf.PerlinNoise((i + HelperClass.worldSeed) / teleportiumOre / 0.5f, (j + HelperClass.worldSeed) / teleportiumOre / 0.5f);
+                perlinHeightTeleportium = Mathf.PerlinNoise((i + HelperClass.worldSeed) / teleportiumOre / 0.9f, (j + HelperClass.worldSeed) / teleportiumOre / 0.9f);
 
                 //perlinHeightTeleportium = Mathf.RoundToInt(Mathf.PerlinNoise(j / stonesmothes, seed * 3) * height / 2.1f);
                 //Debug.Log(perlinHeightTeleportium);
-                if (perlinHeightTeleportium > 0.87 && map[i, j] == 3)
+                if (perlinHeightTeleportium > 0.87 && HelperClass.biomeMap[i] == HelperClass.Biomes.Crystal && map[i, j] == 10)
                 {
                     map[i, j] = 7;
                 }
