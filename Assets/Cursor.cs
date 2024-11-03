@@ -20,22 +20,17 @@ public class Cursor : MonoBehaviour
 
     void Update()
     {
-        // �������� ������� ������� � ������� ������������
         Vector3 mousePosition = Input.mousePosition;
 
         Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
-
-        // �������������� ������� ������� � ������� ������ Tilemap
         Vector3 cellPosition = tilemap.WorldToCell(mouseWorldPosition);
 
         cellPosition.x -= 0.5f;
         cellPosition.y -= 0.5f;
 
-        // �������� ����� ������ Tilemap
         Vector3 cellCenter = cellPosition + Vector3Int.RoundToInt(cellSize);
 
-        // ����������� ������� ������ � ����� ������ Tilemap
         transform.position = cellCenter;
         //Debug.Log(cellCenter);
     }

@@ -6,16 +6,16 @@ using UnityEngine;
 // Класс, хранящй крепкость всех блоков в игре
 public class BlocksData : MonoBehaviour
 {
-    public static List<int> blocksSolidity = new List<int> {
-         0, //солнечный свет
-         3, //трава
-         3, //земля
-         15, //камень
-         0, //пустота
-         3, //трава с деревьями
-         1, //трава
-         1, //трава
-    };
+    //public static List<int> blocksSolidity = new List<int> {
+    //     0, //солнечный свет
+    //     3, //трава
+    //     3, //земля
+    //     15, //камень
+    //     0, //пустота
+    //     3, //трава с деревьями
+    //     1, //трава
+    //     1, //трава
+    //};
 
     public static List<AllItemsAndBlocks> allBlocks = new List<AllItemsAndBlocks> {
         // Блоки верхнего мира
@@ -28,8 +28,12 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(6, "Железная руда", 20, true, 100),
          new AllItemsAndBlocks(7, "Руда телепортиума", 30, true, 100),
          new AllItemsAndBlocks(8, "Баррьер", int.MaxValue, true, 100),
+         new AllItemsAndBlocks(9, "Песок", 1, true, 100),
+         
     };
 }
+
+// Класс игровых предметов
 [System.Serializable]
 public class AllItemsAndBlocks
 {

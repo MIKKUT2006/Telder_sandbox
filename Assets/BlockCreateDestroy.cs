@@ -308,7 +308,24 @@ public class BlockCreateDestroy : MonoBehaviour
                     newBlock.GetComponent<SpriteRenderer>().sprite = sprite;
                 }
 
-                
+                ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
+                newParticles.gameObject.SetActive(true);
+                Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
+
+                // Получение его текстуры, если она есть
+                if (tile is UnityEngine.Tilemaps.Tile)
+                {
+                    UnityEngine.Tilemaps.Tile tileScript = tile as UnityEngine.Tilemaps.Tile;
+                    Texture2D texture = tileScript.sprite.texture;
+                    destroyMaterial.mainTexture = texture;
+                }
+                else if (tile is RuleTile)
+                {
+                    RuleTile ruleTile = tile as RuleTile;
+                    sprite = ruleTile.m_DefaultSprite;
+                    Texture2D texture = sprite.texture;
+                    destroyMaterial.mainTexture = texture;
+                }
 
                 Debug.Log("Блок сломан");
                 isblockDig = false;
@@ -348,44 +365,6 @@ public class BlockCreateDestroy : MonoBehaviour
                 tilemap.SetTile(blockPosition, null);
                 HelperClass.Chunks[chunkCoord] = tilemap;
                 HelperClass.lightChunks[chunkCoord] = lightTilemap;
-
-                //// Добавляем блок в инвентарь
-                //for (int i = 0; i < HelperClass.playerInventory.GetLength(0); i++)
-                //{
-                //    if (HelperClass.playerInventory[i] != null && HelperClass.playerInventory[i] == BlocksData.allBlocks.Find(x => x.blockIndex == blockId))
-                //    {
-                //        HelperClass.playerInventory[i].count++;
-                //        Debug.Log($"В инвентаре {HelperClass.playerInventory[i].count} предмета {HelperClass.playerInventory[i].name}");
-
-                //        digSound.clip = blockDestroy;
-                //        digSound.Play();
-                //        tilemap.SetTile(blockPosition, null);
-                //        HelperClass.Chunks[chunkCoord] = tilemap;
-                //        HelperClass.lightChunks[chunkCoord] = lightTilemap;
-                //        Inventory.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();
-
-                //        return;
-                //    }
-                //    else if (HelperClass.playerInventory[i] == null && blockId != 0)
-                //    {
-                //        HelperClass.playerInventory[i] = BlocksData.allBlocks.Find(x => x.blockIndex == blockId);
-                //        HelperClass.playerInventory[i].count = 1;
-                //        Debug.Log("В инвентарь был добавлен: " + HelperClass.playerInventory[i].name);
-                //        Inventory.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().sprite = sprite;
-                //        digSound.clip = blockDestroy;
-                //        digSound.Play();
-                //        tilemap.SetTile(blockPosition, null);
-                //        HelperClass.Chunks[chunkCoord] = tilemap;
-                //        HelperClass.lightChunks[chunkCoord] = lightTilemap;
-                //        Inventory.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();
-
-                //        return;
-                //    }
-                //    else
-                //    {
-                //        Debug.Log("Не прошло по условию");
-                //    }
-                //}
             }
             
         }

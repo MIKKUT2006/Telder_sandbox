@@ -41,6 +41,7 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] float smoothes;                // Мягкость
     [SerializeField] float cavessmothes;            // Мягкость Пещер
     [SerializeField] float stonesmothes;            // Мягкость Камня
+    [SerializeField] float biomeSmoothes;           // Мягкость Биома пустынм
 
     [Header ("Мягкость генерации руд")]
     [SerializeField] float ironOre;                 // Мягкость железной руды
@@ -73,6 +74,7 @@ public class ProceduralGeneration : MonoBehaviour
     // 5 = трава с деревьями
     // 1 = трава
     // 1 = трава
+    // 1 = трава
 
     // Для проверки работы шума перлина
     public int x = 0, y = 0;
@@ -80,6 +82,8 @@ public class ProceduralGeneration : MonoBehaviour
 
     void Awake()
     {
+        HelperClass.worldWidth = width;
+        HelperClass.worldHeight = height;
         HelperClass.Cells = new Cell[HelperClass.worldWidth, HelperClass.worldWidth];
 
         cell = new Cell();
@@ -125,7 +129,7 @@ public class ProceduralGeneration : MonoBehaviour
         map = TerrainGeneration(map);                           // Генерируем мир
         map = StoneGeneration(map);                             // Генерируем камень
         map = CavesGeneration(map);                             // Генерируем пещеры
-        map = OresGeneration(map);                              // Генерируем руды
+        //map = BiomeGeneration(map);                              // Генерируем биомы
         map = BarrierGeneration(map);
         DestroyStructures();
         // Задниий план
@@ -244,55 +248,55 @@ public class ProceduralGeneration : MonoBehaviour
 
     public int[,] TerrainGeneration(int[,] map)     // Генерация земли
     {
-        int perlinHeight;   // Высота перлина
+        int perlinHeight;           // Высота перлина
+        float perlinHeightBiome;    // Высота перлина для биома
+
         for (int i = 0; i < width; i++)
         {
             // Получаем координату чанка
-            int chunkCoord = i / HelperClass.chunkSize;   // Получаем координату чанка
+            //int chunkCoord = i / HelperClass.chunkSize;   // Получаем координату чанка
+            //int ostatok = chunkCoord % 100;
+            //if (ostatok != 0)
+            //{
+            //    chunkCoord -= (chunkCoord - ostatok) + 1;
+            //}
+            //Tilemap lighttilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
-            int ostatok = chunkCoord % 100;
-            if (ostatok != 0)
-            {
-                chunkCoord -= (chunkCoord - ostatok) + 1;
-            }
-            Tilemap lighttilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-
-            //perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes / 2, HelperClass.worldSeed / 2) * height / 2);
             perlinHeight = Mathf.RoundToInt(Mathf.PerlinNoise(i / smoothes / 2, HelperClass.worldSeed + height) * height / 2.5f);
-            //Debug.Log(HelperClass.worldSeed);
             perlinHeight += height / 2;
-            //perlinHeight = perlinHeight / 2;
 
+            perlinHeightBiome = Mathf.RoundToInt(Mathf.PerlinNoise(i / biomeSmoothes, HelperClass.worldSeed * 4 + height) * height / 4f);
+            perlinHeightBiome += height / 2f;
+            Debug.Log($"{perlinHeight} svo {perlinHeightBiome}");
+            //Debug.Log(perlinHeightBiome);
             for (int j = 0; j <= perlinHeight + 1; j++)
             {
 
                 if (j < perlinHeight)
                 {
                     map[i, j] = 1;
-                    // Устанавливаем твердый блок для физики воды
-                    //HelperClass.Cells[i, j].SetType(CellType.Solid);
-                    //cell.Set(i, j);
-                    //cell.SetType(CellType.Solid);
-
-                    //HelperClass.Cells[i, j] = cell;
-                    ////HelperClass.Cells[100, 100].SetType(CellType.Solid);
-                    ////HelperClass.Cells[120, 120].SetType(CellType.Solid);
                 }
 
                 if (j == perlinHeight)
                 {
                     map[i, j] = 2;
-                    //HelperClass.Cells[i, j].SetType(CellType.Solid);
                 }
+            }
 
-                //if (j > perlinHeight)
-                //{
-                //    map[i, j] = 0;
-                //}
+            if (perlinHeightBiome >= perlinHeight)
+            {
+                Debug.Log("Биом доступен");
+                for (int j = 0; j < perlinHeightBiome; j++)
+                {
+                    if (j < Mathf.RoundToInt(perlinHeightBiome))
+                    {
+                        map[i, j] = 9;
+                    }
+                }
             }
         }
 
-        // Дополнительные горы
+        //// Дополнительные горы
         for (int i = 0; i < width; i++)
         {
             // Получаем координату чанка
@@ -310,6 +314,7 @@ public class ProceduralGeneration : MonoBehaviour
             //Debug.Log(HelperClass.worldSeed);
             perlinHeight += height / 2;
             //perlinHeight = perlinHeight / 2;
+
 
             for (int j = 0; j <= perlinHeight + 1; j++)
             {
@@ -329,7 +334,6 @@ public class ProceduralGeneration : MonoBehaviour
                 }
             }
         }
-
         return map;
     }
 
@@ -358,7 +362,7 @@ public class ProceduralGeneration : MonoBehaviour
         float perlinHeightGround;   // Высота перлина поверхностных пещер
         float perlinHeightOres;   // Высота перлина руд
         float perlinHeightTeleportium;
-        float perlinHeightWaterCaves;
+        
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
@@ -396,46 +400,37 @@ public class ProceduralGeneration : MonoBehaviour
                     map[i, j] = 7;
                 }
 
-                // Генерация водных пещер
-                //perlinHeightWaterCaves = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes / 2, (j + HelperClass.worldSeed)/ cavessmothes / 2);
+                //Генерация биома пустыни
+                //perlinHeightBiome = Mathf.PerlinNoise((i + HelperClass.worldSeed * 2) / 10f, (j + HelperClass.worldSeed * 2) / 10f);
                 ////Debug.Log(perlinHeightOres);
-                //if (perlinHeightWaterCaves > 0.8 && map[i, j] == 3)
+                //// 
+                //if (perlinHeightBiome > 0.4 && (map[i, j] == 1 || map[i, j] == 2))
                 //{
-                //    map[i, j] = 4;
+                //    map[i, j] = 9;
                 //}
             }
         }
         return map;
     }
 
-    public int[,] OresGeneration(int[,] map)     // Генерация пещер
+    public int[,] BiomeGeneration(int[,] map)     // Генерация биомов
     {
-        //float perlinHeight;   // Высота перлина
-        //for (int i = 0; i < width; i++)
-        //{
-        //    for (int j = 0; j < height; j++)
-        //    {
-        //        perlinHeight = Mathf.PerlinNoise((i + seed) / ironOre, (j + seed) / ironOre);
-
-        //        if (perlinHeight > 0.8 && map[i, j] == 3)
-        //        {
-        //            map[i, j] = 6;
-        //        }
-        //    }
-        //}
-
-        ////for (int i = 0; i < width; i++)
-        ////{
-        ////    for (int j = 0; j < height; j++)
-        ////    {
-        ////        perlinHeight = Mathf.PerlinNoise((i + seed) / cavessmothes / 2, (j + seed) / cavessmothes / 2);
-
-        ////        if (perlinHeight < 0.4 && map[i, j] <= 2)
-        ////        {
-        ////            map[i, j] = 4;
-        ////        }
-        ////    }
-        ////}
+        float perlinHeightBiome;
+        for (int x = 0; x < width; x++)
+        {
+            perlinHeightBiome = Mathf.RoundToInt(Mathf.PerlinNoise(x / biomeSmoothes, HelperClass.worldSeed * 4 + height) * height / 4f);
+            perlinHeightBiome += height / 1.8f;
+            for (int y = 0; y < perlinHeightBiome; y++)
+            {
+                //  && (map[x, y] == 2 || map[x, y] == 1)
+                // && (y > (height / 3) * 2)
+                // && (map[x, y] == 1 || map[x, y] == 2)
+                if (y < Mathf.RoundToInt(perlinHeightBiome) )
+                {
+                    map[x, y] = 9;
+                }
+            }
+        }
         return map;
     }
 
@@ -537,34 +532,38 @@ public class ProceduralGeneration : MonoBehaviour
             BoundsInt bounds = structureTilemap.cellBounds;
             int structureCoordX = (int)Random.RandomRange(0, width);
             int structureCoordY = (int)Random.RandomRange(0, 100);
-            for (int x = bounds.xMin; x < bounds.xMax; x++)
+            if (map[structureCoordX, structureCoordY] != 0)
             {
-                for (int y = bounds.yMin; y < bounds.yMax; y++)
+                for (int x = bounds.xMin; x < bounds.xMax; x++)
                 {
-                    Vector3Int tilePos = new Vector3Int(x, y, 0);
-                    TileBase tile = structureTilemap.GetTile(tilePos);
-
-                    if (tile != null)
+                    for (int y = bounds.yMin; y < bounds.yMax; y++)
                     {
-                        //Debug.Log("Tile at position " + tilePos + " is " + tile.name);
-                        tilePos.x += structureCoordX;
-                        tilePos.y += structureCoordY;
-                        //map[x, y] = 3;
-                        int chunkCoord = tilePos.x / HelperClass.chunkSize;
+                        Vector3Int tilePos = new Vector3Int(x, y, 0);
+                        TileBase tile = structureTilemap.GetTile(tilePos);
 
-                        int ostatok = chunkCoord % 100;
-                        if (ostatok != 0)
+                        if (tile != null)
                         {
-                            chunkCoord -= (chunkCoord - ostatok) + 1;
-                        }
+                            //Debug.Log("Tile at position " + tilePos + " is " + tile.name);
+                            tilePos.x += structureCoordX;
+                            tilePos.y += structureCoordY;
+                            //map[x, y] = 3;
+                            int chunkCoord = tilePos.x / HelperClass.chunkSize;
 
-                        Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-                        //Debug.Log(HelperClass.Cells.GetLength(0));
-                        //HelperClass.Cells[x, y].SetType(CellType.Solid);
-                        tilemap.SetTile(tilePos, tile);
+                            int ostatok = chunkCoord % 100;
+                            if (ostatok != 0)
+                            {
+                                chunkCoord -= (chunkCoord - ostatok) + 1;
+                            }
+
+                            Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+                            //Debug.Log(HelperClass.Cells.GetLength(0));
+                            //HelperClass.Cells[x, y].SetType(CellType.Solid);
+                            tilemap.SetTile(tilePos, tile);
+                        }
                     }
                 }
             }
+            
         }
     }
     public void RenderMap(int[,] map, Tilemap groundTilemap, List<TileBase> groundTileBase, int[,] bgMap)   // Массив, тайлмап, тайлы блока (список блоков)
@@ -625,6 +624,9 @@ public class ProceduralGeneration : MonoBehaviour
                         break;
                     case 8:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[7]);       // Устанавливаем тайл барьера
+                        break;
+                    case 9:
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[8]);       // Устанавливаем тайл песка
                         break;
                 }
 
