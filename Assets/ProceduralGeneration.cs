@@ -253,8 +253,7 @@ public class ProceduralGeneration : MonoBehaviour
 
     public void BiomeGeneration()
     {
-        float biomeNoiseScale = 0.01f; // Масштаб шума для биомов
-        float heightOffset = 10f; // Смещение высоты для вариативности
+        float biomeNoiseScale = 0.005f; // Масштаб шума для биомов
 
         // Генерирование биомов
         for (int x = 0; x < width; x++)
@@ -404,6 +403,7 @@ public class ProceduralGeneration : MonoBehaviour
 
     public int[,] CavesGeneration(int[,] map)     // Генерация пещер
     {
+        int perlinHeightStone;   // Высота перлина
         float perlinHeightCaves;   // Высота перлина
         float perlinHeightGround;   // Высота перлина поверхностных пещер
         float perlinHeightOres;   // Высота перлина руд
@@ -411,19 +411,21 @@ public class ProceduralGeneration : MonoBehaviour
         
         for (int i = 0; i < width; i++)
         {
+            perlinHeightStone = Mathf.RoundToInt(Mathf.PerlinNoise(i / stonesmothes / 0.5f, HelperClass.worldSeed * 3) * height / 2.3f);
+            perlinHeightStone += height / 3;
+
             for (int j = 0; j < height; j++)
             {
+                // Пещеры
                 perlinHeightCaves = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes, (j + HelperClass.worldSeed) / cavessmothes);
                 if (perlinHeightCaves < 0.4 && (map[i, j] == 3 || map[i, j] == 9 || map[i, j] == 10))
                 {
                     map[i, j] = 4;
-                    //HelperClass.Cells[i, j].AddLiquid(5);
-                    //lightMap[i, j] = 4;
-                    //Debug.Log(lightMap[i, j]);
                 }
 
+                // Пещеры на поверхности
                 perlinHeightGround = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes / 2, (j + HelperClass.worldSeed) / cavessmothes / 2);
-                if (perlinHeightGround < 0.4 && map[i, j] <= 2 && map[i, j] != 0)
+                if (perlinHeightGround < 0.4 && (map[i, j] == 1 || map[i, j] == 2 || map[i, j] == 9 || map[i, j] == 10) && j > perlinHeightStone - 1)
                 {
                     map[i, j] = 4;
                 }
@@ -445,42 +447,12 @@ public class ProceduralGeneration : MonoBehaviour
                 {
                     map[i, j] = 7;
                 }
-
-                //Генерация биома пустыни
-                //perlinHeightBiome = Mathf.PerlinNoise((i + HelperClass.worldSeed * 2) / 10f, (j + HelperClass.worldSeed * 2) / 10f);
-                ////Debug.Log(perlinHeightOres);
-                //// 
-                //if (perlinHeightBiome > 0.4 && (map[i, j] == 1 || map[i, j] == 2))
-                //{
-                //    map[i, j] = 9;
-                //}
             }
         }
         return map;
     }
 
-    //public int[,] BiomeGeneration(int[,] map)     // Генерация биомов
-    //{
-    //    float perlinHeightBiome;
-    //    for (int x = 0; x < width; x++)
-    //    {
-    //        perlinHeightBiome = Mathf.RoundToInt(Mathf.PerlinNoise(x / biomeSmoothes, HelperClass.worldSeed * 4 + height) * height / 4f);
-    //        perlinHeightBiome += height / 1.8f;
-    //        for (int y = 0; y < perlinHeightBiome; y++)
-    //        {
-    //            //  && (map[x, y] == 2 || map[x, y] == 1)
-    //            // && (y > (height / 3) * 2)
-    //            // && (map[x, y] == 1 || map[x, y] == 2)
-    //            if (y < Mathf.RoundToInt(perlinHeightBiome) )
-    //            {
-    //                map[x, y] = 9;
-    //            }
-    //        }
-    //    }
-    //    return map;
-    //}
-
-    public int[,] TreesGeneration(int[,] map)     // Генерация и травы
+    public int[,] TreesGeneration(int[,] map)     // Генерация деревьев
     {
         float perlinHeight;   // Высота перлина
 
@@ -494,7 +466,6 @@ public class ProceduralGeneration : MonoBehaviour
                 if (perlinHeight < 0.4 && map[i, j] == 2)
                 {
                     map[i, j] = 5;
-                    //Debug.Log(map[i, j]);
                 }
             }
         }
