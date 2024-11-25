@@ -26,25 +26,25 @@ public class InputScript : MonoBehaviour
     private GameObject inventoryGameObject;
     private GameObject inventoryLightGameObject;
 
-    // Панель паузы
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     [SerializeField] private GameObject pausePanel;
 
-    // Объект для выделения выбранного блока
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     [SerializeField] GameObject selectedBlock;
 
     [SerializeField] public Tilemap tilemap;
     private Vector3 cellSize;
 
-    // Фоны для биомов
-    public Sprite desertBackground; // Фон для пустыни
-    public Sprite forestBackground; // Фон для леса
-    public Sprite crystalBackground; // Фон для кристального биома
+    // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+    public Sprite desertBackground; // пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    public Sprite forestBackground; // пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    public Sprite crystalBackground; // пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     public SpriteRenderer backgroundImage;
     public SpriteRenderer tempBackgroundImage;
     Biomes currentBiome;
-    private float fadeDuration = 3.0f; // Длительность фейда в секундах
+    private float fadeDuration = 3.0f; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
-    // Тестовые поля
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
     private bool inventoryOpen = false;
     private float pixelsPerUnit = 16;
 
@@ -62,9 +62,9 @@ public class InputScript : MonoBehaviour
         }
 
         //spriteRenderer = GetComponent<SpriteRenderer>();
-        SetBackground(Biomes.Desert); // Установка начального биома, можно изменить в зависимости от логики
+        SetBackground(Biomes.Desert); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
-        // Тестовое подключение к бд
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ
         //SqlDataBase db = new SqlDataBase("sql7.freemysqlhosting.net", "sql7740887", "sql7740887", "iE9GIRF1ma");
         //db.RunQuery("Insert into users (login, password) values ('SVO','ANTISVO')");
         //db.SelectQuery("Select * from users", out DataTable dataTable);
@@ -89,7 +89,7 @@ public class InputScript : MonoBehaviour
 
     }
 
-    // Вызывайте этот метод при смене биома
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     public void UpdateBiome(Biomes newBiome)
     {
         SetBackground(newBiome);
@@ -115,13 +115,13 @@ public class InputScript : MonoBehaviour
     {
         tempBackgroundImage.sprite = backgroundImage.sprite;
 
-        //// Плавное затухание текущего фона
+        //// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         yield return StartCoroutine(FadeOut());
 
-        // Смена фона
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         backgroundImage.sprite = newBackground;
 
-        // Плавное появление нового фона
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         yield return StartCoroutine(FadeIn());
     }
 
@@ -134,7 +134,7 @@ public class InputScript : MonoBehaviour
             backgroundImage.color = new Color(color.r, color.g, color.b, 1 - normalizedTime);
             yield return null;
         }
-        backgroundImage.color = new Color(color.r, color.g, color.b, 0); // Убедитесь, что альфа-канал правильно установлен
+        backgroundImage.color = new Color(color.r, color.g, color.b, 0); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     }
 
     private IEnumerator FadeIn()
@@ -146,10 +146,10 @@ public class InputScript : MonoBehaviour
             backgroundImage.color = new Color(color.r, color.g, color.b, normalizedTime);
             yield return null;
         }
-        backgroundImage.color = new Color(color.r, color.g, color.b, 1); // Убедитесь, что альфа-канал снова установлен
+        backgroundImage.color = new Color(color.r, color.g, color.b, 1); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     }
 
-    // Загружаем иконки инвентаря и текст количества предметов
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void LoadInventoryImages()
     {
         for (int i = 0; i < HelperClass.playerInventory.Count(); i++)
@@ -158,17 +158,17 @@ public class InputScript : MonoBehaviour
             {
                 if (!string.IsNullOrEmpty(HelperClass.playerInventory[i].imagePath) && File.Exists(HelperClass.playerInventory[i].imagePath) && HelperClass.playerInventory[i].imagePath != null)
                 {
-                    // Загрузка текстуры из файла
+                    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
                     byte[] imageData = File.ReadAllBytes(HelperClass.playerInventory[i].imagePath);
                     Texture2D texture = new Texture2D(16, 16);
-                    texture.LoadImage(imageData); // Загружает данные изображения в текстуру
+                    texture.LoadImage(imageData); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                     texture.filterMode = FilterMode.Point;
 
-                    // Рассчитываем размеры спрайта с учетом pixelsPerUnit
+                    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ pixelsPerUnit
                     float width = texture.width / 16;
                     float height = texture.height / 16;
 
-                    // Создание спрайта из текстуры
+                    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                     Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
 
                     inventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
@@ -179,7 +179,7 @@ public class InputScript : MonoBehaviour
                 }
                 //else
                 //{
-                //    Debug.LogError("Ошибка: Неверный путь к изображению или файл не найден: " + HelperClass.playerInventory[i].imagePath);
+                //    Debug.LogError("пїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: " + HelperClass.playerInventory[i].imagePath);
                 //}
             }
         }
@@ -195,7 +195,7 @@ public class InputScript : MonoBehaviour
     
     void Update()
     {
-        rb.velocity = new Vector2 (Input.GetAxis("Horizontal") * playerSpeed, rb.velocity.y);
+        rb.linearVelocity = new Vector2 (Input.GetAxis("Horizontal") * playerSpeed, rb.linearVelocity.y);
 
         GetCurrentBiome(transform.position);
 
@@ -220,13 +220,13 @@ public class InputScript : MonoBehaviour
             playerSpeed = playerDefaultSpeed;
         }
 
-        // Окткрытие окна паузы
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             pausePanel.SetActive(true);
         }
 
-        // Открытие инвентаря на нажатие клавиши I
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ I
         if (Input.GetKeyDown(KeyCode.I))
         {
             if (inventoryOpen == false)
@@ -240,7 +240,7 @@ public class InputScript : MonoBehaviour
                 inventoryGameObject.SetActive(false);
             }
         }
-        // Панель быстрого доступа инвентаря
+        // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             HelperClass.selectedInventoryCell = 0;
@@ -293,12 +293,12 @@ public class InputScript : MonoBehaviour
         }
     }
 
-    // Получаем биом в котором находимся
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     public Biomes GetCurrentBiome(Vector2 position)
     {
-        int xIndex = Mathf.RoundToInt(position.x); // Получаем индекс по X
+        int xIndex = Mathf.RoundToInt(position.x); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ X
 
-        // Проверяем, не выходит ли за границы массива
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if (xIndex >= 0 && xIndex < HelperClass.worldWidth)
         {
             if (currentBiome != biomeMap[xIndex])
@@ -306,10 +306,10 @@ public class InputScript : MonoBehaviour
                 currentBiome = biomeMap[xIndex];
                 SetBackground(currentBiome);
             }
-            return biomeMap[xIndex]; // Возвращаем биом для текущей позиции
+            return biomeMap[xIndex]; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         }
 
-        return Biomes.None; // Если позиция вне границ, возвращаем None
+        return Biomes.None; // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ None
     }
 
     private void equipInventoryCell()
@@ -345,7 +345,7 @@ public class InputScript : MonoBehaviour
             Flip();
         }
 
-        if (rb.velocity.x == 0)
+        if (rb.linearVelocity.x == 0)
         {
             GetComponent<Animator>().SetBool("Run", false);
         }
