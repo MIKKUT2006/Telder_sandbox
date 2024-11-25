@@ -13,12 +13,11 @@ public class HelperClass : MonoBehaviour
         = new MySqlConnection("Database=sql7740887; Data Source = sql7.freemysqlhosting.net; " +
         "User Id=sql7740887; Password=iE9GIRF1ma; port=3306; charset=utf8");
 
-
     public const string url = "https://saoxywsrefjufpncyivz.supabase.co";
     public const string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNhb3h5d3NyZWZqdWZwbmN5aXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI1NDc3MDMsImV4cCI6MjA0ODEyMzcwM30.Qin9g5rC-SgOg3xdyF4yP9344t54uMBc0HQlUZxInJg";
 
 
-        [SerializeField] public static string login = null;
+    [SerializeField] public static string login = null;
     [SerializeField] public static int userId;
 
 

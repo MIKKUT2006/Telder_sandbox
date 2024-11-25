@@ -9,6 +9,9 @@ using static UnityEditor.PlayerSettings;
 using UnityEngine.WSA;
 using static UnityEngine.Rendering.VolumeComponent;
 using System.Drawing;
+using System;
+using Assets;
+using Client = Supabase.Client;
 
 public class ProceduralGeneration : MonoBehaviour
 {
@@ -81,6 +84,22 @@ public class ProceduralGeneration : MonoBehaviour
     // Для проверки работы шума перлина
     public int x = 0, y = 0;
     public int worldSeed;
+
+    public async void GetUsers()
+    {
+        var options = new Supabase.SupabaseOptions
+        {
+            AutoConnectRealtime = true,
+        };
+        var supabase = new Supabase.Client(HelperClass.url, HelperClass.key, options);
+        await supabase.InitializeAsync();
+
+        var result = await supabase.From<User>()
+
+        List<Assets.User> allUsers = result.Models;
+
+        //return allUsers;
+    }
 
     void Awake()
     {
@@ -546,8 +565,8 @@ public class ProceduralGeneration : MonoBehaviour
         for (int i = 0; i < structureCount; i++)
         {
             BoundsInt bounds = structureTilemap.cellBounds;
-            int structureCoordX = (int)Random.RandomRange(0, width);
-            int structureCoordY = (int)Random.RandomRange(0, 100);
+            int structureCoordX = (int)UnityEngine.Random.RandomRange(0, width);
+            int structureCoordY = (int)UnityEngine.Random.RandomRange(0, 100);
             if (map[structureCoordX, structureCoordY] != 0)
             {
                 for (int x = bounds.xMin; x < bounds.xMax; x++)
@@ -630,7 +649,7 @@ public class ProceduralGeneration : MonoBehaviour
                         Vector3 pos = new Vector3(i + 0.5f, j + 5, 0);
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);      // Устанавливаем деревья
 
-                        Instantiate(Trees[(int)Random.RandomRange(0, Trees.Count())], pos, Quaternion.identity);
+                        Instantiate(Trees[(int)UnityEngine.Random.RandomRange(0, Trees.Count())], pos, Quaternion.identity);
                         break;
                     case 6:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[4]);       // Устанавливаем тайл железной руды
