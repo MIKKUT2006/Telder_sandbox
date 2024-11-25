@@ -4,21 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting.Dependencies.Sqlite;
-using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
+using Supabase;
+using Postgrest;
+using Postgrest.Models;
 
 namespace Assets
 {
-    [Supabase.Postgrest.Attributes.Table("users")]
+    [Postgrest.Attributes.Table("users")]
     public class Users : BaseModel
     {
-        [Supabase.Postgrest.Attributes.PrimaryKey("id", false)]
+        [Postgrest.Attributes.PrimaryKey("id", false)]
         public int id { get; set; }
 
-        [Supabase.Postgrest.Attributes.Column("login")]
+        [Postgrest.Attributes.Column("login")]
         public string? login { get; set; }
 
-        [Supabase.Postgrest.Attributes.Column("password")]
+        [Postgrest.Attributes.Column("password")]
         public string? password { get; set; }
     }
 }
