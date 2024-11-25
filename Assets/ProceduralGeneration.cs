@@ -12,6 +12,7 @@ using System.Drawing;
 using System;
 using Assets;
 using Client = Supabase.Client;
+using System.Threading.Tasks;
 
 public class ProceduralGeneration : MonoBehaviour
 {
@@ -85,18 +86,18 @@ public class ProceduralGeneration : MonoBehaviour
     public int x = 0, y = 0;
     public int worldSeed;
 
-    public async void GetUsers()
+    public async Task<List<User>> GetUsers()
     {
         var options = new Supabase.SupabaseOptions
         {
-            AutoConnectRealtime = true,
+            AutoConnectRealtime = true
         };
         var supabase = new Supabase.Client(HelperClass.url, HelperClass.key, options);
         await supabase.InitializeAsync();
 
-        var result = await supabase.From<User>()
-
-        List<Assets.User> allUsers = result.Models;
+        //var result = await supabase.From<User>().
+        
+        //List<Assets.User> allUsers = result.Models;
 
         //return allUsers;
     }
