@@ -14,6 +14,7 @@ using PUSHKA.MySQL;
 using System.Data;
 using MySql.Data.MySqlClient;
 using static HelperClass;
+using System;
 public class InputScript : MonoBehaviour
 {
     [SerializeField] Rigidbody2D rb;
@@ -46,7 +47,6 @@ public class InputScript : MonoBehaviour
 
     // �������� ����
     private bool inventoryOpen = false;
-    private float pixelsPerUnit = 16;
     private void Awake()
     {
         Camera.main.gameObject.transform.localPosition = transform.localPosition;
@@ -151,48 +151,13 @@ public class InputScript : MonoBehaviour
         backgroundImage.color = new Color(color.r, color.g, color.b, 1); // ���������, ��� �����-����� ����� ����������
     }
 
-    // ��������� ������ ��������� � ����� ���������� ���������
-    void LoadInventoryImages()
-    {
-        for (int i = 0; i < HelperClass.playerInventory.Count(); i++)
-        {
-            if (HelperClass.playerInventory[i] != null)
-            {
-                if (!string.IsNullOrEmpty(HelperClass.playerInventory[i].imagePath) && File.Exists(HelperClass.playerInventory[i].imagePath) && HelperClass.playerInventory[i].imagePath != null)
-                {
-                    // �������� �������� �� �����
-                    byte[] imageData = File.ReadAllBytes(HelperClass.playerInventory[i].imagePath);
-                    Texture2D texture = new Texture2D(16, 16);
-                    texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
-                    texture.filterMode = FilterMode.Point;
-
-                    // ������������ ������� ������� � ������ pixelsPerUnit
-                    float width = texture.width / 16;
-                    float height = texture.height / 16;
-
-                    // �������� ������� �� ��������
-                    Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
-
-                    inventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
-                    inventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().sprite = newSprite;
-
-                    inventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
-                    inventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();
-                }
-                //else
-                //{
-                //    Debug.LogError("������: �������� ���� � ����������� ��� ���� �� ������: " + HelperClass.playerInventory[i].imagePath);
-                //}
-            }
-        }
-        
-    }
-
     void Start()
     {
         //gameObject.transform.position = new Vector3(HelperClass.worldWidth / 2, HelperClass.worldHeight, 0);
         rb = GetComponent<Rigidbody2D>();
         cellSize = tilemap.cellSize;
+
+        HelperClass.LoadInventoryImages();
     }
     
     void Update()

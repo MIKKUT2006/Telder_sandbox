@@ -1,6 +1,8 @@
-using MySql.Data.MySqlClient;
+ï»¿using MySql.Data.MySqlClient;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -8,7 +10,7 @@ using UnityEngine.UI;
 
 public class HelperClass : MonoBehaviour
 {
-    // Ïîäêëþ÷åíèå ê áä
+    // ÐŸÐ¾Ð´ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ðµ Ðº Ð±Ð´
     [SerializeField] public static MySqlConnection mySqlConnection
         = new MySqlConnection("Database=sql7747943; Data Source = sql7.freemysqlhosting.net; " +
         "User Id=sql7747943; Password=xK8jSrD9bA; port=3306; charset=utf8");
@@ -21,12 +23,12 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static int userId;
 
 
-    // Äâóìåðíûé ìàññèâ êàðòû
+    // Ð”Ð²ÑƒÐ¼ÐµÑ€Ð½Ñ‹Ð¹ Ð¼Ð°ÑÑÐ¸Ð² ÐºÐ°Ñ€Ñ‚Ñ‹
     [SerializeField] public static int[,] map;
     [SerializeField] public static int[,] bgMap;   
     //[SerializeField] public static int[,] lightMap;
 
-    // Ïàðàìåòðû ìèðà
+    // ÐŸÐ°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ Ð¼Ð¸Ñ€Ð°
     [SerializeField] public static bool isNewGame = true;
     [SerializeField] public static int worldHeight = 100;
     [SerializeField] public static int worldWidth = 200;
@@ -37,50 +39,50 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static string worldName;
     [SerializeField] public static int worldId;
 
-    // ×àíêè áëîêîâ
+    // Ð§Ð°Ð½ÐºÐ¸ Ð±Ð»Ð¾ÐºÐ¾Ð²
     [SerializeField] public static Tilemap[] Chunks;
     [SerializeField] public static GameObject[] ChunksGameobject;
     [SerializeField] public static GameObject chunkPrefab;
 
-    // Ñïèñîê áèîìîâ
+    // Ð¡Ð¿Ð¸ÑÐ¾Ðº Ð±Ð¸Ð¾Ð¼Ð¾Ð²
     public enum Biomes { Desert, Forest, Crystal, None }
     public static Biomes[] biomeMap;
 
-    // Êëåòêè ñ æèäêîñòüþ/òâåðäûì áëîêîì
+    // ÐšÐ»ÐµÑ‚ÐºÐ¸ Ñ Ð¶Ð¸Ð´ÐºÐ¾ÑÑ‚ÑŒÑŽ/Ñ‚Ð²ÐµÑ€Ð´Ñ‹Ð¼ Ð±Ð»Ð¾ÐºÐ¾Ð¼
     [SerializeField] public static Cell[,] Cells;
 
-    // ×àíêè îñâåùåíèÿ
+    // Ð§Ð°Ð½ÐºÐ¸ Ð¾ÑÐ²ÐµÑ‰ÐµÐ½Ð¸Ñ
     [SerializeField] public static Tilemap[] lightChunks;
     [SerializeField] public static GameObject[] lightChunksGameobject;
     [SerializeField] public static GameObject lightchunkPrefab;
 
-    // ×àíêè çàäíåãî ïëàíà
+    // Ð§Ð°Ð½ÐºÐ¸ Ð·Ð°Ð´Ð½ÐµÐ³Ð¾ Ð¿Ð»Ð°Ð½Ð°
     [SerializeField] public static Tilemap[] bgChunks;
     [SerializeField] public static GameObject[] bgChunksGameobject;
     [SerializeField] public static GameObject bgchunkPrefab;
 
-    // Áëîêèðîâêà ðàñïîëîæåíèÿ áëîêà 
+    // Ð‘Ð»Ð¾ÐºÐ¸Ñ€Ð¾Ð²ÐºÐ° Ñ€Ð°ÑÐ¿Ð¾Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ Ð±Ð»Ð¾ÐºÐ° 
     [SerializeField] public static bool barrierPlaceBlock = false;
 
-    // Óñòàíîâêà áëîêà
+    // Ð£ÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ° Ð±Ð»Ð¾ÐºÐ°
     [SerializeField] public static GameObject Cursor;
     [SerializeField] public static bool setBlock = false;
 
-    // Èãðîâîé îáúåêò èãðîêà
+    // Ð˜Ð³Ñ€Ð¾Ð²Ð¾Ð¹ Ð¾Ð±ÑŠÐµÐºÑ‚ Ð¸Ð³Ñ€Ð¾ÐºÐ°
     [SerializeField] public static GameObject playerGameObject;
     [SerializeField] public static Vector3 playerEnterPosition;
-    // Ïðåäìåò â ðóêå
+    // ÐŸÑ€ÐµÐ´Ð¼ÐµÑ‚ Ð² Ñ€ÑƒÐºÐµ
     [SerializeField] public static GameObject equippedItem;
     [SerializeField] public static Image equippedCellImage;
     [SerializeField] public static TextMeshProUGUI itemName;
 
-    // Èíâåíòàðü
+    // Ð˜Ð½Ð²ÐµÐ½Ñ‚Ð°Ñ€ÑŒ
     [SerializeField] public static AllItemsAndBlocks[] playerInventory = new AllItemsAndBlocks[30];
     [SerializeField] public static GameObject playerInventoryGameObject;
     [SerializeField] public static GameObject itemOnCursorGameObject;
     [SerializeField] public static int selectedInventoryCell = 0;
 
-    // Àíèìàöèÿ ÿ÷åéêè èíâåíòàðÿ
+    // ÐÐ½Ð¸Ð¼Ð°Ñ†Ð¸Ñ ÑÑ‡ÐµÐ¹ÐºÐ¸ Ð¸Ð½Ð²ÐµÐ½Ñ‚Ð°Ñ€Ñ
     [SerializeField] public static Animation equippedCellAnimator;
 
     public static Vector3 StringToVector3(string convertString)
@@ -93,6 +95,87 @@ public class HelperClass : MonoBehaviour
         };
 
         return resultVector;
+    }
+
+    public static void AddItemToInventory(GameObject item)
+    {
+        bool inventoryIsFull = false;
+        int InventoryCell = HelperClass.playerInventory.GetLength(0) - 1;
+        // ÐŸÐµÑ€ÐµÐ±Ð¾Ñ€ Ð²ÑÐµÑ… ÑÑ‡ÐµÐµÐº Ð¸Ð½Ð²ÐµÐ½Ñ‚Ð°Ñ€Ñ
+        for (int i = HelperClass.playerInventory.GetLength(0) - 1; i >= 0; i--)
+        {
+            Debug.Log("ÑÑ‡ÐµÐ¹ÐºÐ° Ð½Ð¾Ð¼ÐµÑ€" + InventoryCell);
+            Debug.Log("Ð’ Ð¸Ð½Ð²ÐµÐ½Ñ‚Ð°Ñ€Ðµ " + HelperClass.playerInventory[i]);
+            if (HelperClass.playerInventory[i] != null && HelperClass.playerInventory[i].name == BlocksData.allBlocks.Find(x => x.blockIndex == int.Parse(item.name)).name)
+            {
+                HelperClass.playerInventory[i].count++;
+                Debug.Log($"Ð’ Ð¸Ð½Ð²ÐµÐ½Ñ‚Ð°Ñ€Ðµ {HelperClass.playerInventory[i].count} Ð¿Ñ€ÐµÐ´Ð¼ÐµÑ‚Ð° {HelperClass.playerInventory[i].name}");
+                playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
+                playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();
+                Destroy(item);
+                return;
+            }
+            else if (HelperClass.playerInventory[i] == null && int.Parse(item.name) != 0)
+            {
+                InventoryCell = i;
+                Debug.Log("Ð”Ð¾Ð±Ð°Ð²Ð»ÑÐµÐ¼ Ð¿Ñ€ÐµÐ´Ð¼ÐµÑ‚ Ð² ÑÑ‡ÐµÐ¹ÐºÑƒ " + InventoryCell);
+            }
+            else
+            {
+                Debug.Log("ÐÐµ Ð¿Ñ€Ð¾ÑˆÐ»Ð¾ Ð¿Ð¾ ÑƒÑÐ»Ð¾Ð²Ð¸ÑŽ");
+            }
+        }
+        if (!inventoryIsFull && InventoryCell != -1)
+        {
+            HelperClass.playerInventory[InventoryCell] = BlocksData.allBlocks.Find(x => x.blockIndex == int.Parse(item.name));
+            HelperClass.playerInventory[InventoryCell].count = 1;
+            Debug.Log("Ð’ Ð¸Ð½Ð²ÐµÐ½Ñ‚Ð°Ñ€ÑŒ Ð±Ñ‹Ð» Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½: " + HelperClass.playerInventory[InventoryCell].name);
+            playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
+            playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = item.GetComponent<SpriteRenderer>().sprite;
+            HelperClass.playerInventory[InventoryCell].imagePath = "Assets/Blocks/Firstworld/" + item.GetComponent<SpriteRenderer>().sprite.name + ".png";
+            Destroy(item);
+            if (HelperClass.selectedInventoryCell == InventoryCell)
+            {
+                HelperClass.Cursor.SetActive(true);
+            }
+            playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
+            playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[InventoryCell].count.ToString();
+        }
+    }
+
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    public static void LoadInventoryImages()
+    {
+        float pixelsPerUnit = 16;
+
+        for (int i = 0; i < HelperClass.playerInventory.Count(); i++)
+        {
+            if (HelperClass.playerInventory[i] != null)
+            {
+                if (!string.IsNullOrEmpty(HelperClass.playerInventory[i].imagePath) && File.Exists(HelperClass.playerInventory[i].imagePath) && HelperClass.playerInventory[i].imagePath != null)
+                {
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
+                    byte[] imageData = File.ReadAllBytes(HelperClass.playerInventory[i].imagePath);
+                    Texture2D texture = new Texture2D(16, 16);
+                    texture.LoadImage(imageData); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                    texture.filterMode = FilterMode.Point;
+
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ pixelsPerUnit
+                    float width = texture.width / 16;
+                    float height = texture.height / 16;
+
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                    Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+
+                    playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
+                    playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().sprite = newSprite;
+
+                    playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
+                    playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();
+                }
+            }
+        }
+
     }
 }
 

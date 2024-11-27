@@ -23,23 +23,24 @@ public class CraftiScript : MonoBehaviour
         {
             GameObject button = Instantiate(buttonPrefab, buttonsParent);
             button.GetComponentInChildren<TextMeshProUGUI>().text = recipe.item.name; // Название предмета
+            button.name = recipe.item.blockIndex.ToString();
             button.GetComponent<InventoryElementSelect>().recipe = recipe;
             //button.GetComponent<InventoryElementSelect>().ingredientPanel = this.gameObject;
             button.GetComponent<InventoryElementSelect>().ingredientText = ingredientText;
-            button.GetComponent<Button>().onClick.AddListener(() => CraftItem(recipe));
+            button.GetComponent<Button>().onClick.AddListener(() => CraftItem(recipe, button));
             // Здесь вы можете также добавить событие наведения мыши для показа необходимых ингредиентов
         }
     }
-    private void CraftItem(CraftingRecipe recipe)
+    private void CraftItem(CraftingRecipe recipe, GameObject cellGameObject)
     {
-        Debug.Log("Гойда СВО");
+        
         // Проверка, есть ли у игрока необходимые ингредиенты
         if (HaveIngredients(recipe.ingredients))
         {
             // Уменьшаем количество ингредиентов в инвентаре
             DeductIngredients(recipe.ingredients);
             // Создаём новый предмет и добавляем в инвентарь
-            AddItemToInventory(recipe.item.name);
+            AddItemToInventory(cellGameObject);
         }
     }
 
@@ -95,8 +96,10 @@ public class CraftiScript : MonoBehaviour
         }
     }
 
-    private void AddItemToInventory(string itemName)
+    private void AddItemToInventory(GameObject cell)
     {
         // Ваша логика добавления предмета в инвентарь
+        Debug.Log("Предмет создан");
+        HelperClass.AddItemToInventory(cell);
     }
 }
