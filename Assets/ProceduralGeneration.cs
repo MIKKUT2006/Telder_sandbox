@@ -9,10 +9,10 @@ using static UnityEditor.PlayerSettings;
 using UnityEngine.WSA;
 using static UnityEngine.Rendering.VolumeComponent;
 using System.Drawing;
-using System;
-using Assets;
-using Client = Supabase.Client;
-using System.Threading.Tasks;
+//using System;
+//using Assets;
+//using Client = Supabase.Client;
+//using System.Threading.Tasks;
 
 public class ProceduralGeneration : MonoBehaviour
 {
@@ -86,21 +86,21 @@ public class ProceduralGeneration : MonoBehaviour
     public int x = 0, y = 0;
     public int worldSeed;
 
-    public async Task<List<User>> GetUsers()
-    {
-        var options = new Supabase.SupabaseOptions
-        {
-            AutoConnectRealtime = true
-        };
-        var supabase = new Supabase.Client(HelperClass.url, HelperClass.key, options);
-        await supabase.InitializeAsync();
+    //public async Task<List<User>> GetUsers()
+    //{
+    //    var options = new Supabase.SupabaseOptions
+    //    {
+    //        AutoConnectRealtime = true
+    //    };
+    //    var supabase = new Supabase.Client(HelperClass.url, HelperClass.key, options);
+    //    await supabase.InitializeAsync();
 
-        //var result = await supabase.From<User>().
+    //    //var result = await supabase.From<User>().
         
-        //List<Assets.User> allUsers = result.Models;
+    //    //List<Assets.User> allUsers = result.Models;
 
-        //return allUsers;
-    }
+    //    //return allUsers;
+    //}
 
     void Awake()
     {

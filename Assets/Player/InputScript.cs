@@ -59,7 +59,10 @@ public class InputScript : MonoBehaviour
         HelperClass.itemName = GameObject.FindGameObjectWithTag("ItemName").GetComponent<TextMeshProUGUI>();
         if (HelperClass.isNewGame == false) {
             LoadInventoryImages();
+            gameObject.transform.position = HelperClass.playerEnterPosition;
         }
+
+        HelperClass.playerGameObject = gameObject;
 
         //spriteRenderer = GetComponent<SpriteRenderer>();
         SetBackground(Biomes.Desert); // ��������� ���������� �����, ����� �������� � ����������� �� ������

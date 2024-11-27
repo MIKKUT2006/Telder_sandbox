@@ -10,8 +10,8 @@ public class HelperClass : MonoBehaviour
 {
     // Подключение к бд
     [SerializeField] public static MySqlConnection mySqlConnection
-        = new MySqlConnection("Database=sql7740887; Data Source = sql7.freemysqlhosting.net; " +
-        "User Id=sql7740887; Password=iE9GIRF1ma; port=3306; charset=utf8");
+        = new MySqlConnection("Database=sql7747943; Data Source = sql7.freemysqlhosting.net; " +
+        "User Id=sql7747943; Password=xK8jSrD9bA; port=3306; charset=utf8");
 
     public const string url = "https://saoxywsrefjufpncyivz.supabase.co";
     public const string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNhb3h5d3NyZWZqdWZwbmN5aXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI1NDc3MDMsImV4cCI6MjA0ODEyMzcwM30.Qin9g5rC-SgOg3xdyF4yP9344t54uMBc0HQlUZxInJg";
@@ -66,6 +66,9 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static GameObject Cursor;
     [SerializeField] public static bool setBlock = false;
 
+    // Игровой объект игрока
+    [SerializeField] public static GameObject playerGameObject;
+    [SerializeField] public static Vector3 playerEnterPosition;
     // Предмет в руке
     [SerializeField] public static GameObject equippedItem;
     [SerializeField] public static Image equippedCellImage;
@@ -79,6 +82,18 @@ public class HelperClass : MonoBehaviour
 
     // Анимация ячейки инвентаря
     [SerializeField] public static Animation equippedCellAnimator;
+
+    public static Vector3 StringToVector3(string convertString)
+    {
+        string[] strings = convertString.Split('|');
+        Vector3 resultVector = new Vector3 {
+        x = float.Parse(strings[0]),
+        y = float.Parse(strings[1]),
+        z = float.Parse(strings[2]),
+        };
+
+        return resultVector;
+    }
 }
 
 public struct StructureTileData
@@ -89,3 +104,5 @@ public struct StructureTileData
     public int id { get; set; }
 
 }
+
+
