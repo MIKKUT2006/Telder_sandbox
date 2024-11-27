@@ -47,7 +47,6 @@ public class InputScript : MonoBehaviour
     // �������� ����
     private bool inventoryOpen = false;
     private float pixelsPerUnit = 16;
-
     private void Awake()
     {
         Camera.main.gameObject.transform.localPosition = transform.localPosition;

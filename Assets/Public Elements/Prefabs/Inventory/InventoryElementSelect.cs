@@ -13,10 +13,18 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     Sprite tempSprite = null;
     AllItemsAndBlocks tempItem = null;
     int tempItemCount = 0;
-    
+
+    // Рецепты крафта
+    bool isCraftCell = false;
+    public CraftingRecipe recipe; // Рецепт, связанный с данной кнопкой
+    //public GameObject ingredientPanel; // Панель для отображения ингредиентов
+    public TextMeshProUGUI ingredientText; // Текст, отображающий ингредиенты
+
     private void Awake()
     {
         cellImage = GetComponent<Image>();
+        if (gameObject.GetComponentInParent<RectTransform>().name != "Inventory") { isCraftCell = true; }
+        
     }
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -99,75 +107,74 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
         }
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            // Проверка, что выбрана ячейка инвентаря
-            if (gameObject.GetComponentInParent<GameObject>().name == "Inventory")
+            if (isCraftCell == false)
             {
-                if (HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled != false)
-                {
-                    if (ItemOnCursor.selecteditem != null)
+                    if (HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled != false)
                     {
-                        HelperClass.playerInventoryGameObject.transform.Find(ItemOnCursor.firstCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
-                        HelperClass.playerInventoryGameObject.transform.Find(ItemOnCursor.firstCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
+                        if (ItemOnCursor.selecteditem != null)
+                        {
+                            HelperClass.playerInventoryGameObject.transform.Find(ItemOnCursor.firstCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
+                            HelperClass.playerInventoryGameObject.transform.Find(ItemOnCursor.firstCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
 
-                        HelperClass.playerInventoryGameObject.transform.Find(ItemOnCursor.firstCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite;
-                        HelperClass.playerInventoryGameObject.transform.Find(ItemOnCursor.firstCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text;
+                            HelperClass.playerInventoryGameObject.transform.Find(ItemOnCursor.firstCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite;
+                            HelperClass.playerInventoryGameObject.transform.Find(ItemOnCursor.firstCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text;
 
-                        //Debug.Log(HelperClass.playerInventory[int.Parse(gameObject.name)].count);
-                        //Debug.Log(HelperClass.playerInventory[ItemOnCursor.firstCell].count);
-                        //
+                            //Debug.Log(HelperClass.playerInventory[int.Parse(gameObject.name)].count);
+                            //Debug.Log(HelperClass.playerInventory[ItemOnCursor.firstCell].count);
+                            //
+                            HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled = true;
+                            HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
+
+                            HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite = ItemOnCursor.sprite;
+                            Debug.Log("Количество забранного предмета " + tempItemCount);
+                            HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = ItemOnCursor.selecteditem.count.ToString();
+
+                            ItemOnCursor.selecteditem = null;
+                            ItemOnCursor.sprite = null;
+                            ItemOnCursor.firstCell = 0;
+
+                            HelperClass.itemOnCursorGameObject.GetComponent<Image>().enabled = false;
+                        }
+                        else
+                        {
+
+                            //AllItemsAndBlocks tempItem = HelperClass.playerInventory[int.Parse(gameObject.name)];
+                            ItemOnCursor.selecteditem = InventoryItemClone(HelperClass.playerInventory[int.Parse(gameObject.name)]);
+                            Debug.Log("Вы взяли предмет " + HelperClass.playerInventory[int.Parse(gameObject.name)].name + " В количестве: " + ItemOnCursor.selecteditem.count);
+                            //ItemOnCursor.selecteditem = HelperClass.playerInventory[int.Parse(gameObject.name)];
+                            HelperClass.playerInventory[int.Parse(gameObject.name)] = null;
+                            Debug.Log(ItemOnCursor.selecteditem.name);
+                            //
+                            ItemOnCursor.sprite = HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite;
+                            Debug.Log(ItemOnCursor.sprite);
+                            ItemOnCursor.firstCell = int.Parse(gameObject.name);
+                            tempSprite = ItemOnCursor.sprite;
+                            tempItem = ItemOnCursor.selecteditem;
+                            tempItemCount = ItemOnCursor.selecteditem.count;
+                            //Debug.Log(tempItemCount);
+                            HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled = false;
+                            HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = false;
+                            HelperClass.itemOnCursorGameObject.GetComponent<Image>().sprite = tempSprite;
+                            HelperClass.itemOnCursorGameObject.GetComponent<Image>().enabled = true;
+                            HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite = null;
+                        }
+                    }
+                    else if (ItemOnCursor.selecteditem != null)
+                    {
+                        HelperClass.playerInventory[int.Parse(gameObject.name)] = InventoryItemClone(ItemOnCursor.selecteditem);
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled = true;
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
 
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite = ItemOnCursor.sprite;
-                        Debug.Log("Количество забранного предмета " + tempItemCount);
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = ItemOnCursor.selecteditem.count.ToString();
 
                         ItemOnCursor.selecteditem = null;
-                        ItemOnCursor.sprite = null;
-                        ItemOnCursor.firstCell = 0;
-
                         HelperClass.itemOnCursorGameObject.GetComponent<Image>().enabled = false;
                     }
-                    else
-                    {
-
-                        //AllItemsAndBlocks tempItem = HelperClass.playerInventory[int.Parse(gameObject.name)];
-                        ItemOnCursor.selecteditem = InventoryItemClone(HelperClass.playerInventory[int.Parse(gameObject.name)]);
-                        Debug.Log("Вы взяли предмет " + HelperClass.playerInventory[int.Parse(gameObject.name)].name + " В количестве: " + ItemOnCursor.selecteditem.count);
-                        //ItemOnCursor.selecteditem = HelperClass.playerInventory[int.Parse(gameObject.name)];
-                        HelperClass.playerInventory[int.Parse(gameObject.name)] = null;
-                        Debug.Log(ItemOnCursor.selecteditem.name);
-                        //
-                        ItemOnCursor.sprite = HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite;
-                        Debug.Log(ItemOnCursor.sprite);
-                        ItemOnCursor.firstCell = int.Parse(gameObject.name);
-                        tempSprite = ItemOnCursor.sprite;
-                        tempItem = ItemOnCursor.selecteditem;
-                        tempItemCount = ItemOnCursor.selecteditem.count;
-                        //Debug.Log(tempItemCount);
-                        HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled = false;
-                        HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = false;
-                        HelperClass.itemOnCursorGameObject.GetComponent<Image>().sprite = tempSprite;
-                        HelperClass.itemOnCursorGameObject.GetComponent<Image>().enabled = true;
-                        HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite = null;
-                    }
-                }
-                else if (ItemOnCursor.selecteditem != null)
-                {
-                    HelperClass.playerInventory[int.Parse(gameObject.name)] = InventoryItemClone(ItemOnCursor.selecteditem);
-                    HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled = true;
-                    HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
-
-                    HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite = ItemOnCursor.sprite;
-                    HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = ItemOnCursor.selecteditem.count.ToString();
-
-                    ItemOnCursor.selecteditem = null;
-                    HelperClass.itemOnCursorGameObject.GetComponent<Image>().enabled = false;
-                }
             }
             else
             {
-
+                
             }
         }
     }
@@ -175,11 +182,30 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     public void OnMouseEnter()
     {
         HelperClass.barrierPlaceBlock = true;
+        if (isCraftCell == true)
+        {
+            //ingredientPanel.SetActive(true);
+            UpdateIngredientText();
+        }
+    }
+
+    private void UpdateIngredientText()
+    {
+        // Обновляем текст, чтобы отобразить ингредиенты и их количество
+        ingredientText.text = "Необходимые ингредиенты:\n";
+        foreach (Ingredient ingredient in recipe.ingredients)
+        {
+            ingredientText.text += $"{ingredient.item.name}: {ingredient.quantity}\n";
+        }
     }
 
     public void OnMouseExit()
     {
         HelperClass.barrierPlaceBlock = false;
+        if (isCraftCell == true)
+        {
+            //ingredientPanel.SetActive(false);
+        }
     }
 
     public AllItemsAndBlocks InventoryItemClone(AllItemsAndBlocks itemInCell)

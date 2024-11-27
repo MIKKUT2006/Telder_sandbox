@@ -28,8 +28,19 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(6, "Железная руда", 20, true, 100),
          new AllItemsAndBlocks(7, "Руда телепортиума", 30, true, 100),
          new AllItemsAndBlocks(8, "Баррьер", int.MaxValue, true, 100),
-         new AllItemsAndBlocks(9, "Песок", 1, true, 100),
-         
+         new AllItemsAndBlocks(9, "Песок", 1, true, 100),   
+    };
+
+    public static List<CraftingRecipe> craftingRecipes = new List<CraftingRecipe>
+    {
+        new CraftingRecipe(allBlocks[5], new List<Ingredient> {
+            new Ingredient(allBlocks[1], 3), // 1 Земля
+        }),
+        new CraftingRecipe(allBlocks[0], new List<Ingredient> {
+            new Ingredient(allBlocks[3], 3), // 3 Камня
+            new Ingredient(allBlocks[1], 2)  // 2 Земли или других предметов, например, для палок
+        }),
+        // Добавьте другие рецепты здесь
     };
 }
 
@@ -72,5 +83,32 @@ public class AllItemsAndBlocks
         blocksSolidity = _blocksSolidity;
         stackable = _stackable;
         maxStack = _maxStack;
+    }
+}
+
+// Предложенное нейронкой
+[System.Serializable]
+public class CraftingRecipe
+{
+    public AllItemsAndBlocks item; // Название создаваемого предмета
+    public List<Ingredient> ingredients; // Список ингредиентов с количеством
+
+    public CraftingRecipe(AllItemsAndBlocks item, List<Ingredient> ingredients)
+    {
+        this.item = item;
+        this.ingredients = ingredients;
+    }
+}
+
+[System.Serializable]
+public class Ingredient
+{
+    public AllItemsAndBlocks item;
+    public int quantity;
+
+    public Ingredient(AllItemsAndBlocks item, int quantity)
+    {
+        this.item = item;
+        this.quantity = quantity;
     }
 }
