@@ -9,6 +9,7 @@ TagManager:
   - InventoryLight
   - ItemName
   - ItemsTextures
+  - Ground
   layers:
   - Default
   - TransparentFX
