@@ -9,7 +9,7 @@ public class RainManager : MonoBehaviour
 
     private Camera mainCamera;
 
-    private void Start()
+    private void Awake()
     {
         // ѕолучаем ссылку на основную камеру
         mainCamera = Camera.main;
@@ -19,7 +19,7 @@ public class RainManager : MonoBehaviour
             return;
         }
 
-        StartCoroutine(SpawnRainDrops());
+        //StartCoroutine(SpawnRainDrops());
     }
 
     private System.Collections.IEnumerator SpawnRainDrops()
@@ -52,5 +52,25 @@ public class RainManager : MonoBehaviour
 
             yield return new WaitForSeconds(spawnInterval);
         }
+    }
+
+    public void StartRain()
+    {
+        // «апускаем спавн капель
+        StartCoroutine(SpawnRainDrops());
+        // «десь можно добавить активацию звуков дожд€, если они у вас есть
+    }
+
+    public void StopRain()
+    {
+        // ќстановить спавн капель
+        Debug.Log("корутина остановлена");
+        StopAllCoroutines(); // ќстанавливаем корутину спавна
+        // ”далить все существующие капли.
+        //foreach (Transform child in transform)
+        //{
+        //    Destroy(child.gameObject);
+        //}
+        // «десь можно добавить деактивацию звуков дожд€, если они у вас есть.
     }
 }
