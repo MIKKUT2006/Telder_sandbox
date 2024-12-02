@@ -331,8 +331,12 @@ public class InputScript : MonoBehaviour
 
     IEnumerator attackCooldown()
     {
-        yield return new WaitForSeconds(0.3f);
-        GetComponent<Animator>().SetBool("Attack", false);
+            yield return new WaitForSeconds(0.3f);
+            if (!Input.GetMouseButton(0))
+            {
+                GetComponent<Animator>().SetBool("Attack", false);
+            }
+            StartCoroutine(attackCooldown());
     }
 
 }
