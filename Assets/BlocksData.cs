@@ -29,7 +29,9 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(7, "Руда телепортиума", 30, true, 100),
          new AllItemsAndBlocks(8, "Баррьер", int.MaxValue, true, 100),
          new AllItemsAndBlocks(9, "Песок", 1, true, 100),   
-         new AllItemsAndBlocks(10, "Снег", 3, true, 100),   
+         new AllItemsAndBlocks(10, "Окаменевший кристалл", 3, true, 100),   
+         new AllItemsAndBlocks(11, "Снег", 3, true, 100),   
+         new AllItemsAndBlocks(12, "Мох", 3, true, 100),   
     };
 
     public static List<CraftingRecipe> craftingRecipes = new List<CraftingRecipe>

@@ -144,24 +144,28 @@ public class ProceduralGeneration : MonoBehaviour
     }
     void Generation()
     {
+        bgMap = GenerateArray(width, height, true, true);       // Генерируем массив
+        map = GenerateArray(width, height, true, false);        // Генерируем массив
+
+
         //lightMap = GenerateArray(width, height, true, true);    // Генерируем массив
         lightTilemap.ClearAllTiles();                           // Очищаем все тайлы перед генерацией
 
         // Основной план
         tilemap.ClearAllTiles();                                // Очищаем все тайлы перед генерацией
-        map = GenerateArray(width, height, true, false);        // Генерируем массив
         BiomeGeneration();                                      // Генерируем биомы
         map = TerrainGeneration(map);                           // Генерируем мир
         map = StoneGeneration(map);                             // Генерируем камень
-        map = CavesGeneration(map);                             // Генерируем пещеры
+        map = CavesGeneration(map, bgMap).Item1;                // Генерируем пещеры
         map = BarrierGeneration(map);
         DestroyStructures();
         // Задниий план
         bgTilemap.ClearAllTiles();                              // Очищаем все тайлы перед генерацией
-        bgMap = GenerateArray(width, height, true, true);       // Генерируем массив
+        
         bgMap = TerrainGeneration(bgMap);                       // Генерируем мир
         bgMap = StoneGeneration(bgMap);                         // Генерируем мир
         bgMap = GrassGeneration(bgMap);                         // Генерируем мир
+        bgMap = CavesGeneration(map, bgMap).Item2;              // Генерируем пещеры
 
         map = TreesGeneration(map);
         //StructuresGeneration(testStructure);
@@ -482,6 +486,7 @@ public class ProceduralGeneration : MonoBehaviour
 
             for (int j = 0; j <= perlinHeight; j++)
             {
+
                 if (j < perlinHeight && (map[i,j] == 1 || map[i, j] != 2))
                 {
                     switch (HelperClass.biomeMap[i])
@@ -505,14 +510,16 @@ public class ProceduralGeneration : MonoBehaviour
         return map;
     }
 
-    public int[,] CavesGeneration(int[,] map)     // Генерация пещер
+    public (int[,], int[,]) CavesGeneration(int[,] map, int[,] bgMap)     // Генерация пещер
     {
         int perlinHeightStone;   // Высота перлина
         float perlinHeightCaves;   // Высота перлина
         float perlinHeightGround;   // Высота перлина поверхностных пещер
         float perlinHeightOres;   // Высота перлина руд
         float perlinHeightTeleportium;
-        
+        float cavesSeed = Random.Range(0, 100);
+
+        Debug.Log(bgMap);
         for (int i = 0; i < width; i++)
         {
             perlinHeightStone = Mathf.RoundToInt(Mathf.PerlinNoise(i / stonesmothes / 0.5f, HelperClass.worldSeed * 3) * height / 2.3f);
@@ -534,6 +541,18 @@ public class ProceduralGeneration : MonoBehaviour
                     map[i, j] = 4;
                 }
 
+                // Замшелые пещеры
+                perlinHeightGround = Mathf.PerlinNoise((i + cavesSeed) / 12, (j + cavesSeed) / 10);
+                if (perlinHeightGround > 0.15 && perlinHeightGround < 0.2 && (map[i, j] == 1 || map[i, j] == 2 || map[i, j] == 9 || map[i, j] == 10 || map[i, j] == 11) && j > perlinHeightStone - 1)
+                {
+                    map[i, j] = 12;
+                }
+                if (perlinHeightGround < 0.2 && (map[i, j] == 1 || map[i, j] == 2 || map[i, j] == 9 || map[i, j] == 10 || map[i, j] == 11) && j > perlinHeightStone - 1)
+                {
+                    map[i, j] = 4;
+                    bgMap[i, j] = 12;
+                }
+
                 // Генерация руды
                 perlinHeightOres = Mathf.PerlinNoise((i + HelperClass.worldSeed / 2) / ironOre, (j + HelperClass.worldSeed / 2) / ironOre);
                 //Debug.Log(perlinHeightOres);
@@ -553,7 +572,7 @@ public class ProceduralGeneration : MonoBehaviour
                 }
             }
         }
-        return map;
+        return (map, bgMap);
     }
 
     public int[,] TreesGeneration(int[,] map)     // Генерация деревьев
@@ -755,6 +774,9 @@ public class ProceduralGeneration : MonoBehaviour
                     case 11:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[10]);       // Устанавливаем тайл снега
                         break;
+                    case 12:
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[3]);       // Устанавливаем тайл мха
+                        break;
                 }
 
                 HelperClass.Chunks[chunkCoord] = tileMap;
@@ -782,6 +804,10 @@ public class ProceduralGeneration : MonoBehaviour
                 if (bgMap[i, j] == 10)
                 {
                     bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[9]);       // Устанавливаем тайл камня
+                }
+                if (bgMap[i, j] == 12)
+                {
+                    bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[3]);       // Устанавливаем тайл мха
                 }
 
 
