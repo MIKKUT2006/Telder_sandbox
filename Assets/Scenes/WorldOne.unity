@@ -350,43 +350,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 12689149}
   m_CullTransparentMesh: 1
---- !u!84 &13450918
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: SpriteLightKit RT
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 6
-  m_Width: 2560
-  m_Height: 1440
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 0
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 0
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 0
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
 --- !u!1 &24770435
 GameObject:
   m_ObjectHideFlags: 0
@@ -1925,7 +1888,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shader: {fileID: 4800000, guid: 09755a4891f8d4526a7e0690a23dec7b, type: 3}
-  spriteLightRT: {fileID: 13450918}
+  spriteLightRT: {fileID: 1880648596}
   intensity: 1.51
 --- !u!20 &255704880
 Camera:
@@ -11175,7 +11138,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 256
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 13450918}
+  m_TargetTexture: {fileID: 1880648596}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -26026,7 +25989,7 @@ MonoBehaviour:
   mapleHouse: {fileID: 6335819217830585853, guid: 40516e2cd794c1947a0fc0fba65c1474,
     type: 3}
   height: 100
-  width: 400
+  width: 200
   smoothes: 200
   cavessmothes: 10
   stonesmothes: 2000
@@ -26063,15 +26026,15 @@ MonoBehaviour:
   biomeRanges:
   - biomeName: Desert
     minThreshold: 0
-    maxThreshold: 0.44
+    maxThreshold: 0.33
   - biomeName: Forest
-    minThreshold: 0.44
-    maxThreshold: 0.66
+    minThreshold: 0.33
+    maxThreshold: 0.55
   - biomeName: Snow
-    minThreshold: 0.66
-    maxThreshold: 0.88
+    minThreshold: 0.55
+    maxThreshold: 0.8
   - biomeName: Crystal
-    minThreshold: 0.88
+    minThreshold: 0.8
     maxThreshold: 1
 --- !u!156049354 &1450846967
 Grid:
@@ -27206,6 +27169,43 @@ MonoBehaviour:
   phase: 0
   frequency: 0.01
   affectsIntensity: 1
+--- !u!84 &1880648596
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SpriteLightKit RT
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 6
+  m_Width: 2560
+  m_Height: 1440
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 0
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_UseDynamicScaleExplicit: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_EnableRandomWrite: 0
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 0
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
 --- !u!1 &1952689070
 GameObject:
   m_ObjectHideFlags: 0

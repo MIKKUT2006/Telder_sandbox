@@ -342,7 +342,7 @@ public class ProceduralGeneration : MonoBehaviour
 
             // Находим биом, соответствующий значению шума
             HelperClass.Biomes biome = FindBiome(biomeValue);
-            if (biome == HelperClass.Biomes.Snow)
+            if (biome == HelperClass.Biomes.Crystal)
             {
                 Debug.Log("ДА");
             }
@@ -576,7 +576,7 @@ public class ProceduralGeneration : MonoBehaviour
         return map;
     }
 
-    public int[,] GrassGeneration(int[,] map)     // Генерация травы
+    public int[,] GrassGeneration(int[,] map)     // Генерация пушистой травы
     {
         float perlinHeight;   // Высота перлина
 
@@ -770,6 +770,10 @@ public class ProceduralGeneration : MonoBehaviour
                 if (bgMap[i, j] == 3)
                 {
                     bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
+                }
+                if (bgMap[i, j] == 8)
+                {
+                    bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[6]);       // Устанавливаем тайл пушистой травы
                 }
                 if (bgMap[i, j] == 9)
                 {
