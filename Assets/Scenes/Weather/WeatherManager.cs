@@ -34,13 +34,19 @@ public class WeatherManager : MonoBehaviour
         Debug.Log("НАчала цикла");
         // Запуск дождя
         rainManager.StartRain(); // Вызовите метод startRain() вашего RainManager.
-        GetComponent<AudioSource>().Play();
+        if (HelperClass.currentBiome != HelperClass.Biomes.Snow)
+        {
+            GetComponent<AudioSource>().Play();
+        }
         // Дождь идёт rainDuration секунд
         yield return new WaitForSeconds(rainDuration);
         isRaining = false;
         rainManager.StopRain(); // Вызовите метод stopRain() вашего RainManager.
         Debug.Log($"Дождь окончен");
-        GetComponent<AudioSource>().Stop();
+        if (HelperClass.currentBiome != HelperClass.Biomes.Snow)
+        {
+            GetComponent<AudioSource>().Stop();
+        }
         // Остановка дождя
     }
 

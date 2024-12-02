@@ -273,6 +273,7 @@ public class InputScript : MonoBehaviour
                 currentBiome = biomeMap[xIndex];
                 SetBackground(currentBiome);
             }
+            HelperClass.currentBiome = currentBiome;
             return biomeMap[xIndex]; // ���������� ���� ��� ������� �������
         }
 

@@ -2,35 +2,22 @@
 
 public class RainDrop : MonoBehaviour
 {
-    public float fallSpeed = 5f; // Скорость падения капли
     public GameObject splashEffectPrefab; // Префаб эффекта разбрызгивания
+    public bool isSnow = false;
 
     private void Update()
     {
-        transform.Translate(Vector3.down * fallSpeed * Time.deltaTime);
-
-        // Проверка на наличие коллизии с землёй
-        //RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.1f);
-        //if (hit.collider != null)
-        //{
-        //    if (hit.collider.CompareTag("Ground"))
-        //    {
-        //        Instantiate(splashEffectPrefab, transform.position, Quaternion.identity);
-        //        FindObjectOfType<RainPool>().ReturnRainDrop(gameObject);
-        //    }
-        //}
-
-        //if (transform.position.y < -5)
-        //{
-        //    FindObjectOfType<RainPool>().ReturnRainDrop(gameObject);
-        //}
+        transform.Translate(Vector3.down * HelperClass.weatherFallSpeed * Time.deltaTime);
     }
 
     private void OnTriggerStay2D(Collider2D collision)
     {
         if (collision.gameObject.layer == 3)
         {
-            Instantiate(splashEffectPrefab, transform.position, Quaternion.identity);
+            if (!isSnow)
+            {
+                Instantiate(splashEffectPrefab, transform.position, Quaternion.identity);
+            }
             FindObjectOfType<RainPool>().ReturnRainDrop(gameObject);
         }
     }
@@ -39,7 +26,10 @@ public class RainDrop : MonoBehaviour
     {
         if(collision.gameObject.layer == 3) 
         {
-            Instantiate(splashEffectPrefab, transform.position, Quaternion.identity);
+            if (!isSnow)
+            {
+                Instantiate(splashEffectPrefab, transform.position, Quaternion.identity);
+            }
             FindObjectOfType<RainPool>().ReturnRainDrop(gameObject);
         }
     }

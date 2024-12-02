@@ -270,30 +270,103 @@ public class ProceduralGeneration : MonoBehaviour
         return map;
     }
 
-    public void BiomeGeneration()
-    {
-        float biomeNoiseScale = 0.005f; // Масштаб шума для биомов
+    //public void BiomeGeneration()
+    //{
+    //    float biomeNoiseScale = 0.005f; // Масштаб шума для биомов
 
-        // Генерирование биомов
-        for (int x = 0; x < width; x++)
+    //    // Генерирование биомов
+    //    for (int x = 0; x < width; x++)
+    //    {
+    //        // Генерация биома для текущего столбца
+    //        float biomeValue = Mathf.PerlinNoise(x * biomeNoiseScale, 0);
+    //        Debug.Log(biomeValue);
+    //        if (biomeValue < 0.44f)
+    //        {
+    //            HelperClass.biomeMap[x] = HelperClass.Biomes.Desert; // Пустыня
+    //        }
+    //        else if (biomeValue < 0.66f)
+    //        {
+    //            HelperClass.biomeMap[x] = HelperClass.Biomes.Forest; // Лес
+    //        }
+    //        else
+    //        {
+    //            HelperClass.biomeMap[x] = HelperClass.Biomes.Crystal; // Кристалл
+    //        }
+    //    }
+    //}
+    // ГЕНЕРАЦИЯ БИОМОВ
+    private int biomeWidth = HelperClass.worldWidth; // Ширина карты биомов
+    
+    public HelperClass.Biomes[] test;
+
+    [System.Serializable]
+    public class BiomeRange
+    {
+        public string biomeName;
+        public float minThreshold;
+        public float maxThreshold;
+
+        public BiomeRange(string name, float min, float max)
         {
-            // Генерация биома для текущего столбца
-            float biomeValue = Mathf.PerlinNoise(x * biomeNoiseScale, 0);
-            Debug.Log(biomeValue);
-            if (biomeValue < 0.44f)
-            {
-                HelperClass.biomeMap[x] = HelperClass.Biomes.Desert; // Пустыня
-            }
-            else if (biomeValue < 0.66f)
-            {
-                HelperClass.biomeMap[x] = HelperClass.Biomes.Forest; // Лес
-            }
-            else
-            {
-                HelperClass.biomeMap[x] = HelperClass.Biomes.Crystal; // Кристалл
-            }
+            biomeName = name;
+            minThreshold = min;
+            maxThreshold = max;
         }
     }
+
+    public List<BiomeRange> biomeRanges = new List<BiomeRange>();
+
+    public void BiomeGeneration()
+    {
+        biomeWidth = width; // Ширина карты биомов
+        float biomeNoiseScale = 0.005f; // Масштаб шума для биомов
+
+        // Проверка на правильность настроек биомов
+        biomeRanges.Sort((a, b) => a.minThreshold.CompareTo(b.minThreshold)); // Сортируем по минимальному порогу
+        for (int i = 0; i < biomeRanges.Count - 1; i++)
+        {
+            if (biomeRanges[i].maxThreshold > biomeRanges[i + 1].minThreshold)
+            {
+                Debug.LogError("Ошибка в настройках биомов: Пересечение порогов!");
+                return;
+            }
+        }
+
+
+        HelperClass.biomeMap = new HelperClass.Biomes[biomeWidth]; // Инициализируем массив
+
+        // Генерирование биомов
+        for (int x = 0; x < biomeWidth; x++)
+        {
+            float biomeValue = Mathf.PerlinNoise(x * biomeNoiseScale, 0);
+
+            // Находим биом, соответствующий значению шума
+            HelperClass.Biomes biome = FindBiome(biomeValue);
+            if (biome == HelperClass.Biomes.Snow)
+            {
+                Debug.Log("ДА");
+            }
+            HelperClass.biomeMap[x] = biome;
+        }
+
+        test = HelperClass.biomeMap;
+    }
+
+    HelperClass.Biomes FindBiome(float value)
+    {
+        foreach (var range in biomeRanges)
+        {
+            if (value >= range.minThreshold && value < range.maxThreshold)
+            {
+                return (HelperClass.Biomes)System.Enum.Parse(typeof(HelperClass.Biomes), range.biomeName);
+            }
+        }
+        // Если значение не попадает ни в один диапазон, вернуть биом по умолчанию (или обработать ошибку)
+        Debug.LogError("Значение шума не соответствует ни одному биому: " + value);
+        return HelperClass.Biomes.Desert; // Биом по умолчанию
+    }
+    // ГЕНЕРАЦИЯ БИОМОВ
+
 
     public int[,] TerrainGeneration(int[,] map)     // Генерация земли
     {
@@ -317,6 +390,9 @@ public class ProceduralGeneration : MonoBehaviour
                         case HelperClass.Biomes.Crystal:
                             map[i, j] = 10;
                             break;
+                        case HelperClass.Biomes.Snow:
+                            map[i, j] = 1;
+                            break;
                     }
                 }
 
@@ -332,6 +408,9 @@ public class ProceduralGeneration : MonoBehaviour
                             break;
                         case HelperClass.Biomes.Crystal:
                             map[i, j] = 10;
+                            break;
+                        case HelperClass.Biomes.Snow:
+                            map[i, j] = 11;
                             break;
                     }
                 }
@@ -373,6 +452,9 @@ public class ProceduralGeneration : MonoBehaviour
                         case HelperClass.Biomes.Crystal:
                             map[i, j] = 10;
                             break;
+                        case HelperClass.Biomes.Snow:
+                            map[i, j] = 1;
+                            break;
                     }
                 }
 
@@ -413,6 +495,9 @@ public class ProceduralGeneration : MonoBehaviour
                         case HelperClass.Biomes.Crystal:
                             map[i, j] = 10;
                             break;
+                        case HelperClass.Biomes.Snow:
+                            map[i, j] = 3;
+                            break;
                     }
                 }
             }
@@ -444,7 +529,7 @@ public class ProceduralGeneration : MonoBehaviour
 
                 // Пещеры на поверхности
                 perlinHeightGround = Mathf.PerlinNoise((i + HelperClass.worldSeed) / cavessmothes / 2, (j + HelperClass.worldSeed) / cavessmothes / 2);
-                if (perlinHeightGround < 0.4 && (map[i, j] == 1 || map[i, j] == 2 || map[i, j] == 9 || map[i, j] == 10) && j > perlinHeightStone - 1)
+                if (perlinHeightGround < 0.4 && (map[i, j] == 1 || map[i, j] == 2 || map[i, j] == 9 || map[i, j] == 10 || map[i, j] == 11) && j > perlinHeightStone - 1)
                 {
                     map[i, j] = 4;
                 }
@@ -666,6 +751,9 @@ public class ProceduralGeneration : MonoBehaviour
                         break;
                     case 10:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[9]);       // Устанавливаем тайл песка
+                        break;
+                    case 11:
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[10]);       // Устанавливаем тайл снега
                         break;
                 }
 

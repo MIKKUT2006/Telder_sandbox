@@ -45,11 +45,15 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static GameObject chunkPrefab;
 
     // Список биомов
-    public enum Biomes { Desert, Forest, Crystal, None }
+    public enum Biomes { Desert, Forest, Crystal, Snow, None }
     public static Biomes[] biomeMap;
+    public static Biomes currentBiome;
 
     // Клетки с жидкостью/твердым блоком
     [SerializeField] public static Cell[,] Cells;
+
+    // Скорость падения погодных явлений
+    [SerializeField] public static float weatherFallSpeed = 5f;
 
     // Чанки освещения
     [SerializeField] public static Tilemap[] lightChunks;

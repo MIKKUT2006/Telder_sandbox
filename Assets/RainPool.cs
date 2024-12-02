@@ -4,19 +4,43 @@ using UnityEngine;
 public class RainPool : MonoBehaviour
 {
     public GameObject rainDropPrefab; // Префаб дождевой капли
+    public GameObject snowDropPrefab; // Префаб снежинки
     public int poolSize = 100;
     public List<GameObject> rainDropPool;
 
     private void Awake()
     {
-        rainDropPool = new List<GameObject>();
-        // Инициализация пула
-        for (int i = 0; i < poolSize; i++)
+        GeneratePool(false);
+    }
+
+    private void GeneratePool(bool isSnow)
+    {
+        if (!isSnow)
         {
-            GameObject drop = Instantiate(rainDropPrefab);
-            drop.SetActive(false);
-            rainDropPool.Add(drop);
+            HelperClass.weatherFallSpeed = 5f;
+            rainDropPool = new List<GameObject>();
+            // Инициализация пула
+            for (int i = 0; i < poolSize; i++)
+            {
+                GameObject drop = Instantiate(rainDropPrefab);
+                drop.SetActive(false);
+                rainDropPool.Add(drop);
+            }
+
         }
+        else
+        {
+            HelperClass.weatherFallSpeed = 2f;
+            rainDropPool = new List<GameObject>();
+            // Инициализация пула
+            for (int i = 0; i < poolSize; i++)
+            {
+                GameObject drop = Instantiate(snowDropPrefab);
+                drop.SetActive(false);
+                rainDropPool.Add(drop);
+            }
+        }
+
     }
 
     public GameObject GetRainDrop()
