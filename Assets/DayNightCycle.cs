@@ -15,12 +15,13 @@ public class DayNightCycle : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(duration);
+            
             // Плавный переход дня (прозрачный)
             yield return StartCoroutine(ChangeSpriteAlpha(1f, 0f, cycleDuration / 2)); // 1 - прозрачный, 0 - непрозрачный
             yield return new WaitForSeconds(duration);
             // Плавный переход ночи (непрозрачный)
             yield return StartCoroutine(ChangeSpriteAlpha(0f, 1f, cycleDuration / 2)); // 0 - прозрачный, 1 - непрозрачный
+            yield return new WaitForSeconds(duration);
         }
     }
 

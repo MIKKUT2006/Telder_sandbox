@@ -23,7 +23,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     private void Awake()
     {
         cellImage = GetComponent<Image>();
-        if (gameObject.GetComponentInParent<RectTransform>().CompareTag("Inventory")) { isCraftCell = true; }
+        if (gameObject.GetComponentInParent<RectTransform>().CompareTag("Inventory")) { isCraftCell = false; }
         
     }
     public void OnPointerClick(PointerEventData eventData)

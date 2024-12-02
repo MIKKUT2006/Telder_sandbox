@@ -10,6 +10,7 @@ TagManager:
   - ItemName
   - ItemsTextures
   - Ground
+  - Craft
   layers:
   - Default
   - TransparentFX

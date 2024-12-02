@@ -17,7 +17,7 @@ public class RainPool : MonoBehaviour
     {
         if (!isSnow)
         {
-            HelperClass.weatherFallSpeed = 5f;
+            HelperClass.weatherFallSpeed = 7f;
             rainDropPool = new List<GameObject>();
             // Инициализация пула
             for (int i = 0; i < poolSize; i++)

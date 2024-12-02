@@ -25,6 +25,7 @@ public class InputScript : MonoBehaviour
     public GameObject bullet;
     private CinemachineVirtualCamera cinemachineVirtualCamera;
     private GameObject inventoryGameObject;
+    private GameObject craftPanelGameObject;
     private GameObject inventoryLightGameObject;
 
     // ������ �����
@@ -52,8 +53,10 @@ public class InputScript : MonoBehaviour
         Camera.main.gameObject.transform.localPosition = transform.localPosition;
         cinemachineVirtualCamera = FindFirstObjectByType<CinemachineVirtualCamera>();
         inventoryGameObject = GameObject.FindGameObjectWithTag("Inventory");
+        craftPanelGameObject = GameObject.FindGameObjectWithTag("Craft");
         HelperClass.playerInventoryGameObject = inventoryGameObject;
         inventoryGameObject.SetActive(false);
+        craftPanelGameObject.SetActive(false);
         HelperClass.equippedItem = gameObject.transform.Find("Player_1").transform.Find("Item").gameObject;
         HelperClass.itemName = GameObject.FindGameObjectWithTag("ItemName").GetComponent<TextMeshProUGUI>();
         if (HelperClass.isNewGame == false) {
@@ -190,7 +193,16 @@ public class InputScript : MonoBehaviour
         // ��������� ���� �����
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            pausePanel.SetActive(true);
+            if (!HelperClass.pausePanelIsShow)
+            {
+                pausePanel.SetActive(true);
+                HelperClass.pausePanelIsShow = true;
+            }
+            else 
+            {
+                HelperClass.pausePanelIsShow = false;
+                pausePanel.SetActive(false);
+            }
         }
 
         // �������� ��������� �� ������� ������� I
@@ -200,11 +212,13 @@ public class InputScript : MonoBehaviour
             {
                 inventoryOpen = true;
                 inventoryGameObject.SetActive(true);
+                craftPanelGameObject.SetActive(true);
             }
             else
             {
                 inventoryOpen = false;
                 inventoryGameObject.SetActive(false);
+                craftPanelGameObject.SetActive(false);
             }
         }
         // ������ �������� ������� ���������

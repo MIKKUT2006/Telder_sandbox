@@ -89,6 +89,9 @@ public class HelperClass : MonoBehaviour
     // Анимация ячейки инвентаря
     [SerializeField] public static Animation equippedCellAnimator;
 
+    // Интерфейс
+    [SerializeField] public static bool pausePanelIsShow = false;
+
     public static Vector3 StringToVector3(string convertString)
     {
         string[] strings = convertString.Split('|');
