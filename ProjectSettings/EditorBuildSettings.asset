@@ -11,4 +11,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/WorldOne.unity
     guid: f299b759655054f8da8982855fe15d1a
+  - enabled: 1
+    path: Assets/Scenes/UserScene.unity
+    guid: 8d392e0d09d00094e8da9598a4a9a9b8
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0

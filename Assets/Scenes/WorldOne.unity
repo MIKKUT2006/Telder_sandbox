@@ -1888,7 +1888,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shader: {fileID: 4800000, guid: 09755a4891f8d4526a7e0690a23dec7b, type: 3}
-  spriteLightRT: {fileID: 870688995}
+  spriteLightRT: {fileID: 1414184391}
   intensity: 1.51
 --- !u!20 &255704880
 Camera:
@@ -11138,7 +11138,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 256
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 870688995}
+  m_TargetTexture: {fileID: 1414184391}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -12446,43 +12446,6 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 8000308229316072648}
   m_PrefabAsset: {fileID: 0}
---- !u!84 &870688995
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: SpriteLightKit RT
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 6
-  m_Width: 1416
-  m_Height: 719
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 0
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 0
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 0
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
 --- !u!1 &871577612
 GameObject:
   m_ObjectHideFlags: 0
@@ -25861,6 +25824,37 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1404659002
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1404659003}
+  m_Layer: 0
+  m_Name: Ambient Music
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1404659003
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1404659002}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 53.815956, y: 58.752136, z: -0.1342263}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1404978468
 GameObject:
   m_ObjectHideFlags: 0
@@ -25942,6 +25936,43 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 50689369}
   m_PrefabAsset: {fileID: 0}
+--- !u!84 &1414184391
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SpriteLightKit RT
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 6
+  m_Width: 1417
+  m_Height: 816
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 0
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_UseDynamicScaleExplicit: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_EnableRandomWrite: 0
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 0
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
 --- !u!1 &1443914321
 GameObject:
   m_ObjectHideFlags: 0
@@ -26046,6 +26077,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9511cd31abc679e479048074a9116cce, type: 2}
   - {fileID: 11400000, guid: ad2f48b32bddd2d499d84eb919fff862, type: 2}
   - {fileID: 11400000, guid: be0e1c698f86d2d499880bdc4fa63def, type: 2}
+  - {fileID: 11400000, guid: 26672d862324c254cad86cb45102bb38, type: 2}
   lightTile: {fileID: 11400000, guid: 0500c9fb9e867ee47846b2a0ff543739, type: 2}
   tilemap: {fileID: 2090741419}
   bgTilemap: {fileID: 871577615}
@@ -34340,3 +34372,4 @@ SceneRoots:
   - {fileID: 1172066972}
   - {fileID: 129471692}
   - {fileID: 703785813}
+  - {fileID: 1404659003}
