@@ -12,8 +12,8 @@ public class HelperClass : MonoBehaviour
 {
     // Подключение к бд
     [SerializeField] public static MySqlConnection mySqlConnection
-        = new MySqlConnection("Database=sql7747943; Data Source = sql7.freemysqlhosting.net; " +
-        "User Id=sql7747943; Password=xK8jSrD9bA; port=3306; charset=utf8");
+        = new MySqlConnection("Database=sql8750060; Data Source = sql8.freemysqlhosting.net; " +
+        "User Id=sql8750060; Password=tzZf4N113d; port=3306; charset=utf8");
 
     public const string url = "https://saoxywsrefjufpncyivz.supabase.co";
     public const string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNhb3h5d3NyZWZqdWZwbmN5aXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI1NDc3MDMsImV4cCI6MjA0ODEyMzcwM30.Qin9g5rC-SgOg3xdyF4yP9344t54uMBc0HQlUZxInJg";

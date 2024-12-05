@@ -1,18 +1,10 @@
 using Cinemachine;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using TMPro;
-using Unity.VisualScripting;
-using UnityEditor.Build.Content;
+//using UnityEditor.Build.Content;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
-using PUSHKA.MySQL;
-using System.Data;
-using MySql.Data.MySqlClient;
 using static HelperClass;
 using System;
 public class InputScript : MonoBehaviour

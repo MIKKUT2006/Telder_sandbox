@@ -1,14 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Burst.CompilerServices;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using static UnityEditor.PlayerSettings;
-using UnityEngine.WSA;
-using static UnityEngine.Rendering.VolumeComponent;
-using System.Drawing;
 //using System;
 //using Assets;
 //using Client = Supabase.Client;
