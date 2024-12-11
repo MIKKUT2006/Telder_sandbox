@@ -6,17 +6,6 @@ using UnityEngine;
 // Класс, хранящй крепкость всех блоков в игре
 public class BlocksData : MonoBehaviour
 {
-    //public static List<int> blocksSolidity = new List<int> {
-    //     0, //солнечный свет
-    //     3, //трава
-    //     3, //земля
-    //     15, //камень
-    //     0, //пустота
-    //     3, //трава с деревьями
-    //     1, //трава
-    //     1, //трава
-    //};
-
     public static List<AllItemsAndBlocks> allBlocks = new List<AllItemsAndBlocks> {
         // Блоки верхнего мира
          new AllItemsAndBlocks(0, "Свет", 0, true, 100),
@@ -31,7 +20,10 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(9, "Песок", 1, true, 100),   
          new AllItemsAndBlocks(10, "Окаменевший кристалл", 3, true, 100),   
          new AllItemsAndBlocks(11, "Снег", 3, true, 100),   
-         new AllItemsAndBlocks(12, "Мох", 3, true, 100),   
+         new AllItemsAndBlocks(12, "Мох", 3, true, 100),
+         // Предметы верхнего мира
+         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным"),
+         new AllItemsAndBlocks(14, "Телепортиум", "Этот кристалл излучает странный, манящий свет"),
     };
 
     public static List<CraftingRecipe> craftingRecipes = new List<CraftingRecipe>
@@ -56,6 +48,11 @@ public class AllItemsAndBlocks
     public string description;
     public int blocksSolidity;
     public bool isBlock = true;
+
+    // Что выпадет при разрушении
+    public AllItemsAndBlocks drop;
+    public int dropCount;
+
     public int damage = 0;
     public bool stackable;
     public int maxStack;
@@ -68,13 +65,21 @@ public class AllItemsAndBlocks
     public string imagePath;
 
     // Конструкторы класса для оружия
-    public AllItemsAndBlocks(int _blockIndex, string _name, int _blocksSolidity, int _damage, string _description)
+    public AllItemsAndBlocks(int _blockIndex, string _name,  int _damage, string _description)
     {
         blockIndex = _blockIndex;
         name = _name;
-        blocksSolidity = _blocksSolidity;
         isBlock = false;
         damage = _damage;
+        description = _description;
+    }
+
+    // Конструкторы класса для предмета
+    public AllItemsAndBlocks(int _blockIndex, string _name, string _description)
+    {
+        blockIndex = _blockIndex;
+        name = _name;
+        isBlock = false;
         description = _description;
     }
 
@@ -86,6 +91,19 @@ public class AllItemsAndBlocks
         blocksSolidity = _blocksSolidity;
         stackable = _stackable;
         maxStack = _maxStack;
+    }
+
+    // Конструктор класса для блока с выпаднием другого предмета
+    public AllItemsAndBlocks(int _blockIndex, string _name, int _blocksSolidity, bool _stackable, int _maxStack, AllItemsAndBlocks _drop, int _dropCount)
+    {
+        blockIndex = _blockIndex;
+        name = _name;
+        blocksSolidity = _blocksSolidity;
+        stackable = _stackable;
+        maxStack = _maxStack;
+
+        drop = _drop;
+        dropCount = _dropCount;
     }
 }
 
