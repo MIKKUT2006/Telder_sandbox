@@ -16,6 +16,8 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     public CraftingRecipe recipe; // Рецепт, связанный с данной кнопкой
     //public GameObject ingredientPanel; // Панель для отображения ингредиентов
     public TextMeshProUGUI ingredientText; // Текст, отображающий ингредиенты
+    public TextMeshProUGUI recipeItemName; // Рецепт, связанный с данной кнопкой
+
 
     private void Awake()
     {
@@ -196,6 +198,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     private void UpdateIngredientText()
     {
         // Обновляем текст, чтобы отобразить ингредиенты и их количество
+        recipeItemName.text = recipe.item.name;
         ingredientText.text = "Необходимые ингредиенты:\n";
         foreach (Ingredient ingredient in recipe.ingredients)
         {

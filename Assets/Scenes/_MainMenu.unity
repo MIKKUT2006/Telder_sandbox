@@ -542,7 +542,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 256
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 1475086801}
+  m_TargetTexture: {fileID: 1104942532}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -7460,7 +7460,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shader: {fileID: 4800000, guid: 09755a4891f8d4526a7e0690a23dec7b, type: 3}
-  spriteLightRT: {fileID: 1475086801}
+  spriteLightRT: {fileID: 1104942532}
   intensity: 1.51
 --- !u!20 &406037493
 Camera:
@@ -8578,7 +8578,7 @@ PrefabInstance:
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
@@ -8588,7 +8588,7 @@ PrefabInstance:
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
@@ -8638,12 +8638,12 @@ PrefabInstance:
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 275
       objectReference: {fileID: 0}
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -85.5
       objectReference: {fileID: 0}
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
@@ -8802,7 +8802,7 @@ PrefabInstance:
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
@@ -8812,7 +8812,7 @@ PrefabInstance:
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
@@ -8862,12 +8862,12 @@ PrefabInstance:
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 275
       objectReference: {fileID: 0}
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -22.5
       objectReference: {fileID: 0}
     - target: {fileID: 4471032722988600910, guid: 109e9e1f5852e9d4ca69eef3bbfade9c,
         type: 3}
@@ -8969,7 +8969,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &584542524
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8991,7 +8991,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -231.39001, y: -239.66}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &584542525
 MonoBehaviour:
@@ -11607,9 +11607,9 @@ RectTransform:
   - {fileID: 1264658693}
   m_Father: {fileID: 584542524}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 275, y: -211.5}
   m_SizeDelta: {x: 550, y: 45}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1030958178
@@ -11980,6 +11980,43 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!84 &1104942532
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SpriteLightKit RT
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 6
+  m_Width: 1262
+  m_Height: 811
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 0
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_UseDynamicScaleExplicit: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_EnableRandomWrite: 0
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 0
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
 --- !u!1 &1121947384
 GameObject:
   m_ObjectHideFlags: 0
@@ -19273,43 +19310,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1468690828}
   m_CullTransparentMesh: 1
---- !u!84 &1475086801
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: SpriteLightKit RT
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 6
-  m_Width: 1262
-  m_Height: 811
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 0
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 0
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 0
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
 --- !u!1 &1498575023
 GameObject:
   m_ObjectHideFlags: 0
@@ -22317,9 +22317,9 @@ RectTransform:
   - {fileID: 2120791055}
   m_Father: {fileID: 584542524}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 275, y: -148.5}
   m_SizeDelta: {x: 550, y: 45}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1939100603

@@ -10,6 +10,7 @@ public class CraftiScript : MonoBehaviour
     public Transform buttonsParent; // Родитель для кнопок
     public GameObject ingredientPanel;
     public TextMeshProUGUI ingredientText;
+    public TextMeshProUGUI recipeItemName;
 
     private void Start()
     {
@@ -27,6 +28,7 @@ public class CraftiScript : MonoBehaviour
             button.GetComponent<InventoryElementSelect>().recipe = recipe;
             //button.GetComponent<InventoryElementSelect>().ingredientPanel = this.gameObject;
             button.GetComponent<InventoryElementSelect>().ingredientText = ingredientText;
+            button.GetComponent<InventoryElementSelect>().recipeItemName = recipeItemName;
             button.GetComponent<Button>().onClick.AddListener(() => CraftItem(recipe, button));
             // Здесь вы можете также добавить событие наведения мыши для показа необходимых ингредиентов
         }
