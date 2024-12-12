@@ -15,7 +15,7 @@ public class CollectItem : MonoBehaviour
         Inventory = HelperClass.playerInventoryGameObject;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
         // Добавляем предмет в инвентарь
         if (collision.gameObject.CompareTag("Player"))

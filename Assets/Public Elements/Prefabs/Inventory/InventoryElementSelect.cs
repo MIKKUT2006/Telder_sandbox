@@ -218,7 +218,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     public AllItemsAndBlocks InventoryItemClone(AllItemsAndBlocks itemInCell)
     {
         AllItemsAndBlocks itemOnCursor = new AllItemsAndBlocks(itemInCell.blockIndex, itemInCell.name,
-            itemInCell.blocksSolidity, itemInCell.stackable, itemInCell.maxStack);
+            itemInCell.blocksSolidity, itemInCell.stackable, itemInCell.maxStack, itemInCell.imagePath);
 
         itemOnCursor.count = itemInCell.count;
         //itemOnCursor.description = itemInCell.description;

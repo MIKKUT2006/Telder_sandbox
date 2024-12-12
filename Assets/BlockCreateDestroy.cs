@@ -1,4 +1,5 @@
-using System.Collections;
+п»їusing System.Collections;
+using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -7,7 +8,7 @@ using UnityEngine.UI;
 
 public class BlockCreateDestroy : MonoBehaviour
 {
-    // Карта тайлов и блок
+    // РљР°СЂС‚Р° С‚Р°Р№Р»РѕРІ Рё Р±Р»РѕРє
     public Tilemap tilemap;
     public TileBase[] Block;
     public TileBase Light;
@@ -46,7 +47,7 @@ public class BlockCreateDestroy : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        // При нажатии пкм устанавливаем блок
+        // РџСЂРё РЅР°Р¶Р°С‚РёРё РїРєРј СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±Р»РѕРє
         if (Input.GetMouseButtonDown(1))
         {
             placeBlock = true;
@@ -89,7 +90,7 @@ public class BlockCreateDestroy : MonoBehaviour
         {
             if (HelperClass.barrierPlaceBlock == false)
             {
-                // Позиция курсора
+                // РџРѕР·РёС†РёСЏ РєСѓСЂСЃРѕСЂР°
                 Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 Tilepos = CursorGameObject.transform.position;
                 //Debug.Log(CursorGameObject.transform.position);
@@ -98,24 +99,24 @@ public class BlockCreateDestroy : MonoBehaviour
                 int y = (int)Tilepos.y;
                 Vector3Int[] blockPosition = new Vector3Int[1];
 
-                // Получаем координату чанка
-                int chunkCoord = x / chunkSize;   // Получаем координату чанка
+                // РџРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚Сѓ С‡Р°РЅРєР°
+                int chunkCoord = x / chunkSize;   // РџРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚Сѓ С‡Р°РЅРєР°
                                                   //chunkCoord = chunkCoord * chunkSize;
                 int ostatok = chunkCoord % 100;
                 if (ostatok != 0)
                 {
                     chunkCoord -= (chunkCoord - ostatok) + 1;
                 }
-                //Debug.Log($"позиция курсора: {x}, координата чанка: {chunkCoord}");
-                //Debug.Log($"Чанк, где поставят блок: {HelperClass.ChunksGameobject[0].name} (тут должэен юыть 0)");
+                //Debug.Log($"РїРѕР·РёС†РёСЏ РєСѓСЂСЃРѕСЂР°: {x}, РєРѕРѕСЂРґРёРЅР°С‚Р° С‡Р°РЅРєР°: {chunkCoord}");
+                //Debug.Log($"Р§Р°РЅРє, РіРґРµ РїРѕСЃС‚Р°РІСЏС‚ Р±Р»РѕРє: {HelperClass.ChunksGameobject[0].name} (С‚СѓС‚ РґРѕР»Р¶СЌРµРЅ СЋС‹С‚СЊ 0)");
                 Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 //Tilemap bgTilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 Tilemap lightTilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
                 blockPosition[0] = new Vector3Int(x, y);
-                // Устанавливаем блок в позици курсора
+                // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±Р»РѕРє РІ РїРѕР·РёС†Рё РєСѓСЂСЃРѕСЂР°
 
-                // Самый крайний чанк слева
+                // РЎР°РјС‹Р№ РєСЂР°Р№РЅРёР№ С‡Р°РЅРє СЃР»РµРІР°
                 if (chunkCoord == 0) {
                     if ((tilemap.GetTile(blockPosition[0]) == null) && ((HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y - 1)) != null)
                     || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y + 1)) != null)
@@ -127,12 +128,12 @@ public class BlockCreateDestroy : MonoBehaviour
                     )
                     )
                     {
-                        //Debug.Log("Крайний чанк");
+                        //Debug.Log("РљСЂР°Р№РЅРёР№ С‡Р°РЅРє");
                         placeTile(x, y, blockPosition, chunkCoord);
                         return;
                     }
                 }
-                // Самый крайний справа
+                // РЎР°РјС‹Р№ РєСЂР°Р№РЅРёР№ СЃРїСЂР°РІР°
                 if (chunkCoord == HelperClass.Chunks.Count() - 1) {
                     if ((tilemap.GetTile(blockPosition[0]) == null) && ((HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y - 1)) != null)
                     || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y + 1)) != null)
@@ -149,7 +150,7 @@ public class BlockCreateDestroy : MonoBehaviour
                     }
                         
                 }
-                // Остальные чанки
+                // РћСЃС‚Р°Р»СЊРЅС‹Рµ С‡Р°РЅРєРё
                 if ((tilemap.GetTile(blockPosition[0]) == null) && ((HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y - 1)) != null)
                     || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x, y + 1)) != null)
                     || (HelperClass.Chunks[chunkCoord].GetTile(new Vector3Int(x - 1, y)) != null)
@@ -176,22 +177,22 @@ public class BlockCreateDestroy : MonoBehaviour
         {
             if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count > 0 && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
             {
-                // Уменьшаем количество блока в инвентаре
+                // РЈРјРµРЅСЊС€Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р»РѕРєР° РІ РёРЅРІРµРЅС‚Р°СЂРµ
                 HelperClass.playerInventory[HelperClass.selectedInventoryCell].count -= 1;
-                // Устанавливаем тайл в карте тайлов
+                // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚Р°Р№Р» РІ РєР°СЂС‚Рµ С‚Р°Р№Р»РѕРІ
                 TileBase[] tileBases = new TileBase[1];
                 UnityEngine.Tilemaps.Tile tile = new UnityEngine.Tilemaps.Tile();
                 tile.sprite = Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
                 tileBases[0] = tile;
                 HelperClass.Chunks[chunkCoord].SetTiles(blockPosition, tileBases);
-                // Устанавливаем в массиве блоков нужный айди блока из инвентаря
+                // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РІ РјР°СЃСЃРёРІРµ Р±Р»РѕРєРѕРІ РЅСѓР¶РЅС‹Р№ Р°Р№РґРё Р±Р»РѕРєР° РёР· РёРЅРІРµРЅС‚Р°СЂСЏ
                 ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
 
-                // Устанавливаем значение твердого блока для потоков воды
+                // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р·РЅР°С‡РµРЅРёРµ С‚РІРµСЂРґРѕРіРѕ Р±Р»РѕРєР° РґР»СЏ РїРѕС‚РѕРєРѕРІ РІРѕРґС‹
                 HelperClass.Cells[x, y].SetType(CellType.Solid);
 
                 Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[HelperClass.selectedInventoryCell].count.ToString();
-                // Очищаем всё, если больше нет блоков
+                // РћС‡РёС‰Р°РµРј РІСЃС‘, РµСЃР»Рё Р±РѕР»СЊС€Рµ РЅРµС‚ Р±Р»РѕРєРѕРІ
                 if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count == 0)
                 {
                     Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = false;
@@ -211,17 +212,18 @@ public class BlockCreateDestroy : MonoBehaviour
 
     void BreakTile()
     {
-        Debug.Log("Оставшаяся прочность: " + blockSolid);
+        Debug.Log("test!");
+        Debug.Log("РћСЃС‚Р°РІС€Р°СЏСЃСЏ РїСЂРѕС‡РЅРѕСЃС‚СЊ: " + blockSolid);
 
-        // Позиция курсора
+        // РџРѕР·РёС†РёСЏ РєСѓСЂСЃРѕСЂР°
         Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         int x = (int)Tilepos.x;
         int y = (int)Tilepos.y;
         Vector3Int blockPosition = new Vector3Int(x, y);
 
-        // Получаем координату чанка
-        int chunkCoord = x / chunkSize;   // Получаем координату чанка
+        // РџРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚Сѓ С‡Р°РЅРєР°
+        int chunkCoord = x / chunkSize;   // РџРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚Сѓ С‡Р°РЅРєР°
         int ostatok = chunkCoord % 100;
         if (ostatok != 0)
         {
@@ -231,36 +233,30 @@ public class BlockCreateDestroy : MonoBehaviour
         Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
         if (tilemap.GetTile(blockPosition) != null)
         {
-            //Debug.Log("Блок существует");
+            //Debug.Log("Р‘Р»РѕРє СЃСѓС‰РµСЃС‚РІСѓРµС‚");
             if (blockPos == new Vector2(x, y))
             {
-                Debug.Log("Выбран этот же блок");
+                Debug.Log("Р’С‹Р±СЂР°РЅ СЌС‚РѕС‚ Р¶Рµ Р±Р»РѕРє");
             }
             else
             {
-                // Условие закомментировано по причине ненужности на данный момент
-                //if (isblockDig == false)                                                                
-                //{
-                //    // верхнее условие
-                //}
-                // События с верхнего условия
-                blockSolid = BlocksData.allBlocks[ProceduralGeneration.map[x, y]].blocksSolidity;          // Получаем прочность блока
-                Debug.Log("Вы выбрали другой блок с прочностью: " + blockSolid);
+                
+                blockSolid = BlocksData.allBlocks[ProceduralGeneration.map[x, y]].blocksSolidity;          // РџРѕР»СѓС‡Р°РµРј РїСЂРѕС‡РЅРѕСЃС‚СЊ Р±Р»РѕРєР°
+                Debug.Log("Р’С‹ РІС‹Р±СЂР°Р»Рё РґСЂСѓРіРѕР№ Р±Р»РѕРє СЃ РїСЂРѕС‡РЅРѕСЃС‚СЊСЋ: " + blockSolid);
                 blockPos = new Vector2Int(x, y);
-                blockId = BlocksData.allBlocks[ProceduralGeneration.map[x, y]].blockIndex;                 // Получаем айди блока
+                blockId = BlocksData.allBlocks[ProceduralGeneration.map[x, y]].blockIndex;                 // РџРѕР»СѓС‡Р°РµРј Р°Р№РґРё Р±Р»РѕРєР°
                 isblockDig = true;
             }
             TileBase tile = tilemap.GetTile(blockPosition);
             if (blockSolid > 0)
             {
                 blockSolid -= digLevel;
-                //GameObject.FindGameObjectWithTag("Player").GetComponent<Animator>().SetBool("Attack", true);
                 Vector3 newpos = new Vector3(x + 0.5f, y + 0.5f);
                 ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
                 newParticles.gameObject.SetActive(true);
                 Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
 
-                // Получение его текстуры, если она есть
+                // РџРѕР»СѓС‡РµРЅРёРµ РµРіРѕ С‚РµРєСЃС‚СѓСЂС‹, РµСЃР»Рё РѕРЅР° РµСЃС‚СЊ
                 if (tile is UnityEngine.Tilemaps.Tile)
                 {
                     UnityEngine.Tilemaps.Tile tileScript = tile as UnityEngine.Tilemaps.Tile;
@@ -281,54 +277,53 @@ public class BlockCreateDestroy : MonoBehaviour
             }
             else
             {
-                // Устанавливаем значение пустого блока для потоков воды
+                // Р•СЃР»Рё Р±Р»РѕРє СЃР»РѕРјР°РЅ
+
+                // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р·РЅР°С‡РµРЅРёРµ РїСѓСЃС‚РѕРіРѕ Р±Р»РѕРєР° РґР»СЏ РїРѕС‚РѕРєРѕРІ РІРѕРґС‹
                 HelperClass.Cells[x, y].SetType(CellType.Blank);
 
-                Vector3 newpos = new Vector3(x + 0.5f, y + 0.5f);
-                GameObject newBlock = Instantiate(BlockGameObject, newpos, Quaternion.identity);
-                newBlock.name = blockId.ToString();
-                Sprite sprite = null;
-                // Получение его текстуры, если она есть
-                if (tile is UnityEngine.Tilemaps.Tile)
-                {
-                    Debug.Log("Проходим по условию");
-                    UnityEngine.Tilemaps.Tile tileScript = tile as UnityEngine.Tilemaps.Tile;
-                    sprite = tileScript.sprite;
-                    newBlock.GetComponent<SpriteRenderer>().sprite = tileScript.sprite;
-                    //BlockGameObjectSprite.sprite = tileScript.sprite;
-                }
-                else if (tile is RuleTile)
-                {
-                    RuleTile ruleTile = tile as RuleTile;
-                    sprite = ruleTile.m_DefaultSprite;
-                    //BlockGameObjectSprite.sprite = sprite;
-                    newBlock.GetComponent<SpriteRenderer>().sprite = sprite;
-                }
 
-                ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
-                newParticles.gameObject.SetActive(true);
-                Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
-
-                // Получение его текстуры, если она есть
-                if (tile is UnityEngine.Tilemaps.Tile)
+                // Р¦РёРєР» РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РІСЃРµС… РІС‹РїР°РґР°СЋС‰РёС… РїСЂРµРґРјРµС‚РѕРІ СЃ Р±Р»РѕРєР°
+                foreach (int drop in BlocksData.allBlocks.Where(x => x.blockIndex == blockId).FirstOrDefault().dropId)
                 {
-                    UnityEngine.Tilemaps.Tile tileScript = tile as UnityEngine.Tilemaps.Tile;
-                    Texture2D texture = tileScript.sprite.texture;
+                    Vector3 newpos = new Vector3(x + 0.5f, y + 0.5f);
+                    AllItemsAndBlocks currentDrop = BlocksData.allBlocks.Where(x => x.blockIndex == drop).FirstOrDefault();
+                    Debug.Log(currentDrop.name);
+                    GameObject newBlock = Instantiate(BlockGameObject, newpos, Quaternion.identity);
+                    newBlock.name = currentDrop.blockIndex.ToString();
+                    Sprite sprite = null;
+                    // РџРѕР»СѓС‡РµРЅРёРµ РµРіРѕ С‚РµРєСЃС‚СѓСЂС‹, РµСЃР»Рё РѕРЅР° РµСЃС‚СЊ
+
+                    // Р—Р°РіСЂСѓР¶Р°РµРј РёР·РѕР±СЂР°Р¶РµРЅРёРµ РёР· С„Р°Р№Р»Р°
+                    float pixelsPerUnit = 16;
+
+                    byte[] imageData = File.ReadAllBytes(currentDrop.imagePath);
+                    Texture2D texture = new Texture2D(16, 16);
+                    texture.LoadImage(imageData); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                    texture.filterMode = FilterMode.Point;
+
+                    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ pixelsPerUnit
+                    float width = texture.width / 16;
+                    float height = texture.height / 16;
+
+                    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                    Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+
+                    newBlock.GetComponent<SpriteRenderer>().sprite = newSprite;
+
+                    ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
+                    newParticles.gameObject.SetActive(true);
+                    Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
                     destroyMaterial.mainTexture = texture;
-                }
-                else if (tile is RuleTile)
-                {
-                    RuleTile ruleTile = tile as RuleTile;
-                    sprite = ruleTile.m_DefaultSprite;
-                    Texture2D texture = sprite.texture;
-                    destroyMaterial.mainTexture = texture;
-                }
 
-                Debug.Log("Блок сломан");
+                }
+                // РљРѕРЅРµС† С†РёРєР»Р°
+
+                Debug.Log("Р‘Р»РѕРє СЃР»РѕРјР°РЅ");
                 isblockDig = false;
                 Tilemap lightTilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
-                if (ProceduralGeneration.map[x, y + 1] == 0)                        // Проверка на освещенность солнцем блока
+                if (ProceduralGeneration.map[x, y + 1] == 0)                        // РџСЂРѕРІРµСЂРєР° РЅР° РѕСЃРІРµС‰РµРЅРЅРѕСЃС‚СЊ СЃРѕР»РЅС†РµРј Р±Р»РѕРєР°
                 {
                     ProceduralGeneration.map[x, y] = 4;
                     lightTilemap.SetTile(blockPosition, Light);
@@ -341,7 +336,7 @@ public class BlockCreateDestroy : MonoBehaviour
                             if (ProceduralGeneration.map[x, i] == 4)
                             {
                                 lightTilemap.SetTile(new Vector3Int(x, i), Light);
-                                ProceduralGeneration.map[x, i] = 0;                 // Ставим освещенность сломанному блоку
+                                ProceduralGeneration.map[x, i] = 0;                 // РЎС‚Р°РІРёРј РѕСЃРІРµС‰РµРЅРЅРѕСЃС‚СЊ СЃР»РѕРјР°РЅРЅРѕРјСѓ Р±Р»РѕРєСѓ
                             }
                             else
                             {
@@ -349,12 +344,12 @@ public class BlockCreateDestroy : MonoBehaviour
                             }
                         }
                     }
-                    //ProceduralGeneration.map[x, y] = 4;                           // Ставим освещенность сломанному блоку
+                    //ProceduralGeneration.map[x, y] = 4;                           // РЎС‚Р°РІРёРј РѕСЃРІРµС‰РµРЅРЅРѕСЃС‚СЊ СЃР»РѕРјР°РЅРЅРѕРјСѓ Р±Р»РѕРєСѓ
                     ProceduralGeneration.map[x, y] = 0;
                 }
                 else
                 {
-                    ProceduralGeneration.map[x, y] = 4;                             // Ставим освещенность сломанному блоку
+                    ProceduralGeneration.map[x, y] = 4;                             // РЎС‚Р°РІРёРј РѕСЃРІРµС‰РµРЅРЅРѕСЃС‚СЊ СЃР»РѕРјР°РЅРЅРѕРјСѓ Р±Р»РѕРєСѓ
                 }
 
                 digSound.clip = blockDestroy;

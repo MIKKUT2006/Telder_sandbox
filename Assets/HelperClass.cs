@@ -139,7 +139,9 @@ public class HelperClass : MonoBehaviour
             Debug.Log("В инвентарь был добавлен: " + HelperClass.playerInventory[InventoryCell].name);
             playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
             playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = item.GetComponent<SpriteRenderer>().sprite;
-            HelperClass.playerInventory[InventoryCell].imagePath = "Assets/Blocks/Firstworld/" + item.GetComponent<SpriteRenderer>().sprite.name + ".png";
+            // Получаем путь к изображению
+            HelperClass.playerInventory[InventoryCell].imagePath = BlocksData.allBlocks.Find(x => x.blockIndex == int.Parse(item.name)).imagePath;
+            //HelperClass.playerInventory[InventoryCell].imagePath = "Assets/Blocks/Firstworld/" + item.GetComponent<SpriteRenderer>().sprite.name + ".png";
             Destroy(item);
             if (HelperClass.selectedInventoryCell == InventoryCell)
             {
