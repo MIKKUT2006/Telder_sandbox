@@ -202,7 +202,7 @@ public class Grid : MonoBehaviour
         //}
 
         // Right click places liquid
-        if (Input.GetMouseButton(1))
+        if (Input.GetKeyDown(KeyCode.L))
         {
             if ((x > 0 && x < HelperClass.Cells.GetLength(0)) && (y > 0 && y < HelperClass.Cells.GetLength(1)))
             {

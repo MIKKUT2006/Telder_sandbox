@@ -1,4 +1,5 @@
 using MySql.Data.MySqlClient;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -47,20 +48,6 @@ public class MenuButtonsScript : MonoBehaviour
 
     private void Start()
     {
-        
-
-        if (HelperClass.login == null)
-        {
-            buttonsPanel.SetActive(false);
-            selectWorldsPanel.SetActive(false);
-            registrationPanel.SetActive(true);
-        }
-        else
-        {
-            buttonsPanel.SetActive(false);
-            selectWorldsPanel.SetActive(true);
-            registrationPanel.SetActive(false);
-        }
     }
 
 
@@ -195,8 +182,9 @@ public class MenuButtonsScript : MonoBehaviour
     private void CreateWorldInDB()
     {
         HelperClass.mySqlConnection.Open();
-        string createWorldDb = $"Insert into worlds (name, height, width, user_id) values ('{WorldName.text}'," +
-            $" '{HelperClass.worldHeight}', '{HelperClass.worldWidth}', {HelperClass.userId})";
+        string createWorldDb = $"Insert into worlds (name, height, width, user_id, date) values ('{WorldName.text}'," +
+            $" '{HelperClass.worldHeight}', '{HelperClass.worldWidth}', '{HelperClass.userId}'," +
+            $"'{DateTime.Now.Year}-{DateTime.Now.Month}-{DateTime.Now.Day}')";
         MySqlCommand createWorldCommand = new MySqlCommand(createWorldDb, HelperClass.mySqlConnection);
         Debug.Log(createWorldCommand.ExecuteNonQuery());
         HelperClass.mySqlConnection.Close();

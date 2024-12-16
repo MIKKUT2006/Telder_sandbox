@@ -45,11 +45,16 @@ public class PauseButtonsScripts : MonoBehaviour
             JsonInventory(playerInventoryPath, HelperClass.playerInventory);
             Debug.Log("Файл перезаписан: " + mapPath);
         }
+
+        // Работа с бд
         HelperClass.mySqlConnection.Open();
         Debug.Log($"айди пользователя {HelperClass.userId}");
-        string saveWorld = $"UPDATE worlds SET data = '{GetJson(ProceduralGeneration.map)}'," +
-            $" bg_data  = '{GetJson(ProceduralGeneration.bgMap)}'," +
-            $" inventory = '{GetInventoryJson(HelperClass.playerInventory)}'" +
+        string saveWorld = $"UPDATE worlds SET world_data = '{GetJson(ProceduralGeneration.map)}'," +
+            $" world_bg_data  = '{GetJson(ProceduralGeneration.bgMap)}'," +
+            $" inventory = '{GetInventoryJson(HelperClass.playerInventory)}'," +
+            $" player_position = '{HelperClass.playerGameObject.transform.position.x}|" +
+            $"{HelperClass.playerGameObject.transform.position.y}|" +
+            $"{HelperClass.playerGameObject.transform.position.z}'" +
             $" WHERE user_id = {HelperClass.userId} AND name = '{HelperClass.worldName}'";
 
         MySqlCommand mySqlCommand = new MySqlCommand(saveWorld, HelperClass.mySqlConnection);
@@ -64,6 +69,7 @@ public class PauseButtonsScripts : MonoBehaviour
     {
         // Преобразование массива в JSON
         string json = JsonHelper.ToJson(map);
+        Debug.Log(json);
         return json;
     }
 

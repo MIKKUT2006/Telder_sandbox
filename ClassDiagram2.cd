@@ -1,0 +1,759 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="FilterTest">
+    <Position X="22.5" Y="13.25" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="FilterTest.DownSampleMode" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\_GaussianBlur\FilterTest.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAIAAABAAAAAAAAAAAAAAEACAAAAAQAAAA=</HashCode>
+      <FileName>Assets\_GaussianBlur\FilterTest.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimpleBlit">
+    <Position X="5.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAAAAAAAAAAAAAAAAAAEAgAAAAAAAAAA=</HashCode>
+      <FileName>Assets\_GaussianBlur\SimpleBlit.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Cell">
+    <Position X="31.25" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAIgAAQAAAgEBAAAAMARCAAEAAAIAABQCQCAgAQAYAA=</HashCode>
+      <FileName>Assets\_Liquids\Scripts\Cell.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Grid">
+    <Position X="9.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAACAAGAAgAAACAIAIgAAAAAACAAAIAAAAgAgAEA=</HashCode>
+      <FileName>Assets\_Liquids\Scripts\Grid.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LiquidSimulator">
+    <Position X="14.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAACAAQgAAAARAAAAAAAAAABAAAAgAAIABAA=</HashCode>
+      <FileName>Assets\_Liquids\Scripts\LiquidSimulator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BlackTilePrefab">
+    <Position X="29.5" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\BlackTilePrefab.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BlockCreateDestroy">
+    <Position X="33" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AzAEAAACCiQCAAkAAUAgIhAA4IAAQgAAAgAAAgAAACA=</HashCode>
+      <FileName>Assets\BlockCreateDestroy.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BombScript">
+    <Position X="22.5" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAIAA=</HashCode>
+      <FileName>Assets\Blocks\FirstWorld\Projectiles\Bomb\BombScript.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BlocksData">
+    <Position X="33" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAACAAAAAA=</HashCode>
+      <FileName>Assets\BlocksData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AllItemsAndBlocks">
+    <Position X="26" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAgAAApAAAgAABAQAEAAAAIAAAAEIAAAA=</HashCode>
+      <FileName>Assets\BlocksData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CraftingRecipe">
+    <Position X="35" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAIAQAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\BlocksData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Ingredient">
+    <Position X="33" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAQAAAAAAAAAAACAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\BlocksData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CraftiScript">
+    <Position X="27.75" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQAAKAAAAAAAAAEAAAAACAAQAABAAACAAABAAA=</HashCode>
+      <FileName>Assets\CraftiScript.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Cursor">
+    <Position X="31.25" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAACAACAAAAAAAAAAQAAAgEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Cursor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DayNightCycle">
+    <Position X="22.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAACAAACAAAAAAAAAAAAAAAEAAAAAAAACAAIA=</HashCode>
+      <FileName>Assets\DayNightCycle.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DayNightShadow">
+    <Position X="22.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\DayNightShadow.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HelperClass">
+    <Position X="11" Y="2.5" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="HelperClass.Biomes" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\HelperClass.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AQEAEcYBhQAgIAgACAIEABiABgAIAAIRUcgwCCAQNAU=</HashCode>
+      <FileName>Assets\HelperClass.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="itemOnCursor">
+    <Position X="33" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\itemOnCursor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InputScript">
+    <Position X="14.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AASIAARAA2CgAAAEAAQgYgkkgCAAAAAMgJQAAAAAYcA=</HashCode>
+      <FileName>Assets\Player\InputScript.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="JumpScript">
+    <Position X="13" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQCAACAACBAAAAEAAAAAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Player\JumpScript.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlayerData">
+    <Position X="29" Y="16.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQACACAACACAEAAAAAAAAAAQAAAAAAAAAAhAAAQAAA=</HashCode>
+      <FileName>Assets\Player\PlayerData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SelectedBlockScript">
+    <Position X="2.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Player\SelectedBlockScript.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ProceduralGeneration">
+    <Position X="19" Y="11" Width="1.5" />
+    <NestedTypes>
+      <Class Name="ProceduralGeneration.Column" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\ProceduralGeneration.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="ProceduralGeneration.BiomeRange" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\ProceduralGeneration.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>EUEANAYEAQEAQkSCSMAFAAAEkCAAYEAICQTwACAQ5FA=</HashCode>
+      <FileName>Assets\ProceduralGeneration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CollectItem">
+    <Position X="26" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAgAgAAAAA=</HashCode>
+      <FileName>Assets\Public Elements\Prefabs\CollectItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InventoryScript">
+    <Position X="24.25" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Public Elements\Prefabs\Inventory\Inventory Script.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InventoryElementSelect" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAgAAYAAAQABEAAAAEgAAEAAAAAAAAgABAEA=</HashCode>
+      <FileName>Assets\Public Elements\Prefabs\Inventory\InventoryElementSelect.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="ItemClass">
+    <Position X="27.75" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAAAAAAIAAAgAAAAAAAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Public Elements\Prefabs\Inventory\Item Class.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ItemOnCursor">
+    <Position X="24.25" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAACAAAAAAAAABAAAAAAAAAAAAAQAAA=</HashCode>
+      <FileName>Assets\Public Elements\Prefabs\Inventory\ItemOnCursor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NewBehaviourScript">
+    <Position X="29.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Public Elements\Prefabs\Inventory\SelectInventoryCell.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LoadWorldBtnScript">
+    <Position X="5.25" Y="23" Width="1.5" />
+    <NestedTypes>
+      <Class Name="LoadWorldBtnScript.Wrapper&lt;T&gt;" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\Public Elements\Prefabs\World Element.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAABAAAUAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Public Elements\Prefabs\World Element.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RainDrop">
+    <Position X="12.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAABAAAAAAAAAAAAAAAACAAAAAAAgAACAAAA=</HashCode>
+      <FileName>Assets\RainDrop.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RainManager">
+    <Position X="17" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAAAAAIAAAAAABAAAEAAAAAAAgAAABUA=</HashCode>
+      <FileName>Assets\RainManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RainPool">
+    <Position X="12.25" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgQAAAAAAQAgBAAAAEAAAAQAAAAAAAAAAAAAAAAAEA=</HashCode>
+      <FileName>Assets\RainPool.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WeatherManager">
+    <Position X="12.75" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAACAAAgAAAAEAAgAAAAAAAAAIAAAAAAAAEAQ=</HashCode>
+      <FileName>Assets\Scenes\Weather\WeatherManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CustomScriptInscpector">
+    <Position X="33" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\ArrayInspector.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MenuButtonsScript">
+    <Position X="2.25" Y="4.5" Width="1.5" />
+    <NestedTypes>
+      <Class Name="MenuButtonsScript.Wrapper&lt;T&gt;" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\Scripts\MenuButtonsScript.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAEMAEAECBAVIEgKQAEBQAQAQCABAAGgAAAUABELAE=</HashCode>
+      <FileName>Assets\Scripts\MenuButtonsScript.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PauseButtonsScripts">
+    <Position X="7.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAACAAAAAAEAAAgAAAAAAQAAAgBAEA=</HashCode>
+      <FileName>Assets\Scripts\PauseButtonsScripts.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="JsonHelper">
+    <Position X="26" Y="14" Width="1.5" />
+    <NestedTypes>
+      <Class Name="JsonHelper.Wrapper&lt;T&gt;" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\Scripts\PauseButtonsScripts.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\PauseButtonsScripts.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="JsonHelperArray">
+    <Position X="29.5" Y="14.25" Width="1.5" />
+    <NestedTypes>
+      <Class Name="JsonHelperArray.Wrapper&lt;T&gt;" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\Scripts\PauseButtonsScripts.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\PauseButtonsScripts.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ChatController">
+    <Position X="31.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAQAQAAAAAAAAAAAICEAAAAAACAA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ChatController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DropdownSample">
+    <Position X="26" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAABAAAQAAAAAAIIAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\DropdownSample.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EnvMapAnimator">
+    <Position X="31.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAACAAAAAAAAAgAAAAAAQAAAAAAAAAAAAAAEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Prime31.SpriteLightKitLightManager">
+    <Position X="2.25" Y="22.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAFAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEA=</HashCode>
+      <FileName>Assets\_SpriteLightKit\Shadows\SpriteLightKitLightManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Prime31.SpriteLightKitShadow">
+    <Position X="22.25" Y="18" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAEAAAAAQAAAAAAAAAAAAAACBAAQAAAAGA=</HashCode>
+      <FileName>Assets\_SpriteLightKit\Shadows\SpriteLightKitShadow.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Prime31.SpriteLightColorCycler">
+    <Position X="24" Y="21.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABSAAAAIAAAAAAACAAAAAAAEAAAABACIIAAEAAAIAEA=</HashCode>
+      <FileName>Assets\_SpriteLightKit\SpriteLightColorCycler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Prime31.SpriteLightKit">
+    <Position X="4.25" Y="0.5" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="Prime31.SpriteLightKit.RenderTextureDepth" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\_SpriteLightKit\SpriteLightKit.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Enum Name="Prime31.SpriteLightKit.SLKRenderTextureFormat" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\_SpriteLightKit\SpriteLightKit.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>ABCAAAAAAQCAAAQAAAQCABACAAAgEhAIAAgEQAAACIA=</HashCode>
+      <FileName>Assets\_SpriteLightKit\SpriteLightKit.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Prime31.SpriteLightKitImageEffect">
+    <Position X="17.25" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAIAAAAAAAAAAAACAEICAAAAEBAAAA=</HashCode>
+      <FileName>Assets\_SpriteLightKit\SpriteLightKitImageEffect.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.Benchmark01">
+    <Position X="24.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>YAAAAAIAACAAAAAAAAQAAAAIAAQAAAAAgAABAAAAAAA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.Benchmark01_UGUI">
+    <Position X="29.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>YAAAAAAAACAAAAAAAAQAAAAKAAQAAAAAgAABAAAAAAA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.Benchmark02">
+    <Position X="24.25" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAACAAAAAEAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.Benchmark03">
+    <Position X="27.75" Y="4.5" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="TMPro.Examples.Benchmark03.BenchmarkType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark03.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACCAAAAAAAAAAAAAAAAAQAAAAAAAAAAAEEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark03.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.Benchmark04">
+    <Position X="27.75" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAADAAAIACAAAAAAAAAAAAAAAAAAAAAAAQAAAAABAAA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark04.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.CameraController">
+    <Position X="16" Y="11.75" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="TMPro.Examples.CameraController.CameraModes" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\CameraController.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AEQAEAAEADAEBEAgAIQAIEABAAAFgYQQACAAAAAAIEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\CameraController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.ObjectSpin">
+    <Position X="5.75" Y="4.5" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="TMPro.Examples.ObjectSpin.MotionType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ObjectSpin.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>ABQAAEAIIAAAAAAAAAAAQAAAEABAIAgAAAAAAABAEEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ObjectSpin.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.ShaderPropAnimator">
+    <Position X="34" Y="20.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAACAAAAAAAAAgAEAAAAAAAAAAAAAAAQAgAEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ShaderPropAnimator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.SimpleScript">
+    <Position X="34" Y="17.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAABAAAAAAAEAAAAQAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SimpleScript.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.SkewTextExample">
+    <Position X="7.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAEAACAAAAAAAAAAAAAABAEAAAAAIAAAAAACAEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SkewTextExample.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.TeleType">
+    <Position X="26.5" Y="17.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>YAAAAAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TeleType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.TextConsoleSimulator">
+    <Position X="14" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAACAAAAAAAAAAAAAABAAAAAAIAMAAAAACCEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextConsoleSimulator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.TextMeshProFloatingText">
+    <Position X="30.75" Y="17" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABACICAJACAAAAAAAAAAAAAJAAQAQAAAAABAACAACEI=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshProFloatingText.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.TextMeshSpawner">
+    <Position X="29" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAACAAAAAEAAAAAAABAAAAAAAAAAAAAAAACEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshSpawner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.TMP_ExampleScript_01">
+    <Position X="8.25" Y="14" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="TMPro.Examples.TMP_ExampleScript_01.objectType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_ExampleScript_01.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAgAIBAAAAAAAAAAACAAAAIAAAAAAAEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_ExampleScript_01.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.TMP_FrameRateCounter">
+    <Position X="15.25" Y="21.75" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="TMPro.Examples.TMP_FrameRateCounter.FpsCounterAnchorPositions" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_FrameRateCounter.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AoQAAAAAACAAAIgAAAAgAIAAAgQAAAAAAAAAAAAAAEg=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_FrameRateCounter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.TMP_TextEventCheck">
+    <Position X="4.5" Y="13.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>kAAAAAAAAAAAAAAAAAAAAAAEAAAAAAEJAAAAAAACCAA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventCheck.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.TMP_TextInfoDebugTool">
+    <Position X="27" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIEAAIYACACAAAggAAQAAAAoABKAAEAAACAgQACgAI=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.TMP_TextSelector_A" BaseTypeListCollapsed="true">
+    <Position X="17.25" Y="22" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAIAAAAAQoAAAAAAAAAQAAAWA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="TMPro.Examples.TMP_TextSelector_B" BaseTypeListCollapsed="true">
+    <Position X="13" Y="15.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAKAAABBGgAAAIAQAQAAIAAIgAQoAABIAEAAAQAACEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_B.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="TMPro.Examples.TMP_UiFrameRateCounter">
+    <Position X="9.75" Y="17.25" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="TMPro.Examples.TMP_UiFrameRateCounter.FpsCounterAnchorPositions" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_UiFrameRateCounter.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AoQAAAAAACAAAAgAAAAgAIAAAgQAAAAAAAAAAAAAAEg=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_UiFrameRateCounter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.TMPro_InstructionOverlay">
+    <Position X="1" Y="14.25" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="TMPro.Examples.TMPro_InstructionOverlay.FpsCounterAnchorPositions" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMPro_InstructionOverlay.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AIAAAAIAAAAAAIgAAAAgAAAAAAQAAAAACAAAAAAAAEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMPro_InstructionOverlay.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.VertexColorCycler">
+    <Position X="0.5" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAAAAAAAAAAAAAAgAAAAAAAACAEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexColorCycler.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.VertexJitter">
+    <Position X="6.25" Y="13.75" Width="1.5" />
+    <NestedTypes>
+      <Struct Name="TMPro.Examples.VertexJitter.VertexAnim" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexJitter.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAACAAAAAAAAAFAAAAAAAAAAgIAMAAAAACCEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexJitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.VertexShakeA">
+    <Position X="2.75" Y="15" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAACAAAFAACAAAAAAAgIAMAAAAACCEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeA.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.VertexShakeB">
+    <Position X="7.5" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAACAAAAAAAAAFAAAAAAAAAAgIAMAAAAACCEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeB.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.VertexZoom">
+    <Position X="5.25" Y="18.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAACAAAAAAAAAFAAAAAAAAAAgIAMAAAAACCEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexZoom.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.Examples.WarpTextExample">
+    <Position X="11" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAEAACAAAAAAAAAFAAAABAAAAAAAIAAAAAACAEA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\WarpTextExample.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.TMP_DigitValidator">
+    <Position X="17.25" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_DigitValidator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.TMP_PhoneNumberValidator">
+    <Position X="24.75" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TMPro.TMP_TextEventHandler" BaseTypeListCollapsed="true">
+    <Position X="7.75" Y="18.25" Width="1.5" />
+    <NestedTypes>
+      <Class Name="TMPro.TMP_TextEventHandler.CharacterSelectionEvent" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="TMPro.TMP_TextEventHandler.SpriteSelectionEvent" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="TMPro.TMP_TextEventHandler.WordSelectionEvent" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="TMPro.TMP_TextEventHandler.LineSelectionEvent" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="TMPro.TMP_TextEventHandler.LinkSelectionEvent" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>QAAAgAEEAAAAAMABAAEAIEAIAUApAAAAAAAAAYACBWE=</HashCode>
+      <FileName>Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="TileShadows.TileData">
+    <Position X="21.25" Y="23.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\TileShadows\Scripts\TileFogController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TileShadows.TileFogController">
+    <Position X="19.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAABIAIAAABAAIAAAEAAACAAAAAAAAAAAAEA=</HashCode>
+      <FileName>Assets\TileShadows\Scripts\TileFogController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="StructureTileData">
+    <Position X="0.5" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAQAAAgA=</HashCode>
+      <FileName>Assets\HelperClass.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Enum Name="CellType">
+    <Position X="4" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\_Liquids\Scripts\Cell.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="FlowDirection">
+    <Position X="2.25" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAQAAAAAAAIAAAACACAAAAAAAA=</HashCode>
+      <FileName>Assets\_Liquids\Scripts\Cell.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Prime31.SLKColorchannels">
+    <Position X="4" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAgAAAAAAAAAAAAAAAAAAAIAAABEAAAA=</HashCode>
+      <FileName>Assets\_SpriteLightKit\SpriteLightColorCycler.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Prime31.SLKWaveFunctions">
+    <Position X="5.75" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAABAAAEAAAgAAAABAAAAAAgACgAAAA=</HashCode>
+      <FileName>Assets\_SpriteLightKit\SpriteLightColorCycler.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="TileShadows.TileType">
+    <Position X="5.75" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\TileShadows\Scripts\TileFogController.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

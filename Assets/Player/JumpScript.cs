@@ -14,21 +14,21 @@ public class JumpScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetAxis("Jump") == 1 && jump == true && rb.velocity.y < 5)
+        if (Input.GetAxis("Jump") == 1 && jump == true && rb.linearVelocity.y < 5)
         {
             rb.AddForce(new Vector2(0, 5f), ForceMode2D.Impulse);
             jump = false;
         }
 
-        if (rb.velocity.y > 5)
+        if (rb.linearVelocity.y > 5)
         {
-            rb.velocity = new Vector2(rb.velocity.x, 5);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 5);
         }
     }
 
     private void OnTriggerStay2D(Collider2D collision)
     {
-        // Слой земли
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if (collision.gameObject.layer == 3)
         {
             jump = true;
@@ -39,7 +39,7 @@ public class JumpScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Слой воды
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         //if (collision.gameObject.layer == 4)
         //{
         //    rb.gravityScale = 0.5f;
@@ -48,12 +48,12 @@ public class JumpScript : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        // Слой земли
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if (collision.gameObject.layer == 3)
         {
             jump = false;
         }
-        // Слой воды
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         //if (collision.gameObject.layer == 4)
         //{
         //    rb.gravityScale = 1;

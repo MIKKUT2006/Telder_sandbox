@@ -28,8 +28,10 @@ public class LoadWorldBtnScript : MonoBehaviour
         // Загрузка мира из бд
         HelperClass.worldId = worldReader.GetInt32("id");
         HelperClass.worldName = worldReader.GetString("name");
-        HelperClass.map = LoadJson(worldReader.GetString("data"));
-        HelperClass.bgMap = LoadJson(worldReader.GetString("bg_data"));
+        HelperClass.map = LoadJson(worldReader.GetString("world_data"));
+        HelperClass.bgMap = LoadJson(worldReader.GetString("world_bg_data"));
+        HelperClass.playerEnterPosition = HelperClass.StringToVector3(worldReader.GetString("player_position"));
+        Debug.Log(HelperClass.playerEnterPosition);
         HelperClass.playerInventory = LoadInventory(worldReader.GetString("inventory"));
         worldReader.Close();
         HelperClass.mySqlConnection.Close();
