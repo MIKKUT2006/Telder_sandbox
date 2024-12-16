@@ -48,20 +48,6 @@ public class MenuButtonsScript : MonoBehaviour
 
     private void Start()
     {
-        
-
-        if (HelperClass.login == null)
-        {
-            buttonsPanel.SetActive(false);
-            selectWorldsPanel.SetActive(false);
-            registrationPanel.SetActive(true);
-        }
-        else
-        {
-            buttonsPanel.SetActive(false);
-            selectWorldsPanel.SetActive(true);
-            registrationPanel.SetActive(false);
-        }
     }
 
 

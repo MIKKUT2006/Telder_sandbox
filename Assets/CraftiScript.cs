@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+п»їusing System.Collections.Generic;
+using System.IO;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -6,8 +7,8 @@ using UnityEngine.UI;
 
 public class CraftiScript : MonoBehaviour
 {
-    public GameObject buttonPrefab; // Префаб кнопки
-    public Transform buttonsParent; // Родитель для кнопок
+    public GameObject buttonPrefab; // РџСЂРµС„Р°Р± РєРЅРѕРїРєРё
+    public Transform buttonsParent; // Р РѕРґРёС‚РµР»СЊ РґР»СЏ РєРЅРѕРїРѕРє
     public GameObject ingredientPanel;
     public TextMeshProUGUI ingredientText;
     public TextMeshProUGUI recipeItemName;
@@ -17,31 +18,53 @@ public class CraftiScript : MonoBehaviour
         PopulateCraftingRecipes();
     }
 
-    // Вывод всех рецептов крафта
+    // Р’С‹РІРѕРґ РІСЃРµС… СЂРµС†РµРїС‚РѕРІ РєСЂР°С„С‚Р° РІСЃРµС… РїСЂРµРґРјРµС‚РѕРІ
     private void PopulateCraftingRecipes()
     {
-        foreach (CraftingRecipe recipe in BlocksData.craftingRecipes) 
+        foreach (CraftingRecipe recipe in BlocksData.craftingRecipes)
         {
             GameObject button = Instantiate(buttonPrefab, buttonsParent);
-            button.GetComponentInChildren<TextMeshProUGUI>().text = recipe.item.name; // Название предмета
+            button.GetComponentInChildren<TextMeshProUGUI>().text = recipe.item.name; // РќР°Р·РІР°РЅРёРµ РїСЂРµРґРјРµС‚Р°
             button.name = recipe.item.blockIndex.ToString();
             button.GetComponent<InventoryElementSelect>().recipe = recipe;
             //button.GetComponent<InventoryElementSelect>().ingredientPanel = this.gameObject;
             button.GetComponent<InventoryElementSelect>().ingredientText = ingredientText;
             button.GetComponent<InventoryElementSelect>().recipeItemName = recipeItemName;
             button.GetComponent<Button>().onClick.AddListener(() => CraftItem(recipe, button));
-            // Здесь вы можете также добавить событие наведения мыши для показа необходимых ингредиентов
+            button.transform.Find("Image").GetComponent<Image>().enabled = true;
+            // Р—РґРµСЃСЊ РІС‹ РјРѕР¶РµС‚Рµ С‚Р°РєР¶Рµ РґРѕР±Р°РІРёС‚СЊ СЃРѕР±С‹С‚РёРµ РЅР°РІРµРґРµРЅРёСЏ РјС‹С€Рё РґР»СЏ РїРѕРєР°Р·Р° РЅРµРѕР±С…РѕРґРёРјС‹С… РёРЅРіСЂРµРґРёРµРЅС‚РѕРІ
+
+            float pixelsPerUnit = 16;
+
+            if (!string.IsNullOrEmpty(recipe.item.imagePath) && File.Exists(recipe.item.imagePath) && recipe.item.imagePath != null)
+            {
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+                byte[] imageData = File.ReadAllBytes(recipe.item.imagePath);
+                Texture2D texture = new Texture2D(16, 16);
+                texture.LoadImage(imageData); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                texture.filterMode = FilterMode.Point;
+
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ pixelsPerUnit
+                float width = texture.width / 16;
+                float height = texture.height / 16;
+
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+
+                //playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
+                button.transform.Find("Image").GetComponent<Image>().sprite = newSprite;
+            }
         }
     }
     private void CraftItem(CraftingRecipe recipe, GameObject cellGameObject)
     {
-        
-        // Проверка, есть ли у игрока необходимые ингредиенты
+
+        // РџСЂРѕРІРµСЂРєР°, РµСЃС‚СЊ Р»Рё Сѓ РёРіСЂРѕРєР° РЅРµРѕР±С…РѕРґРёРјС‹Рµ РёРЅРіСЂРµРґРёРµРЅС‚С‹
         if (HaveIngredients(recipe.ingredients))
         {
-            // Уменьшаем количество ингредиентов в инвентаре
+            // РЈРјРµРЅСЊС€Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅРіСЂРµРґРёРµРЅС‚РѕРІ РІ РёРЅРІРµРЅС‚Р°СЂРµ
             DeductIngredients(recipe.ingredients);
-            // Создаём новый предмет и добавляем в инвентарь
+            // РЎРѕР·РґР°С‘Рј РЅРѕРІС‹Р№ РїСЂРµРґРјРµС‚ Рё РґРѕР±Р°РІР»СЏРµРј РІ РёРЅРІРµРЅС‚Р°СЂСЊ
             AddItemToInventory(cellGameObject);
         }
     }
@@ -52,16 +75,16 @@ public class CraftiScript : MonoBehaviour
         {
             int countInInventory = 0;
 
-            // Считаем, сколько у игрока этого ингредиента
+            // РЎС‡РёС‚Р°РµРј, СЃРєРѕР»СЊРєРѕ Сѓ РёРіСЂРѕРєР° СЌС‚РѕРіРѕ РёРЅРіСЂРµРґРёРµРЅС‚Р°
             foreach (AllItemsAndBlocks item in HelperClass.playerInventory)
             {
                 if (item != null && item.name == ingredient.item.name)
                 {
-                    countInInventory += item.count; // учитываем количество предметов в инвентаре
+                    countInInventory += item.count; // СѓС‡РёС‚С‹РІР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРµРґРјРµС‚РѕРІ РІ РёРЅРІРµРЅС‚Р°СЂРµ
                 }
             }
 
-            // Проверяем, достаточно ли ингредиента
+            // РџСЂРѕРІРµСЂСЏРµРј, РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ Р»Рё РёРЅРіСЂРµРґРёРµРЅС‚Р°
             if (countInInventory < ingredient.quantity)
             {
                 return false;
@@ -70,14 +93,14 @@ public class CraftiScript : MonoBehaviour
         return true;
     }
 
-    // Уменьшение количества ингредиентов
+    // РЈРјРµРЅСЊС€РµРЅРёРµ РєРѕР»РёС‡РµСЃС‚РІР° РёРЅРіСЂРµРґРёРµРЅС‚РѕРІ
     private void DeductIngredients(List<Ingredient> ingredients)
     {
         foreach (Ingredient ingredient in ingredients)
         {
             int remaining = ingredient.quantity;
 
-            // Уменьшаем количество ингредиентов из инвентаря
+            // РЈРјРµРЅСЊС€Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅРіСЂРµРґРёРµРЅС‚РѕРІ РёР· РёРЅРІРµРЅС‚Р°СЂСЏ
             for (int i = 0; i < HelperClass.playerInventory.Length; i++)
             {
                 if (HelperClass.playerInventory[i] != null && HelperClass.playerInventory[i].name == ingredient.item.name)
@@ -86,12 +109,12 @@ public class CraftiScript : MonoBehaviour
                     {
                         HelperClass.playerInventory[i].count -= remaining;
                         remaining = 0;
-                        break; // Достигли нужного количества, выходим
+                        break; // Р”РѕСЃС‚РёРіР»Рё РЅСѓР¶РЅРѕРіРѕ РєРѕР»РёС‡РµСЃС‚РІР°, РІС‹С…РѕРґРёРј
                     }
                     else
                     {
                         remaining -= HelperClass.playerInventory[i].count;
-                        HelperClass.playerInventory[i].count = 0; // Обнуляем предмет, если он израсходован
+                        HelperClass.playerInventory[i].count = 0; // РћР±РЅСѓР»СЏРµРј РїСЂРµРґРјРµС‚, РµСЃР»Рё РѕРЅ РёР·СЂР°СЃС…РѕРґРѕРІР°РЅ
                     }
                 }
             }
@@ -100,8 +123,8 @@ public class CraftiScript : MonoBehaviour
 
     private void AddItemToInventory(GameObject cell)
     {
-        // Ваша логика добавления предмета в инвентарь
-        Debug.Log("Предмет создан");
+        // Р’Р°С€Р° Р»РѕРіРёРєР° РґРѕР±Р°РІР»РµРЅРёСЏ РїСЂРµРґРјРµС‚Р° РІ РёРЅРІРµРЅС‚Р°СЂСЊ
+        Debug.Log("РџСЂРµРґРјРµС‚ СЃРѕР·РґР°РЅ");
         HelperClass.AddItemToInventory(cell);
     }
 }

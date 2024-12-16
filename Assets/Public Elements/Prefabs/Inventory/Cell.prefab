@@ -337,6 +337,7 @@ MonoBehaviour:
       count: 0
       startDurable: 0
       durable: 0
+      toolType: 0
       imagePath: 
     ingredients: []
   ingredientText: {fileID: 0}

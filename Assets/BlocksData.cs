@@ -30,20 +30,16 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(9, "Песок", 1, true, 100, $"{firstWorldBlocks}Sand.png"),   
          new AllItemsAndBlocks(10, "Окаменевший кристалл", 3, true, 100, ""),   
          new AllItemsAndBlocks(11, "Снег", 3, true, 100, $"{firstWorldBlocks}Snow.png"),   
-         new AllItemsAndBlocks(12, "Мох", 3, true, 100, ""),
+         new AllItemsAndBlocks(12, "Листва", 2, true, 100, $"{firstWorldBlocks}Leaves.png"),
          // Предметы верхнего мира
-         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным"),
-         new AllItemsAndBlocks(14, "Телепортиум", "Этот кристалл излучает странный, манящий свет"),
+         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным", $"{firstWorldBlocks}/Tools/GrassPickaxe.png"),
+         //new AllItemsAndBlocks(14, "Телепортиум", "Этот кристалл излучает странный, манящий свет"),
     };
 
     public static List<CraftingRecipe> craftingRecipes = new List<CraftingRecipe>
     {
         new CraftingRecipe(allBlocks[5], new List<Ingredient> {
             new Ingredient(allBlocks[1], 3), // 1 Земля
-        }),
-        new CraftingRecipe(allBlocks[0], new List<Ingredient> {
-            new Ingredient(allBlocks[3], 3), // 3 Камня
-            new Ingredient(allBlocks[1], 2)  // 2 Земли или других предметов, например, для палок
         }),
         // Добавьте другие рецепты здесь
     };
@@ -81,7 +77,7 @@ public class AllItemsAndBlocks
     public string imagePath;
 
     // Конструкторы класса для оружия
-    public AllItemsAndBlocks(int _blockIndex, string _name,  int _damage, string _description, int _toolType)
+    public AllItemsAndBlocks(int _blockIndex, string _name,  int _damage, string _description, int _toolType, string _imagePath)
     {
         blockIndex = _blockIndex;
         name = _name;
@@ -89,15 +85,17 @@ public class AllItemsAndBlocks
         damage = _damage;
         description = _description;
         this.toolType = _toolType;
+        imagePath = _imagePath;
     }
 
     // Конструкторы класса для предмета (ингредиенты для крафта)
-    public AllItemsAndBlocks(int _blockIndex, string _name, string _description)
+    public AllItemsAndBlocks(int _blockIndex, string _name, string _description, string _imagePath)
     {
         blockIndex = _blockIndex;
         name = _name;
         isBlock = false;
         description = _description;
+        imagePath= _imagePath;
     }
 
     // Конструктор класса для блока
