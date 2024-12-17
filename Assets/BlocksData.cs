@@ -56,7 +56,7 @@ public class AllItemsAndBlocks
     public bool isBlock = true;
 
     // Что выпадет при разрушении
-    public List<AllItemsAndBlocks> drop = new List<AllItemsAndBlocks>();
+    //public List<AllItemsAndBlocks> drop = new List<AllItemsAndBlocks>();
     public List<int> dropId = new List<int>();
     public int dropCount;
 
