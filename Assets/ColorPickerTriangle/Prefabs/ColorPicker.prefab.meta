@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f24822f355d009d409e4bfb5c585f135
+timeCreated: 1495809079
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91518
+  packageName: Color Picker Triangle
+  packageVersion: 1.0
+  assetPath: Assets/ColorPickerTriangle/Prefabs/ColorPicker.prefab
+  uploadId: 182198

@@ -12,6 +12,7 @@ TagManager:
   - Ground
   - Craft
   - Item
+  - PlayerPanel
   layers:
   - Default
   - TransparentFX

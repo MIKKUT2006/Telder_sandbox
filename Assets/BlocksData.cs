@@ -38,8 +38,10 @@ public class BlocksData : MonoBehaviour
 
     public static List<CraftingRecipe> craftingRecipes = new List<CraftingRecipe>
     {
+        // Кирка древних
         new CraftingRecipe(allBlocks[5], new List<Ingredient> {
-            new Ingredient(allBlocks[1], 3), // 1 Земля
+            new Ingredient(allBlocks[12], 5), // Листва
+            new Ingredient(allBlocks[12], 5), // Листва
         }),
         // Добавьте другие рецепты здесь
     };

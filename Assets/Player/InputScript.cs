@@ -18,6 +18,7 @@ public class InputScript : MonoBehaviour
     private CinemachineVirtualCamera cinemachineVirtualCamera;
     private GameObject inventoryGameObject;
     private GameObject craftPanelGameObject;
+    private GameObject playerPanelGameObject;
     private GameObject inventoryLightGameObject;
 
     // ������ �����
@@ -46,8 +47,10 @@ public class InputScript : MonoBehaviour
         cinemachineVirtualCamera = FindFirstObjectByType<CinemachineVirtualCamera>();
         inventoryGameObject = GameObject.FindGameObjectWithTag("Inventory");
         craftPanelGameObject = GameObject.FindGameObjectWithTag("Craft");
+        playerPanelGameObject = GameObject.FindGameObjectWithTag("PlayerPanel");
         HelperClass.playerInventoryGameObject = inventoryGameObject;
         inventoryGameObject.SetActive(false);
+        playerPanelGameObject.SetActive(false);
         craftPanelGameObject.SetActive(false);
         HelperClass.equippedItem = gameObject.transform.Find("Player_1").transform.Find("Item").gameObject;
         HelperClass.itemName = GameObject.FindGameObjectWithTag("ItemName").GetComponent<TextMeshProUGUI>();
@@ -205,12 +208,14 @@ public class InputScript : MonoBehaviour
                 inventoryOpen = true;
                 inventoryGameObject.SetActive(true);
                 craftPanelGameObject.SetActive(true);
+                playerPanelGameObject.SetActive(true);
             }
             else
             {
                 inventoryOpen = false;
                 inventoryGameObject.SetActive(false);
                 craftPanelGameObject.SetActive(false);
+                playerPanelGameObject.SetActive(false);
             }
         }
         // ������ �������� ������� ���������

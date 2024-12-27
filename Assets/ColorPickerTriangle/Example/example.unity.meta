@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2895ff0ae228ae146a87e27257b06819
+timeCreated: 1495808696
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91518
+  packageName: Color Picker Triangle
+  packageVersion: 1.0
+  assetPath: Assets/ColorPickerTriangle/Example/example.unity
+  uploadId: 182198
