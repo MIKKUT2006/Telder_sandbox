@@ -2,15 +2,20 @@ using UnityEngine;
 
 public class PlayerPanel : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public GameObject playerBodyTypePaintPanel;
+    public GameObject colorPickerPanel;
 
-    // Update is called once per frame
-    void Update()
+    public void ShowColorPicker()
     {
-        
+        if (colorPickerPanel.activeSelf == true) 
+        {
+            colorPickerPanel.SetActive(false);
+            playerBodyTypePaintPanel.SetActive(false);
+        }
+        else
+        {
+            colorPickerPanel.SetActive(true);
+            playerBodyTypePaintPanel.SetActive(true);
+        }
     }
 }
