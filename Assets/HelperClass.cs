@@ -106,6 +106,7 @@ public class HelperClass : MonoBehaviour
         return resultVector;
     }
 
+    // Добавление в инвентарь предмета с земли
     public static void AddItemToInventory(GameObject item)
     {
         bool inventoryIsFull = false;
@@ -145,6 +146,72 @@ public class HelperClass : MonoBehaviour
             HelperClass.playerInventory[InventoryCell].imagePath = BlocksData.allBlocks.Find(x => x.blockIndex == int.Parse(item.name)).imagePath;
             //HelperClass.playerInventory[InventoryCell].imagePath = "Assets/Blocks/Firstworld/" + item.GetComponent<SpriteRenderer>().sprite.name + ".png";
             Destroy(item);
+            if (HelperClass.selectedInventoryCell == InventoryCell)
+            {
+                HelperClass.Cursor.SetActive(true);
+            }
+            playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
+            playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[InventoryCell].count.ToString();
+        }
+    }
+    public static void AddItemToInventory(AllItemsAndBlocks item)
+    {
+        bool inventoryIsFull = false;
+        int InventoryCell = HelperClass.playerInventory.GetLength(0) - 1;
+        // Перебор всех ячеек инвентаря
+        for (int i = HelperClass.playerInventory.GetLength(0) - 1; i >= 0; i--)
+        {
+            Debug.Log("ячейка номер" + InventoryCell);
+            Debug.Log("В инвентаре " + HelperClass.playerInventory[i]);
+            if (HelperClass.playerInventory[i] != null && HelperClass.playerInventory[i].name == BlocksData.allBlocks.Find(x => x.blockIndex == item.blockIndex).name)
+            {
+                HelperClass.playerInventory[i].count++;
+                Debug.Log($"В инвентаре {HelperClass.playerInventory[i].count} предмета {HelperClass.playerInventory[i].name}");
+                playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
+                playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();
+                return;
+            }
+            else if (HelperClass.playerInventory[i] == null && item.blockIndex != 0)
+            {
+                InventoryCell = i;
+                Debug.Log("Добавляем предмет в ячейку " + InventoryCell);
+            }
+            else
+            {
+                Debug.Log("Не прошло по условию");
+            }
+        }
+        if (!inventoryIsFull && InventoryCell != -1)
+        {
+            HelperClass.playerInventory[InventoryCell] = BlocksData.allBlocks.Find(x => x.blockIndex == item.blockIndex);
+            HelperClass.playerInventory[InventoryCell].count = 1;
+            Debug.Log("В инвентарь был добавлен: " + HelperClass.playerInventory[InventoryCell].name);
+            playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
+
+            float pixelsPerUnit = 16;
+
+            if (!string.IsNullOrEmpty(item.imagePath) && File.Exists(item.imagePath) && item.imagePath != null)
+            {
+                // �������� �������� �� �����
+                byte[] imageData = File.ReadAllBytes(item.imagePath);
+                Texture2D texture = new Texture2D(16, 16);
+                texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
+                texture.filterMode = FilterMode.Point;
+
+                // ������������ ������� ������� � ������ pixelsPerUnit
+                float width = texture.width / 16;
+                float height = texture.height / 16;
+
+                // �������� ������� �� ��������
+                Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+
+                playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = newSprite;
+
+            }
+
+            // Получаем путь к изображению
+            HelperClass.playerInventory[InventoryCell].imagePath = BlocksData.allBlocks.Find(x => x.blockIndex == item.blockIndex).imagePath;
+            //HelperClass.playerInventory[InventoryCell].imagePath = "Assets/Blocks/Firstworld/" + item.GetComponent<SpriteRenderer>().sprite.name + ".png";
             if (HelperClass.selectedInventoryCell == InventoryCell)
             {
                 HelperClass.Cursor.SetActive(true);

@@ -16,23 +16,23 @@ public class BlocksData : MonoBehaviour
 
     public static List<AllItemsAndBlocks> allBlocks = new List<AllItemsAndBlocks> {
         // Блоки верхнего мира
-         new AllItemsAndBlocks(0, "Свет", 0, true, 100, $"{firstWorldBlocks}Light.png"),
+         new AllItemsAndBlocks(0, "Свет", 0, true, 100, $"{firstWorldBlocks}Light.png", 0),
          //new AllItemsAndBlocks(1, "Земля", 3, true,100, $"{firstWorldBlocks}Dirt.png"),
-         new AllItemsAndBlocks(1, "Земля", 3, true,100, new List<int>{3,3,6}, 3),
-         new AllItemsAndBlocks(2, "Трава", 3, true, 100, $"{firstWorldBlocks}Grass.png"),
-         new AllItemsAndBlocks(3, "Камень", 15, true, 100, $"{firstWorldBlocks}Stone.png"),
-         new AllItemsAndBlocks(4, "Пустота", 0, true, 100, ""),
-         new AllItemsAndBlocks(5, "Трава с деревьями", 3, true, 100, $"{firstWorldBlocks}Dirt.png"),
-         new AllItemsAndBlocks(6, "Железная руда", 20, true, 100, $"{firstWorldBlocks}/Ores/Iron Ore.png"),
+         new AllItemsAndBlocks(1, "Земля", 3, true,100, new List<int>{3,3,6}, 3, 3),
+         new AllItemsAndBlocks(2, "Трава", 3, true, 100, $"{firstWorldBlocks}Grass.png", 3),
+         new AllItemsAndBlocks(3, "Камень", 15, true, 100, $"{firstWorldBlocks}Stone.png", 1),
+         new AllItemsAndBlocks(4, "Пустота", 0, true, 100, "", 0),
+         new AllItemsAndBlocks(5, "Трава с деревьями", 3, true, 100, $"{firstWorldBlocks}Dirt.png", 3),
+         new AllItemsAndBlocks(6, "Железная руда", 20, true, 100, $"{firstWorldBlocks}/Ores/Iron Ore.png", 1),
          // Блок с выпадением из него предметов
-         new AllItemsAndBlocks(7, "Руда телепортиума", 30, true, 100, new List<int>{1,1,1}, 3),
-         new AllItemsAndBlocks(8, "Баррьер", int.MaxValue, true, 100, ""),
-         new AllItemsAndBlocks(9, "Песок", 1, true, 100, $"{firstWorldBlocks}Sand.png"),   
-         new AllItemsAndBlocks(10, "Окаменевший кристалл", 3, true, 100, ""),   
-         new AllItemsAndBlocks(11, "Снег", 3, true, 100, $"{firstWorldBlocks}Snow.png"),   
-         new AllItemsAndBlocks(12, "Листва", 2, true, 100, $"{firstWorldBlocks}Leaves.png"),
+         new AllItemsAndBlocks(7, "Руда телепортиума", 30, true, 100, new List<int>{1,1,1}, 3, 1),
+         new AllItemsAndBlocks(8, "Баррьер", int.MaxValue, true, 100, "", 0),
+         new AllItemsAndBlocks(9, "Песок", 1, true, 100, $"{firstWorldBlocks}Sand.png", 3),   
+         new AllItemsAndBlocks(10, "Окаменевший кристалл", 3, true, 100, "", 1),   
+         new AllItemsAndBlocks(11, "Снег", 3, true, 100, $"{firstWorldBlocks}Snow.png", 3),   
+         new AllItemsAndBlocks(12, "Листва", 2, true, 100, $"{firstWorldBlocks}Leaves.png", 0),
          // Предметы верхнего мира
-         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным", $"{firstWorldBlocks}/Tools/GrassPickaxe.png", 2, 1, 2, 0, 0),
+         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным", $"{firstWorldBlocks}/Tools/GrassPickaxe.png", 1, 2, 2, 0, 0),
          //new AllItemsAndBlocks(14, "Телепортиум", "Этот кристалл излучает странный, манящий свет"),
     };
 
@@ -57,6 +57,13 @@ public class AllItemsAndBlocks
     public int blocksSolidity;
     public bool isBlock = true;
 
+    // Тип необходимого инструмента для разрушения
+    public int needsToolType;
+    // 0 - Любой
+    // 1 - Кирка
+    // 2 - Топор
+    // 3 - Оружие
+
     // Что выпадет при разрушении
     //public List<AllItemsAndBlocks> drop = new List<AllItemsAndBlocks>();
     public List<int> dropId = new List<int>();
@@ -69,6 +76,7 @@ public class AllItemsAndBlocks
     public int startDurable = 0;
     public int durable = 0;
 
+    // Тип инструмента для предмета
     public int toolType;
     // 1 - Кирка
     // 2 - Топор
@@ -112,7 +120,7 @@ public class AllItemsAndBlocks
     }
 
     // Конструктор класса для блока
-    public AllItemsAndBlocks(int _blockIndex, string _name, int _blocksSolidity, bool _stackable, int _maxStack, string _imagePath)
+    public AllItemsAndBlocks(int _blockIndex, string _name, int _blocksSolidity, bool _stackable, int _maxStack, string _imagePath, int needsToolType)
     {
         blockIndex = _blockIndex;
         name = _name;
@@ -121,10 +129,11 @@ public class AllItemsAndBlocks
         maxStack = _maxStack;
         imagePath = _imagePath;
         dropId.Add(this.blockIndex);
+        this.needsToolType = needsToolType;
     }
 
     // Конструктор класса для блока с выпаднием другого предмета
-    public AllItemsAndBlocks(int _blockIndex, string _name, int _blocksSolidity, bool _stackable, int _maxStack, List<int> _dropId, int _dropCount)
+    public AllItemsAndBlocks(int _blockIndex, string _name, int _blocksSolidity, bool _stackable, int _maxStack, List<int> _dropId, int _dropCount, int needsToolType)
     {
         blockIndex = _blockIndex;
         name = _name;
@@ -134,6 +143,8 @@ public class AllItemsAndBlocks
 
         dropId = _dropId;
         dropCount = _dropCount;
+
+        this.needsToolType = needsToolType;
     }
 }
 

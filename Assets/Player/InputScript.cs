@@ -139,6 +139,7 @@ public class InputScript : MonoBehaviour
         cellSize = tilemap.cellSize;
 
         HelperClass.LoadInventoryImages();
+        HelperClass.AddItemToInventory(BlocksData.allBlocks[13]);
     }
     
     void Update()

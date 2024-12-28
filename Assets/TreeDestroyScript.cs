@@ -27,7 +27,23 @@ public class TreeDestroyScript : MonoBehaviour
     {
         if (isChopping)
         {
-            currentHealth -= damagePerSecond * Time.deltaTime;
+            if (HelperClass.eguipmentItem != null)
+            {
+                if (HelperClass.eguipmentItem.toolType == 2)
+                {
+                    currentHealth -= HelperClass.eguipmentItem.axePower * Time.deltaTime;
+                }
+                else
+                {
+                    currentHealth -= 1 * Time.deltaTime;
+                }
+            }
+            else
+            {
+                currentHealth -= 1 * Time.deltaTime;
+            }
+            
+
             if (currentHealth <= 0)
             {
                 ChopDown();

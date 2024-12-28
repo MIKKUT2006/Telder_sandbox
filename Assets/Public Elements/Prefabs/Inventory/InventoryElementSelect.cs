@@ -102,9 +102,11 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                     HelperClass.equippedCellImage.color = Color.white;
                 }
                 cellImage.color = new Color32(47, 192, 255, 255);
+                //Debug.Log(HelperClass.playerInventory[HelperClass.selectedInventoryCell]);
                 HelperClass.equippedCellImage = cellImage;
                 HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = true;
                 HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
+                HelperClass.eguipmentItem = HelperClass.playerInventory[HelperClass.selectedInventoryCell];
                 if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
                 {
                     HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = true;
@@ -256,7 +258,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     public AllItemsAndBlocks InventoryItemClone(AllItemsAndBlocks itemInCell)
     {
         AllItemsAndBlocks itemOnCursor = new AllItemsAndBlocks(itemInCell.blockIndex, itemInCell.name,
-            itemInCell.blocksSolidity, itemInCell.stackable, itemInCell.maxStack, itemInCell.imagePath);
+            itemInCell.blocksSolidity, itemInCell.stackable, itemInCell.maxStack, itemInCell.imagePath, itemInCell.needsToolType);
 
         itemOnCursor.count = itemInCell.count;
         //itemOnCursor.description = itemInCell.description;

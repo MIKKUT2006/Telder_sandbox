@@ -249,7 +249,9 @@ public class BlockCreateDestroy : MonoBehaviour
             TileBase tile = tilemap.GetTile(blockPosition);
             if (blockSolid > 0)
             {
-                if (HelperClass.eguipmentItem != null)
+                Debug.Log($"Нужен инструмент: {BlocksData.allBlocks[ProceduralGeneration.map[x, y]].needsToolType}");
+                Debug.Log($"У нас: {HelperClass.eguipmentItem.name}");
+                if (HelperClass.eguipmentItem != null && BlocksData.allBlocks[ProceduralGeneration.map[x, y]].needsToolType == HelperClass.eguipmentItem.toolType)
                 {
                     blockSolid -= HelperClass.eguipmentItem.pickaxePower;
                 }
@@ -279,7 +281,7 @@ public class BlockCreateDestroy : MonoBehaviour
 
                 digSound.clip = blockDigClip;
                 digSound.Play();
-                //Debug.Log(blockSolid);
+                Debug.Log(blockSolid);
             }
             else
             {
