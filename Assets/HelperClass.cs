@@ -85,6 +85,8 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static GameObject playerInventoryGameObject;
     [SerializeField] public static GameObject itemOnCursorGameObject;
     [SerializeField] public static int selectedInventoryCell = 0;
+    // Предмет, который держат в руке
+    [SerializeField] public static AllItemsAndBlocks eguipmentItem;
 
     // Анимация ячейки инвентаря
     [SerializeField] public static Animation equippedCellAnimator;
@@ -185,6 +187,27 @@ public class HelperClass : MonoBehaviour
             }
         }
 
+    }
+
+    public void StartDigTimer()
+    {
+        StartCoroutine(DigTree());
+    }
+
+    // Цикл для копания
+    public static bool isDig = false;
+    public IEnumerator DigTree()
+    {
+        if (isDig == true)
+        {
+            isDig = false;
+        }
+        else
+        {
+            isDig = true;
+        }
+        yield return new WaitForSeconds(0.5f);
+        StartCoroutine(DigTree());
     }
 }
 

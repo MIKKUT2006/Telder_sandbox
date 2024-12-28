@@ -4,7 +4,7 @@ public class DayNightCycle : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer; // Ссылка на SpriteRenderer
     public float cycleDuration = 10f; // Время одного цикла (день + ночь) в секундах
-    public float duration = 60f; // Продолжительность дня/ночи в секундах
+    public float duration = 1200f; // Продолжительность дня/ночи в секундах (20 минут)
 
     private void Start()
     {

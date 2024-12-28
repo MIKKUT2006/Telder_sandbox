@@ -32,14 +32,14 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(11, "Снег", 3, true, 100, $"{firstWorldBlocks}Snow.png"),   
          new AllItemsAndBlocks(12, "Листва", 2, true, 100, $"{firstWorldBlocks}Leaves.png"),
          // Предметы верхнего мира
-         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным", $"{firstWorldBlocks}/Tools/GrassPickaxe.png"),
+         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным", $"{firstWorldBlocks}/Tools/GrassPickaxe.png", 2, 1, 2, 0, 0),
          //new AllItemsAndBlocks(14, "Телепортиум", "Этот кристалл излучает странный, манящий свет"),
     };
 
     public static List<CraftingRecipe> craftingRecipes = new List<CraftingRecipe>
     {
         // Кирка древних
-        new CraftingRecipe(allBlocks[5], new List<Ingredient> {
+        new CraftingRecipe(allBlocks[13], new List<Ingredient> {
             new Ingredient(allBlocks[12], 5), // Листва
             new Ingredient(allBlocks[12], 5), // Листва
         }),
@@ -62,7 +62,6 @@ public class AllItemsAndBlocks
     public List<int> dropId = new List<int>();
     public int dropCount;
 
-    public int damage = 0;
     public bool stackable;
     public int maxStack;
     public int count = 0;
@@ -75,11 +74,18 @@ public class AllItemsAndBlocks
     // 2 - Топор
     // 3 - Оружие
 
+    // Сила инструмента
+    public int pickaxePower = 0;
+    public int axePower = 0;
+    public int shovelPower = 0;
+
+    public int damage = 0;
+
     // Поле для хранения пути к изображению
     public string imagePath;
 
-    // Конструкторы класса для оружия
-    public AllItemsAndBlocks(int _blockIndex, string _name,  int _damage, string _description, int _toolType, string _imagePath)
+    // Конструкторы класса для инструмента/оружия
+    public AllItemsAndBlocks(int _blockIndex, string _name, string _description, string _imagePath, int _toolType, int _damage, int _pickaxePower, int _axePower, int _shovelPower)
     {
         blockIndex = _blockIndex;
         name = _name;
@@ -88,6 +94,11 @@ public class AllItemsAndBlocks
         description = _description;
         this.toolType = _toolType;
         imagePath = _imagePath;
+
+        // Мощность инструментов
+        this.pickaxePower = _pickaxePower;
+        this.axePower = _axePower;
+        this.shovelPower = _shovelPower;
     }
 
     // Конструкторы класса для предмета (ингредиенты для крафта)

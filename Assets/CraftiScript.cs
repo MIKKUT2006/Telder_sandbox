@@ -10,6 +10,7 @@ public class CraftiScript : MonoBehaviour
     public GameObject buttonPrefab; // Префаб кнопки
     public Transform buttonsParent; // Родитель для кнопок
     public GameObject ingredientPanel;
+    public GameObject ingredientPrefab;
     public TextMeshProUGUI ingredientText;
     public TextMeshProUGUI recipeItemName;
 
@@ -28,6 +29,8 @@ public class CraftiScript : MonoBehaviour
             button.name = recipe.item.blockIndex.ToString();
             button.GetComponent<InventoryElementSelect>().recipe = recipe;
             //button.GetComponent<InventoryElementSelect>().ingredientPanel = this.gameObject;
+            button.GetComponent<InventoryElementSelect>().ingredientPanel = ingredientPanel;
+            button.GetComponent<InventoryElementSelect>().ingredientPrefab = ingredientPrefab;
             button.GetComponent<InventoryElementSelect>().ingredientText = ingredientText;
             button.GetComponent<InventoryElementSelect>().recipeItemName = recipeItemName;
             button.GetComponent<Button>().onClick.AddListener(() => CraftItem(recipe, button));

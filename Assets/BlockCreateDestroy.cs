@@ -74,7 +74,7 @@ public class BlockCreateDestroy : MonoBehaviour
         SetTile();
     }
 
-    IEnumerator DigBlocks()
+    public IEnumerator DigBlocks()
     {
         if (isDig == true)
         {
@@ -212,8 +212,7 @@ public class BlockCreateDestroy : MonoBehaviour
 
     void BreakTile()
     {
-        Debug.Log("test!");
-        Debug.Log("Оставшаяся прочность: " + blockSolid);
+        //Debug.Log("Оставшаяся прочность: " + blockSolid);
 
         // Позиция курсора
         Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -236,13 +235,13 @@ public class BlockCreateDestroy : MonoBehaviour
             //Debug.Log("Блок существует");
             if (blockPos == new Vector2(x, y))
             {
-                Debug.Log("Выбран этот же блок");
+                //Debug.Log("Выбран этот же блок");
             }
             else
             {
                 
                 blockSolid = BlocksData.allBlocks[ProceduralGeneration.map[x, y]].blocksSolidity;          // Получаем прочность блока
-                Debug.Log("Вы выбрали другой блок с прочностью: " + blockSolid);
+                //Debug.Log("Вы выбрали другой блок с прочностью: " + blockSolid);
                 blockPos = new Vector2Int(x, y);
                 blockId = BlocksData.allBlocks[ProceduralGeneration.map[x, y]].blockIndex;                 // Получаем айди блока
                 isblockDig = true;
@@ -250,7 +249,14 @@ public class BlockCreateDestroy : MonoBehaviour
             TileBase tile = tilemap.GetTile(blockPosition);
             if (blockSolid > 0)
             {
-                blockSolid -= digLevel;
+                if (HelperClass.eguipmentItem != null)
+                {
+                    blockSolid -= HelperClass.eguipmentItem.pickaxePower;
+                }
+                else
+                {
+                    blockSolid -= 1;
+                }
                 Vector3 newpos = new Vector3(x + 0.5f, y + 0.5f);
                 ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
                 newParticles.gameObject.SetActive(true);

@@ -1,3 +1,4 @@
+п»їusing System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -11,12 +12,15 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     AllItemsAndBlocks tempItem = null;
     int tempItemCount = 0;
 
-    // Рецепты крафта
+    // Р РµС†РµРїС‚С‹ РєСЂР°С„С‚Р°
     [SerializeField] bool isCraftCell = false;
-    public CraftingRecipe recipe; // Рецепт, связанный с данной кнопкой
-    //public GameObject ingredientPanel; // Панель для отображения ингредиентов
-    public TextMeshProUGUI ingredientText; // Текст, отображающий ингредиенты
-    public TextMeshProUGUI recipeItemName; // Рецепт, связанный с данной кнопкой
+    public CraftingRecipe recipe; // Р РµС†РµРїС‚, СЃРІСЏР·Р°РЅРЅС‹Р№ СЃ РґР°РЅРЅРѕР№ РєРЅРѕРїРєРѕР№
+    public GameObject ingredientPanel; // РџР°РЅРµР»СЊ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РёРЅРіСЂРµРґРёРµРЅС‚РѕРІ
+
+    public GameObject ingredientPrefab;     // РџСЂРµС„Р°Р± РґР»СЏ РёРЅРіСЂРµРґРёРµРЅС‚Р° РєСЂР°С„С‚Р°
+
+    public TextMeshProUGUI ingredientText; // РўРµРєСЃС‚, РѕС‚РѕР±СЂР°Р¶Р°СЋС‰РёР№ РёРЅРіСЂРµРґРёРµРЅС‚С‹
+    public TextMeshProUGUI recipeItemName; // Р РµС†РµРїС‚, СЃРІСЏР·Р°РЅРЅС‹Р№ СЃ РґР°РЅРЅРѕР№ РєРЅРѕРїРєРѕР№
 
 
     private void Awake()
@@ -34,16 +38,16 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     }
     public void OnPointerClick(PointerEventData eventData)
     {
-        // Проверка на нажатие правой кнопки мыши
+        // РџСЂРѕРІРµСЂРєР° РЅР° РЅР°Р¶Р°С‚РёРµ РїСЂР°РІРѕР№ РєРЅРѕРїРєРё РјС‹С€Рё
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            // Проверка, что курсором был взят предмет
+            // РџСЂРѕРІРµСЂРєР°, С‡С‚Рѕ РєСѓСЂСЃРѕСЂРѕРј Р±С‹Р» РІР·СЏС‚ РїСЂРµРґРјРµС‚
             if (ItemOnCursor.selecteditem != null)
             {
-                // Проверка, что уже есть предмет в этом слоте
+                // РџСЂРѕРІРµСЂРєР°, С‡С‚Рѕ СѓР¶Рµ РµСЃС‚СЊ РїСЂРµРґРјРµС‚ РІ СЌС‚РѕРј СЃР»РѕС‚Рµ
                 if (HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled == true)
                 {
-                    // Проверка, что предмет в слоте совпадает с предметом в курсоре
+                    // РџСЂРѕРІРµСЂРєР°, С‡С‚Рѕ РїСЂРµРґРјРµС‚ РІ СЃР»РѕС‚Рµ СЃРѕРІРїР°РґР°РµС‚ СЃ РїСЂРµРґРјРµС‚РѕРј РІ РєСѓСЂСЃРѕСЂРµ
                     if (HelperClass.playerInventory[int.Parse(gameObject.name)].blockIndex == ItemOnCursor.selecteditem.blockIndex)
                     {
                         //Debug.Log(HelperClass.playerInventory[int.Parse(gameObject.name)].name);
@@ -63,9 +67,9 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                 {
                     HelperClass.playerInventory[int.Parse(gameObject.name)] = InventoryItemClone(ItemOnCursor.selecteditem);
                     HelperClass.playerInventory[int.Parse(gameObject.name)].count = 1;
-                    Debug.Log($"Количество в ячейке {HelperClass.playerInventory[int.Parse(gameObject.name)].count}");
+                    Debug.Log($"РљРѕР»РёС‡РµСЃС‚РІРѕ РІ СЏС‡РµР№РєРµ {HelperClass.playerInventory[int.Parse(gameObject.name)].count}");
                     ItemOnCursor.selecteditem.count--;
-                    Debug.Log($"В курсоре осталось {ItemOnCursor.selecteditem.count} предмета");
+                    Debug.Log($"Р’ РєСѓСЂСЃРѕСЂРµ РѕСЃС‚Р°Р»РѕСЃСЊ {ItemOnCursor.selecteditem.count} РїСЂРµРґРјРµС‚Р°");
                     HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[int.Parse(gameObject.name)].count.ToString();
                     HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
                     HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled = true;
@@ -80,7 +84,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
             }
             else
             {
-                // Выбор предмета в инвентаре
+                // Р’С‹Р±РѕСЂ РїСЂРµРґРјРµС‚Р° РІ РёРЅРІРµРЅС‚Р°СЂРµ
                 HelperClass.selectedInventoryCell = int.Parse(gameObject.name);
                 HelperClass.equippedCellAnimator = GetComponent<Animation>();
 
@@ -132,7 +136,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
 
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite = ItemOnCursor.sprite;
-                        Debug.Log("Количество забранного предмета " + tempItemCount);
+                        Debug.Log("РљРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°Р±СЂР°РЅРЅРѕРіРѕ РїСЂРµРґРјРµС‚Р° " + tempItemCount);
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = ItemOnCursor.selecteditem.count.ToString();
 
                         ItemOnCursor.selecteditem = null;
@@ -146,7 +150,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
 
                         //AllItemsAndBlocks tempItem = HelperClass.playerInventory[int.Parse(gameObject.name)];
                         ItemOnCursor.selecteditem = InventoryItemClone(HelperClass.playerInventory[int.Parse(gameObject.name)]);
-                        Debug.Log("Вы взяли предмет " + HelperClass.playerInventory[int.Parse(gameObject.name)].name + " В количестве: " + ItemOnCursor.selecteditem.count);
+                        Debug.Log("Р’С‹ РІР·СЏР»Рё РїСЂРµРґРјРµС‚ " + HelperClass.playerInventory[int.Parse(gameObject.name)].name + " Р’ РєРѕР»РёС‡РµСЃС‚РІРµ: " + ItemOnCursor.selecteditem.count);
                         //ItemOnCursor.selecteditem = HelperClass.playerInventory[int.Parse(gameObject.name)];
                         HelperClass.playerInventory[int.Parse(gameObject.name)] = null;
                         Debug.Log(ItemOnCursor.selecteditem.name);
@@ -197,12 +201,46 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
 
     private void UpdateIngredientText()
     {
-        // Обновляем текст, чтобы отобразить ингредиенты и их количество
+        while (ingredientPanel.transform.childCount > 0)
+        {
+            DestroyImmediate(ingredientPanel.transform.GetChild(0).gameObject);
+        }
+
+        // РћР±РЅРѕРІР»СЏРµРј С‚РµРєСЃС‚, С‡С‚РѕР±С‹ РѕС‚РѕР±СЂР°Р·РёС‚СЊ РёРЅРіСЂРµРґРёРµРЅС‚С‹ Рё РёС… РєРѕР»РёС‡РµСЃС‚РІРѕ
         recipeItemName.text = recipe.item.name;
-        ingredientText.text = "Необходимые ингредиенты:\n";
+        ingredientText.text = "РќРµРѕР±С…РѕРґРёРјС‹Рµ РёРЅРіСЂРµРґРёРµРЅС‚С‹:\n";
         foreach (Ingredient ingredient in recipe.ingredients)
         {
-            ingredientText.text += $"{ingredient.item.name}: {ingredient.quantity}\n";
+            // РЎРѕР·РґР°С‘Рј РїСЂРµС„Р°Р±
+            GameObject newIngredient = Instantiate(ingredientPrefab, ingredientPanel.transform);
+            Image ingredientImage = newIngredient.GetComponentInChildren<LayoutElement>().gameObject.GetComponent<Image>();
+
+            // Р—Р°РіСЂСѓР·РєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+            float pixelsPerUnit = 16;
+
+            if (!string.IsNullOrEmpty(ingredient.item.imagePath) && File.Exists(ingredient.item.imagePath) && ingredient.item.imagePath != null)
+            {
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+                byte[] imageData = File.ReadAllBytes(ingredient.item.imagePath);
+                Texture2D texture = new Texture2D(16, 16);
+                texture.LoadImage(imageData); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                texture.filterMode = FilterMode.Point;
+
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ pixelsPerUnit
+                float width = texture.width / 16;
+                float height = texture.height / 16;
+
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+
+                //playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
+                ingredientImage.sprite = newSprite;
+            }
+            // РљРѕР»РёС‡РµСЃС‚РІРѕ РёРЅРіСЂРµРґРёРµРЅС‚Р°
+            TextMeshProUGUI ingredientCount = newIngredient.GetComponentInChildren<TextMeshProUGUI>();
+            ingredientCount.text = ingredient.quantity.ToString();
+
+            //ingredientText.text += $"{ingredient.item.name}: {ingredient.quantity}\n";
         }
     }
 

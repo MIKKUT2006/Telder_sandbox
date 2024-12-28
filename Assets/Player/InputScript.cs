@@ -64,30 +64,13 @@ public class InputScript : MonoBehaviour
         //spriteRenderer = GetComponent<SpriteRenderer>();
         SetBackground(Biomes.Desert); // ��������� ���������� �����, ����� �������� � ����������� �� ������
 
-        // �������� ����������� � ��
-        //SqlDataBase db = new SqlDataBase("sql7.freemysqlhosting.net", "sql7740887", "sql7740887", "iE9GIRF1ma");
-        //db.RunQuery("Insert into users (login, password) values ('SVO','ANTISVO')");
-        //db.SelectQuery("Select * from users", out DataTable dataTable);
-
-        //Debug.Log(dataTable.Rows);
-
-        //MySqlConnection mySqlConnection = new MySqlConnection("Database=sql7740887; Data Source = sql7.freemysqlhosting.net; " +
-        //    "User Id=sql7740887; Password=iE9GIRF1ma; port=3306; charset=utf8");
-
-        //mySqlConnection.Open();
-
-        //string sql = "Select * from users";
-        //MySqlCommand mySqlCommand = new MySqlCommand(sql, mySqlConnection);
-        //MySqlDataReader mySqlDataReader = mySqlCommand.ExecuteReader();
-        //while (mySqlDataReader.Read())
-        //{
-        //    string login = mySqlDataReader.GetString("login");
-        //    Debug.Log(login);
-        //}
-
-        //Debug.Log(mySqlCommand.ToString());
-
     }
+
+    // РУБКА ДЕРЕВА
+    public LayerMask treeLayer;
+    private TreeDestroyScript currentTree;
+
+    // РУБКА ДЕРЕВА
 
     // ��������� ���� ����� ��� ����� �����
     public void UpdateBiome(Biomes newBiome)
@@ -160,6 +143,35 @@ public class InputScript : MonoBehaviour
     
     void Update()
     {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero, Mathf.Infinity, treeLayer);
+            if (hit.collider != null)
+            {
+                Debug.Log(hit.collider.gameObject.name);
+                TreeDestroyScript tree = hit.collider.GetComponent<TreeDestroyScript>();
+                if (tree != null)
+                {
+                    currentTree = tree;
+                    currentTree.StartChopping();
+                }
+            }
+        }
+
+        if (Input.GetMouseButtonUp(0) && currentTree != null)
+        {
+            currentTree.StopChopping();
+            currentTree = null;
+        }
+
+        if (Input.GetMouseButton(0) && currentTree != null)
+        {
+
+            currentTree.StartChopping();
+        }
+        // РУБКА
+
         rb.linearVelocity = new Vector2 (Input.GetAxis("Horizontal") * playerSpeed, rb.linearVelocity.y);
 
         GetCurrentBiome(transform.position);
