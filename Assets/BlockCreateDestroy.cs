@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+using static UnityEditor.PlayerSettings;
 
 public class BlockCreateDestroy : MonoBehaviour
 {
@@ -42,6 +43,7 @@ public class BlockCreateDestroy : MonoBehaviour
         testTilemap = HelperClass.bgChunks;
         BlockGameObjectSprite = BlockGameObject.GetComponent<SpriteRenderer>();
         Inventory = HelperClass.playerInventoryGameObject;
+        HelperClass.BlockGameObject = BlockGameObject;
     }
 
     // Update is called once per frame
@@ -175,38 +177,82 @@ public class BlockCreateDestroy : MonoBehaviour
         //ProceduralGeneration.map[x, y] = 2;
         if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null)
         {
-            if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count > 0 && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
+            if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].isObject == false)
             {
-                // Уменьшаем количество блока в инвентаре
-                HelperClass.playerInventory[HelperClass.selectedInventoryCell].count -= 1;
-                // Устанавливаем тайл в карте тайлов
-                TileBase[] tileBases = new TileBase[1];
-                UnityEngine.Tilemaps.Tile tile = new UnityEngine.Tilemaps.Tile();
-                tile.sprite = Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
-                tileBases[0] = tile;
-                HelperClass.Chunks[chunkCoord].SetTiles(blockPosition, tileBases);
-                // Устанавливаем в массиве блоков нужный айди блока из инвентаря
-                ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
-
-                // Устанавливаем значение твердого блока для потоков воды
-                HelperClass.Cells[x, y].SetType(CellType.Solid);
-
-                Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[HelperClass.selectedInventoryCell].count.ToString();
-                // Очищаем всё, если больше нет блоков
-                if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count == 0)
+                if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count > 0 && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
                 {
-                    Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = false;
-                    Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = false;
-                    HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = null;
-                    HelperClass.playerInventory[HelperClass.selectedInventoryCell] = null;
-                    HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = false;
-                    HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
-                    HelperClass.itemName.text = "";
-                }
+                    // Уменьшаем количество блока в инвентаре
+                    HelperClass.playerInventory[HelperClass.selectedInventoryCell].count -= 1;
+                    // Устанавливаем тайл в карте тайлов
+                    TileBase[] tileBases = new TileBase[1];
+                    UnityEngine.Tilemaps.Tile tile = new UnityEngine.Tilemaps.Tile();
+                    tile.sprite = Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
+                    tileBases[0] = tile;
+                    HelperClass.Chunks[chunkCoord].SetTiles(blockPosition, tileBases);
+                    // Устанавливаем в массиве блоков нужный айди блока из инвентаря
+                    ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
 
-                digSound.clip = place;
-                digSound.Play();
+                    // Устанавливаем значение твердого блока для потоков воды
+                    HelperClass.Cells[x, y].SetType(CellType.Solid);
+
+                    Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[HelperClass.selectedInventoryCell].count.ToString();
+                    // Очищаем всё, если больше нет блоков
+                    if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count == 0)
+                    {
+                        Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = false;
+                        Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = false;
+                        HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = null;
+                        HelperClass.playerInventory[HelperClass.selectedInventoryCell] = null;
+                        HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = false;
+                        HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
+                        HelperClass.itemName.text = "";
+                    }
+
+                    digSound.clip = place;
+                    digSound.Play();
+                }
             }
+            else
+            {
+                if(HelperClass.playerInventory[HelperClass.selectedInventoryCell].count > 0)
+                {
+                    // Уменьшаем количество блока в инвентаре
+                    HelperClass.playerInventory[HelperClass.selectedInventoryCell].count -= 1;
+                    // Устанавливаем тайл в карте тайлов
+                    //TileBase[] tileBases = new TileBase[1];
+                    //UnityEngine.Tilemaps.Tile tile = new UnityEngine.Tilemaps.Tile();
+                    //tile.sprite = Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
+                    //tileBases[0] = tile;
+                    //HelperClass.Chunks[chunkCoord].SetTiles(blockPosition, tileBases);
+                    Debug.Log(HelperClass.playerInventory[HelperClass.selectedInventoryCell].prefab);
+                    
+                    Vector3 vector3 = new Vector3(blockPosition[0].x + 0.5f, blockPosition[0].y + 0.5f, blockPosition[0].z + 0.5f);
+                    Instantiate(HelperClass.playerInventory[HelperClass.selectedInventoryCell].prefab, vector3, Quaternion.identity);
+
+                    // Устанавливаем в массиве блоков нужный айди блока из инвентаря
+                    //ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
+
+                    // Устанавливаем значение твердого блока для потоков воды
+                    HelperClass.Cells[x, y].SetType(CellType.Solid);
+
+                    Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[HelperClass.selectedInventoryCell].count.ToString();
+                    // Очищаем всё, если больше нет блоков
+                    if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count == 0)
+                    {
+                        Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = false;
+                        Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = false;
+                        HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = null;
+                        HelperClass.playerInventory[HelperClass.selectedInventoryCell] = null;
+                        HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = false;
+                        HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
+                        HelperClass.itemName.text = "";
+                    }
+
+                    digSound.clip = place;
+                    digSound.Play();
+                }
+            }
+            
         }
     }
 
@@ -250,7 +296,7 @@ public class BlockCreateDestroy : MonoBehaviour
             if (blockSolid > 0)
             {
                 Debug.Log($"Нужен инструмент: {BlocksData.allBlocks[ProceduralGeneration.map[x, y]].needsToolType}");
-                Debug.Log($"У нас: {HelperClass.eguipmentItem.name}");
+                //Debug.Log($"У нас: {HelperClass.eguipmentItem.name}");
                 if (HelperClass.eguipmentItem != null && BlocksData.allBlocks[ProceduralGeneration.map[x, y]].needsToolType == HelperClass.eguipmentItem.toolType)
                 {
                     blockSolid -= HelperClass.eguipmentItem.pickaxePower;
@@ -323,7 +369,6 @@ public class BlockCreateDestroy : MonoBehaviour
                     newParticles.gameObject.SetActive(true);
                     Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
                     destroyMaterial.mainTexture = texture;
-
                 }
                 // Конец цикла
 

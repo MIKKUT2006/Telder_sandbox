@@ -128,6 +128,6 @@ public class CraftiScript : MonoBehaviour
     {
         // Ваша логика добавления предмета в инвентарь
         Debug.Log("Предмет создан");
-        HelperClass.AddItemToInventory(cell);
+        HelperClass.AddCraftedItemToInventory(cell);
     }
 }

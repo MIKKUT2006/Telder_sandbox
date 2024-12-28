@@ -42,6 +42,7 @@ public class ProceduralGeneration : MonoBehaviour
 
     [Header ("ћ€гкость генерации руд")]
     [SerializeField] float ironOre;                 // ћ€гкость железной руды
+    [SerializeField] float coalOre;                 // ћ€гкость угольной руды
     [SerializeField] float teleportiumOre;          // ћ€гкость камн€ пространства
 
     [SerializeField] float seed;                    // —ид мира
@@ -546,12 +547,19 @@ public class ProceduralGeneration : MonoBehaviour
                     bgMap[i, j] = 12;
                 }
 
-                // √енераци€ руды
+                // √енераци€ железной руды
                 perlinHeightOres = Mathf.PerlinNoise((i + HelperClass.worldSeed / 2) / ironOre, (j + HelperClass.worldSeed / 2) / ironOre);
                 //Debug.Log(perlinHeightOres);
                 if (perlinHeightOres > 0.8 && map[i, j] == 3)
                 {
                     map[i, j] = 6;
+                }
+
+                // √енераци€ угольной руды
+                perlinHeightOres = Mathf.PerlinNoise((i + HelperClass.worldSeed / 4) / coalOre, (j + HelperClass.worldSeed / 4) / coalOre);
+                if (perlinHeightOres > 0.8 && map[i, j] == 3)
+                {
+                    map[i, j] = 17;
                 }
 
                 // √енераци€ руды телепортации
@@ -769,6 +777,9 @@ public class ProceduralGeneration : MonoBehaviour
                         break;
                     case 12:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[3]);       // ”станавливаем тайл мха
+                        break;
+                    case 17:
+                        tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[12]);       // ”станавливаем тайл угл€
                         break;
                 }
 

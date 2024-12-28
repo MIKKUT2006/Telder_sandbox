@@ -13,6 +13,8 @@ TagManager:
   - Craft
   - Item
   - PlayerPanel
+  - TopPanel
+  - ItemDescription
   layers:
   - Default
   - TransparentFX

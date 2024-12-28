@@ -19,6 +19,8 @@ public class InputScript : MonoBehaviour
     private GameObject inventoryGameObject;
     private GameObject craftPanelGameObject;
     private GameObject playerPanelGameObject;
+    private GameObject topPanelGameObject;
+
     private GameObject inventoryLightGameObject;
 
     // ������ �����
@@ -43,17 +45,21 @@ public class InputScript : MonoBehaviour
     private bool inventoryOpen = false;
     private void Awake()
     {
+        BlocksData.GetPrefabs();
         Camera.main.gameObject.transform.localPosition = transform.localPosition;
         cinemachineVirtualCamera = FindFirstObjectByType<CinemachineVirtualCamera>();
         inventoryGameObject = GameObject.FindGameObjectWithTag("Inventory");
         craftPanelGameObject = GameObject.FindGameObjectWithTag("Craft");
+        topPanelGameObject = GameObject.FindGameObjectWithTag("TopPanel");
         playerPanelGameObject = GameObject.FindGameObjectWithTag("PlayerPanel");
+        HelperClass.itemName = GameObject.FindGameObjectWithTag("ItemName").GetComponent<TextMeshProUGUI>();
+        HelperClass.itemDescription = GameObject.FindGameObjectWithTag("ItemDescription").GetComponent<TextMeshProUGUI>();
         HelperClass.playerInventoryGameObject = inventoryGameObject;
         inventoryGameObject.SetActive(false);
         playerPanelGameObject.SetActive(false);
         craftPanelGameObject.SetActive(false);
+        topPanelGameObject.SetActive(false);
         HelperClass.equippedItem = gameObject.transform.Find("Player_1").transform.Find("Item").gameObject;
-        HelperClass.itemName = GameObject.FindGameObjectWithTag("ItemName").GetComponent<TextMeshProUGUI>();
         if (HelperClass.isNewGame == false) {
             LoadInventoryImages();
             gameObject.transform.position = HelperClass.playerEnterPosition;
@@ -221,6 +227,7 @@ public class InputScript : MonoBehaviour
                 inventoryOpen = true;
                 inventoryGameObject.SetActive(true);
                 craftPanelGameObject.SetActive(true);
+                topPanelGameObject.SetActive(true);
                 playerPanelGameObject.SetActive(true);
             }
             else
@@ -228,6 +235,7 @@ public class InputScript : MonoBehaviour
                 inventoryOpen = false;
                 inventoryGameObject.SetActive(false);
                 craftPanelGameObject.SetActive(false);
+                topPanelGameObject.SetActive(false);
                 playerPanelGameObject.SetActive(false);
             }
         }

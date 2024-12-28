@@ -90,12 +90,18 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
 
                 if (HelperClass.playerInventory[int.Parse(gameObject.name)] != null)
                 {
+                    if (HelperClass.itemDescription.text != null)
+                    {
+                        HelperClass.itemDescription.text = HelperClass.playerInventory[int.Parse(gameObject.name)].description;
+                    }
                     HelperClass.itemName.text = HelperClass.playerInventory[int.Parse(gameObject.name)].name;
                 }
                 else
                 {
+                    HelperClass.itemDescription.text = "";
                     HelperClass.itemName.text = "";
                 }
+
                 Debug.Log(HelperClass.equippedCellAnimator);
                 if (HelperClass.equippedCellImage != null)
                 {
