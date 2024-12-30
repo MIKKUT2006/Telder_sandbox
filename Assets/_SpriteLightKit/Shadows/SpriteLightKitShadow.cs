@@ -7,11 +7,11 @@ namespace Prime31
 	public class SpriteLightKitShadow : MonoBehaviour
 	{
 		[Tooltip( "Maximum distance that a light can be from the sprite to still affect it" )]
-		public float maxLightSqrDistance = 100f;
+		public float maxLightSqrDistance = 200f;
 		[Tooltip( "The maximum offset from the sprite that the shadow can be" )]
-		public float maxShadowTranslation = 0.5f;
+		public float maxShadowTranslation = 0.3f;
 		[Tooltip( "The averaged light distance is multiplied by this and it affects how far the shadow will offset from the sprite" )]
-		public float shadowDistanceMultiplier = 1f;
+		public float shadowDistanceMultiplier = 2f;
 
 		SpriteLightKitLightManager _slkLightManager;
 		Transform _transform;

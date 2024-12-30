@@ -10,6 +10,9 @@ namespace Prime31
 		public enum RenderTextureDepth
 		{
 			None = 0,
+			_2Bit = 2,
+			_4Bit = 4,
+			_8Bit = 8,
 			_16Bit = 16,
 			_24Bit = 24
 		}

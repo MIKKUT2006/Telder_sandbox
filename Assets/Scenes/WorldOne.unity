@@ -1169,6 +1169,43 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 56866109}
   m_CullTransparentMesh: 1
+--- !u!84 &59973167
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SpriteLightKit RT
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 6
+  m_Width: 1536
+  m_Height: 916
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 0
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_UseDynamicScaleExplicit: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_EnableRandomWrite: 0
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 0
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
 --- !u!1 &70673834
 GameObject:
   m_ObjectHideFlags: 0
@@ -2739,8 +2776,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shader: {fileID: 4800000, guid: 09755a4891f8d4526a7e0690a23dec7b, type: 3}
-  spriteLightRT: {fileID: 1445854680}
-  intensity: 1.51
+  spriteLightRT: {fileID: 59973167}
+  intensity: 1.054
 --- !u!20 &255704880
 Camera:
   m_ObjectHideFlags: 0
@@ -13268,7 +13305,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 256
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 1445854680}
+  m_TargetTexture: {fileID: 59973167}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -13310,7 +13347,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   rtFormat: 7
-  rtTextureDepth: 16
+  rtTextureDepth: 0
   rtFilterMode: 0
   rtSizeMultiplier: 1
   _spriteLightCamera: {fileID: 494114811}
@@ -31545,43 +31582,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2035576883}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!84 &1445854680
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: SpriteLightKit RT
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 6
-  m_Width: 1645
-  m_Height: 931
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 90
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 0
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 0
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
 --- !u!1 &1450846964
 GameObject:
   m_ObjectHideFlags: 0
@@ -31658,7 +31658,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: be0e1c698f86d2d499880bdc4fa63def, type: 2}
   - {fileID: 11400000, guid: 26672d862324c254cad86cb45102bb38, type: 2}
   - {fileID: 11400000, guid: 58d1a360115495b49825498439b334c2, type: 2}
-  lightTile: {fileID: 11400000, guid: 0500c9fb9e867ee47846b2a0ff543739, type: 2}
+  lightTiles:
+  - {fileID: 11400000, guid: 0500c9fb9e867ee47846b2a0ff543739, type: 2}
+  - {fileID: 11400000, guid: eef962d7ee861884ea77f747991c29c6, type: 2}
+  - {fileID: 11400000, guid: 7cca12d8d43f238448a87e7211a2ecaa, type: 2}
+  - {fileID: 11400000, guid: bc2e6e0bd35a3b449b6525089d6d1164, type: 2}
   tilemap: {fileID: 2090741419}
   bgTilemap: {fileID: 871577615}
   lightTilemap: {fileID: 1864097605}
@@ -31671,7 +31675,6 @@ MonoBehaviour:
   x: 10
   y: 10
   worldSeed: 9999
-  test: 
   biomeRanges:
   - biomeName: Desert
     minThreshold: 0
@@ -39410,7 +39413,7 @@ Tilemap:
     m_Data: {r: NaN, g: NaN, b: NaN, a: NaN}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
-  m_Color: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+  m_Color: {r: 0.9056604, g: 0.9056604, b: 0.9056604, a: 1}
   m_Origin: {x: 0, y: 0, z: 0}
   m_Size: {x: 310, y: 275, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
