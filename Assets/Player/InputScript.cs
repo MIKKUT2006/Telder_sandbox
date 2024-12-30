@@ -146,6 +146,7 @@ public class InputScript : MonoBehaviour
 
         HelperClass.LoadInventoryImages();
         HelperClass.AddItemToInventory(BlocksData.allBlocks[13]);
+        HelperClass.AddItemToInventory(BlocksData.allBlocks[20]);
     }
     
     void Update()

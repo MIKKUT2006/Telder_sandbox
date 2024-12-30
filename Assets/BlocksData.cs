@@ -8,18 +8,17 @@ using UnityEngine;
 public class BlocksData : MonoBehaviour
 {
     public static GameObject torchPrefab = null;
+    public static GameObject bombprefab = null;
     static string firstWorldBlocks = "Assets/_Blocks/Firstworld/";
     public static void GetPrefabs()
     {
         torchPrefab = (GameObject)Resources.Load($"Torch");
-        if (torchPrefab == null)
-        {
-            Debug.LogError($"Prefab not found: {firstWorldBlocks}/Furniture/Torch");
-            //Обработка ошибки - например,  выход из игры или загрузка дефолтного префаба.
-        }
-        Debug.Log(torchPrefab.gameObject.name);
-
         allBlocks[19].prefab = torchPrefab;
+
+        bombprefab = (GameObject)Resources.Load($"Prefabs/Projectiles/Bomb/miniBomb");
+        bombprefab = (GameObject)Resources.Load($"miniBomb");
+        //Assets/Resources/Prefabs/Projectiles/Bomb/miniBomb.prefab
+        allBlocks[20].prefab = bombprefab;
     }
 
 
@@ -50,6 +49,7 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(17, "Угольная руда", 15, true, 100, new List<int>{18,18,18}, 3, 1),
          new AllItemsAndBlocks(18, "Кусок угля", "Выглядит горючим", $"{firstWorldBlocks}Ores/Coal.png"),
          new AllItemsAndBlocks(19, "Факел", "Источает свет", $"{firstWorldBlocks}Furniture/torch.png", 0, torchPrefab, true),
+         new AllItemsAndBlocks(20, "Бомба", "Делает БУМ", $"Assets/Resources/Prefabs/Projectiles/Bomb/Bomb.png", 0, bombprefab, true),
     };
 
     public static List<GameObject> objects = new List<GameObject> {
@@ -60,13 +60,17 @@ public class BlocksData : MonoBehaviour
     public static List<CraftingRecipe> craftingRecipes = new List<CraftingRecipe>
     {
         // Кирка древних
-        new CraftingRecipe(allBlocks[13], new List<Ingredient> {
-            new Ingredient(allBlocks[12], 5), // Листва
-            new Ingredient(allBlocks[12], 5), // Листва
-        }),
+        //new CraftingRecipe(allBlocks[13], new List<Ingredient> {
+        //    new Ingredient(allBlocks[12], 5), // Листва
+        //    new Ingredient(allBlocks[12], 5), // Листва
+        //}),
         // Факел
         new CraftingRecipe(allBlocks[19], new List<Ingredient> {
             new Ingredient(allBlocks[15], 1), // Древесина
+        }),
+        // Бомба
+        new CraftingRecipe(allBlocks[20], new List<Ingredient> {
+            new Ingredient(allBlocks[18], 6), // Уголь
         }),
         // Добавьте другие рецепты здесь
     };

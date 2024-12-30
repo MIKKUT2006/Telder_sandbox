@@ -76,12 +76,12 @@ public class HelperClass : MonoBehaviour
     // Игровой объект игрока
     [SerializeField] public static GameObject playerGameObject;
     [SerializeField] public static Vector3 playerEnterPosition;
+
     // Предмет в руке
     [SerializeField] public static GameObject equippedItem;
     [SerializeField] public static Image equippedCellImage;
     [SerializeField] public static TextMeshProUGUI itemName;
     [SerializeField] public static TextMeshProUGUI itemDescription;
-
     // Инвентарь
     [SerializeField] public static AllItemsAndBlocks[] playerInventory = new AllItemsAndBlocks[30];
     [SerializeField] public static GameObject playerInventoryGameObject;

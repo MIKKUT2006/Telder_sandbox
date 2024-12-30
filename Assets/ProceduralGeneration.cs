@@ -168,46 +168,83 @@ public class ProceduralGeneration : MonoBehaviour
         Debug.Log("Всё готово");
     }
 
-    public void CreateChunks()                                  // Создание чанков
+    //public void CreateChunks()                                  // Создание чанков
+    //{
+    //    HelperClass.numChunks = width / HelperClass.chunkSize;  // Устанавливаем количество чанков
+
+    //    HelperClass.Chunks = new Tilemap[HelperClass.numChunks];
+    //    HelperClass.ChunksGameobject = new GameObject[HelperClass.numChunks];
+
+    //    HelperClass.lightChunks = new Tilemap[HelperClass.numChunks];
+    //    HelperClass.lightChunksGameobject = new GameObject[HelperClass.numChunks];
+
+    //    HelperClass.bgChunks = new Tilemap[HelperClass.numChunks];
+    //    HelperClass.bgChunksGameobject = new GameObject[HelperClass.numChunks];
+
+    //    // Цикл на количество чанков
+    //    for (int i = 0; i < HelperClass.numChunks; i++)
+    //    {
+    //        // Генерация чанков с пустыми чанками 1- и x+1 по краям локации
+
+    //        //------------------
+    //        Tilemap newChunk = new Tilemap();
+    //        HelperClass.Chunks[i] = newChunk;
+    //        GameObject Chunk = Instantiate(chunkPrefab);
+    //        Chunk.name = i.ToString();
+    //        Chunk.transform.parent = transform;
+    //        HelperClass.ChunksGameobject[i] = Chunk;
+
+    //        Tilemap newlightChunk = new Tilemap();
+    //        HelperClass.lightChunks[i] = newlightChunk;
+    //        GameObject lightChunk = Instantiate(lightchunkPrefab);
+    //        lightChunk.name = i.ToString();
+    //        lightChunk.transform.parent = transform;
+    //        HelperClass.lightChunksGameobject[i] = lightChunk;
+
+    //        GameObject bgChunk = Instantiate(bgchunkPrefab);
+    //        HelperClass.bgChunks[i] = bgChunk.GetComponent<Tilemap>();
+    //        bgChunk.name = i.ToString();
+    //        bgChunk.transform.parent = transform;
+    //        HelperClass.bgChunksGameobject[i] = bgChunk;
+    //        //------------------
+    //    }
+    //}
+
+    public void CreateChunks()
     {
-        HelperClass.numChunks = width / HelperClass.chunkSize;  // Устанавливаем количество чанков
+        int chunkSize = HelperClass.chunkSize;
+        int numChunksX = Mathf.CeilToInt((float)width / chunkSize); // Количество чанков по X
 
-        HelperClass.Chunks = new Tilemap[HelperClass.numChunks];
-        HelperClass.ChunksGameobject = new GameObject[HelperClass.numChunks];
+        HelperClass.Chunks = new Tilemap[numChunksX];
+        HelperClass.ChunksGameobject = new GameObject[numChunksX];
+        HelperClass.lightChunks = new Tilemap[numChunksX];
+        HelperClass.lightChunksGameobject = new GameObject[numChunksX];
+        HelperClass.bgChunks = new Tilemap[numChunksX];
+        HelperClass.bgChunksGameobject = new GameObject[numChunksX];
 
-        HelperClass.lightChunks = new Tilemap[HelperClass.numChunks];
-        HelperClass.lightChunksGameobject = new GameObject[HelperClass.numChunks];
-
-        HelperClass.bgChunks = new Tilemap[HelperClass.numChunks];
-        HelperClass.bgChunksGameobject = new GameObject[HelperClass.numChunks];
-
-        // Цикл на количество чанков
-        for (int i = 0; i < HelperClass.numChunks; i++)
+        for (int x = 0; x < numChunksX; x++)
         {
-            // Генерация чанков с пустыми чанками 1- и x+1 по краям локации
+            int index = x; // Индекс чанка
 
             //------------------
-            Tilemap newChunk = new Tilemap();
-            HelperClass.Chunks[i] = newChunk;
             GameObject Chunk = Instantiate(chunkPrefab);
-            Chunk.name = i.ToString();
+            Chunk.name = $"Chunk_{x}";
             Chunk.transform.parent = transform;
-            HelperClass.ChunksGameobject[i] = Chunk;
+            HelperClass.ChunksGameobject[index] = Chunk;
+            HelperClass.Chunks[index] = Chunk.GetComponent<Tilemap>();
 
-            Tilemap newlightChunk = new Tilemap();
-            HelperClass.lightChunks[i] = newlightChunk;
             GameObject lightChunk = Instantiate(lightchunkPrefab);
-            lightChunk.name = i.ToString();
+            lightChunk.name = $"LightChunk_{x}";
             lightChunk.transform.parent = transform;
-            HelperClass.lightChunksGameobject[i] = lightChunk;
+            HelperClass.lightChunksGameobject[index] = lightChunk;
+            HelperClass.lightChunks[index] = lightChunk.GetComponent<Tilemap>();
 
             GameObject bgChunk = Instantiate(bgchunkPrefab);
-            HelperClass.bgChunks[i] = bgChunk.GetComponent<Tilemap>();
-            bgChunk.name = i.ToString();
+            bgChunk.name = $"BgChunk_{x}";
             bgChunk.transform.parent = transform;
-            HelperClass.bgChunksGameobject[i] = bgChunk;
+            HelperClass.bgChunksGameobject[index] = bgChunk;
+            HelperClass.bgChunks[index] = bgChunk.GetComponent<Tilemap>();
             //------------------
-
         }
     }
 
@@ -295,7 +332,7 @@ public class ProceduralGeneration : MonoBehaviour
     // ГЕНЕРАЦИЯ БИОМОВ
     private int biomeWidth = HelperClass.worldWidth; // Ширина карты биомов
     
-    public HelperClass.Biomes[] test;
+    //public HelperClass.Biomes[] test;
 
     [System.Serializable]
     public class BiomeRange
@@ -347,7 +384,7 @@ public class ProceduralGeneration : MonoBehaviour
             HelperClass.biomeMap[x] = biome;
         }
 
-        test = HelperClass.biomeMap;
+        //test = HelperClass.biomeMap;
     }
 
     HelperClass.Biomes FindBiome(float value)
@@ -707,21 +744,51 @@ public class ProceduralGeneration : MonoBehaviour
             
         }
     }
+
+    public static class ChunkHelper
+    {
+        public static int GetChunkXCoordinate(int x)
+        {
+            int chunkSize = HelperClass.chunkSize;
+            return Mathf.FloorToInt(x / (float)chunkSize);
+        }
+        public static int GetChunkYCoordinate(int y)
+        {
+            int chunkSize = HelperClass.chunkSize;
+            return Mathf.FloorToInt(y / (float)chunkSize);
+        }
+
+        //public static int GetChunkCountX()
+        //{
+        //    //Тут нужно вычислить количество чанков по X, исходя из размера мира и размера чанка.
+        //}
+
+        //public static int GetChunkCountY()
+        //{
+        //    //Тут нужно вычислить количество чанков по Y, исходя из размера мира и размера чанка.
+        //}
+    }
+
     public void RenderMap(int[,] map, Tilemap groundTilemap, List<TileBase> groundTileBase, int[,] bgMap)   // Массив, тайлмап, тайлы блока (список блоков)
     {
-        //lightTilemap = groundTilemap;
+        int width = map.GetLength(0);
+        int height = map.GetLength(1);
+        int chunkSize = HelperClass.chunkSize;
 
         for (int i = 0; i < width; i++)
         {
             // Получаем координату чанка
-            int chunkCoord = i / HelperClass.chunkSize;   // Получаем координату чанка
-                                              //chunkCoord = chunkCoord * chunkSize;
+            //int chunkCoord = i / HelperClass.chunkSize;   // Получаем координату чанка
+            int chunkCoord = ChunkHelper.GetChunkXCoordinate(i);
 
-            int ostatok = chunkCoord % 100;
-            if (ostatok != 0)
-            {
-                chunkCoord -= (chunkCoord - ostatok) + 1;
-            }
+            //int ostatok = chunkCoord % 100;
+            //if (ostatok != 0)
+            //{
+            //    chunkCoord -= (chunkCoord - ostatok) + 1;
+            //}
+
+            //int chunkCoord = ChunkHelper.GetChunkXCoordinate(x);
+
             Tilemap tileMap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
             Tilemap lightTileMap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
             Tilemap bgTileMap = HelperClass.bgChunksGameobject[chunkCoord].GetComponent<Tilemap>();

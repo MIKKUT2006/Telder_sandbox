@@ -102,15 +102,19 @@ public class BlockCreateDestroy : MonoBehaviour
                 Vector3Int[] blockPosition = new Vector3Int[1];
 
                 // Получаем координату чанка
-                int chunkCoord = x / chunkSize;   // Получаем координату чанка
-                                                  //chunkCoord = chunkCoord * chunkSize;
-                int ostatok = chunkCoord % 100;
-                if (ostatok != 0)
-                {
-                    chunkCoord -= (chunkCoord - ostatok) + 1;
-                }
+                //int chunkCoord = x / chunkSize;   // Получаем координату чанка
+                //                                  //chunkCoord = chunkCoord * chunkSize;
+                //int ostatok = chunkCoord % 100;
+                //if (ostatok != 0)
+                //{
+                //    chunkCoord -= (chunkCoord - ostatok) + 1;
+                //}
                 //Debug.Log($"позиция курсора: {x}, координата чанка: {chunkCoord}");
                 //Debug.Log($"Чанк, где поставят блок: {HelperClass.ChunksGameobject[0].name} (тут должэен юыть 0)");
+
+                int chunkCoord = HelperClass.chunkSize;
+                chunkCoord = Mathf.FloorToInt(x / (float)chunkSize);
+
                 Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 //Tilemap bgTilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 Tilemap lightTilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
@@ -227,8 +231,10 @@ public class BlockCreateDestroy : MonoBehaviour
                     Debug.Log(HelperClass.playerInventory[HelperClass.selectedInventoryCell].prefab);
                     
                     Vector3 vector3 = new Vector3(blockPosition[0].x + 0.5f, blockPosition[0].y + 0.5f, blockPosition[0].z + 0.5f);
+                    Debug.Log(HelperClass.playerInventory[HelperClass.selectedInventoryCell].prefab);
+                    Debug.Log(BlocksData.allBlocks[20].prefab.name);
                     Instantiate(HelperClass.playerInventory[HelperClass.selectedInventoryCell].prefab, vector3, Quaternion.identity);
-
+                    Debug.Log("");
                     // Устанавливаем в массиве блоков нужный айди блока из инвентаря
                     //ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
 
@@ -268,12 +274,7 @@ public class BlockCreateDestroy : MonoBehaviour
         Vector3Int blockPosition = new Vector3Int(x, y);
 
         // Получаем координату чанка
-        int chunkCoord = x / chunkSize;   // Получаем координату чанка
-        int ostatok = chunkCoord % 100;
-        if (ostatok != 0)
-        {
-            chunkCoord -= (chunkCoord - ostatok) + 1;
-        }
+        int chunkCoord = ChunkHelper.GetChunkXCoordinate(x);
 
         Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
         if (tilemap.GetTile(blockPosition) != null)

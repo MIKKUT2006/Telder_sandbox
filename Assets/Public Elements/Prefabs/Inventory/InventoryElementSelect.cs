@@ -102,7 +102,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                     HelperClass.itemName.text = "";
                 }
 
-                Debug.Log(HelperClass.equippedCellAnimator);
+                //Debug.Log(HelperClass.equippedCellAnimator);
                 if (HelperClass.equippedCellImage != null)
                 {
                     HelperClass.equippedCellImage.color = Color.white;
