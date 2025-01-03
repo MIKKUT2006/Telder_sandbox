@@ -38,19 +38,19 @@ public class Grid : MonoBehaviour
     void Start()
     {
 
-        Size = HelperClass.worldWidth;
-        Cells = HelperClass.Cells;
-        // Generate our cells 
-        CreateGrid();
+        //Size = HelperClass.worldWidth;
+        //Cells = HelperClass.Cells;
+        //// Generate our cells 
+        //CreateGrid();
 
-        // Initialize the liquid simulator
-        if (LiquidSimulator == null)
-            LiquidSimulator = new LiquidSimulator();
+        //// Initialize the liquid simulator
+        //if (LiquidSimulator == null)
+        //    LiquidSimulator = new LiquidSimulator();
 
         
-        LiquidSimulator.Initialize(HelperClass.Cells);
-        StartCoroutine(DelayExecuteSim(UpdateDelayTime));
-        CreateWaterTiles();
+        //LiquidSimulator.Initialize(HelperClass.Cells);
+        //StartCoroutine(DelayExecuteSim(UpdateDelayTime));
+        //CreateWaterTiles();
     }
     public void CreateWaterTiles()
     {

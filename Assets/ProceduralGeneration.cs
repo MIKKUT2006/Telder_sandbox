@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
+using NUnit.Framework;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 //using System;
@@ -24,6 +27,7 @@ public class ProceduralGeneration : MonoBehaviour
     [SerializeField] public GameObject chunkPrefab;
     [SerializeField] public GameObject lightchunkPrefab;
     [SerializeField] public GameObject bgchunkPrefab;
+    [SerializeField] public GameObject grasschunkPrefab;
 
     // Список блоков в структуре
     [Header("генерация структур")]
@@ -47,14 +51,17 @@ public class ProceduralGeneration : MonoBehaviour
 
     [SerializeField] float seed;                    // Сид мира
     [SerializeField] List<TileBase> groundTile;     // Тайл
-    [SerializeField] List<TileBase> lightTiles;            // Тайл освещения
+    [SerializeField] public static List<TileBase> lightTiles;            // Тайл освещения
+    [SerializeField] List<TileBase> lightTilesInspector;            // Тайл освещения
     [SerializeField] Tilemap tilemap;               // Карта тайлов
     [SerializeField] Tilemap bgTilemap;             // Карта тайлов заднего фона
     [SerializeField] Tilemap lightTilemap;          // Карта тайлов для освещения
+    [SerializeField] Tilemap grassTilemap;          // Карта тайлов растительности
 
     [SerializeField] Cell cell;
 
     [SerializeField] public static int[,] map;      // Двумерный массив карты
+    [SerializeField] public static int[,] lightMap;      // Двумерный массив карты
     [SerializeField] public static int[,] bgMap;    // Двумерный массив карты заднего плана
 
     //private enum Biomes { Desert, Forest, Crystal, None }
@@ -80,31 +87,40 @@ public class ProceduralGeneration : MonoBehaviour
     public int x = 0, y = 0;
     public int worldSeed;
 
-    //public async Task<List<User>> GetUsers()
-    //{
-    //    var options = new Supabase.SupabaseOptions
-    //    {
-    //        AutoConnectRealtime = true
-    //    };
-    //    var supabase = new Supabase.Client(HelperClass.url, HelperClass.key, options);
-    //    await supabase.InitializeAsync();
-
-    //    //var result = await supabase.From<User>().
-
-    //    //List<Assets.User> allUsers = result.Models;
-
-    //    //return allUsers;
-    //}
-
+    [Header("Освещение")]
+    public static Texture2D worldTilesMap;
+    public Texture2D worldTilesMapInspector;
+    public Material lightShader;
+    public float lightThreshold;
+    public static float lightRadius = 7f;
+    static List<Vector2Int> unlitBlocks = new List<Vector2Int>();
     void Awake()
     {
         HelperClass.worldWidth = width;
         HelperClass.worldHeight = height;
-        HelperClass.Cells = new Cell[HelperClass.worldWidth, HelperClass.worldWidth];
+
+        
+        lightTiles = lightTilesInspector;
+        
+        worldTilesMap = new Texture2D(width, width);// Создаем текстуру освещения
+        //worldTilesMap.filterMode = FilterMode.Point;// Устанавливаем фильтр освещения
+        lightShader.SetTexture("_shadowTexture", worldTilesMap);// Устанавливаем текстуру на шейдер
+        // Заполняем текстуру светом
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                worldTilesMap.SetPixel(x, y, Color.white);
+            }
+        }
+        worldTilesMap.Apply();
+
+        
+        //HelperClass.Cells = new Cell[HelperClass.worldWidth, HelperClass.worldWidth];
 
         HelperClass.biomeMap = new HelperClass.Biomes[width];
 
-        cell = new Cell();
+        //cell = new Cell();
 
         // Создаём чанки
         CreateChunks();
@@ -126,23 +142,40 @@ public class ProceduralGeneration : MonoBehaviour
         }
 
         RenderMap(map, tilemap, groundTile, bgMap);             // Показываем изменения
-        LightGeneraion(map);
+        GenerateLightMapTEST(map, width, height);
 
-        Grid.CreateGrid();
+        //Grid.CreateGrid();
+
+        
 
         HelperClass.chunkPrefab = chunkPrefab;
         HelperClass.lightchunkPrefab = lightchunkPrefab;
         HelperClass.bgchunkPrefab = bgchunkPrefab;
+        HelperClass.grasschunkPrefab = grasschunkPrefab;
 
-        Debug.Log(Mathf.PerlinNoise((x + worldSeed) / cavessmothes, (y + worldSeed) / cavessmothes));
+        worldTilesMapInspector = worldTilesMap;
     }
     void Generation()
     {
-        bgMap = GenerateArray(width, height, true, true);       // Генерируем массив
-        map = GenerateArray(width, height, true, false);        // Генерируем массив
+        // Что-то со светом
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (worldTilesMap.GetPixel(x, y) == Color.white)
+                {
+                    LightBlock(x, y, 1f, 0);
+                }
+            }
+        }
+        worldTilesMap.Apply();
 
 
-        //lightMap = GenerateArray(width, height, true, true);    // Генерируем массив
+
+        bgMap = GenerateArray(width, height);       // Генерируем массив
+        lightMap = GenerateArray(width, height);       // Генерируем массив
+        map = GenerateArray(width, height);        // Генерируем массив
+
         lightTilemap.ClearAllTiles();                           // Очищаем все тайлы перед генерацией
 
         // Основной план
@@ -165,50 +198,11 @@ public class ProceduralGeneration : MonoBehaviour
         //StructuresGeneration(testStructure);
         StructuresGeneration(testStructure, 12);
         StructuresGeneration(mapleHouse, 2);
+
+        worldTilesMap.Apply();
+
         Debug.Log("Всё готово");
     }
-
-    //public void CreateChunks()                                  // Создание чанков
-    //{
-    //    HelperClass.numChunks = width / HelperClass.chunkSize;  // Устанавливаем количество чанков
-
-    //    HelperClass.Chunks = new Tilemap[HelperClass.numChunks];
-    //    HelperClass.ChunksGameobject = new GameObject[HelperClass.numChunks];
-
-    //    HelperClass.lightChunks = new Tilemap[HelperClass.numChunks];
-    //    HelperClass.lightChunksGameobject = new GameObject[HelperClass.numChunks];
-
-    //    HelperClass.bgChunks = new Tilemap[HelperClass.numChunks];
-    //    HelperClass.bgChunksGameobject = new GameObject[HelperClass.numChunks];
-
-    //    // Цикл на количество чанков
-    //    for (int i = 0; i < HelperClass.numChunks; i++)
-    //    {
-    //        // Генерация чанков с пустыми чанками 1- и x+1 по краям локации
-
-    //        //------------------
-    //        Tilemap newChunk = new Tilemap();
-    //        HelperClass.Chunks[i] = newChunk;
-    //        GameObject Chunk = Instantiate(chunkPrefab);
-    //        Chunk.name = i.ToString();
-    //        Chunk.transform.parent = transform;
-    //        HelperClass.ChunksGameobject[i] = Chunk;
-
-    //        Tilemap newlightChunk = new Tilemap();
-    //        HelperClass.lightChunks[i] = newlightChunk;
-    //        GameObject lightChunk = Instantiate(lightchunkPrefab);
-    //        lightChunk.name = i.ToString();
-    //        lightChunk.transform.parent = transform;
-    //        HelperClass.lightChunksGameobject[i] = lightChunk;
-
-    //        GameObject bgChunk = Instantiate(bgchunkPrefab);
-    //        HelperClass.bgChunks[i] = bgChunk.GetComponent<Tilemap>();
-    //        bgChunk.name = i.ToString();
-    //        bgChunk.transform.parent = transform;
-    //        HelperClass.bgChunksGameobject[i] = bgChunk;
-    //        //------------------
-    //    }
-    //}
 
     public void CreateChunks()
     {
@@ -217,10 +211,15 @@ public class ProceduralGeneration : MonoBehaviour
 
         HelperClass.Chunks = new Tilemap[numChunksX];
         HelperClass.ChunksGameobject = new GameObject[numChunksX];
+
         HelperClass.lightChunks = new Tilemap[numChunksX];
         HelperClass.lightChunksGameobject = new GameObject[numChunksX];
+
         HelperClass.bgChunks = new Tilemap[numChunksX];
         HelperClass.bgChunksGameobject = new GameObject[numChunksX];
+
+        HelperClass.grassChunks = new Tilemap[numChunksX];
+        HelperClass.grassChunksGameobject = new GameObject[numChunksX];
 
         for (int x = 0; x < numChunksX; x++)
         {
@@ -244,6 +243,12 @@ public class ProceduralGeneration : MonoBehaviour
             bgChunk.transform.parent = transform;
             HelperClass.bgChunksGameobject[index] = bgChunk;
             HelperClass.bgChunks[index] = bgChunk.GetComponent<Tilemap>();
+
+            GameObject grassChunk = Instantiate(grasschunkPrefab);
+            grassChunk.name = $"BgChunk_{x}";
+            grassChunk.transform.parent = transform;
+            HelperClass.grassChunksGameobject[index] = grassChunk;
+            HelperClass.grassChunks[index] = grassChunk.GetComponent<Tilemap>();
             //------------------
         }
     }
@@ -260,10 +265,9 @@ public class ProceduralGeneration : MonoBehaviour
 
     // Создаём массив размерами мира, указывая, что у него есть тайлы (создано для разных размеров миров)
     // Чтобы не создавать вручную весь массив
-    public int[,] GenerateArray(int width, int height, bool useArray, bool bg)
+    public int[,] GenerateArray(int width, int height)
     {
-        int[,] map = new int[width, height];                // Устанавливаем размеры мира
-        int[,] bgMap = new int[width, height];              // Устанавливаем размеры мира
+        int[,] array = new int[width, height];                // Устанавливаем размеры мира
 
         // Генерируем мир по ширине
         for (int i = 0; i < width; i++)
@@ -271,18 +275,10 @@ public class ProceduralGeneration : MonoBehaviour
             // Генерируем мир по высоте
             for (int j = 0; j < height; j++)
             {
-                map[i, j] = (useArray) ? 0 : 1;             // Если в массиве карты false = 0, true = 1
-                bgMap[i, j] = (useArray) ? 0 : 1;
+                array[i, j] = 0;
             }
         }
-        if (bg == false)
-        {
-            return map;
-        }
-        else
-        {
-            return bgMap;
-        }
+        return array;
     }
     //-----
     // как рабоает генерация: мы получаем от формулы шума перлина высоту, до которой генерируется земля, всё, что выше = 0
@@ -792,6 +788,7 @@ public class ProceduralGeneration : MonoBehaviour
             Tilemap tileMap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
             Tilemap lightTileMap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
             Tilemap bgTileMap = HelperClass.bgChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+            Tilemap grassTileMap = HelperClass.grassChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
             for (int j = 0; j < height; j++)
             {
@@ -801,10 +798,10 @@ public class ProceduralGeneration : MonoBehaviour
                 //}
 
                 //Проверяем, является ли текущий блок источником света(int = 0)
-                if (map[i, j] == 0)
-                {
-                    lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[0]); // Ставим обычный свет
-                }
+                //if (map[i, j] == 0)
+                //{
+                //    lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[0]); // Ставим обычный свет
+                //}
 
                 //if (map[i, j] == 0 && map[i, j - 1] != 0)
                 //{
@@ -817,152 +814,121 @@ public class ProceduralGeneration : MonoBehaviour
 
                 switch (map[i, j])
                 {
-                    //case 0:
-                    //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
-                    //    break;
+                    case 0:
+                        //LightBlock(x, y, 1f, 0);
+                        //worldTilesMap.SetPixel(x, y, UnityEngine.Color.white);
+                        
+                        break;
                     case 1:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);
+                        RemoveLightSource(x,y);
                         break;
                     case 2:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);            // Устанавливаем тайл травы
-
+                        RemoveLightSource(x, y);
                         break;
                     case 3:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
+                        RemoveLightSource(x, y);
                         break;
-                    //case 4:
-                    //    lightTilemap.SetTile(new Vector3Int(i, j, 0), lightTile);       // Устанавливаем тайл камня
-                    //    break;
+                    case 4:
+                        //RemoveLightSource(x, y);
+                        break;
                     case 5:
                         Vector3 pos = new Vector3(i + 0.5f, j + 5, 0);
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);      // Устанавливаем деревья
-
+                        RemoveLightSource(x, y);
                         Instantiate(Trees[(int)UnityEngine.Random.RandomRange(0, Trees.Count())], pos, Quaternion.identity);
                         break;
                     case 6:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[4]);       // Устанавливаем тайл железной руды
+                        RemoveLightSource(x, y);
                         break;
                     case 7:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[5]);       // Устанавливаем тайл руды камня пространства
+                        RemoveLightSource(x, y);
                         break;
                     case 8:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[7]);       // Устанавливаем тайл барьера
+                        RemoveLightSource(x, y);
                         break;
                     case 9:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[8]);       // Устанавливаем тайл песка
+                        RemoveLightSource(x, y);
                         break;
                     case 10:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[9]);       // Устанавливаем тайл песка
+                        RemoveLightSource(x, y);
                         break;
                     case 11:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[10]);       // Устанавливаем тайл снега
+                        RemoveLightSource(x, y);
                         break;
                     case 12:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[3]);       // Устанавливаем тайл мха
+                        RemoveLightSource(x, y);
                         break;
                     case 17:
                         tileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[12]);       // Устанавливаем тайл угля
+                        RemoveLightSource(x, y);
                         break;
                 }
-
+                
                 HelperClass.Chunks[chunkCoord] = tileMap;
-
+                if (bgMap[i, j] == 0)
+                {
+                    worldTilesMap.SetPixel(i, j, Color.white);
+                }
                 if (bgMap[i, j] == 1)
                 {
                     bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[0]);       // Устанавливаем тайл земли
+                    worldTilesMap.SetPixel(i, j, Color.black);
                 }
                 if (bgMap[i, j] == 2)
                 {
                     bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[1]);       // Устанавливаем тайл травы
+                    worldTilesMap.SetPixel(i, j, Color.black);
                 }
                 if (bgMap[i, j] == 3)
                 {
                     bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[2]);       // Устанавливаем тайл камня
+                    worldTilesMap.SetPixel(i, j, Color.black);
                 }
                 if (bgMap[i, j] == 8)
                 {
-                    bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[6]);       // Устанавливаем тайл пушистой травы
+                    grassTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[6]);       // Устанавливаем тайл пушистой травы
                 }
                 if (bgMap[i, j] == 9)
                 {
                     bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[8]);       // Устанавливаем тайл камня
+                    worldTilesMap.SetPixel(i, j, Color.black);
                 }
                 if (bgMap[i, j] == 10)
                 {
                     bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[9]);       // Устанавливаем тайл камня
+                    worldTilesMap.SetPixel(i, j, Color.black);
                 }
                 if (bgMap[i, j] == 12)
                 {
                     bgTileMap.SetTile(new Vector3Int(i, j, 0), groundTileBase[3]);       // Устанавливаем тайл мха
+                    worldTilesMap.SetPixel(i, j, Color.black);
                 }
             }
         }
 
-        //for (int i = 0; i < width; i++)
-        //{
-        //    int chunkCoord = ChunkHelper.GetChunkXCoordinate(i);
-
-        //    Tilemap tileMap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-        //    Tilemap lightTileMap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-        //    for (int j = 0; j < height; j++)
-        //    {
-        //        if (map[i, j] == 0)
-        //        {
-        //            lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[0]); // Ставим обычный свет
-        //        }
-        //        else
-        //        {
-        //            // Проверяем блок над текущим.
-        //            if (j + 1 < height && (lightTileMap.GetTile(new Vector3Int(i, j + 1, 0)) == lightTiles[0]) && (map[i,j] == 3 || map[i, j] == 4))
-        //            {
-        //                lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[0]); // Ставим "свет"
-        //            }
-        //            else if (j + 2 < height && (lightTileMap.GetTile(new Vector3Int(i, j + 2, 0)) == lightTiles[0]) && (map[i, j] != 3 && map[i, j] != 4))
-        //            {
-        //                lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[2]); // Ставим "тусклый"
-        //            }
-        //            else if (j + 3 < height && (lightTileMap.GetTile(new Vector3Int(i, j + 3, 0)) == lightTiles[2]) && (map[i, j] != 3 && map[i, j] != 4))
-        //            {
-        //                lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[3]); // Ставим "тусклый"
-        //            }
-        //        }
-        //    }
-        //}
-        //for (int i = 0; i < width; i++)
-        //{
-        //    int chunkCoord = ChunkHelper.GetChunkXCoordinate(i);
-        //    Tilemap lightTileMap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
-
-        //    for (int j = 0; j < height; j++)
-        //    {
-        //        // Если текущий блок имеет тайл света, то не трогаем его
-        //        if (lightTileMap.GetTile(new Vector3Int(i, j, 0)) == lightTiles[0]) continue;
-
-        //        if (map[i, j] == 0)
-        //        {
-        //            lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[0]); // Ставим обычный свет
-        //        }
-        //        else
-        //        {
-        //            // Проверяем блок над текущим на наличие прямого света
-        //            if (j + 1 < height && (lightTileMap.GetTile(new Vector3Int(i, j + 1, 0)) == lightTiles[0]))
-        //            {
-        //                lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[1]); // Ставим "тусклее"
-        //            }
-        //            // Проверяем блок через 1 сверху, на наличие прямого света, и если сверху стоит не прямой свет
-        //            else if (j + 2 < height && (lightTileMap.GetTile(new Vector3Int(i, j + 1, 0)) != lightTiles[0] && lightTileMap.GetTile(new Vector3Int(i, j + 2, 0)) == lightTiles[0]))
-        //            {
-        //                lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[2]); // Ставим "тусклый"
-        //            }
-        //            else
-        //            {
-        //                lightTileMap.SetTile(new Vector3Int(i, j, 0), null); //Убираем свет если ничего не подошло.
-        //            }
-        //        }
-        //    }
-        //}
-        GenerateLightMapTEST(map, width, height);
-        //GenerateLightMap(map, width, height);
+        // заполняем освещение
+        for (int x = 0; x < width; x++) 
+        {
+            for (int y = 0; y < height; y++) 
+            {
+                if (map[x,y] == 0)
+                {
+                    LightBlock(x, y, 1f, 0);
+                    worldTilesMap.SetPixel(x, y, UnityEngine.Color.white);
+                }
+            }
+        }
+        worldTilesMap.Apply();
     }
     //public void GenerateLightMap(int[,] map, int width, int height)
     //{
@@ -1102,65 +1068,47 @@ public class ProceduralGeneration : MonoBehaviour
 
     public void GenerateLightMapTEST(int[,] map, int width, int height)
     {
-        for (int j = 0; j < height; j++)
+        for (int i = 0; i < width; i++)
         {
-            for (int i = 0; i < width; i++)
+            for (int j = height - 1; j > 0; j--)
             {
                 int chunkCoord = ChunkHelper.GetChunkXCoordinate(i);
                 Tilemap lightTileMap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
                 Tilemap tileMap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
 
-                if (map[i, j] == 0)
+                lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[0]);
+                // Устанавливаем тайл света
+                Debug.Log($"{i}S{j}");
+                lightMap[i, j] = 1;
+                if (tileMap.GetTile(new Vector3Int(i, j, 0)) == null)
                 {
+
                     lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[0]);
-                }
-                else if (tileMap.GetTile(new Vector3Int(i, j, 0)) == null)
-                {
                     if (j + 1 < height)
                     {
-                        if (map[i, j + 1] == 0)
+
+                        if (tileMap.GetTile(new Vector3Int(i, j - 1, 0)) != null)
                         {
-                            lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[0]);
+                            lightTileMap.SetTile(new Vector3Int(i, j - 1, 0), lightTiles[1]);
+                            if (tileMap.GetTile(new Vector3Int(i, j - 2, 0)) != null)
+                            {
+                                lightTileMap.SetTile(new Vector3Int(i, j - 2, 0), lightTiles[2]);
+                                if (tileMap.GetTile(new Vector3Int(i, j - 3, 0)) != null)
+                                {
+                                    lightTileMap.SetTile(new Vector3Int(i, j - 3, 0), lightTiles[3]);
+                                    if (tileMap.GetTile(new Vector3Int(i, j - 4, 0)) != null)
+                                    {
+                                        lightTileMap.SetTile(new Vector3Int(i, j - 4, 0), lightTiles[4]);
+                                        break;
+                                    }
+                                    break;
+                                }
+                                break;
+                            }
+                            break;
                         }
-                        if (lightTileMap.GetTile(new Vector3Int(i, j + 1, 0)) != null)
-                        {
-                            lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[0]);
-                        }
                     }
-                    
-                    //lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[1]);
-
-                    //if (j + 1 < height && map[i + 1, j] == 0)
-                    //    lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[1]);
-                    //else if (j + 2 < height && map[i, j + 1] != 0 && map[i + 2, j ] == 0)
-                    //    lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[2]);
-
-
-                    //else if (j + 2 < height && tileMap.GetTile(new Vector3Int(i + 2, j, 0)) == null)
-                    //    lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[2]);
                 }
-                else
-                {
-                    if (lightTileMap.GetTile(new Vector3Int(i, j + 1, 0)) != null)
-                    {
-                        lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[1]);
-                    }
-                    if (tileMap.GetTile(new Vector3Int(i, j - 1, 0)) != null)
-                    {
-                        lightTileMap.SetTile(new Vector3Int(i, j - 1, 0), lightTiles[2]);
-                        break;
-                    }
-                    //if (j + 1 < height && tileMap.GetTile(new Vector3Int(i, j + 1, 0)) == null)
-                    //{
-                    //    lightTileMap.SetTile(new Vector3Int(i, j, 0), lightTiles[1]);
-                    //    if (tileMap.GetTile(new Vector3Int(i, j - 1, 0)) != null)
-                    //    {
-                    //        lightTileMap.SetTile(new Vector3Int(i, j - 1, 0), lightTiles[2]);
-                    //        break;
-                    //    }
-                    //}
-                }
-
             }
         }
     }
@@ -1196,7 +1144,96 @@ public class ProceduralGeneration : MonoBehaviour
     //    }
     //}
 
+    public static void LightBlock(int x, int y, float intensity, int iteration)
+    {
+        if (iteration < lightRadius)
+        {
+            worldTilesMap.SetPixel(x, y, Color.white * intensity);
 
+            for (int nx = x - 1; nx < x + 2; nx++) 
+            {
+                for (int ny = y-1; ny < y + 2; ny++) 
+                {
+                    if (nx != x || ny != y)
+                    {
+                        float dist = Vector2.Distance(new Vector2(x, y), new Vector2(nx, ny));
+                        float targetIntensity = Mathf.Pow(0.7f, dist) * intensity;
+
+                        if (worldTilesMap.GetPixel(nx,ny) != null)
+                        {
+                            if (worldTilesMap.GetPixel(nx, ny).r < targetIntensity)
+                            {
+                                LightBlock(nx, ny, targetIntensity, iteration + 1);   
+                            }
+                        }
+                    }
+                }
+            }
+            worldTilesMap.Apply();
+        }
+    }
+
+    public static void RemoveLightSource(int x, int y)
+    {
+        unlitBlocks.Clear();
+        UnLightBlock(x, y, x, y);
+
+        List<Vector2Int> toRelight = new List<Vector2Int>();
+
+        foreach (Vector2Int block in unlitBlocks)
+        {
+            for (int nx = block.x - 1; nx < block.x + 2; nx++)
+            {
+                for (int ny = block.y - 1; ny < block.y + 2; ny++)
+                {
+                    if (worldTilesMap.GetPixel(nx, ny) != null)
+                    {
+                        if (worldTilesMap.GetPixel(nx,ny).r > worldTilesMap.GetPixel(block.x, block.y).r)
+                        {
+                            if (!toRelight.Contains(new Vector2Int(nx, ny)))
+                            {
+                                toRelight.Add(new Vector2Int(nx, ny));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach (Vector2Int source in toRelight)
+        {
+            LightBlock(source.x, source.y, worldTilesMap.GetPixel(source.x, source.y).r, 0);
+        }
+
+        worldTilesMap.Apply();
+    }
+
+    public static void UnLightBlock(int x, int y, int ix, int iy)
+    {
+        if (Mathf.Abs(x - ix) >= lightRadius || Mathf.Abs(y - iy) >= lightRadius || unlitBlocks.Contains(new Vector2Int(x, y)))
+        {
+            return;
+        }
+
+        for (int nx = x-1; nx < x + 2; nx++)
+        {
+            for (int ny = y-1; ny < y + 2; ny++) 
+            {
+                if (nx != x || ny != y)
+                {
+                    if (worldTilesMap.GetPixel(nx, ny) != null)
+                    {
+                        if (worldTilesMap.GetPixel(nx,ny).r < worldTilesMap.GetPixel(x,y).r)
+                        {
+                            UnLightBlock(nx, ny, ix, iy);
+                        }
+                    }
+                }
+            }
+        }
+        worldTilesMap.SetPixel(x, y, Color.black);
+        unlitBlocks.Add(new Vector2Int(x, y));
+    }
 
     private void FillLight(Tilemap tileMap, Tilemap lightTileMap, int startX, int startY, int width, int height)
     {

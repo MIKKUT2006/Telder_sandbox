@@ -27,7 +27,7 @@ TagManager:
   - SpriteLights
   - Items
   - PostProcessing
-  - 
+  - Shadow
   - 
   - 
   - 
@@ -49,8 +49,14 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Light
+    uniqueID: 1986131397
+    locked: 0
   - name: UI
     uniqueID: 1868747575
+    locked: 0
+  - name: Shadow
+    uniqueID: 2912626791
     locked: 0
   - name: Default
     uniqueID: 0

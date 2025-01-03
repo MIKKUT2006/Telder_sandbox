@@ -49,13 +49,4 @@ public class WeatherManager : MonoBehaviour
         }
         // Остановка дождя
     }
-
-    IEnumerator test()
-    {
-        while (true)
-        {
-            Debug.Log("НАчала цикла");
-            yield return new WaitForSeconds(2);
-        }
-    }
 }

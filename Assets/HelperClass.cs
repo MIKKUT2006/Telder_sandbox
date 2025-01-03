@@ -66,6 +66,11 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static GameObject[] bgChunksGameobject;
     [SerializeField] public static GameObject bgchunkPrefab;
 
+    // Чанки растительности
+    [SerializeField] public static Tilemap[] grassChunks;
+    [SerializeField] public static GameObject[] grassChunksGameobject;
+    [SerializeField] public static GameObject grasschunkPrefab;
+
     // Блокировка расположения блока 
     [SerializeField] public static bool barrierPlaceBlock = false;
 

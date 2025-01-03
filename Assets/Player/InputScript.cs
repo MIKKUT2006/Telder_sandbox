@@ -68,7 +68,7 @@ public class InputScript : MonoBehaviour
         HelperClass.playerGameObject = gameObject;
 
         //spriteRenderer = GetComponent<SpriteRenderer>();
-        SetBackground(Biomes.Desert); // ��������� ���������� �����, ����� �������� � ����������� �� ������
+        SetBackground(Biomes.Forest); // ��������� ���������� �����, ����� �������� � ����������� �� ������
 
     }
 
@@ -182,7 +182,7 @@ public class InputScript : MonoBehaviour
 
         rb.linearVelocity = new Vector2 (Input.GetAxis("Horizontal") * playerSpeed, rb.linearVelocity.y);
 
-        GetCurrentBiome(transform.position);
+        //GetCurrentBiome(transform.position);
 
         if (Input.GetKeyDown(KeyCode.P))
         {
@@ -299,6 +299,7 @@ public class InputScript : MonoBehaviour
         int xIndex = Mathf.RoundToInt(position.x); // �������� ������ �� X
 
         // ���������, �� ������� �� �� ������� �������
+        //Debug.Log(ProceduralGeneration.map);
         if (xIndex >= 0 && xIndex < HelperClass.worldWidth)
         {
             if (currentBiome != biomeMap[xIndex])

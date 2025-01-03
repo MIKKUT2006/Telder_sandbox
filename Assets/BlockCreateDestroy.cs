@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using TMPro;
@@ -6,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using static UnityEditor.PlayerSettings;
+using Color = UnityEngine.Color;
 
 public class BlockCreateDestroy : MonoBehaviour
 {
@@ -185,6 +187,10 @@ public class BlockCreateDestroy : MonoBehaviour
             {
                 if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count > 0 && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
                 {
+                    ProceduralGeneration.RemoveLightSource(x,y);
+                    //ProceduralGeneration.worldTilesMap.SetPixel(x,y, Color.black);
+                    ProceduralGeneration.worldTilesMap.Apply();
+
                     // Уменьшаем количество блока в инвентаре
                     HelperClass.playerInventory[HelperClass.selectedInventoryCell].count -= 1;
                     // Устанавливаем тайл в карте тайлов
@@ -197,7 +203,7 @@ public class BlockCreateDestroy : MonoBehaviour
                     ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
 
                     // Устанавливаем значение твердого блока для потоков воды
-                    HelperClass.Cells[x, y].SetType(CellType.Solid);
+                    //HelperClass.Cells[x, y].SetType(CellType.Solid);
 
                     Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[HelperClass.selectedInventoryCell].count.ToString();
                     // Очищаем всё, если больше нет блоков
@@ -239,7 +245,7 @@ public class BlockCreateDestroy : MonoBehaviour
                     //ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
 
                     // Устанавливаем значение твердого блока для потоков воды
-                    HelperClass.Cells[x, y].SetType(CellType.Solid);
+                    //HelperClass.Cells[x, y].SetType(CellType.Solid);
 
                     Inventory.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[HelperClass.selectedInventoryCell].count.ToString();
                     // Очищаем всё, если больше нет блоков
@@ -277,6 +283,7 @@ public class BlockCreateDestroy : MonoBehaviour
         int chunkCoord = ChunkHelper.GetChunkXCoordinate(x);
 
         Tilemap tilemap = HelperClass.ChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+        Tilemap bgTilemap = HelperClass.bgChunksGameobject[chunkCoord].GetComponent<Tilemap>();
         if (tilemap.GetTile(blockPosition) != null)
         {
             //Debug.Log("Блок существует");
@@ -333,9 +340,21 @@ public class BlockCreateDestroy : MonoBehaviour
             else
             {
                 // Если блок сломан
-
+                tilemap.SetTile(blockPosition, null);   // Ломаем блок
+                ProceduralGeneration.worldTilesMap.SetPixel(x, y, UnityEngine.Color.white);
+                ProceduralGeneration.LightBlock(x, y, 1f, 0);
+                ProceduralGeneration.worldTilesMap.Apply();
                 // Устанавливаем значение пустого блока для потоков воды
-                HelperClass.Cells[x, y].SetType(CellType.Blank);
+                //HelperClass.Cells[x, y].SetType(CellType.Blank);
+
+                // Устанавливаем освещение вокруг
+                int chunk = ChunkHelper.GetChunkXCoordinate(x);
+                Tilemap lightTileMap = HelperClass.lightChunksGameobject[chunk].GetComponent<Tilemap>();
+
+                // Устанавливаем тайлы освещения
+                lightTileMap.SetTile(new Vector3Int(x, y, 0), ProceduralGeneration.lightTiles[0]);
+
+                ProceduralGeneration.worldTilesMap.Apply();
 
 
                 // Цикл для создания всех выпадающих предметов с блока
@@ -408,11 +427,162 @@ public class BlockCreateDestroy : MonoBehaviour
 
                 digSound.clip = blockDestroy;
                 digSound.Play();
-                tilemap.SetTile(blockPosition, null);
+
+                
                 HelperClass.Chunks[chunkCoord] = tilemap;
                 HelperClass.lightChunks[chunkCoord] = lightTilemap;
             }
             
+        }
+        // БЛОК ЗАДНЕГО ФОНА
+        else if (bgTilemap.GetTile(blockPosition) != null)
+        {
+            //Debug.Log("Блок существует");
+            if (blockPos == new Vector2(x, y))
+            {
+                //Debug.Log("Выбран этот же блок");
+            }
+            else
+            {
+
+                blockSolid = BlocksData.allBlocks[ProceduralGeneration.bgMap[x, y]].blocksSolidity;          // Получаем прочность блока
+                //Debug.Log("Вы выбрали другой блок с прочностью: " + blockSolid);
+                blockPos = new Vector2Int(x, y);
+                blockId = BlocksData.allBlocks[ProceduralGeneration.bgMap[x, y]].blockIndex;                 // Получаем айди блока
+                isblockDig = true;
+            }
+            TileBase tile = bgTilemap.GetTile(blockPosition);
+            if (blockSolid > 0)
+            {
+                Debug.Log($"Нужен инструмент: {BlocksData.allBlocks[ProceduralGeneration.bgMap[x, y]].needsToolType}");
+                //Debug.Log($"У нас: {HelperClass.eguipmentItem.name}");
+                if (HelperClass.eguipmentItem != null && BlocksData.allBlocks[ProceduralGeneration.bgMap[x, y]].needsToolType == HelperClass.eguipmentItem.toolType)
+                {
+                    blockSolid -= HelperClass.eguipmentItem.pickaxePower;
+                }
+                else
+                {
+                    blockSolid -= 1;
+                }
+                Vector3 newpos = new Vector3(x + 0.5f, y + 0.5f);
+                ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
+                newParticles.gameObject.SetActive(true);
+                Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
+
+                // Получение его текстуры, если она есть
+                if (tile is UnityEngine.Tilemaps.Tile)
+                {
+                    UnityEngine.Tilemaps.Tile tileScript = tile as UnityEngine.Tilemaps.Tile;
+                    Texture2D texture = tileScript.sprite.texture;
+                    destroyMaterial.mainTexture = texture;
+                }
+                else if (tile is RuleTile)
+                {
+                    RuleTile ruleTile = tile as RuleTile;
+                    Sprite sprite = ruleTile.m_DefaultSprite;
+                    Texture2D texture = sprite.texture;
+                    destroyMaterial.mainTexture = texture;
+                }
+
+                digSound.clip = blockDigClip;
+                digSound.Play();
+                Debug.Log(blockSolid);
+            }
+            else
+            {
+                // Если блок сломан
+                bgTilemap.SetTile(blockPosition, null);   // Ломаем блок
+                ProceduralGeneration.worldTilesMap.SetPixel(x, y, UnityEngine.Color.white);
+                ProceduralGeneration.LightBlock(x, y, 1f, 0);
+                ProceduralGeneration.worldTilesMap.Apply();
+                // Устанавливаем значение пустого блока для потоков воды
+                //HelperClass.Cells[x, y].SetType(CellType.Blank);
+
+                // Устанавливаем освещение вокруг
+                int chunk = ChunkHelper.GetChunkXCoordinate(x);
+                Tilemap lightTileMap = HelperClass.lightChunksGameobject[chunk].GetComponent<Tilemap>();
+
+                // Устанавливаем тайлы освещения
+                lightTileMap.SetTile(new Vector3Int(x, y, 0), ProceduralGeneration.lightTiles[0]);
+
+                ProceduralGeneration.worldTilesMap.Apply();
+
+
+                // Цикл для создания всех выпадающих предметов с блока
+                foreach (int drop in BlocksData.allBlocks.Where(x => x.blockIndex == blockId).FirstOrDefault().dropId)
+                {
+                    Vector3 newpos = new Vector3(x + 0.5f, y + 0.5f);
+                    AllItemsAndBlocks currentDrop = BlocksData.allBlocks.Where(x => x.blockIndex == drop).FirstOrDefault();
+                    Debug.Log(currentDrop.name);
+                    GameObject newBlock = Instantiate(BlockGameObject, newpos, Quaternion.identity);
+                    newBlock.name = currentDrop.blockIndex.ToString();
+                    Sprite sprite = null;
+                    // Получение его текстуры, если она есть
+
+                    // Загружаем изображение из файла
+                    float pixelsPerUnit = 16;
+
+                    byte[] imageData = File.ReadAllBytes(currentDrop.imagePath);
+                    Texture2D texture = new Texture2D(16, 16);
+                    texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
+                    texture.filterMode = FilterMode.Point;
+
+                    // ������������ ������� ������� � ������ pixelsPerUnit
+                    float width = texture.width / 16;
+                    float height = texture.height / 16;
+
+                    // �������� ������� �� ��������
+                    Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+
+                    newBlock.GetComponent<SpriteRenderer>().sprite = newSprite;
+
+                    ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
+                    newParticles.gameObject.SetActive(true);
+                    Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
+                    destroyMaterial.mainTexture = texture;
+                }
+                // Конец цикла
+
+                Debug.Log("Блок сломан");
+                isblockDig = false;
+                Tilemap lightTilemap = HelperClass.lightChunksGameobject[chunkCoord].GetComponent<Tilemap>();
+
+                if (ProceduralGeneration.bgMap[x, y + 1] == 0)                        // Проверка на освещенность солнцем блока
+                {
+                    ProceduralGeneration.bgMap[x, y] = 4;
+                    lightTilemap.SetTile(blockPosition, Light);
+                    if (ProceduralGeneration.bgMap[x, y - 1] == 4)
+                    {
+                        lightTilemap.SetTile(new Vector3Int(x, y - 1), Light);
+
+                        for (int i = y; i > 0; i--)
+                        {
+                            if (ProceduralGeneration.bgMap[x, i] == 4)
+                            {
+                                lightTilemap.SetTile(new Vector3Int(x, i), Light);
+                                ProceduralGeneration.bgMap[x, i] = 0;                 // Ставим освещенность сломанному блоку
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    //ProceduralGeneration.map[x, y] = 4;                           // Ставим освещенность сломанному блоку
+                    ProceduralGeneration.bgMap[x, y] = 0;
+                }
+                else
+                {
+                    ProceduralGeneration.bgMap[x, y] = 4;                             // Ставим освещенность сломанному блоку
+                }
+
+                digSound.clip = blockDestroy;
+                digSound.Play();
+
+
+                HelperClass.Chunks[chunkCoord] = tilemap;
+                HelperClass.lightChunks[chunkCoord] = lightTilemap;
+            }
         }
     }
 }
