@@ -43,6 +43,19 @@ public class InputScript : MonoBehaviour
 
     // �������� ����
     private bool inventoryOpen = false;
+    void Start()
+    {
+        //gameObject.transform.position = new Vector3(HelperClass.worldWidth / 2, HelperClass.worldHeight, 0);
+        rb = GetComponent<Rigidbody2D>();
+        cellSize = tilemap.cellSize;
+
+        HelperClass.LoadInventoryImages();
+        // Добавление в инвентарь предметов для тестов
+        HelperClass.AddItemToInventory(BlocksData.allBlocks[13]);
+        HelperClass.AddItemToInventory(BlocksData.allBlocks[22]);
+        HelperClass.AddItemToInventory(BlocksData.allBlocks[21]);
+        HelperClass.AddItemToInventory(BlocksData.allBlocks[20]);
+    }
     private void Awake()
     {
         BlocksData.GetPrefabs();
@@ -59,7 +72,7 @@ public class InputScript : MonoBehaviour
         playerPanelGameObject.SetActive(false);
         craftPanelGameObject.SetActive(false);
         topPanelGameObject.SetActive(false);
-        HelperClass.equippedItem = gameObject.transform.Find("Player_1").transform.Find("Item").gameObject;
+        HelperClass.equippedItem = gameObject.transform.Find("Player_1").transform.Find("Hand").transform.Find("Item").gameObject;
         if (HelperClass.isNewGame == false) {
             LoadInventoryImages();
             gameObject.transform.position = HelperClass.playerEnterPosition;
@@ -137,17 +150,6 @@ public class InputScript : MonoBehaviour
         }
         backgroundImage.color = new Color(color.r, color.g, color.b, 1); // ���������, ��� �����-����� ����� ����������
     }
-
-    void Start()
-    {
-        //gameObject.transform.position = new Vector3(HelperClass.worldWidth / 2, HelperClass.worldHeight, 0);
-        rb = GetComponent<Rigidbody2D>();
-        cellSize = tilemap.cellSize;
-
-        HelperClass.LoadInventoryImages();
-        HelperClass.AddItemToInventory(BlocksData.allBlocks[13]);
-        HelperClass.AddItemToInventory(BlocksData.allBlocks[20]);
-    }
     
     void Update()
     {
@@ -191,7 +193,30 @@ public class InputScript : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            GetComponent<Animator>().SetBool("Attack", true);
+            if (HelperClass.eguipmentItem != null)
+            {
+                //if (HelperClass.eguipmentItem.toolType == 1)
+                //{
+                //    GetComponent<Animator>().SetBool("isPickaxe", true);
+                //    GetComponent<Animator>().SetBool("Attack", true);
+                //}
+                //else
+                //{
+                //    GetComponent<Animator>().SetBool("isPickaxe", false);
+                //    GetComponent<Animator>().SetBool("Attack", true);
+                //}
+
+                //if (HelperClass.eguipmentItem.toolType == 4)
+                //{
+                    //GetComponent<Animator>().SetInteger("toolType", 4);
+                    GetComponent<Animator>().SetBool("Attack", true);
+                //}
+            }
+            else
+            {
+                GetComponent<Animator>().SetBool("isPickaxe", false);
+                GetComponent<Animator>().SetBool("Attack", true);
+            }
             StartCoroutine(attackCooldown());
         }
 

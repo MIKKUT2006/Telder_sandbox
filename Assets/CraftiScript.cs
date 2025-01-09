@@ -39,20 +39,22 @@ public class CraftiScript : MonoBehaviour
 
             float pixelsPerUnit = 16;
 
-            if (!string.IsNullOrEmpty(recipe.item.imagePath) && File.Exists(recipe.item.imagePath) && recipe.item.imagePath != null)
+            if (!string.IsNullOrEmpty(recipe.item.imagePath) && recipe.item.imagePath != null)
             {
                 // �������� �������� �� �����
-                byte[] imageData = File.ReadAllBytes(recipe.item.imagePath);
-                Texture2D texture = new Texture2D(16, 16);
-                texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
-                texture.filterMode = FilterMode.Point;
+                //byte[] imageData = File.ReadAllBytes(recipe.item.imagePath);
+                //Texture2D texture = new Texture2D(16, 16);
+                //texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
+                //texture.filterMode = FilterMode.Point;
 
-                // ������������ ������� ������� � ������ pixelsPerUnit
-                float width = texture.width / 16;
-                float height = texture.height / 16;
+                //// ������������ ������� ������� � ������ pixelsPerUnit
+                //float width = texture.width / 16;
+                //float height = texture.height / 16;
 
                 // �������� ������� �� ��������
-                Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                //Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+
+                Sprite newSprite = (Sprite)Resources.Load(recipe.item.imagePath, typeof(Sprite));
 
                 //playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
                 button.transform.Find("Image").GetComponent<Image>().sprite = newSprite;
@@ -122,6 +124,8 @@ public class CraftiScript : MonoBehaviour
                 }
             }
         }
+
+        HelperClass.LoadInventoryImages();
     }
 
     private void AddItemToInventory(GameObject cell)

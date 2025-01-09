@@ -143,7 +143,7 @@ TextureImporter:
         y: 98
         width: 44
         height: 38
-      alignment: 0
+      alignment: 9
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -381,12 +381,12 @@ TextureImporter:
       name: Stickman body_5
       rect:
         serializedVersion: 2
-        x: 86
+        x: 85
         y: 58
-        width: 5
+        width: 6
         height: 30
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -395,6 +395,28 @@ TextureImporter:
       bones: []
       spriteID: 07ff51ddca45fef4ab267e99f91c0d69
       internalID: -1212181183
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stickman body_6
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 17
+        width: 11
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1cf7b5e7ebc71b54b9c638a1a84cfee7
+      internalID: -585416874
       vertices: []
       indices: 
       edges: []
@@ -425,6 +447,7 @@ TextureImporter:
       Stickman body_3: 285639423
       Stickman body_4: 2086678088
       Stickman body_5: -1212181183
+      Stickman body_6: -585416874
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -218,8 +218,9 @@ public class HelperClass : MonoBehaviour
         // Перебор всех ячеек инвентаря
         for (int i = HelperClass.playerInventory.GetLength(0) - 1; i >= 0; i--)
         {
-            Debug.Log("ячейка номер" + InventoryCell);
-            Debug.Log("В инвентаре " + HelperClass.playerInventory[i]);
+            
+            //Debug.Log("ячейка номер" + InventoryCell);
+            //Debug.Log("В инвентаре " + HelperClass.playerInventory[i]);
             if (HelperClass.playerInventory[i] != null && HelperClass.playerInventory[i].name == BlocksData.allBlocks.Find(x => x.blockIndex == item.blockIndex).name)
             {
                 HelperClass.playerInventory[i].count++;
@@ -243,24 +244,31 @@ public class HelperClass : MonoBehaviour
             HelperClass.playerInventory[InventoryCell] = BlocksData.allBlocks.Find(x => x.blockIndex == item.blockIndex);
             HelperClass.playerInventory[InventoryCell].count = 1;
             Debug.Log("В инвентарь был добавлен: " + HelperClass.playerInventory[InventoryCell].name);
+            Debug.Log(BlocksData.allBlocks.Find(x => x.blockIndex == item.blockIndex).imagePath);
+            if (HelperClass.playerInventory[InventoryCell] != null)
+            {
+                Debug.Log("ПуТЬ"+HelperClass.playerInventory[InventoryCell].imagePath);
+
+            }
             playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
 
             float pixelsPerUnit = 16;
 
-            if (!string.IsNullOrEmpty(item.imagePath) && File.Exists(item.imagePath) && item.imagePath != null)
+            if (!string.IsNullOrEmpty(item.imagePath) && item.imagePath != null)
             {
                 // �������� �������� �� �����
-                byte[] imageData = File.ReadAllBytes(item.imagePath);
-                Texture2D texture = new Texture2D(16, 16);
-                texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
-                texture.filterMode = FilterMode.Point;
+                //byte[] imageData = File.ReadAllBytes(item.imagePath);
+                //Texture2D texture = new Texture2D(16, 16);
+                //texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
+                //texture.filterMode = FilterMode.Point;
 
-                // ������������ ������� ������� � ������ pixelsPerUnit
-                float width = texture.width / 16;
-                float height = texture.height / 16;
+                //// ������������ ������� ������� � ������ pixelsPerUnit
+                //float width = texture.width / 16;
+                //float height = texture.height / 16;
 
-                // �������� ������� �� ��������
-                Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                //// �������� ������� �� ��������
+                //Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                Sprite newSprite = (Sprite)Resources.Load(item.imagePath, typeof(Sprite));
 
                 playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite = newSprite;
 
@@ -285,25 +293,30 @@ public class HelperClass : MonoBehaviour
 
         for (int i = 0; i < HelperClass.playerInventory.Count(); i++)
         {
+            
+
             if (HelperClass.playerInventory[i] != null)
             {
-                if (!string.IsNullOrEmpty(HelperClass.playerInventory[i].imagePath) && File.Exists(HelperClass.playerInventory[i].imagePath) && HelperClass.playerInventory[i].imagePath != null)
+                if (HelperClass.playerInventory[i].imagePath != null)
                 {
                     // �������� �������� �� �����
-                    byte[] imageData = File.ReadAllBytes(HelperClass.playerInventory[i].imagePath);
-                    Texture2D texture = new Texture2D(16, 16);
-                    texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
-                    texture.filterMode = FilterMode.Point;
+                    //byte[] imageData = File.ReadAllBytes(HelperClass.playerInventory[i].imagePath);
+                    //Texture2D texture = new Texture2D(16, 16);
+                    //texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
+                    //texture.filterMode = FilterMode.Point;
 
-                    // ������������ ������� ������� � ������ pixelsPerUnit
-                    float width = texture.width / 16;
-                    float height = texture.height / 16;
+                    //// ������������ ������� ������� � ������ pixelsPerUnit
+                    //float width = texture.width / 16;
+                    //float height = texture.height / 16;
 
-                    // �������� ������� �� ��������
-                    Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                    //// �������� ������� �� ��������
+                    //Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                    Sprite newSprite = (Sprite)Resources.Load(HelperClass.playerInventory[i].imagePath, typeof(Sprite));
+
+                    
 
                     playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
-                    playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().sprite = newSprite;
+                    playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().sprite = (Sprite)Resources.Load(HelperClass.playerInventory[i].imagePath, typeof(Sprite));
 
                     playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
                     playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();

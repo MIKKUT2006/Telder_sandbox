@@ -24,11 +24,11 @@ public class Parallax : MonoBehaviour
 
         if (disableVerticalParallax)
         {
-            delta.y = 0f;
+            delta.y = Camera.main.transform.position.y;
         }
 
         targetPreviousPosition = followingTarget.position;
-        transform.position = new Vector3 (transform.position.x + (delta.x * parallaxStrength), Camera.main.transform.position.y, 0);
-        //transform.position += delta * parallaxStrength;
+        //transform.position = new Vector3 (transform.position.x + (delta.x * parallaxStrength), Camera.main.transform.position.y, 0);
+        transform.position += delta * parallaxStrength;
     }
 }

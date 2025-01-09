@@ -1,5 +1,6 @@
-using System.Collections;
-using UnityEditor.Localization.Plugins.XLIFF.V12;
+п»їusing System.Collections;
+using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -14,15 +15,17 @@ public class BombScript : MonoBehaviour
     private float timer;
     private int[,] tileMapData;
     private Tilemap[] chunkList;
-    private int chunkSize; // Добавили переменную для размера чанка
-
-
+    private int chunkSize; // Р”РѕР±Р°РІРёР»Рё РїРµСЂРµРјРµРЅРЅСѓСЋ РґР»СЏ СЂР°Р·РјРµСЂР° С‡Р°РЅРєР°
+    AudioSource audioSource;
+    GameObject BlockGameObject;
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         timer = explosionDelay;
-        chunkSize = HelperClass.chunkSize; // Инициализируем chunkSize здесь
+        chunkSize = HelperClass.chunkSize; // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј chunkSize Р·РґРµСЃСЊ
         Initialize(ProceduralGeneration.map, HelperClass.Chunks);
+
+        BlockGameObject = (GameObject)Resources.Load($"Public Elements/Prefabs/Inventory/Item");
     }
 
     public void Initialize(int[,] mapData, Tilemap[] chunks)
@@ -42,7 +45,7 @@ public class BombScript : MonoBehaviour
         //tileMap = map;
         chunkList = chunks;
         //Debug.Log("Initialize called: tileMapData=" + tileMapData);
-        chunkSize = HelperClass.chunkSize; // Инициализируем chunkSize здесь
+        chunkSize = HelperClass.chunkSize; // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј chunkSize Р·РґРµСЃСЊ
 
         Debug.Log("Number of chunks: " + chunks.Length);
         for (int i = 0; i < chunks.Length; i++)
@@ -61,18 +64,32 @@ public class BombScript : MonoBehaviour
 
     private void Explode()
     {
-        // 1. Создание частиц взрыва
+        audioSource = GetComponent<AudioSource>();
+        audioSource.Play();
+        gameObject.GetComponent<SpriteRenderer>().enabled = false;
+        // 1. РЎРѕР·РґР°РЅРёРµ С‡Р°СЃС‚РёС† РІР·СЂС‹РІР°
         if (explosionParticlesPrefab != null)
         {
             Instantiate(explosionParticlesPrefab, transform.position, Quaternion.identity);
         }
-        // 2. Разрушение тайлов и обновление массива
+        // 2. Р Р°Р·СЂСѓС€РµРЅРёРµ С‚Р°Р№Р»РѕРІ Рё РѕР±РЅРѕРІР»РµРЅРёРµ РјР°СЃСЃРёРІР°
         ExplodeTilemap();
-        // 3. Уничтожение бомбы
-        Destroy(gameObject);
 
+        StartCoroutine(SoundTimer());
     }
 
+    private IEnumerator SoundTimer()
+    {
+        yield return new WaitForSeconds(0.3f);
+        if (audioSource.isPlaying == true)
+        {
+            StartCoroutine(SoundTimer());
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     private void ExplodeTilemap()
     {
@@ -81,6 +98,7 @@ public class BombScript : MonoBehaviour
         {
             for (int y = -Mathf.RoundToInt(explosionRadius); y <= Mathf.RoundToInt(explosionRadius); y++)
             {
+
                 Vector3 worldPosition = explosionCenter + new Vector3(x, y, 0);
                 if (Vector2.Distance(explosionCenter, worldPosition) <= explosionRadius)
                 {
@@ -92,7 +110,7 @@ public class BombScript : MonoBehaviour
 
     private void DestroyTileAtWorldPosition(Vector3 worldPosition)
     {
-        // Получаем координаты чанка
+        // РџРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚С‹ С‡Р°РЅРєР°
 
         int chunkX = HelperClass.chunkSize;
         chunkX = Mathf.FloorToInt(worldPosition.x / (float)chunkSize);
@@ -100,18 +118,64 @@ public class BombScript : MonoBehaviour
         int chunkY = HelperClass.chunkSize;
         chunkY = Mathf.FloorToInt(worldPosition.y / (float)chunkSize);
 
-        // Получаем локальную позицию тайла внутри чанка
+        // РџРѕР»СѓС‡Р°РµРј Р»РѕРєР°Р»СЊРЅСѓСЋ РїРѕР·РёС†РёСЋ С‚Р°Р№Р»Р° РІРЅСѓС‚СЂРё С‡Р°РЅРєР°
         Vector3Int localTilePosition = HelperClass.Chunks[chunkX].WorldToCell(worldPosition);
 
-        //Вычисляем глобальную позицию тайла на карте
+        //Р’С‹С‡РёСЃР»СЏРµРј РіР»РѕР±Р°Р»СЊРЅСѓСЋ РїРѕР·РёС†РёСЋ С‚Р°Р№Р»Р° РЅР° РєР°СЂС‚Рµ
         int globalX = chunkX * chunkSize + localTilePosition.x;
         int globalY = chunkY * chunkSize + localTilePosition.y;
 
-        Debug.Log(globalX);
-        Debug.Log(globalY);
+        //Debug.Log(globalX);
+        //Debug.Log(globalY);
 
-        // Удаляем тайл
+        // РЈРґР°Р»СЏРµРј С‚Р°Р№Р»
         //ProceduralGeneration.map[globalX, globalY] = 0;
         HelperClass.Chunks[chunkX].SetTile(localTilePosition, null);
+        int x = (int)worldPosition.x;
+        int y = (int)worldPosition.y;
+
+        int blockId = BlocksData.allBlocks[ProceduralGeneration.map[x, y]].blockIndex;                 // РџРѕР»СѓС‡Р°РµРј Р°Р№РґРё Р±Р»РѕРєР°
+        
+        // РџСЂРѕРІРµСЂРєР° С‡С‚Рѕ СЌС‚Рѕ РЅРµ Р±Р»РѕРє СЃРІРµС‚Р°
+        if (blockId != 4 && blockId != 0)
+        {
+            Debug.Log(blockId);
+            // Р¦РёРєР» РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РІСЃРµС… РІС‹РїР°РґР°СЋС‰РёС… РїСЂРµРґРјРµС‚РѕРІ СЃ Р±Р»РѕРєР°
+            foreach (int drop in BlocksData.allBlocks.Where(x => x.blockIndex == blockId).FirstOrDefault().dropId)
+            {
+                Vector3 newpos = new Vector3(x + 0.5f, y + 0.5f);
+                AllItemsAndBlocks currentDrop = BlocksData.allBlocks.Where(x => x.blockIndex == drop).FirstOrDefault();
+                Debug.Log(currentDrop.name);
+                GameObject newBlock = Instantiate(BlockGameObject, newpos, Quaternion.identity);
+                newBlock.name = currentDrop.blockIndex.ToString();
+                Sprite sprite = null;
+                // РџРѕР»СѓС‡РµРЅРёРµ РµРіРѕ С‚РµРєСЃС‚СѓСЂС‹, РµСЃР»Рё РѕРЅР° РµСЃС‚СЊ
+
+                //// Р—Р°РіСЂСѓР¶Р°РµРј РёР·РѕР±СЂР°Р¶РµРЅРёРµ РёР· С„Р°Р№Р»Р°
+                //float pixelsPerUnit = 16;
+
+                //byte[] imageData = File.ReadAllBytes(currentDrop.imagePath);
+                //Texture2D texture = new Texture2D(16, 16);
+                //texture.LoadImage(imageData); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                //texture.filterMode = FilterMode.Point;
+
+                //// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ pixelsPerUnit
+                //float width = texture.width / 16;
+                //float height = texture.height / 16;
+
+                //// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                //Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                Sprite newSprite = (Sprite)Resources.Load(currentDrop.imagePath, typeof(Sprite));
+
+                newBlock.GetComponent<SpriteRenderer>().sprite = (Sprite)Resources.Load(currentDrop.imagePath, typeof(Sprite));
+
+                //ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
+                //newParticles.gameObject.SetActive(true);
+                //Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
+                //destroyMaterial.mainTexture = texture;
+            }
+            // РљРѕРЅРµС† С†РёРєР»Р°
+        }
+
     }
 }

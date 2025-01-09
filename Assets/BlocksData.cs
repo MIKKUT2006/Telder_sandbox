@@ -9,7 +9,8 @@ public class BlocksData : MonoBehaviour
 {
     public static GameObject torchPrefab = null;
     public static GameObject bombprefab = null;
-    static string firstWorldBlocks = "Assets/_Blocks/Firstworld/";
+    public static string currentDataPack = "TheGame";
+    static string firstWorldBlocks = $"{currentDataPack}/_Blocks/Firstworld/";
     public static void GetPrefabs()
     {
         torchPrefab = (GameObject)Resources.Load($"Torch");
@@ -25,31 +26,34 @@ public class BlocksData : MonoBehaviour
 
     public static List<AllItemsAndBlocks> allBlocks = new List<AllItemsAndBlocks> {
         // Блоки верхнего мира
-         new AllItemsAndBlocks(0, "Свет", 0, true, 100, $"{firstWorldBlocks}Light.png", 0),
+         new AllItemsAndBlocks(0, "Свет", 0, true, 100, $"{firstWorldBlocks}Light", 0),
          //new AllItemsAndBlocks(1, "Земля", 3, true,100, $"{firstWorldBlocks}Dirt.png"),
-         new AllItemsAndBlocks(1, "Земля", 3, true,100, $"{firstWorldBlocks}Dirt.png", 3),
-         new AllItemsAndBlocks(2, "Трава", 3, true, 100, $"{firstWorldBlocks}Grass.png", 3),
-         new AllItemsAndBlocks(3, "Камень", 15, true, 100, $"{firstWorldBlocks}Stone.png", 1),
+         new AllItemsAndBlocks(1, "Земля", 3, true,100, $"{firstWorldBlocks}Dirt", 3),
+         new AllItemsAndBlocks(2, "Трава", 3, true, 100, $"{firstWorldBlocks}Grass", 3),
+         new AllItemsAndBlocks(3, "Камень", 15, true, 100, $"{firstWorldBlocks}Stone", 1),
          new AllItemsAndBlocks(4, "Пустота", 0, true, 100, "", 0),
-         new AllItemsAndBlocks(5, "Трава с деревьями", 3, true, 100, $"{firstWorldBlocks}Dirt.png", 3),
-         new AllItemsAndBlocks(6, "Железная руда", 20, true, 100, new List<int>{14,14,14}, 3, 1),
+         new AllItemsAndBlocks(5, "Трава с деревьями", 3, true, 100, $"{firstWorldBlocks}Dirt", 3),
+         new AllItemsAndBlocks(6, "Железная руда", 20, true, 100, $"{firstWorldBlocks}Ores/Iron Ore", new List<int>{14,14,14}, 3, 1),
          // Блок с выпадением из него предметов
-         new AllItemsAndBlocks(7, "Руда телепортиума", 30, true, 100, new List<int>{1,1,1}, 3, 1),
+         new AllItemsAndBlocks(7, "Руда телепортиума", 30, true, 100, $"{firstWorldBlocks}Ores/TeleportiumOre", new List<int>{1,1,1}, 3, 1),
          new AllItemsAndBlocks(8, "Баррьер", int.MaxValue, true, 100, "", 0),
-         new AllItemsAndBlocks(9, "Песок", 1, true, 100, $"{firstWorldBlocks}Sand.png", 3),   
+         new AllItemsAndBlocks(9, "Песок", 1, true, 100, $"{firstWorldBlocks}Sand", 3),   
          new AllItemsAndBlocks(10, "Окаменевший кристалл", 3, true, 100, "", 1),   
-         new AllItemsAndBlocks(11, "Снег", 3, true, 100, $"{firstWorldBlocks}Snow.png", 3),   
-         new AllItemsAndBlocks(12, "Листва", 2, true, 100, $"{firstWorldBlocks}Leaves.png", 0),
+         new AllItemsAndBlocks(11, "Снег", 3, true, 100, $"{firstWorldBlocks}Snow", 3),   
+         new AllItemsAndBlocks(12, "Листва", 2, true, 100, $"{firstWorldBlocks}Leaves", 0),
          // Предметы верхнего мира
-         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным", $"{firstWorldBlocks}/Tools/GrassPickaxe.png", 1, 2, 3, 0, 0),
-         new AllItemsAndBlocks(14, "Кусок железа", "Грубый кусок металла", $"{firstWorldBlocks}/Ores/Iron.png"),
+         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным", $"Tools/GrassPickaxe", 1, 2, 3),
+         new AllItemsAndBlocks(14, "Кусок железа", "Грубый кусок металла", $"{firstWorldBlocks}Ores/Iron"),
          // Объекты
-         new AllItemsAndBlocks(15, "Сосновая древесина", 3, true, 100, $"{firstWorldBlocks}/Trees/PinePlanks.png", 3),
+         new AllItemsAndBlocks(15, "Сосновая древесина", 3, true, 100, $"{firstWorldBlocks}Trees/PinePlanks", 3),
          new AllItemsAndBlocks(16, "Сосна", new List<int>{15,15,15,15,15}, 5, 2),
-         new AllItemsAndBlocks(17, "Угольная руда", 15, true, 100, new List<int>{18,18,18}, 3, 1),
-         new AllItemsAndBlocks(18, "Кусок угля", "Выглядит горючим", $"{firstWorldBlocks}Ores/Coal.png"),
-         new AllItemsAndBlocks(19, "Факел", "Источает свет", $"{firstWorldBlocks}Furniture/torch.png", 0, torchPrefab, true),
-         new AllItemsAndBlocks(20, "Бомба", "Делает БУМ", $"Assets/Resources/Prefabs/Projectiles/Bomb/Bomb.png", 0, bombprefab, true),
+         new AllItemsAndBlocks(17, "Угольная руда", 15, true, 100,$"{firstWorldBlocks}Ores/CoalOre", new List<int>{18,18,18}, 3, 1),
+         new AllItemsAndBlocks(18, "Кусок угля", "Выглядит горючим", $"{firstWorldBlocks}Ores/Coal"),
+         new AllItemsAndBlocks(19, "Факел", "Источает свет", $"{firstWorldBlocks}Furniture/torch", 0, torchPrefab, true),
+         new AllItemsAndBlocks(20, "Бомба", "Делает БУМ", $"Prefabs/Projectiles/Bomb/Bomb", 0, bombprefab, true),
+         new AllItemsAndBlocks(21, "Меч древних", "На нём нарисованы символы", $"Tools/GrassSword", 4, 10, 0),
+         new AllItemsAndBlocks(22, "Топор древних", "ЧОП ЧОП ЧОП", $"Tools/ElderAxe", 2, 3, 3),
+         new AllItemsAndBlocks(23, "Палка", "Обычная палка", $"Items/Coal"),
     };
 
     public static List<GameObject> objects = new List<GameObject> {
@@ -60,10 +64,9 @@ public class BlocksData : MonoBehaviour
     public static List<CraftingRecipe> craftingRecipes = new List<CraftingRecipe>
     {
         // Кирка древних
-        //new CraftingRecipe(allBlocks[13], new List<Ingredient> {
-        //    new Ingredient(allBlocks[12], 5), // Листва
-        //    new Ingredient(allBlocks[12], 5), // Листва
-        //}),
+        new CraftingRecipe(allBlocks[21], new List<Ingredient> {
+            new Ingredient(allBlocks[15], 3), // Древесина
+        }),
         // Факел
         new CraftingRecipe(allBlocks[19], new List<Ingredient> {
             new Ingredient(allBlocks[15], 1), // Древесина
@@ -91,6 +94,7 @@ public class AllItemsAndBlocks
     // 0 - Любой
     // 1 - Кирка
     // 2 - Топор
+    // 3 - Лопата
     // 3 - Оружие
 
     // Что выпадет при разрушении
@@ -109,12 +113,13 @@ public class AllItemsAndBlocks
     public int toolType;
     // 1 - Кирка
     // 2 - Топор
-    // 3 - Оружие
+    // 3 - Лопата
+    // 4 - Оружие
 
     // Сила инструмента
-    public int pickaxePower = 0;
-    public int axePower = 0;
-    public int shovelPower = 0;
+    public int toolPower = 0;
+    //public int axePower = 0;
+    //public int shovelPower = 0;
 
     public int damage = 0;
 
@@ -126,7 +131,7 @@ public class AllItemsAndBlocks
     public string imagePath;
 
     // Конструкторы класса для инструмента/оружия
-    public AllItemsAndBlocks(int _blockIndex, string _name, string _description, string _imagePath, int _toolType, int _damage, int _pickaxePower, int _axePower, int _shovelPower)
+    public AllItemsAndBlocks(int _blockIndex, string _name, string _description, string _imagePath, int _toolType, int _damage, int _toolPower)
     {
         blockIndex = _blockIndex;
         name = _name;
@@ -137,9 +142,7 @@ public class AllItemsAndBlocks
         imagePath = _imagePath;
 
         // Мощность инструментов
-        this.pickaxePower = _pickaxePower;
-        this.axePower = _axePower;
-        this.shovelPower = _shovelPower;
+        this.toolPower = _toolPower;
     }
 
     // Конструкторы класса для предмета (ингредиенты для крафта)
@@ -166,14 +169,14 @@ public class AllItemsAndBlocks
     }
 
     // Конструктор класса для блока с выпаднием другого предмета
-    public AllItemsAndBlocks(int _blockIndex, string _name, int _blocksSolidity, bool _stackable, int _maxStack, List<int> _dropId, int _dropCount, int needsToolType)
+    public AllItemsAndBlocks(int _blockIndex, string _name, int _blocksSolidity, bool _stackable, int _maxStack, string _imagePath, List<int> _dropId, int _dropCount, int needsToolType)
     {
         blockIndex = _blockIndex;
         name = _name;
         blocksSolidity = _blocksSolidity;
         stackable = _stackable;
         maxStack = _maxStack;
-
+        imagePath = _imagePath;
         dropId = _dropId;
         dropCount = _dropCount;
 

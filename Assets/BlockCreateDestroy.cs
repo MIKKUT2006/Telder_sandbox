@@ -187,9 +187,6 @@ public class BlockCreateDestroy : MonoBehaviour
             {
                 if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].count > 0 && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
                 {
-                    ProceduralGeneration.RemoveLightSource(x,y);
-                    //ProceduralGeneration.worldTilesMap.SetPixel(x,y, Color.black);
-                    ProceduralGeneration.worldTilesMap.Apply();
 
                     // Уменьшаем количество блока в инвентаре
                     HelperClass.playerInventory[HelperClass.selectedInventoryCell].count -= 1;
@@ -217,6 +214,11 @@ public class BlockCreateDestroy : MonoBehaviour
                         HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
                         HelperClass.itemName.text = "";
                     }
+                    ProceduralGeneration.instance.UpdateLightOnBlockChange(x, y);
+                    //ProceduralGeneration.worldTilesMap.SetPixel(x,y, Color.black);
+                    //ProceduralGeneration.UpdateTextureFromLightmap();
+
+                    ProceduralGeneration.worldTilesMap.Apply();
 
                     digSound.clip = place;
                     digSound.Play();
@@ -226,8 +228,12 @@ public class BlockCreateDestroy : MonoBehaviour
             {
                 if(HelperClass.playerInventory[HelperClass.selectedInventoryCell].count > 0)
                 {
+
+                    // Уменьшаем количество блока в инвентаре
                     // Уменьшаем количество блока в инвентаре
                     HelperClass.playerInventory[HelperClass.selectedInventoryCell].count -= 1;
+                    // Устанавливаем в массиве блоков нужный айди блока из инвентаря
+                    ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
                     // Устанавливаем тайл в карте тайлов
                     //TileBase[] tileBases = new TileBase[1];
                     //UnityEngine.Tilemaps.Tile tile = new UnityEngine.Tilemaps.Tile();
@@ -240,6 +246,7 @@ public class BlockCreateDestroy : MonoBehaviour
                     Debug.Log(HelperClass.playerInventory[HelperClass.selectedInventoryCell].prefab);
                     Debug.Log(BlocksData.allBlocks[20].prefab.name);
                     Instantiate(HelperClass.playerInventory[HelperClass.selectedInventoryCell].prefab, vector3, Quaternion.identity);
+
                     Debug.Log("");
                     // Устанавливаем в массиве блоков нужный айди блока из инвентаря
                     //ProceduralGeneration.map[x, y] = HelperClass.playerInventory[HelperClass.selectedInventoryCell].blockIndex;
@@ -307,7 +314,7 @@ public class BlockCreateDestroy : MonoBehaviour
                 //Debug.Log($"У нас: {HelperClass.eguipmentItem.name}");
                 if (HelperClass.eguipmentItem != null && BlocksData.allBlocks[ProceduralGeneration.map[x, y]].needsToolType == HelperClass.eguipmentItem.toolType)
                 {
-                    blockSolid -= HelperClass.eguipmentItem.pickaxePower;
+                    blockSolid -= HelperClass.eguipmentItem.toolPower;
                 }
                 else
                 {
@@ -341,9 +348,10 @@ public class BlockCreateDestroy : MonoBehaviour
             {
                 // Если блок сломан
                 tilemap.SetTile(blockPosition, null);   // Ломаем блок
-                ProceduralGeneration.worldTilesMap.SetPixel(x, y, UnityEngine.Color.white);
-                ProceduralGeneration.LightBlock(x, y, 1f, 0);
-                ProceduralGeneration.worldTilesMap.Apply();
+
+                
+
+
                 // Устанавливаем значение пустого блока для потоков воды
                 //HelperClass.Cells[x, y].SetType(CellType.Blank);
 
@@ -354,7 +362,6 @@ public class BlockCreateDestroy : MonoBehaviour
                 // Устанавливаем тайлы освещения
                 lightTileMap.SetTile(new Vector3Int(x, y, 0), ProceduralGeneration.lightTiles[0]);
 
-                ProceduralGeneration.worldTilesMap.Apply();
 
 
                 // Цикл для создания всех выпадающих предметов с блока
@@ -369,26 +376,27 @@ public class BlockCreateDestroy : MonoBehaviour
                     // Получение его текстуры, если она есть
 
                     // Загружаем изображение из файла
-                    float pixelsPerUnit = 16;
+                    //float pixelsPerUnit = 16;
 
-                    byte[] imageData = File.ReadAllBytes(currentDrop.imagePath);
-                    Texture2D texture = new Texture2D(16, 16);
-                    texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
-                    texture.filterMode = FilterMode.Point;
+                    //byte[] imageData = File.ReadAllBytes(currentDrop.imagePath);
+                    //Texture2D texture = new Texture2D(16, 16);
+                    //texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
+                    //texture.filterMode = FilterMode.Point;
 
-                    // ������������ ������� ������� � ������ pixelsPerUnit
-                    float width = texture.width / 16;
-                    float height = texture.height / 16;
+                    //// ������������ ������� ������� � ������ pixelsPerUnit
+                    //float width = texture.width / 16;
+                    //float height = texture.height / 16;
 
-                    // �������� ������� �� ��������
-                    Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                    //// �������� ������� �� ��������
+                    //Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                    //Sprite newSprite = (Sprite)Resources.Load(currentDrop.imagePath);
 
-                    newBlock.GetComponent<SpriteRenderer>().sprite = newSprite;
+                    newBlock.GetComponent<SpriteRenderer>().sprite = (Sprite)Resources.Load(currentDrop.imagePath, typeof(Sprite));
 
                     ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
                     newParticles.gameObject.SetActive(true);
                     Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
-                    destroyMaterial.mainTexture = texture;
+                    //destroyMaterial.mainTexture = texture;
                 }
                 // Конец цикла
 
@@ -458,7 +466,7 @@ public class BlockCreateDestroy : MonoBehaviour
                 //Debug.Log($"У нас: {HelperClass.eguipmentItem.name}");
                 if (HelperClass.eguipmentItem != null && BlocksData.allBlocks[ProceduralGeneration.bgMap[x, y]].needsToolType == HelperClass.eguipmentItem.toolType)
                 {
-                    blockSolid -= HelperClass.eguipmentItem.pickaxePower;
+                    blockSolid -= HelperClass.eguipmentItem.toolPower;
                 }
                 else
                 {
@@ -492,11 +500,21 @@ public class BlockCreateDestroy : MonoBehaviour
             {
                 // Если блок сломан
                 bgTilemap.SetTile(blockPosition, null);   // Ломаем блок
+
                 ProceduralGeneration.worldTilesMap.SetPixel(x, y, UnityEngine.Color.white);
-                ProceduralGeneration.LightBlock(x, y, 1f, 0);
+                ProceduralGeneration.LightBlock(x, y, 1f);
                 ProceduralGeneration.worldTilesMap.Apply();
+
+                //ProceduralGeneration.worldTilesMap.SetPixel(x, y, UnityEngine.Color.white);
+                ////ProceduralGeneration.LightBlock(x, y, 1f, 0);
+                //ProceduralGeneration.LightBlock(x, y, 1f);
+                //ProceduralGeneration.worldTilesMap.Apply();
                 // Устанавливаем значение пустого блока для потоков воды
                 //HelperClass.Cells[x, y].SetType(CellType.Blank);
+
+                ProceduralGeneration.LightBlock(x, y, 1f);
+                ProceduralGeneration.instance.UpdateLightOnBlockChange(x, y);
+                ProceduralGeneration.worldTilesMap.Apply();
 
                 // Устанавливаем освещение вокруг
                 int chunk = ChunkHelper.GetChunkXCoordinate(x);
@@ -522,24 +540,25 @@ public class BlockCreateDestroy : MonoBehaviour
                     // Загружаем изображение из файла
                     float pixelsPerUnit = 16;
 
-                    byte[] imageData = File.ReadAllBytes(currentDrop.imagePath);
-                    Texture2D texture = new Texture2D(16, 16);
-                    texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
-                    texture.filterMode = FilterMode.Point;
+                    //byte[] imageData = File.ReadAllBytes(currentDrop.imagePath);
+                    //Texture2D texture = new Texture2D(16, 16);
+                    //texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
+                    //texture.filterMode = FilterMode.Point;
 
-                    // ������������ ������� ������� � ������ pixelsPerUnit
-                    float width = texture.width / 16;
-                    float height = texture.height / 16;
+                    //// ������������ ������� ������� � ������ pixelsPerUnit
+                    //float width = texture.width / 16;
+                    //float height = texture.height / 16;
 
                     // �������� ������� �� ��������
-                    Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                    //Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                    Sprite newSprite = (Sprite)Resources.Load(currentDrop.imagePath, typeof(Sprite));
 
                     newBlock.GetComponent<SpriteRenderer>().sprite = newSprite;
 
-                    ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
-                    newParticles.gameObject.SetActive(true);
-                    Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
-                    destroyMaterial.mainTexture = texture;
+                    //ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
+                    //newParticles.gameObject.SetActive(true);
+                    //Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
+                    //destroyMaterial.mainTexture = texture;
                 }
                 // Конец цикла
 

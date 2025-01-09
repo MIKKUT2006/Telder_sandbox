@@ -111,15 +111,23 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                 //Debug.Log(HelperClass.playerInventory[HelperClass.selectedInventoryCell]);
                 HelperClass.equippedCellImage = cellImage;
                 HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = true;
-                HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
-                HelperClass.eguipmentItem = HelperClass.playerInventory[HelperClass.selectedInventoryCell];
-                if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
+                //HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
+                if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null)
                 {
-                    HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = true;
-                }
-                else
-                {
-                    HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
+                    HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = (Sprite)Resources.Load(HelperClass.playerInventory[HelperClass.selectedInventoryCell].imagePath, typeof(Sprite));
+                    HelperClass.eguipmentItem = HelperClass.playerInventory[HelperClass.selectedInventoryCell];
+
+                    HelperClass.playerGameObject.GetComponent<Animator>().SetInteger("toolType", HelperClass.playerInventory[HelperClass.selectedInventoryCell].toolType);
+
+
+                    if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
+                    {
+                        HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = true;
+                    }
+                    else
+                    {
+                        HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
+                    }
                 }
             }
         }
@@ -226,20 +234,21 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
             // Загрузка изображения
             float pixelsPerUnit = 16;
 
-            if (!string.IsNullOrEmpty(ingredient.item.imagePath) && File.Exists(ingredient.item.imagePath) && ingredient.item.imagePath != null)
+            if (!string.IsNullOrEmpty(ingredient.item.imagePath) && ingredient.item.imagePath != null)
             {
                 // �������� �������� �� �����
-                byte[] imageData = File.ReadAllBytes(ingredient.item.imagePath);
-                Texture2D texture = new Texture2D(16, 16);
-                texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
-                texture.filterMode = FilterMode.Point;
+                //byte[] imageData = File.ReadAllBytes(ingredient.item.imagePath);
+                //Texture2D texture = new Texture2D(16, 16);
+                //texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
+                //texture.filterMode = FilterMode.Point;
 
-                // ������������ ������� ������� � ������ pixelsPerUnit
-                float width = texture.width / 16;
-                float height = texture.height / 16;
+                //// ������������ ������� ������� � ������ pixelsPerUnit
+                //float width = texture.width / 16;
+                //float height = texture.height / 16;
 
-                // �������� ������� �� ��������
-                Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                //// �������� ������� �� ��������
+                //Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                Sprite newSprite = (Sprite)Resources.Load(ingredient.item.imagePath, typeof(Sprite));
 
                 //playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
                 ingredientImage.sprite = newSprite;
