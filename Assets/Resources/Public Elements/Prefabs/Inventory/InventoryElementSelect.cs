@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -41,20 +42,46 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
         // Проверка на нажатие правой кнопки мыши
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            // Проверка, что курсором был взят предмет
-            if (ItemOnCursor.selecteditem != null)
+            if (isCraftCell == true)
             {
-                // Проверка, что уже есть предмет в этом слоте
-                if (HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled == true)
+                //ingredientPanel.SetActive(true);
+                UpdateIngredientText();
+            }
+            else
+            {
+                // Проверка, что курсором был взят предмет
+                if (ItemOnCursor.selecteditem != null)
                 {
-                    // Проверка, что предмет в слоте совпадает с предметом в курсоре
-                    if (HelperClass.playerInventory[int.Parse(gameObject.name)].blockIndex == ItemOnCursor.selecteditem.blockIndex)
+                    // Проверка, что уже есть предмет в этом слоте
+                    if (HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled == true)
                     {
-                        //Debug.Log(HelperClass.playerInventory[int.Parse(gameObject.name)].name);
+                        // Проверка, что предмет в слоте совпадает с предметом в курсоре
+                        if (HelperClass.playerInventory[int.Parse(gameObject.name)].blockIndex == ItemOnCursor.selecteditem.blockIndex)
+                        {
+                            //Debug.Log(HelperClass.playerInventory[int.Parse(gameObject.name)].name);
 
-                        HelperClass.playerInventory[int.Parse(gameObject.name)].count++;
+                            HelperClass.playerInventory[int.Parse(gameObject.name)].count++;
+                            ItemOnCursor.selecteditem.count--;
+                            HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[int.Parse(gameObject.name)].count.ToString();
+
+                            if (ItemOnCursor.selecteditem.count == 0)
+                            {
+                                ItemOnCursor.selecteditem = null;
+                                HelperClass.itemOnCursorGameObject.GetComponent<Image>().enabled = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        HelperClass.playerInventory[int.Parse(gameObject.name)] = InventoryItemClone(ItemOnCursor.selecteditem);
+                        HelperClass.playerInventory[int.Parse(gameObject.name)].count = 1;
+                        Debug.Log($"Количество в ячейке {HelperClass.playerInventory[int.Parse(gameObject.name)].count}");
                         ItemOnCursor.selecteditem.count--;
+                        Debug.Log($"В курсоре осталось {ItemOnCursor.selecteditem.count} предмета");
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[int.Parse(gameObject.name)].count.ToString();
+                        HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
+                        HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled = true;
+                        HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite = ItemOnCursor.sprite;
 
                         if (ItemOnCursor.selecteditem.count == 0)
                         {
@@ -65,71 +92,54 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                 }
                 else
                 {
-                    HelperClass.playerInventory[int.Parse(gameObject.name)] = InventoryItemClone(ItemOnCursor.selecteditem);
-                    HelperClass.playerInventory[int.Parse(gameObject.name)].count = 1;
-                    Debug.Log($"Количество в ячейке {HelperClass.playerInventory[int.Parse(gameObject.name)].count}");
-                    ItemOnCursor.selecteditem.count--;
-                    Debug.Log($"В курсоре осталось {ItemOnCursor.selecteditem.count} предмета");
-                    HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[int.Parse(gameObject.name)].count.ToString();
-                    HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
-                    HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled = true;
-                    HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite = ItemOnCursor.sprite;
+                    // Выбор предмета в инвентаре
+                    HelperClass.selectedInventoryCell = int.Parse(gameObject.name);
+                    HelperClass.equippedCellAnimator = GetComponent<Animation>();
 
-                    if (ItemOnCursor.selecteditem.count == 0)
+                    if (HelperClass.playerInventory[int.Parse(gameObject.name)] != null)
                     {
-                        ItemOnCursor.selecteditem = null;
-                        HelperClass.itemOnCursorGameObject.GetComponent<Image>().enabled = false;
-                    }
-                }
-            }
-            else
-            {
-                // Выбор предмета в инвентаре
-                HelperClass.selectedInventoryCell = int.Parse(gameObject.name);
-                HelperClass.equippedCellAnimator = GetComponent<Animation>();
-
-                if (HelperClass.playerInventory[int.Parse(gameObject.name)] != null)
-                {
-                    if (HelperClass.itemDescription.text != null)
-                    {
-                        HelperClass.itemDescription.text = HelperClass.playerInventory[int.Parse(gameObject.name)].description;
-                    }
-                    HelperClass.itemName.text = HelperClass.playerInventory[int.Parse(gameObject.name)].name;
-                }
-                else
-                {
-                    HelperClass.itemDescription.text = "";
-                    HelperClass.itemName.text = "";
-                }
-
-                //Debug.Log(HelperClass.equippedCellAnimator);
-                if (HelperClass.equippedCellImage != null)
-                {
-                    HelperClass.equippedCellImage.color = Color.white;
-                }
-                cellImage.color = new Color32(47, 192, 255, 255);
-                //Debug.Log(HelperClass.playerInventory[HelperClass.selectedInventoryCell]);
-                HelperClass.equippedCellImage = cellImage;
-                HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = true;
-                //HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
-                if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null)
-                {
-                    HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = (Sprite)Resources.Load(HelperClass.playerInventory[HelperClass.selectedInventoryCell].imagePath, typeof(Sprite));
-                    HelperClass.eguipmentItem = HelperClass.playerInventory[HelperClass.selectedInventoryCell];
-
-                    HelperClass.playerGameObject.GetComponent<Animator>().SetInteger("toolType", HelperClass.playerInventory[HelperClass.selectedInventoryCell].toolType);
-
-
-                    if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
-                    {
-                        HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = true;
+                        if (HelperClass.itemDescription.text != null)
+                        {
+                            HelperClass.itemDescription.text = HelperClass.playerInventory[int.Parse(gameObject.name)].description;
+                        }
+                        HelperClass.itemName.text = HelperClass.playerInventory[int.Parse(gameObject.name)].name;
                     }
                     else
                     {
-                        HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
+                        HelperClass.itemDescription.text = "";
+                        HelperClass.itemName.text = "";
+                    }
+
+                    //Debug.Log(HelperClass.equippedCellAnimator);
+                    if (HelperClass.equippedCellImage != null)
+                    {
+                        HelperClass.equippedCellImage.color = Color.white;
+                    }
+                    cellImage.color = new Color32(47, 192, 255, 255);
+                    //Debug.Log(HelperClass.playerInventory[HelperClass.selectedInventoryCell]);
+                    HelperClass.equippedCellImage = cellImage;
+                    HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = true;
+                    //HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
+                    if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null)
+                    {
+                        HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = (Sprite)Resources.Load(HelperClass.playerInventory[HelperClass.selectedInventoryCell].imagePath, typeof(Sprite));
+                        HelperClass.eguipmentItem = HelperClass.playerInventory[HelperClass.selectedInventoryCell];
+
+                        HelperClass.playerGameObject.GetComponent<Animator>().SetInteger("toolType", HelperClass.playerInventory[HelperClass.selectedInventoryCell].toolType);
+
+
+                        if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
+                        {
+                            HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = true;
+                        }
+                        else
+                        {
+                            HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
+                        }
                     }
                 }
             }
+            
         }
         if (eventData.button == PointerEventData.InputButton.Left)
         {
@@ -203,6 +213,8 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
 
             }
         }
+
+        LayoutUpdate.RefreshLayout();       // Обновление всех элементов layout
     }
 
     public void OnMouseEnter()
@@ -210,8 +222,14 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
         HelperClass.barrierPlaceBlock = true;
         if (isCraftCell == true)
         {
-            //ingredientPanel.SetActive(true);
-            UpdateIngredientText();
+            GameObject.FindGameObjectWithTag("itemName").GetComponent<TextMeshProUGUI>().text = recipe.item.name;
+        }
+        else if (isCraftCell == false)
+        {
+            if (HelperClass.playerInventory[int.Parse(gameObject.name)] != null)
+            {
+                GameObject.FindGameObjectWithTag("itemName").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[int.Parse(gameObject.name)].name;
+            }
         }
     }
 
@@ -229,6 +247,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
         {
             // Создаём префаб
             GameObject newIngredient = Instantiate(ingredientPrefab, ingredientPanel.transform);
+            newIngredient.name = ingredient.item.name;
             Image ingredientImage = newIngredient.GetComponentInChildren<LayoutElement>().gameObject.GetComponent<Image>();
 
             // Загрузка изображения
@@ -236,18 +255,6 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
 
             if (!string.IsNullOrEmpty(ingredient.item.imagePath) && ingredient.item.imagePath != null)
             {
-                // �������� �������� �� �����
-                //byte[] imageData = File.ReadAllBytes(ingredient.item.imagePath);
-                //Texture2D texture = new Texture2D(16, 16);
-                //texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
-                //texture.filterMode = FilterMode.Point;
-
-                //// ������������ ������� ������� � ������ pixelsPerUnit
-                //float width = texture.width / 16;
-                //float height = texture.height / 16;
-
-                //// �������� ������� �� ��������
-                //Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
                 Sprite newSprite = (Sprite)Resources.Load(ingredient.item.imagePath, typeof(Sprite));
 
                 //playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
@@ -266,7 +273,11 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
         HelperClass.barrierPlaceBlock = false;
         if (isCraftCell == true)
         {
-            //ingredientPanel.SetActive(false);
+            GameObject.FindGameObjectWithTag("itemName").GetComponent<TextMeshProUGUI>().text = "";
+        }
+        else
+        {
+            GameObject.FindGameObjectWithTag("itemName").GetComponent<TextMeshProUGUI>().text = "";
         }
     }
 

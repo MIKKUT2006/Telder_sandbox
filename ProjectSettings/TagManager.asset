@@ -15,6 +15,7 @@ TagManager:
   - PlayerPanel
   - TopPanel
   - ItemDescription
+  - itemName
   layers:
   - Default
   - TransparentFX

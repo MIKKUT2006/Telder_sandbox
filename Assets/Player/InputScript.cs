@@ -38,8 +38,10 @@ public class InputScript : MonoBehaviour
     public Sprite crystalBackground; // ��� ��� ������������ �����
     public SpriteRenderer backgroundImage;
     public SpriteRenderer tempBackgroundImage;
-    Biomes currentBiome;
+    Biomes currentBiome = Biomes.Forest;
+    Biomes oldBiome;
     private float fadeDuration = 3.0f; // ������������ ����� � ��������
+    public TextMeshProUGUI locationTitle;
 
     // �������� ����
     private bool inventoryOpen = false;
@@ -82,7 +84,21 @@ public class InputScript : MonoBehaviour
 
         //spriteRenderer = GetComponent<SpriteRenderer>();
         SetBackground(Biomes.Forest); // ��������� ���������� �����, ����� �������� � ����������� �� ������
+        StartCoroutine(ZoneTitleTimer());
+    }
 
+    private IEnumerator ZoneTitleTimer()
+    {
+        yield return new WaitForSeconds(1);
+        if (oldBiome != currentBiome) 
+        {
+            locationTitle.text = currentBiome.ToString();
+        }
+        else
+        {
+            locationTitle.text = "";
+        }
+        StartCoroutine(ZoneTitleTimer());
     }
 
     // РУБКА ДЕРЕВА
@@ -329,6 +345,7 @@ public class InputScript : MonoBehaviour
         {
             if (currentBiome != biomeMap[xIndex])
             {
+                oldBiome = currentBiome;
                 currentBiome = biomeMap[xIndex];
                 SetBackground(currentBiome);
             }

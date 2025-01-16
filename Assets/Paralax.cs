@@ -3,32 +3,37 @@ using UnityEngine;
 
 public class Parallax : MonoBehaviour
 {
-    [SerializeField] Transform followingTarget;
-    [SerializeField, Range(0f,1f)] float parallaxStrength = 0.1f;
-    [SerializeField] bool disableVerticalParallax;
-    Vector3 targetPreviousPosition;
+    private float _startingPos; //This is starting position of the sprites.
+    private float _lengthOfSprite;    //This is the length of the sprites.
+    public float AmountOfParallax;  //This is amount of parallax scroll. 
+    public float zPosition;  //This is amount of parallax scroll. 
+    public Camera MainCamera;   //Reference of the camera.
 
     private void Start()
     {
-        if (!followingTarget) 
-        {
-            followingTarget = Camera.main.transform;
-        }
-
-        targetPreviousPosition = followingTarget.position;
+        //Getting the starting X position of sprite.
+        _startingPos = transform.position.x;
+        //Getting the length of the sprites.
+        _lengthOfSprite = GetComponent<SpriteRenderer>().bounds.size.x;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        Vector3 delta = followingTarget.position - targetPreviousPosition;
+        Vector3 Position = MainCamera.transform.position;
+        float Temp = Position.x * (1 - AmountOfParallax);
+        float Distance = Position.x * AmountOfParallax;
 
-        if (disableVerticalParallax)
+        Vector3 NewPosition = new Vector3(_startingPos + Distance, MainCamera.transform.position.y, zPosition);
+
+        transform.position = NewPosition;
+
+        if (Temp > _startingPos + (_lengthOfSprite / 2))
         {
-            delta.y = Camera.main.transform.position.y;
+            _startingPos += _lengthOfSprite;
         }
-
-        targetPreviousPosition = followingTarget.position;
-        //transform.position = new Vector3 (transform.position.x + (delta.x * parallaxStrength), Camera.main.transform.position.y, 0);
-        transform.position += delta * parallaxStrength;
+        else if (Temp < _startingPos - (_lengthOfSprite / 2))
+        {
+            _startingPos -= _lengthOfSprite;
+        }
     }
 }
