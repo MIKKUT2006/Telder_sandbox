@@ -542,7 +542,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 256
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 847766568}
+  m_TargetTexture: {fileID: 1529655270}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -6624,6 +6624,10 @@ MonoBehaviour:
   crystalBackground: {fileID: 0}
   backgroundImage: {fileID: 0}
   tempBackgroundImage: {fileID: 0}
+  locationTitle: {fileID: 0}
+  treeLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!95 &320999861
 Animator:
   serializedVersion: 7
@@ -7470,7 +7474,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shader: {fileID: 4800000, guid: 09755a4891f8d4526a7e0690a23dec7b, type: 3}
-  spriteLightRT: {fileID: 847766568}
+  spriteLightRT: {fileID: 1529655270}
   intensity: 1.51
 --- !u!20 &406037493
 Camera:
@@ -10362,43 +10366,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 841514365}
   m_CullTransparentMesh: 1
---- !u!84 &847766568
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: SpriteLightKit RT
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 6
-  m_Width: 1475
-  m_Height: 811
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 0
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 0
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 0
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
 --- !u!1 &849756165
 GameObject:
   m_ObjectHideFlags: 0
@@ -10999,6 +10966,7 @@ MonoBehaviour:
   chunkPrefab: {fileID: 378049436}
   lightchunkPrefab: {fileID: 998095003}
   bgchunkPrefab: {fileID: 1128903939}
+  grasschunkPrefab: {fileID: 0}
   testStructure: {fileID: 373153316}
   mapleHouse: {fileID: 6335819217830585853, guid: 40516e2cd794c1947a0fc0fba65c1474,
     type: 3}
@@ -11009,6 +10977,7 @@ MonoBehaviour:
   stonesmothes: 1000
   biomeSmoothes: 0
   ironOre: 10
+  coalOre: 0
   teleportiumOre: 4
   seed: 293
   groundTile:
@@ -11019,10 +10988,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: cec8df6f0f16cac4382d597e6a7c10e9, type: 2}
   - {fileID: 11400000, guid: a8fa131f22367db4193477e4b410c740, type: 2}
   - {fileID: 11400000, guid: e8d3923a201b01544bc7e5092a9528ba, type: 2}
-  lightTile: {fileID: 11400000, guid: 0500c9fb9e867ee47846b2a0ff543739, type: 2}
+  lightTilesInspector: []
   tilemap: {fileID: 378049437}
   bgTilemap: {fileID: 1128903942}
   lightTilemap: {fileID: 998095007}
+  grassTilemap: {fileID: 0}
   mainTilemap: {fileID: 378049436}
   testhouse: {fileID: 1765524054}
   Trees:
@@ -11030,7 +11000,8 @@ MonoBehaviour:
   x: 0
   y: 0
   worldSeed: 0
-  test: 
+  lightShader: {fileID: 0}
+  worldTilesMapInspector: {fileID: 0}
   biomeRanges: []
 --- !u!4 &924814283
 Transform:
@@ -11538,8 +11509,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 537048118}
   m_HandleRect: {fileID: 537048117}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 0.99999696
+  m_Value: 1
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -18355,6 +18326,7 @@ GameObject:
   - component: {fileID: 1335004565}
   - component: {fileID: 1335004567}
   - component: {fileID: 1335004566}
+  - component: {fileID: 1335004568}
   m_Layer: 10
   m_Name: Background
   m_TagString: Untagged
@@ -18419,6 +18391,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1335004564}
   m_CullTransparentMesh: 1
+--- !u!114 &1335004568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1335004564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a040e26de2293f54fa54e12cc6fba176, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parallaxStrength: 0.02
+  maxOffset: 10
+  smoothTime: 0.3
 --- !u!1001 &1352408089
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20214,6 +20201,43 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -0.0000076293945}
   m_SizeDelta: {x: 781.39, y: 473.66}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!84 &1529655270
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SpriteLightKit RT
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 6
+  m_Width: 1300
+  m_Height: 824
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 0
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_UseDynamicScaleExplicit: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_EnableRandomWrite: 0
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 0
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
 --- !u!1 &1561893943
 GameObject:
   m_ObjectHideFlags: 0
@@ -20501,7 +20525,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.00073617196, y: 0.0037784716}
+  m_AnchoredPosition: {x: 0.00073617196, y: 0.0008793017}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1623643810

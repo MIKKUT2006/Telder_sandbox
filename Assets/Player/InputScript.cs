@@ -264,22 +264,13 @@ public class InputScript : MonoBehaviour
         // �������� ��������� �� ������� ������� I
         if (Input.GetKeyDown(KeyCode.I))
         {
-            if (inventoryOpen == false)
-            {
-                inventoryOpen = true;
-                inventoryGameObject.SetActive(true);
-                craftPanelGameObject.SetActive(true);
-                topPanelGameObject.SetActive(true);
-                playerPanelGameObject.SetActive(true);
-            }
-            else
-            {
-                inventoryOpen = false;
-                inventoryGameObject.SetActive(false);
-                craftPanelGameObject.SetActive(false);
-                topPanelGameObject.SetActive(false);
-                playerPanelGameObject.SetActive(false);
-            }
+            inventoryOpen = !inventoryOpen;
+            inventoryGameObject.SetActive(inventoryOpen);
+            craftPanelGameObject.SetActive(inventoryOpen);
+            topPanelGameObject.SetActive(inventoryOpen);
+            playerPanelGameObject.SetActive(inventoryOpen);
+
+            GameObject.FindGameObjectWithTag("itemName").GetComponent<TextMeshProUGUI>().text = "";
         }
         // ������ �������� ������� ���������
         if (Input.GetKeyDown(KeyCode.Alpha1))

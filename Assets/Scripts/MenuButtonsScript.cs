@@ -8,6 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Random = System.Random;
 
 public class MenuButtonsScript : MonoBehaviour
 {
@@ -170,11 +171,24 @@ public class MenuButtonsScript : MonoBehaviour
         loadPanel.SetActive(true);
         selectWorldsPanel.SetActive(false);
         // Запускам сцену игрового мира
-        HelperClass.worldSeed = int.Parse(WorldSeed.text);
+        if (WorldSeed.text != "")
+        {
+            HelperClass.worldSeed = int.Parse(WorldSeed.text);
+        }
+        else
+        {
+            Random rand = new Random();
+            HelperClass.worldSeed = rand.Next(0, 9999999);
+        }
 
-        // Создаем новый мир в бд
-        CreateWorldInDB();
-        HelperClass.worldName = WorldName.text;
+        if (WorldName.text != "")
+        {
+            HelperClass.worldName = WorldName.text;
+        }
+        else
+        {
+            HelperClass.worldName = "New TLD";
+        }
 
         SceneManager.LoadScene("WorldOne");
     }
