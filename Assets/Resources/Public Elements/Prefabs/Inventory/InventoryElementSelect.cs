@@ -27,6 +27,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
     private void Awake()
     {
         cellImage = GetComponent<Image>();
+        Debug.Log(gameObject.name);
         if (gameObject.GetComponentInParent<ContentSizeFitter>().CompareTag("Inventory"))
         {
             isCraftCell = false;
@@ -116,26 +117,41 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                         HelperClass.equippedCellImage.color = Color.white;
                     }
                     cellImage.color = new Color32(47, 192, 255, 255);
+
                     //Debug.Log(HelperClass.playerInventory[HelperClass.selectedInventoryCell]);
                     HelperClass.equippedCellImage = cellImage;
                     HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = true;
-                    //HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
+                    
+                    // Проверка что ячейка не пустая
                     if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null)
                     {
                         HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = (Sprite)Resources.Load(HelperClass.playerInventory[HelperClass.selectedInventoryCell].imagePath, typeof(Sprite));
                         HelperClass.eguipmentItem = HelperClass.playerInventory[HelperClass.selectedInventoryCell];
 
+                        HelperClass.equippedItemCell.transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[HelperClass.selectedInventoryCell].count.ToString();
+                        HelperClass.equippedItemCell.transform.Find("Image").GetComponent<Image>().enabled = true;
+                        HelperClass.equippedItemCell.transform.Find("Image").GetComponent<Image>().sprite = (Sprite)Resources.Load(HelperClass.playerInventory[HelperClass.selectedInventoryCell].imagePath, typeof(Sprite));
+
                         HelperClass.playerGameObject.GetComponent<Animator>().SetInteger("toolType", HelperClass.playerInventory[HelperClass.selectedInventoryCell].toolType);
 
 
-                        if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
+                        if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null)
                         {
-                            HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = true;
+                            Debug.Log(HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock);
+                            HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock;
                         }
-                        else
-                        {
-                            HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
-                        }
+                    }
+                    // Если выбрали пустую ячейку
+                    else
+                    {
+                        //HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = false;
+
+                        //HelperClass.equippedItemCell.transform.Find("Count").GetComponent<TextMeshProUGUI>().text = "";
+                        //HelperClass.equippedItemCell.transform.Find("Image").GetComponent<Image>().enabled = false;
+                        //HelperClass.equippedItemCell.transform.Find("Image").GetComponent<Image>().sprite = null;
+
+                        //HelperClass.playerGameObject.GetComponent<Animator>().SetInteger("toolType", 0);
+                        HelperClass.SelectEmptyCell();
                     }
                 }
             }
@@ -147,6 +163,11 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
             {
                 if (HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled != false)
                 {
+                    if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null)
+                    {
+                        HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock;
+                    }
+
                     if (ItemOnCursor.selecteditem != null)
                     {
                         HelperClass.playerInventoryGameObject.transform.Find(ItemOnCursor.firstCell.ToString()).transform.Find("Image").GetComponent<Image>().enabled = true;
@@ -170,6 +191,8 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                         ItemOnCursor.firstCell = 0;
 
                         HelperClass.itemOnCursorGameObject.GetComponent<Image>().enabled = false;
+
+                        HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = ItemOnCursor.selecteditem.isBlock;
                     }
                     else
                     {
@@ -190,6 +213,7 @@ public class InventoryElementSelect : MonoBehaviour, IPointerClickHandler
                         //Debug.Log(tempItemCount);
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().enabled = false;
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = false;
+                        Debug.Log(HelperClass.itemOnCursorGameObject.name);
                         HelperClass.itemOnCursorGameObject.GetComponent<Image>().sprite = tempSprite;
                         HelperClass.itemOnCursorGameObject.GetComponent<Image>().enabled = true;
                         HelperClass.playerInventoryGameObject.transform.Find(gameObject.name).transform.Find("Image").GetComponent<Image>().sprite = null;

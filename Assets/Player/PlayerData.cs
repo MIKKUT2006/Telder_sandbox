@@ -1,20 +1,27 @@
 using System.Collections;
+using Cinemachine;
+using Unity.VisualScripting;
 using UnityEngine;
 using Image = UnityEngine.UI.Image;
 
 public class PlayerData : MonoBehaviour
 {
     // Переменные игрока
-    [SerializeField] private float Health = 100;
-    [SerializeField] private Image healthBar;
-    private bool truedamage = true;
-    [SerializeField] public ParticleSystem bloodParticles;
-    public static bool fireGun = false;
-    //[SerializeField] public GameObject player;
-    // Переменные игрока
+    //[SerializeField] private static float Health = 100;
+    //[SerializeField] private static float MaxHealth = 100;
+    //[SerializeField] private static Image healthBar;
+    //private bool truedamage = true;
+    [SerializeField] public static ParticleSystem bloodParticles;
+    [SerializeField] public ParticleSystem bloodParticlesInspector;
+    //// Окно смерти игрока
+    //[SerializeField] private static GameObject deathPanel;
+    [SerializeField] public GameObject deathPanelInInspector;
+
     void Start()
     {
-        //healthBar = GameObject.FindGameObjectWithTag("HealthBar").gameObject.GetComponent<Image>();
+        bloodParticles = bloodParticlesInspector;
+        HelperClass.healthBar = GameObject.FindGameObjectWithTag("HealthBar").gameObject.GetComponent<Image>();
+        HelperClass.deathPanel = deathPanelInInspector;
     }
 
     // Update is called once per frame
@@ -24,35 +31,27 @@ public class PlayerData : MonoBehaviour
         {
             SetDamage(10f);
         }
-    }
+    }  
 
-    public void SetDamage(float damage)
+    public static void SetDamage(float damage)
     {
-        if (Health > 0)
+        if (HelperClass.Health > 0)
         {
-            Health -= damage;
-            healthBar.fillAmount = Health / 100;
-            if (Health <= 0)
+            HelperClass.Health -= damage;
+            Instantiate(bloodParticles.gameObject, HelperClass.playerGameObject.transform);
+            HelperClass.healthBar.fillAmount = HelperClass.Health / HelperClass.MaxHealth;
+            //CameraShakeCinemachine.Instance.ShakeCamera(0.2f, 0.2f);
+            if (HelperClass.Health <= 0)
             {
-                Instantiate(bloodParticles, transform.position, Quaternion.identity);
-                Destroy(this.gameObject);
+                Kill();
             }
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    public static void Kill()
     {
-        if (collision.gameObject.tag == "Enemy" && truedamage == true)
-        {
-            SetDamage(5);
-            StartCoroutine(damageCooldown());
-        }
-    }
-
-    IEnumerator damageCooldown()
-    {
-       truedamage = false;
-       yield return new WaitForSeconds(1);
-       truedamage = true;
+        HelperClass.deathPanel.SetActive(true);
     }
 }
+
+

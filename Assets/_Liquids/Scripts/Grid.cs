@@ -52,26 +52,26 @@ public class Grid : MonoBehaviour
         //StartCoroutine(DelayExecuteSim(UpdateDelayTime));
         //CreateWaterTiles();
     }
-    public void CreateWaterTiles()
-    {
-        // Шум перлина для водных пещер
-        float perlinHeightCaves;
-        for (int x = 0; x < Size; x++)
-        {
-            for (int y = 0; y < HelperClass.worldHeight; y++)
-            {
-                perlinHeightCaves = Mathf.PerlinNoise((x + HelperClass.worldSeed) / 10 / 2, (y + HelperClass.worldSeed) / 10 / 2);
+    //public void CreateWaterTiles()
+    //{
+    //    // Шум перлина для водных пещер
+    //    float perlinHeightCaves;
+    //    for (int x = 0; x < Size; x++)
+    //    {
+    //        for (int y = 0; y < HelperClass.worldHeight; y++)
+    //        {
+    //            perlinHeightCaves = Mathf.PerlinNoise((x + HelperClass.worldSeed) / 10 / 2, (y + HelperClass.worldSeed) / 10 / 2);
 
-                if (y <= HelperClass.worldHeight && perlinHeightCaves < 0.4)
-                {
-                    if (ProceduralGeneration.map[x, y] == 4)
-                    {
-                        HelperClass.Cells[x, y].AddLiquid(3);
-                    }
-                }
-            }
-        }
-    }
+    //            if (y <= HelperClass.worldHeight && perlinHeightCaves < 0.4)
+    //            {
+    //                if (ProceduralGeneration.map[x, y] == 4)
+    //                {
+    //                    HelperClass.Cells[x, y].AddLiquid(3);
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 
     public static void CreateGrid()
     {
@@ -99,27 +99,27 @@ public class Grid : MonoBehaviour
             }
         }
 
-        for (int x = 0; x < Size; x++)
-        {
-            for (int y = 0; y < HelperClass.worldHeight; y++)
-            {
-                Cell cell = new Cell();
+        //for (int x = 0; x < Size; x++)
+        //{
+        //    for (int y = 0; y < HelperClass.worldHeight; y++)
+        //    {
+        //        Cell cell = new Cell();
 
-                cell.Set(x, y);
+        //        cell.Set(x, y);
 
-                // Add border
+        //        // Add border
 
-                if (y <= HelperClass.worldHeight)
-                {
-                    if (ProceduralGeneration.map[x, y] != 4 && ProceduralGeneration.map[x, y] != 0)
-                    {
-                        LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
-                        cell.SetType(CellType.Solid);
-                    }
-                }
-                HelperClass.Cells[x, y] = cell;
-            }
-        }
+        //        if (y <= HelperClass.worldHeight)
+        //        {
+        //            if (ProceduralGeneration.map[x, y] != 4 && ProceduralGeneration.map[x, y] != 0)
+        //            {
+        //                LiquidTilemap.SetTile(new Vector3Int(x, y), BlockTile);
+        //                cell.SetType(CellType.Solid);
+        //            }
+        //        }
+        //        HelperClass.Cells[x, y] = cell;
+        //    }
+        //}
 
         UpdateNeighbors();
     }
@@ -202,13 +202,13 @@ public class Grid : MonoBehaviour
         //}
 
         // Right click places liquid
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            if ((x > 0 && x < HelperClass.Cells.GetLength(0)) && (y > 0 && y < HelperClass.Cells.GetLength(1)))
-            {
-                HelperClass.Cells[x, y].AddLiquid(5);
-            }
-        }
+        //if (Input.GetKeyDown(KeyCode.L))
+        //{
+        //    if ((x > 0 && x < HelperClass.Cells.GetLength(0)) && (y > 0 && y < HelperClass.Cells.GetLength(1)))
+        //    {
+        //        HelperClass.Cells[x, y].AddLiquid(5);
+        //    }
+        //}
 
 
     }

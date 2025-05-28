@@ -19,6 +19,10 @@ public class PauseButtonsScripts : MonoBehaviour
     {
         pausePanel.SetActive(false);
     }
+    public void Respawn()
+    {
+        HelperClass.Respawn();
+    }
 
     public void ToMenu()
     {
@@ -33,15 +37,15 @@ public class PauseButtonsScripts : MonoBehaviour
         if (!File.Exists(mapPath))
         {
             // Если файл не существует, создаем и записываем JSON
-            JsonWorld(mapPath, ProceduralGeneration.map);
-            JsonWorld(bgMapPath, ProceduralGeneration.bgMap);
+            //JsonWorld(mapPath, ProceduralGeneration.map);
+            //JsonWorld(bgMapPath, ProceduralGeneration.bgMap);
             JsonInventory(playerInventoryPath, HelperClass.playerInventory);
             Debug.Log("JSON файл создан: " + mapPath);
         }
         else
         {
-            JsonWorld(mapPath, ProceduralGeneration.map);
-            JsonWorld(bgMapPath, ProceduralGeneration.bgMap);
+            //JsonWorld(mapPath, ProceduralGeneration.map);
+            //JsonWorld(bgMapPath, ProceduralGeneration.bgMap);
             JsonInventory(playerInventoryPath, HelperClass.playerInventory);
             Debug.Log("Файл перезаписан: " + mapPath);
         }
@@ -49,16 +53,16 @@ public class PauseButtonsScripts : MonoBehaviour
         // Работа с бд
         HelperClass.mySqlConnection.Open();
         Debug.Log($"айди пользователя {HelperClass.userId}");
-        string saveWorld = $"UPDATE worlds SET world_data = '{GetJson(ProceduralGeneration.map)}'," +
-            $" world_bg_data  = '{GetJson(ProceduralGeneration.bgMap)}'," +
-            $" inventory = '{GetInventoryJson(HelperClass.playerInventory)}'," +
-            $" player_position = '{HelperClass.playerGameObject.transform.position.x}|" +
-            $"{HelperClass.playerGameObject.transform.position.y}|" +
-            $"{HelperClass.playerGameObject.transform.position.z}'" +
-            $" WHERE user_id = {HelperClass.userId} AND name = '{HelperClass.worldName}'";
+        //string saveWorld = $"UPDATE worlds SET world_data = '{GetJson(ProceduralGeneration.map)}'," +
+        //    $" world_bg_data  = '{GetJson(ProceduralGeneration.bgMap)}'," +
+        //    $" inventory = '{GetInventoryJson(HelperClass.playerInventory)}'," +
+        //    $" player_position = '{HelperClass.playerGameObject.transform.position.x}|" +
+        //    $"{HelperClass.playerGameObject.transform.position.y}|" +
+        //    $"{HelperClass.playerGameObject.transform.position.z}'" +
+        //    $" WHERE user_id = {HelperClass.userId} AND name = '{HelperClass.worldName}'";
 
-        MySqlCommand mySqlCommand = new MySqlCommand(saveWorld, HelperClass.mySqlConnection);
-        Debug.Log(mySqlCommand.ExecuteNonQuery());
+        //MySqlCommand mySqlCommand = new MySqlCommand(saveWorld, HelperClass.mySqlConnection);
+        //Debug.Log(mySqlCommand.ExecuteNonQuery());
         HelperClass.mySqlConnection.Close();
         // Загрузка сцены меню
         SceneManager.LoadScene("_MainMenu");

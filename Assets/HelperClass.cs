@@ -31,18 +31,19 @@ public class HelperClass : MonoBehaviour
 
     // Параметры мира
     [SerializeField] public static bool isNewGame = true;
-    [SerializeField] public static int worldHeight = 100;
-    [SerializeField] public static int worldWidth = 200;
+    [SerializeField] public static int worldHeight = 0;
+    [SerializeField] public static int worldWidth = 0;
     [SerializeField] public static int worldSeed;
     [SerializeField] public static int chunkSize = 20;
     [SerializeField] public static int numChunks;
+    [SerializeField] public static bool isFullyGenerated = false;
 
     [SerializeField] public static string worldName;
     [SerializeField] public static int worldId;
 
     // Чанки блоков
-    [SerializeField] public static Tilemap[] Chunks;
-    [SerializeField] public static GameObject[] ChunksGameobject;
+    [SerializeField] public static Tilemap[,] Chunks;
+    [SerializeField] public static GameObject[,] ChunksGameobject;
     [SerializeField] public static GameObject chunkPrefab;
 
     // Список биомов
@@ -57,18 +58,18 @@ public class HelperClass : MonoBehaviour
     [SerializeField] public static float weatherFallSpeed = 5f;
 
     // Чанки освещения
-    [SerializeField] public static Tilemap[] lightChunks;
-    [SerializeField] public static GameObject[] lightChunksGameobject;
+    [SerializeField] public static Tilemap[,] lightChunks;
+    [SerializeField] public static GameObject[,] lightChunksGameobject;
     [SerializeField] public static GameObject lightchunkPrefab;
 
     // Чанки заднего плана
-    [SerializeField] public static Tilemap[] bgChunks;
-    [SerializeField] public static GameObject[] bgChunksGameobject;
+    [SerializeField] public static Tilemap[,] bgChunks;
+    [SerializeField] public static GameObject[,] bgChunksGameobject;
     [SerializeField] public static GameObject bgchunkPrefab;
 
     // Чанки растительности
-    [SerializeField] public static Tilemap[] grassChunks;
-    [SerializeField] public static GameObject[] grassChunksGameobject;
+    [SerializeField] public static Tilemap[,] grassChunks;
+    [SerializeField] public static GameObject[,] grassChunksGameobject;
     [SerializeField] public static GameObject grasschunkPrefab;
 
     // Блокировка расположения блока 
@@ -81,12 +82,20 @@ public class HelperClass : MonoBehaviour
     // Игровой объект игрока
     [SerializeField] public static GameObject playerGameObject;
     [SerializeField] public static Vector3 playerEnterPosition;
+    // Данные игрока
+    [SerializeField] public static float Health = 100;
+    [SerializeField] public static float MaxHealth = 100;
+    [SerializeField] public static Image healthBar;
+    // Окно смерти игрока
+    [SerializeField] public static GameObject deathPanel;
 
     // Предмет в руке
     [SerializeField] public static GameObject equippedItem;
     [SerializeField] public static Image equippedCellImage;
     [SerializeField] public static TextMeshProUGUI itemName;
     [SerializeField] public static TextMeshProUGUI itemDescription;
+    // Клетка для показа того, что находится в руке
+    [SerializeField] public static GameObject equippedItemCell;
     // Инвентарь
     [SerializeField] public static AllItemsAndBlocks[] playerInventory = new AllItemsAndBlocks[30];
     [SerializeField] public static GameObject playerInventoryGameObject;
@@ -123,12 +132,12 @@ public class HelperClass : MonoBehaviour
         // Перебор всех ячеек инвентаря
         for (int i = HelperClass.playerInventory.GetLength(0) - 1; i >= 0; i--)
         {
-            Debug.Log("ячейка номер" + InventoryCell);
-            Debug.Log("В инвентаре " + HelperClass.playerInventory[i]);
+            //Debug.Log("ячейка номер" + InventoryCell);
+            //Debug.Log("В инвентаре " + HelperClass.playerInventory[i]);
             if (HelperClass.playerInventory[i] != null && HelperClass.playerInventory[i].name == BlocksData.allBlocks.Find(x => x.blockIndex == int.Parse(item.name)).name)
             {
                 HelperClass.playerInventory[i].count++;
-                Debug.Log($"В инвентаре {HelperClass.playerInventory[i].count} предмета {HelperClass.playerInventory[i].name}");
+                //Debug.Log($"В инвентаре {HelperClass.playerInventory[i].count} предмета {HelperClass.playerInventory[i].name}");
                 playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
                 playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();
                 Destroy(item);
@@ -137,7 +146,7 @@ public class HelperClass : MonoBehaviour
             else if (HelperClass.playerInventory[i] == null && int.Parse(item.name) != 0)
             {
                 InventoryCell = i;
-                Debug.Log("Добавляем предмет в ячейку " + InventoryCell);
+                //Debug.Log("Добавляем предмет в ячейку " + InventoryCell);
             }
             else
             {
@@ -157,7 +166,7 @@ public class HelperClass : MonoBehaviour
             Destroy(item);
             if (HelperClass.selectedInventoryCell == InventoryCell)
             {
-                HelperClass.Cursor.SetActive(true);
+                HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = true;
             }
             playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
             playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[InventoryCell].count.ToString();
@@ -205,7 +214,7 @@ public class HelperClass : MonoBehaviour
             //Destroy(item);
             if (HelperClass.selectedInventoryCell == InventoryCell)
             {
-                HelperClass.Cursor.SetActive(true);
+                HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = true;
             }
             playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
             playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[InventoryCell].count.ToString();
@@ -224,7 +233,7 @@ public class HelperClass : MonoBehaviour
             if (HelperClass.playerInventory[i] != null && HelperClass.playerInventory[i].name == BlocksData.allBlocks.Find(x => x.blockIndex == item.blockIndex).name)
             {
                 HelperClass.playerInventory[i].count++;
-                Debug.Log($"В инвентаре {HelperClass.playerInventory[i].count} предмета {HelperClass.playerInventory[i].name}");
+                //Debug.Log($"В инвентаре {HelperClass.playerInventory[i].count} предмета {HelperClass.playerInventory[i].name}");
                 playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
                 playerInventoryGameObject.transform.Find(i.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[i].count.ToString();
                 return;
@@ -232,7 +241,7 @@ public class HelperClass : MonoBehaviour
             else if (HelperClass.playerInventory[i] == null && item.blockIndex != 0)
             {
                 InventoryCell = i;
-                Debug.Log("Добавляем предмет в ячейку " + InventoryCell);
+                //Debug.Log("Добавляем предмет в ячейку " + InventoryCell);
             }
             else
             {
@@ -279,11 +288,27 @@ public class HelperClass : MonoBehaviour
             //HelperClass.playerInventory[InventoryCell].imagePath = "Assets/Blocks/Firstworld/" + item.GetComponent<SpriteRenderer>().sprite.name + ".png";
             if (HelperClass.selectedInventoryCell == InventoryCell)
             {
-                HelperClass.Cursor.SetActive(true);
+                HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = true;
             }
             playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().enabled = true;
             playerInventoryGameObject.transform.Find(InventoryCell.ToString()).transform.Find("Count").GetComponent<TextMeshProUGUI>().text = HelperClass.playerInventory[InventoryCell].count.ToString();
         }
+    }
+
+    /// <summary>
+    /// Выбрана пустая ячейка инвентаря. Очищение всех изображений экипированного предмета
+    /// </summary>
+    public static void SelectEmptyCell()
+    {
+        Cursor.GetComponent<SpriteRenderer>().enabled = false;
+
+        equippedItemCell.transform.Find("Count").GetComponent<TextMeshProUGUI>().text = "";
+        equippedItemCell.transform.Find("Image").GetComponent<Image>().enabled = false;
+        equippedItemCell.transform.Find("Image").GetComponent<Image>().sprite = null;
+        HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = null;
+
+        playerGameObject.GetComponent<Animator>().SetInteger("toolType", 0);
+
     }
 
     // ��������� ������ ��������� � ����� ���������� ���������
@@ -345,6 +370,15 @@ public class HelperClass : MonoBehaviour
         }
         yield return new WaitForSeconds(0.5f);
         StartCoroutine(DigTree());
+    }
+
+    public static void Respawn()
+    {
+        deathPanel.SetActive(false);
+        Health = MaxHealth;
+        healthBar.fillAmount = Health / MaxHealth;
+
+        playerGameObject.transform.position = playerEnterPosition;
     }
 }
 

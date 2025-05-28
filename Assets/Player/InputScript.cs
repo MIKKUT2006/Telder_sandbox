@@ -7,6 +7,7 @@ using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using static HelperClass;
 using System;
+using UnityEditor.Localization.Plugins.XLIFF.V12;
 public class InputScript : MonoBehaviour
 {
     [SerializeField] Rigidbody2D rb;
@@ -57,6 +58,17 @@ public class InputScript : MonoBehaviour
         HelperClass.AddItemToInventory(BlocksData.allBlocks[22]);
         HelperClass.AddItemToInventory(BlocksData.allBlocks[21]);
         HelperClass.AddItemToInventory(BlocksData.allBlocks[20]);
+
+        if (HelperClass.isNewGame == false)
+        {
+            LoadInventoryImages();
+            gameObject.transform.position = HelperClass.playerEnterPosition;
+        }
+        else
+        {
+            // Спавн персонажа по середине мира
+            transform.position = new Vector3(HelperClass.worldWidth / 2, HelperClass.worldHeight, -30);
+        }
     }
     private void Awake()
     {
@@ -68,6 +80,7 @@ public class InputScript : MonoBehaviour
         topPanelGameObject = GameObject.FindGameObjectWithTag("TopPanel");
         playerPanelGameObject = GameObject.FindGameObjectWithTag("PlayerPanel");
         HelperClass.itemName = GameObject.FindGameObjectWithTag("ItemName").GetComponent<TextMeshProUGUI>();
+        HelperClass.equippedItemCell = GameObject.FindGameObjectWithTag("EquipItemCell");
         HelperClass.itemDescription = GameObject.FindGameObjectWithTag("ItemDescription").GetComponent<TextMeshProUGUI>();
         HelperClass.playerInventoryGameObject = inventoryGameObject;
         inventoryGameObject.SetActive(false);
@@ -75,10 +88,7 @@ public class InputScript : MonoBehaviour
         craftPanelGameObject.SetActive(false);
         topPanelGameObject.SetActive(false);
         HelperClass.equippedItem = gameObject.transform.Find("Player_1").transform.Find("Hand").transform.Find("Item").gameObject;
-        if (HelperClass.isNewGame == false) {
-            LoadInventoryImages();
-            gameObject.transform.position = HelperClass.playerEnterPosition;
-        }
+        
 
         HelperClass.playerGameObject = gameObject;
 
@@ -272,6 +282,17 @@ public class InputScript : MonoBehaviour
 
             GameObject.FindGameObjectWithTag("itemName").GetComponent<TextMeshProUGUI>().text = "";
         }
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            // Позиция курсора
+            Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            //Debug.Log(CursorGameObject.transform.position);
+
+            int x = (int)Tilepos.x;
+            int y = (int)Tilepos.y;
+
+            CellularLiquidSimulation.AddLiquid(x, y, 1f);
+        }
         // ������ �������� ������� ���������
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
@@ -347,25 +368,39 @@ public class InputScript : MonoBehaviour
         return Biomes.None; // ���� ������� ��� ������, ���������� None
     }
 
+
     private void equipInventoryCell()
     {
         if (HelperClass.equippedCellImage != null)
         {
             HelperClass.equippedCellImage.color = Color.white;
         }
+        
         Image cellImage;
         cellImage = HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).GetComponent<Image>();
         cellImage.color = new Color32(47, 192, 255, 255);
         HelperClass.equippedCellImage = cellImage;
         HelperClass.equippedItem.GetComponent<SpriteRenderer>().enabled = true;
         HelperClass.equippedItem.GetComponent<SpriteRenderer>().sprite = HelperClass.playerInventoryGameObject.transform.Find(HelperClass.selectedInventoryCell.ToString()).transform.Find("Image").GetComponent<Image>().sprite;
-        if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null && HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
+
+        if (HelperClass.playerInventory[HelperClass.selectedInventoryCell] != null)
         {
-            HelperClass.Cursor.SetActive(true);
+            HelperClass.playerGameObject.GetComponent<Animator>().SetInteger("toolType", HelperClass.playerInventory[HelperClass.selectedInventoryCell].toolType);
+            HelperClass.eguipmentItem = HelperClass.playerInventory[HelperClass.selectedInventoryCell];
+            //if (HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock == true)
+            //{
+            //    HelperClass.Cursor.SetActive(true);
+            //}
+            //else
+            //{
+            //    HelperClass.Cursor.SetActive(false);
+            //}
+            //HelperClass.Cursor.SetActive(HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock);
+            HelperClass.Cursor.GetComponent<SpriteRenderer>().enabled = HelperClass.playerInventory[HelperClass.selectedInventoryCell].isBlock;
         }
         else
         {
-            HelperClass.Cursor.SetActive(false);
+            HelperClass.playerGameObject.GetComponent<Animator>().SetInteger("toolType", 0);
         }
     }
 
@@ -404,6 +439,15 @@ public class InputScript : MonoBehaviour
                 GetComponent<Animator>().SetBool("Attack", false);
             }
             StartCoroutine(attackCooldown());
+    }
+    // Хитбоксы для нанесения урона
+    public void EnableHitbox()
+    {
+        HelperClass.equippedItem.GetComponent<BoxCollider2D>().enabled = true;
+    }
+    public void DisableHitbox()
+    {
+        HelperClass.equippedItem.GetComponent<BoxCollider2D>().enabled = false;
     }
 
 }

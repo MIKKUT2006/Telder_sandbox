@@ -16,6 +16,8 @@ TagManager:
   - TopPanel
   - ItemDescription
   - itemName
+  - HealthBar
+  - EquipItemCell
   layers:
   - Default
   - TransparentFX
@@ -29,7 +31,7 @@ TagManager:
   - Items
   - PostProcessing
   - Shadow
-  - 
+  - Enemies
   - 
   - 
   - 
@@ -61,6 +63,9 @@ TagManager:
     locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: ItemOnCursor
+    uniqueID: 3762924305
     locked: 0
   m_RenderingLayers:
   - Default

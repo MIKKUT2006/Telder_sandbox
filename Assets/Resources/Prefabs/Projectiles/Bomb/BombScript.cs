@@ -14,7 +14,7 @@ public class BombScript : MonoBehaviour
     private Rigidbody2D rb;
     private float timer;
     private int[,] tileMapData;
-    private Tilemap[] chunkList;
+    private Tilemap[,] chunkList;
     private int chunkSize; // Добавили переменную для размера чанка
     AudioSource audioSource;
     GameObject BlockGameObject;
@@ -23,12 +23,12 @@ public class BombScript : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         timer = explosionDelay;
         chunkSize = HelperClass.chunkSize; // Инициализируем chunkSize здесь
-        Initialize(ProceduralGeneration.map, HelperClass.Chunks);
+        //Initialize(ProceduralGeneration.map, HelperClass.Chunks);
 
         BlockGameObject = (GameObject)Resources.Load($"Public Elements/Prefabs/Inventory/Item");
     }
 
-    public void Initialize(int[,] mapData, Tilemap[] chunks)
+    public void Initialize(int[,] mapData, Tilemap[,] chunks)
     {
         if (mapData == null)
         {
@@ -47,11 +47,11 @@ public class BombScript : MonoBehaviour
         //Debug.Log("Initialize called: tileMapData=" + tileMapData);
         chunkSize = HelperClass.chunkSize; // Инициализируем chunkSize здесь
 
-        Debug.Log("Number of chunks: " + chunks.Length);
-        for (int i = 0; i < chunks.Length; i++)
-        {
-            Debug.Log("Chunk " + i + ": position = " + chunks[i].transform.position + ", cellBounds.center = " + chunks[i].cellBounds.center);
-        }
+        //Debug.Log("Number of chunks: " + chunks.Length);
+        //for (int i = 0; i < chunks.GetLength(0); i++)
+        //{
+        //    Debug.Log("Chunk " + i + ": position = " + chunks[i].transform.position + ", cellBounds.center = " + chunks[i].cellBounds.center);
+        //}
 
         StartCoroutine(ExplodeAfterDelay());
     }
@@ -112,6 +112,9 @@ public class BombScript : MonoBehaviour
     {
         // Получаем координаты чанка
 
+        int chunkCoordX = ChunkHelper.GetChunkXCoordinate((int)worldPosition.x);
+        int chunkCoordY = ChunkHelper.GetChunkYCoordinate((int)worldPosition.y);
+
         int chunkX = HelperClass.chunkSize;
         chunkX = Mathf.FloorToInt(worldPosition.x / (float)chunkSize);
 
@@ -119,7 +122,7 @@ public class BombScript : MonoBehaviour
         chunkY = Mathf.FloorToInt(worldPosition.y / (float)chunkSize);
 
         // Получаем локальную позицию тайла внутри чанка
-        Vector3Int localTilePosition = HelperClass.Chunks[chunkX].WorldToCell(worldPosition);
+        Vector3Int localTilePosition = HelperClass.Chunks[chunkCoordX, chunkCoordY].WorldToCell(worldPosition);
 
         //Вычисляем глобальную позицию тайла на карте
         int globalX = chunkX * chunkSize + localTilePosition.x;
@@ -130,52 +133,34 @@ public class BombScript : MonoBehaviour
 
         // Удаляем тайл
         //ProceduralGeneration.map[globalX, globalY] = 0;
-        HelperClass.Chunks[chunkX].SetTile(localTilePosition, null);
+        HelperClass.Chunks[chunkCoordX, chunkCoordY].SetTile(localTilePosition, null);
         int x = (int)worldPosition.x;
         int y = (int)worldPosition.y;
 
-        int blockId = BlocksData.allBlocks[ProceduralGeneration.map[x, y]].blockIndex;                 // Получаем айди блока
+        //int blockId = BlocksData.allBlocks[ProceduralGeneration.map[x, y]].blockIndex;                 // Получаем айди блока
         
-        // Проверка что это не блок света
-        if (blockId != 4 && blockId != 0)
-        {
-            Debug.Log(blockId);
-            // Цикл для создания всех выпадающих предметов с блока
-            foreach (int drop in BlocksData.allBlocks.Where(x => x.blockIndex == blockId).FirstOrDefault().dropId)
-            {
-                Vector3 newpos = new Vector3(x + 0.5f, y + 0.5f);
-                AllItemsAndBlocks currentDrop = BlocksData.allBlocks.Where(x => x.blockIndex == drop).FirstOrDefault();
-                Debug.Log(currentDrop.name);
-                GameObject newBlock = Instantiate(BlockGameObject, newpos, Quaternion.identity);
-                newBlock.name = currentDrop.blockIndex.ToString();
-                Sprite sprite = null;
-                // Получение его текстуры, если она есть
+        //// Проверка что это не блок света
+        //if (blockId != 4 && blockId != 0)
+        //{
+        //    Debug.Log(blockId);
+        //    ProceduralGeneration.map[x, y] = 0;
+        //    // Цикл для создания всех выпадающих предметов с блока
+        //    foreach (int drop in BlocksData.allBlocks.Where(x => x.blockIndex == blockId).FirstOrDefault().dropId)
+        //    {
+        //        Vector3 newpos = new Vector3(x + 0.5f, y + 0.5f);
+        //        AllItemsAndBlocks currentDrop = BlocksData.allBlocks.Where(x => x.blockIndex == drop).FirstOrDefault();
+        //        Debug.Log(currentDrop.name);
+        //        GameObject newBlock = Instantiate(BlockGameObject, newpos, Quaternion.identity);
+        //        newBlock.name = currentDrop.blockIndex.ToString();
+        //        Sprite sprite = null;
+        //        // Получение его текстуры, если она есть
 
-                //// Загружаем изображение из файла
-                //float pixelsPerUnit = 16;
+        //        Sprite newSprite = (Sprite)Resources.Load(currentDrop.imagePath, typeof(Sprite));
 
-                //byte[] imageData = File.ReadAllBytes(currentDrop.imagePath);
-                //Texture2D texture = new Texture2D(16, 16);
-                //texture.LoadImage(imageData); // ��������� ������ ����������� � ��������
-                //texture.filterMode = FilterMode.Point;
-
-                //// ������������ ������� ������� � ������ pixelsPerUnit
-                //float width = texture.width / 16;
-                //float height = texture.height / 16;
-
-                //// �������� ������� �� ��������
-                //Sprite newSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
-                Sprite newSprite = (Sprite)Resources.Load(currentDrop.imagePath, typeof(Sprite));
-
-                newBlock.GetComponent<SpriteRenderer>().sprite = (Sprite)Resources.Load(currentDrop.imagePath, typeof(Sprite));
-
-                //ParticleSystem newParticles = Instantiate(destroyParticles, newpos, Quaternion.identity);
-                //newParticles.gameObject.SetActive(true);
-                //Material destroyMaterial = newParticles.GetComponent<ParticleSystemRenderer>().material;
-                //destroyMaterial.mainTexture = texture;
-            }
-            // Конец цикла
-        }
+        //        newBlock.GetComponent<SpriteRenderer>().sprite = (Sprite)Resources.Load(currentDrop.imagePath, typeof(Sprite));
+        //    }
+        //    // Конец цикла
+        //}
 
     }
 }

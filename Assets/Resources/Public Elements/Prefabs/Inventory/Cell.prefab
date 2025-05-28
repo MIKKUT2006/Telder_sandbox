@@ -16,7 +16,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!224 &4924444104299124311
 RectTransform:
@@ -157,7 +157,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!224 &1858132337939176447
 RectTransform:
@@ -328,18 +328,23 @@ MonoBehaviour:
       description: 
       blocksSolidity: 0
       isBlock: 0
-      drop: []
+      needsToolType: 0
       dropId: 
       dropCount: 0
-      damage: 0
       stackable: 0
       maxStack: 0
       count: 0
       startDurable: 0
       durable: 0
       toolType: 0
+      toolPower: 0
+      damage: 0
+      prefab: {fileID: 0}
+      isObject: 0
       imagePath: 
     ingredients: []
+  ingredientPanel: {fileID: 0}
+  ingredientPrefab: {fileID: 0}
   ingredientText: {fileID: 0}
   recipeItemName: {fileID: 0}
 --- !u!95 &650065533543948955
@@ -380,7 +385,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!224 &7015190662133360623
 RectTransform:
@@ -423,7 +428,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:

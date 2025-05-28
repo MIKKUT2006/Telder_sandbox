@@ -3,37 +3,36 @@ using UnityEngine;
 
 public class Parallax : MonoBehaviour
 {
-    private float _startingPos; //This is starting position of the sprites.
-    private float _lengthOfSprite;    //This is the length of the sprites.
-    public float AmountOfParallax;  //This is amount of parallax scroll. 
-    public float zPosition;  //This is amount of parallax scroll. 
-    public Camera MainCamera;   //Reference of the camera.
+    [SerializeField] private Transform cameraTransform;
+    [SerializeField, Range(0f, 1f)] private float horizontalParallaxMultiplier = 0.2f;
+    [SerializeField, Range(0f, 1f)] private float verticalParallaxMultiplier = 0.2f;
+
+    private Vector2 spriteHalfSizeWorld;
 
     private void Start()
     {
-        //Getting the starting X position of sprite.
-        _startingPos = transform.position.x;
-        //Getting the length of the sprites.
-        _lengthOfSprite = GetComponent<SpriteRenderer>().bounds.size.x;
+        if (cameraTransform == null)
+            cameraTransform = Camera.main.transform;
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        spriteHalfSizeWorld = sr.bounds.size / 2f;
     }
 
     private void FixedUpdate()
     {
-        Vector3 Position = MainCamera.transform.position;
-        float Temp = Position.x * (1 - AmountOfParallax);
-        float Distance = Position.x * AmountOfParallax;
+        Vector3 camPos = new Vector3(cameraTransform.position.x, cameraTransform.position.y, 0);
+        Vector3 camSize = new Vector3(
+            Camera.main.orthographicSize * Camera.main.aspect,
+            Camera.main.orthographicSize,
+            0f
+        );
 
-        Vector3 NewPosition = new Vector3(_startingPos + Distance, MainCamera.transform.position.y, zPosition);
+        Vector3 offset = new Vector3(
+            Mathf.Clamp(camPos.x * horizontalParallaxMultiplier, -spriteHalfSizeWorld.x + camSize.x, spriteHalfSizeWorld.x - camSize.x),
+            Mathf.Clamp(camPos.y * verticalParallaxMultiplier, -spriteHalfSizeWorld.y + camSize.y, spriteHalfSizeWorld.y - camSize.y),
+            0f
+        );
 
-        transform.position = NewPosition;
-
-        if (Temp > _startingPos + (_lengthOfSprite / 2))
-        {
-            _startingPos += _lengthOfSprite;
-        }
-        else if (Temp < _startingPos - (_lengthOfSprite / 2))
-        {
-            _startingPos -= _lengthOfSprite;
-        }
+        transform.position = camPos + offset;
     }
 }

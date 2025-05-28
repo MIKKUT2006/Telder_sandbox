@@ -42,7 +42,7 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(11, "Снег", 3, true, 100, $"{firstWorldBlocks}Snow", 3),   
          new AllItemsAndBlocks(12, "Листва", 2, true, 100, $"{firstWorldBlocks}Leaves", 0),
          // Предметы верхнего мира
-         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным", $"Tools/GrassPickaxe", 1, 2, 3),
+         new AllItemsAndBlocks(13, "Кирка древних", "Эта кирка принадлежит древним путешественникам по вселенным", $"Tools/GrassPickaxe", 1, 2, 30),
          new AllItemsAndBlocks(14, "Кусок железа", "Грубый кусок металла", $"{firstWorldBlocks}Ores/Iron"),
          // Объекты
          new AllItemsAndBlocks(15, "Сосновая древесина", 3, true, 100, $"{firstWorldBlocks}Trees/PinePlanks", 3),
@@ -51,7 +51,7 @@ public class BlocksData : MonoBehaviour
          new AllItemsAndBlocks(18, "Кусок угля", "Выглядит горючим", $"{firstWorldBlocks}Ores/Coal"),
          new AllItemsAndBlocks(19, "Факел", "Источает свет", $"{firstWorldBlocks}Furniture/torch", 0, torchPrefab, true),
          new AllItemsAndBlocks(20, "Бомба", "Делает БУМ", $"Prefabs/Projectiles/Bomb/Bomb", 0, bombprefab, true),
-         new AllItemsAndBlocks(21, "Меч древних", "На нём нарисованы символы", $"Tools/GrassSword", 4, 10, 0),
+         new AllItemsAndBlocks(21, "Меч древних", "На нём нарисованы символы", $"Tools/GrassSword", 4, 9, 0),
          new AllItemsAndBlocks(22, "Топор древних", "ЧОП ЧОП ЧОП", $"Tools/ElderAxe", 2, 3, 3),
          new AllItemsAndBlocks(23, "Палка", "Обычная палка", $"Items/Coal"),
     };
