@@ -1,171 +1,171 @@
-using Game.Blocks;
-using Game.Content;
-using System.Collections.Generic;
-using UnityEngine;
+//using Game.Blocks;
+//using Game.Content;
+//using System.Collections.Generic;
+//using UnityEngine;
 
 
-namespace Game.World.Collision
-{
+//namespace Game.World.Collision
+//{
 
-    public class ChunkColliderBuilder
-    {
+//    public class ChunkColliderBuilder
+//    {
 
-        public void Build(
-            Chunk chunk,
-            GameObject chunkObject
-        )
-        {
+//        public void Build(
+//            Chunk chunk,
+//            GameObject chunkObject
+//        )
+//        {
 
-            EdgeCollider2D collider =
-                chunkObject.GetComponent<EdgeCollider2D>();
-
-
-            if (
-                collider == null
-            )
-            {
-
-                collider =
-                    chunkObject.AddComponent<EdgeCollider2D>();
-
-            }
+//            EdgeCollider2D collider =
+//                chunkObject.GetComponent<EdgeCollider2D>();
 
 
-            List<Vector2> points =
-                new List<Vector2>();
+//            if (
+//                collider == null
+//            )
+//            {
+
+//                collider =
+//                    chunkObject.AddComponent<EdgeCollider2D>();
+
+//            }
 
 
-            for (
-                int x = 0;
-                x < Chunk.SizeX;
-                x++
-            )
-            {
-
-                int surfaceY =
-                    FindSurfaceY(
-                        chunk,
-                        x
-                    );
+//            List<Vector2> points =
+//                new List<Vector2>();
 
 
-                if (
-                    surfaceY < 0
-                )
-                {
+//            for (
+//                int x = 0;
+//                x < Chunk.SizeX;
+//                x++
+//            )
+//            {
 
-                    continue;
-
-                }
-
-
-                points.Add(
-                    new Vector2(
-                        x,
-                        surfaceY
-                    )
-                );
-
-            }
+//                int surfaceY =
+//                    FindSurfaceY(
+//                        chunk,
+//                        x
+//                    );
 
 
-            if (
-                points.Count < 2
-            )
-            {
+//                if (
+//                    surfaceY < 0
+//                )
+//                {
 
-                collider.enabled =
-                    false;
+//                    continue;
 
-                return;
-
-            }
+//                }
 
 
-            collider.enabled =
-                true;
+//                points.Add(
+//                    new Vector2(
+//                        x,
+//                        surfaceY
+//                    )
+//                );
+
+//            }
 
 
-            collider.points =
-                points.ToArray();
+//            if (
+//                points.Count < 2
+//            )
+//            {
 
-        }
+//                collider.enabled =
+//                    false;
 
+//                return;
 
-        private int FindSurfaceY(
-            Chunk chunk,
-            int x
-        )
-        {
-
-            for (
-                int y = Chunk.SizeY - 1;
-                y >= 0;
-                y--
-            )
-            {
-
-                ushort blockID =
-                    chunk.GetBlock(
-                        x,
-                        y
-                    );
+//            }
 
 
-                if (
-                    blockID == 0
-                )
-                {
-
-                    continue;
-
-                }
+//            collider.enabled =
+//                true;
 
 
-                if (
-                    !BlockDatabase.Contains(
-                        blockID
-                    )
-                )
-                {
+//            collider.points =
+//                points.ToArray();
 
-                    continue;
-
-                }
+//        }
 
 
-                BlockDefinition block =
-                    BlockDatabase.Get(
-                        blockID
-                    );
+//        private int FindSurfaceY(
+//            Chunk chunk,
+//            int x
+//        )
+//        {
+
+//            for (
+//                int y = Chunk.SizeY - 1;
+//                y >= 0;
+//                y--
+//            )
+//            {
+
+//                ushort blockID =
+//                    chunk.GetBlock(
+//                        x,
+//                        y
+//                    );
 
 
-                if (
-                    block == null
-                )
-                {
+//                if (
+//                    blockID == 0
+//                )
+//                {
 
-                    continue;
+//                    continue;
 
-                }
-
-
-                if (
-                    block.Solid
-                )
-                {
-
-                    return y;
-
-                }
-
-            }
+//                }
 
 
-            return -1;
+//                if (
+//                    !BlockDatabase.Contains(
+//                        blockID
+//                    )
+//                )
+//                {
 
-        }
+//                    continue;
 
-    }
+//                }
 
-}
+
+//                BlockDefinition block =
+//                    BlockDatabase.Get(
+//                        blockID
+//                    );
+
+
+//                if (
+//                    block == null
+//                )
+//                {
+
+//                    continue;
+
+//                }
+
+
+//                if (
+//                    block.Solid
+//                )
+//                {
+
+//                    return y;
+
+//                }
+
+//            }
+
+
+//            return -1;
+
+//        }
+
+//    }
+
+//}

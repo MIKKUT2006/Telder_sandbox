@@ -1,18 +1,19 @@
+
 using UnityEngine;
 
 using Game.Content;
 using Game.World.Generation;
 using Game.World.Loading;
 using Game.World.Rendering;
+using Game.World.Collision;
+using Game.World.Modification;
 
 
 namespace Game.World
 {
-
     public class WorldManager :
         MonoBehaviour
     {
-
         public static WorldManager Instance;
 
 
@@ -20,13 +21,17 @@ namespace Game.World
 
         private WorldSettings settings;
 
+        private WorldCollision worldCollision;
+
+        private ChunkCollision chunkCollision;
+
         private WorldGenerator generator;
 
         private ChunkLoader loader;
 
         private ChunkRenderer renderer;
 
-
+        private BlockModificationService blockModification;
         // =====================================================
         // UNITY
         // =====================================================
@@ -35,21 +40,48 @@ namespace Game.World
         {
             Instance =
                 this;
-        }
 
 
-        private void Start()
-        {
+            // =============================================
+            // CONTENT
+            // =============================================
+
             ContentManager.Initialize();
 
+
+            // =============================================
+            // WORLD SETTINGS
+            // =============================================
 
             settings =
                 new WorldSettings();
 
 
+            // =============================================
+            // WORLD
+            // =============================================
+
             world =
                 new World();
 
+
+            // =============================================
+            // WORLD COLLISION
+            // =============================================
+
+            worldCollision =
+                new WorldCollision(
+                    world
+                );
+
+            chunkCollision =
+    new ChunkCollision(
+        worldCollision
+    );
+
+            // =============================================
+            // WORLD GENERATOR
+            // =============================================
 
             generator =
                 new WorldGenerator(
@@ -60,24 +92,32 @@ namespace Game.World
             generator.ReloadOres();
 
 
+            // =============================================
+            // RENDERER
+            // =============================================
+
             renderer =
                 new ChunkRenderer();
 
-
-            loader =
-                new ChunkLoader(
-                    world,
-                    generator,
-                    settings,
-                    renderer
-                );
+            
 
 
-            // Первичная генерация
-            loader.Update(
-                0,
-                0
-            );
+            // =============================================
+            // CHUNK LOADER
+            // =============================================
+
+            loader = new ChunkLoader(world,generator,settings,renderer,chunkCollision);
+
+            blockModification = new BlockModificationService(world,renderer,chunkCollision);
+
+            loader.Update(0,0);
+        }
+
+
+        private void Start()
+        {
+            // Первичная генерация мира
+            LoadStartChunks();
         }
 
 
@@ -85,15 +125,14 @@ namespace Game.World
         // INITIAL WORLD
         // =====================================================
 
-        private void LoadStartChunk()
+        private void LoadStartChunks()
         {
-
             if (
                 loader == null
             )
             {
                 Debug.LogError(
-                    "CHUNK LOADER IS NULL"
+                    "WORLD MANAGER: CHUNK LOADER IS NULL."
                 );
 
                 return;
@@ -104,53 +143,26 @@ namespace Game.World
                 0,
                 0
             );
-
         }
 
 
         // =====================================================
-        // GETTERS
+        // PLAYER CHUNK UPDATE
         // =====================================================
 
-        public ChunkLoader GetLoader()
-        {
-
-            return loader;
-
-        }
-
-
-        public World GetWorld()
-        {
-
-            return world;
-
-        }
-
-
-        public WorldSettings GetSettings()
-        {
-
-            return settings;
-
-        }
-
-
-        public WorldGenerator GetGenerator()
-        {
-
-            return generator;
-
-        }
         public void UpdatePlayerChunk(
-    int currentChunkX,
-    int currentChunkY
-)
+            int currentChunkX,
+            int currentChunkY
+        )
         {
             if (
                 loader == null
             )
             {
+                Debug.LogError(
+                    "WORLD MANAGER: CHUNK LOADER IS NULL."
+                );
+
                 return;
             }
 
@@ -160,13 +172,63 @@ namespace Game.World
                 currentChunkY
             );
         }
+
+
+        // =====================================================
+        // GETTERS
+        // =====================================================
+
+        public ChunkLoader GetLoader()
+        {
+            return loader;
+        }
+
+
+        public World GetWorld()
+        {
+            return world;
+        }
+
+
+        public WorldSettings GetSettings()
+        {
+            return settings;
+        }
+
+
+        public WorldGenerator GetGenerator()
+        {
+            return generator;
+        }
+
+
+        public WorldCollision GetWorldCollision()
+        {
+            return worldCollision;
+        }
+
+
+        // =====================================================
+        // READY
+        // =====================================================
+
         public bool IsReady
         {
             get
             {
-                return loader != null;
+                return
+                    world != null &&
+                    settings != null &&
+                    generator != null &&
+                    renderer != null &&
+                    worldCollision != null &&
+                    loader != null;
             }
         }
+        public BlockModificationService GetBlockModification()
+        {
+            return blockModification;
+        }
     }
-
 }
+

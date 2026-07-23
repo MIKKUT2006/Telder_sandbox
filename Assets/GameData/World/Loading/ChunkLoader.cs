@@ -1,8 +1,9 @@
-using System.Collections.Generic;
-using UnityEngine;
+using Game.World.Collision;
 using Game.World.Generation;
 using Game.World.Rendering;
-
+using System.Collections.Generic;
+using UnityEngine;
+using Game.World.Collision;
 
 namespace Game.World.Loading
 {
@@ -11,6 +12,8 @@ namespace Game.World.Loading
     {
 
         private readonly World world;
+
+        private readonly ChunkCollision collision;
 
         private readonly WorldGenerator generator;
 
@@ -24,13 +27,13 @@ namespace Game.World.Loading
 
 
         public ChunkLoader(
-            World world,
-            WorldGenerator generator,
-            WorldSettings settings,
-            ChunkRenderer renderer
-        )
+    World world,
+    WorldGenerator generator,
+    WorldSettings settings,
+    ChunkRenderer renderer,
+    ChunkCollision collision
+)
         {
-
             this.world =
                 world;
 
@@ -43,6 +46,8 @@ namespace Game.World.Loading
             this.renderer =
                 renderer;
 
+            this.collision =
+                collision;
         }
 
 
@@ -112,12 +117,11 @@ namespace Game.World.Loading
                         continue;
                     }
 
-
                     Chunk chunk =
-                        world.CreateChunk(
-                            chunkX,
-                            chunkY
-                        );
+    world.CreateChunk(
+        chunkX,
+        chunkY
+    );
 
 
                     generator.GenerateChunk(
@@ -128,6 +132,9 @@ namespace Game.World.Loading
                     renderer.Render(
                         chunk
                     );
+
+
+                    collision.BuildChunkCollision(chunk);
 
 
                     loadedChunks.Add(
@@ -200,6 +207,11 @@ namespace Game.World.Loading
                     position.y
                 );
 
+
+                collision.RemoveChunkCollision(
+                    position.x,
+                    position.y
+                );
 
                 world.RemoveChunk(
                     position.x,

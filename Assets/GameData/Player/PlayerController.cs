@@ -1,93 +1,195 @@
-using UnityEngine;
 using Game.World;
-using Game.World.Loading;
+using Game.World.Collision;
+
+using UnityEngine;
 
 
-public class PlayerController : MonoBehaviour
+public class PlayerController :
+    MonoBehaviour
 {
 
     [Header("Movement")]
 
     [SerializeField]
-    private float moveSpeed = 5f;
+    private float moveSpeed =
+        5f;
 
 
     [SerializeField]
-    private float jumpForce = 8f;
+    private float jumpForce =
+        8f;
 
 
-    [Header("Ground Check")]
-
-    [SerializeField]
-    private Transform groundCheck;
-
+    [Header("Gravity")]
 
     [SerializeField]
-    private float groundCheckRadius = 0.2f;
+    private float gravity =
+        25f;
 
 
     [SerializeField]
-    private LayerMask groundLayer;
+    private float maxFallSpeed =
+        20f;
 
 
-    private Rigidbody2D rb;
+    [Header("Collision")]
 
-    private ChunkLoader chunkLoader;
+    [SerializeField]
+    private PlayerCollision playerCollision;
 
-    private int currentChunkX;
 
-    private int currentChunkY;
+    private float verticalVelocity;
 
+
+    private WorldManager worldManager;
+
+
+    // =====================================================
+    // AWAKE
+    // =====================================================
 
     private void Awake()
     {
 
-        rb =
-            GetComponent<Rigidbody2D>();
+        // Сначала пытаемся найти
+        // PlayerCollision на этом же объекте.
+
+        if (
+            playerCollision == null
+        )
+        {
+
+            playerCollision =
+                GetComponent<
+                    PlayerCollision
+                >();
+
+        }
+
+
+        // Если не нашли —
+        // ищем среди дочерних объектов.
+
+        if (
+            playerCollision == null
+        )
+        {
+
+            playerCollision =
+                GetComponentInChildren<
+                    PlayerCollision
+                >();
+
+        }
+
+
+        // Последняя проверка.
+
+        if (
+            playerCollision == null
+        )
+        {
+
+            Debug.LogError(
+                "PLAYER: PlayerCollision component was not found. " +
+                "Add PlayerCollision to Player or one of its children."
+            );
+
+        }
 
     }
 
+
+    // =====================================================
+    // START
+    // =====================================================
 
     private void Start()
     {
 
-        WorldManager worldManager =
+        worldManager =
             WorldManager.Instance;
 
 
-        chunkLoader =
-            worldManager.GetLoader();
+        if (
+            worldManager == null
+        )
+        {
+
+            Debug.LogError(
+                "PLAYER: WorldManager is null."
+            );
 
 
-        UpdateCurrentChunk(
-            true
+            return;
+
+        }
+
+
+        if (
+            playerCollision == null
+        )
+        {
+
+            Debug.LogError(
+                "PLAYER: PlayerCollision is null."
+            );
+
+
+            return;
+
+        }
+
+
+        WorldCollision worldCollision =
+            worldManager.GetWorldCollision();
+
+
+        if (
+            worldCollision == null
+        )
+        {
+
+            Debug.LogError(
+                "PLAYER: WorldCollision is null."
+            );
+
+
+            return;
+
+        }
+
+
+        playerCollision.Initialize(
+            worldCollision
+        );
+
+
+        Debug.Log(
+            "PLAYER: PlayerCollision initialized successfully."
         );
 
     }
 
+
+    // =====================================================
+    // UPDATE
+    // =====================================================
 
     private void Update()
     {
 
-        HandleJump();
-
-        UpdateCurrentChunk(
-            false
-        );
-
-    }
-
-
-    private void FixedUpdate()
-    {
-
-        HandleMovement();
-
-    }
+        if (
+            playerCollision == null
+        )
+        {
+            return;
+        }
 
 
-    private void HandleMovement()
-    {
+        // =================================================
+        // HORIZONTAL
+        // =================================================
 
         float horizontal =
             Input.GetAxisRaw(
@@ -95,155 +197,90 @@ public class PlayerController : MonoBehaviour
             );
 
 
-        rb.linearVelocity =
-            new Vector2(
-                horizontal *
-                moveSpeed,
-
-                rb.linearVelocity.y
-            );
-
-    }
+        float horizontalMovement =
+            horizontal *
+            moveSpeed *
+            Time.deltaTime;
 
 
-    private void HandleJump()
-    {
+        // =================================================
+        // JUMP
+        // =================================================
 
         if (
-            !Input.GetKeyDown(
+            Input.GetKeyDown(
                 KeyCode.Space
             )
         )
         {
 
-            return;
+            if (
+                playerCollision.IsGrounded
+            )
+            {
+
+                verticalVelocity =
+                    jumpForce;
+
+            }
 
         }
+
+
+        // =================================================
+        // GRAVITY
+        // =================================================
+
+        verticalVelocity -=
+            gravity *
+            Time.deltaTime;
 
 
         if (
-            !IsGrounded()
+            verticalVelocity <
+            -maxFallSpeed
         )
         {
 
-            return;
+            verticalVelocity =
+                -maxFallSpeed;
 
         }
 
 
-        rb.linearVelocity =
+        // =================================================
+        // MOVEMENT
+        // =================================================
+
+        Vector2 movement =
             new Vector2(
-                rb.linearVelocity.x,
-
-                jumpForce
-            );
-
-    }
-
-
-    private bool IsGrounded()
-    {
-
-        if (
-            groundCheck == null
-        )
-        {
-
-            return false;
-
-        }
-
-
-        return Physics2D.OverlapCircle(
-            groundCheck.position,
-            groundCheckRadius,
-            groundLayer
-        );
-
-    }
-
-
-    private void UpdateCurrentChunk(
-        bool forceUpdate
-    )
-    {
-
-        int chunkX =
-            Mathf.FloorToInt(
-                transform.position.x /
-                Chunk.SizeX
+                horizontalMovement,
+                verticalVelocity *
+                Time.deltaTime
             );
 
 
-        int chunkY =
-            Mathf.FloorToInt(
-                transform.position.y /
-                Chunk.SizeY
-            );
-
-
-        if (
-            !forceUpdate &&
-            chunkX == currentChunkX &&
-            chunkY == currentChunkY
-        )
-        {
-
-            return;
-
-        }
-
-
-        currentChunkX =
-            chunkX;
-
-
-        currentChunkY =
-            chunkY;
-
-        if (
-    WorldManager.Instance == null
-)
-        {
-            return;
-        }
-
-
-        if (
-            !WorldManager.Instance.IsReady
-        )
-        {
-            return;
-        }
-
-
-        WorldManager.Instance.UpdatePlayerChunk(
-            currentChunkX,
-            currentChunkY
+        playerCollision.Move(
+            movement
         );
 
 
-    }
-
-
-    private void OnDrawGizmosSelected()
-    {
+        // =================================================
+        // RESET FALL SPEED
+        // =================================================
 
         if (
-            groundCheck == null
+            playerCollision.IsGrounded &&
+            verticalVelocity < 0f
         )
         {
 
-            return;
+            verticalVelocity =
+                0f;
 
         }
-
-
-        Gizmos.DrawWireSphere(
-            groundCheck.position,
-            groundCheckRadius
-        );
 
     }
 
 }
+

@@ -1,5 +1,3 @@
-using Game.Resources;
-using Game.World.Collision;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,15 +8,15 @@ namespace Game.World.Rendering
     public class ChunkRenderer
     {
 
-        private readonly ChunkColliderBuilder colliderBuilder;
+        //private readonly ChunkColliderBuilder colliderBuilder;
         private readonly Dictionary<Vector2Int, GameObject> chunkObjects =
             new Dictionary<Vector2Int, GameObject>();
 
         public ChunkRenderer()
         {
 
-            colliderBuilder =
-                new ChunkColliderBuilder();
+            //colliderBuilder =
+            //    new ChunkColliderBuilder();
 
         }
         public void Render(
@@ -54,11 +52,11 @@ namespace Game.World.Rendering
                 );
 
 
-                // Обновляем коллизию
-                colliderBuilder.Build(
-                    chunk,
-                    existingChunkObject
-                );
+                //// Обновляем коллизию
+                //colliderBuilder.Build(
+                //    chunk,
+                //    existingChunkObject
+                //);
 
 
                 return;
@@ -126,11 +124,11 @@ namespace Game.World.Rendering
             );
 
 
-            // Создаём коллизию
-            colliderBuilder.Build(
-                chunk,
-                chunkObject
-            );
+            //// Создаём коллизию
+            //colliderBuilder.Build(
+            //    chunk,
+            //    chunkObject
+            //);
 
         }
 
@@ -196,23 +194,23 @@ namespace Game.World.Rendering
 
 
             Sprite sprite =
-                Sprite.Create(
-                    texture,
+    Sprite.Create(
+        texture,
 
-                    new Rect(
-                        0,
-                        0,
-                        texture.width,
-                        texture.height
-                    ),
+        new Rect(
+            0,
+            0,
+            texture.width,
+            texture.height
+        ),
 
-                    new Vector2(
-                        0.5f,
-                        0.5f
-                    ),
+        new Vector2(
+            0f,
+            0f
+        ),
 
-                    BlockRenderer.BlockPixelSize
-                );
+        BlockRenderer.BlockPixelSize
+    );
 
 
             renderer.sprite =
