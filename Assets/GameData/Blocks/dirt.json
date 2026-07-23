@@ -1,0 +1,11 @@
+{
+  "ID": "game:dirt",
+
+  "Name": "Dirt",
+
+  "Texture": "dirt",
+
+  "Hardness": 1,
+
+  "Solid": true
+}

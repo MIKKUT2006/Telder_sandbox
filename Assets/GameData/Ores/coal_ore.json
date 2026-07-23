@@ -1,0 +1,8 @@
+{
+  "ID": "game:coal_ore",
+  "MinDepth": 5,
+  "MaxDepth": 100,
+  "Rarity": 0.40,
+  "VeinSize": 7,
+  "MinVeinSize": 3
+}

@@ -103,7 +103,6 @@ public class BlockCreateDestroy : MonoBehaviour
                 // Позиция курсора
                 Vector2 Tilepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 Tilepos = CursorGameObject.transform.position;
-                //Debug.Log(CursorGameObject.transform.position);
 
                 int x = (int)Tilepos.x;
                 int y = (int)Tilepos.y;

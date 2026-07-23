@@ -1,0 +1,11 @@
+{
+  "ID": "game:stone",
+
+  "Name": "Stone",
+
+  "Texture": "stone",
+
+  "Hardness": 3,
+
+  "Solid": true
+}

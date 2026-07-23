@@ -1,0 +1,13 @@
+{
+  "ID": "game:iron_ore",
+  "Name": "Iron Ore",
+  "Texture": "iron_ore",
+  "Hardness": 3.0,
+  "ExplosionResistance": 3.0,
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+  "LightLevel": 0,
+  "DropCount": 1,
+  "Tags": []
+}

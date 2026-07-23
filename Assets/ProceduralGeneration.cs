@@ -1568,31 +1568,9 @@ public class ProceduralGeneration : MonoBehaviour
 
         var biome = GetBiomeAt(gx);
 
-        int terrainHeight = Mathf.RoundToInt(Mathf.PerlinNoise(gx / instance.smoothes / 2f, instance.worldSeed + 5000) * 100f) + 50;
+        int terrainHeight = Mathf.RoundToInt(Mathf.PerlinNoise(gx / instance.smoothes / 2f, instance.worldSeed) * 100f) + 50;
         int stoneHeight = Mathf.RoundToInt(Mathf.PerlinNoise(gx / instance.stonesmothes / 0.5f, instance.worldSeed * 3) * 100f) + 33;
 
-        if (gy < stoneHeight + 5)
-        {
-            bgTile = 3;
-            float oreIron = Mathf.PerlinNoise((gx + instance.worldSeed / 2f) / instance.ironOre, (gy + instance.worldSeed / 2f) / instance.ironOre);
-            if (oreIron > 0.8f && biome == HelperClass.Biomes.Forest)
-                return 6;
-
-            float oreCoal = Mathf.PerlinNoise((gx + instance.worldSeed / 4f) / instance.coalOre, (gy + instance.worldSeed / 4f) / instance.coalOre);
-            if (oreCoal > 0.8f)
-                return 17;
-
-            float oreTeleportium = Mathf.PerlinNoise((gx + instance.worldSeed) / instance.teleportiumOre / 0.9f, (gy + instance.worldSeed) / instance.teleportiumOre / 0.9f);
-            if (oreTeleportium > 0.87f && biome == HelperClass.Biomes.Crystal)
-                return 7;
-
-            float moss = Mathf.PerlinNoise((gx + 42) / 12f, (gy + 42) / 10f);
-            if (gy > stoneHeight && moss > 0.15f && moss < 0.2f)
-            {
-                bgTile = 12;
-                return 4;
-            }
-        }
 
         float cave = Mathf.PerlinNoise((gx + instance.worldSeed) / instance.cavessmothes, (gy + instance.worldSeed) / instance.cavessmothes);
         if (gy < terrainHeight)
@@ -1602,38 +1580,78 @@ public class ProceduralGeneration : MonoBehaviour
                 bgTile = 3;
             else bgTile = 1;
 
-            if (cave < 0.4f)
+            if (cave < 0.3f)
             {
                 return 4;
             }
+            // Создание блоков не пещер
             else
             {
-
+                // Каменный слой
                 if (gy < stoneHeight)
                 {
                     bgTile = 3;
+
+                    // Установка руд
+                    float oreIron = Mathf.PerlinNoise((gx + instance.worldSeed / 2f) / instance.ironOre, (gy + instance.worldSeed / 2f) / instance.ironOre);
+                    if (oreIron > 0.8f && biome == HelperClass.Biomes.Forest)
+                        return 6;
+                    float oreCoal = Mathf.PerlinNoise((gx + instance.worldSeed / 4f) / instance.coalOre, (gy + instance.worldSeed / 4f) / instance.coalOre);
+                    if (oreCoal > 0.8f)
+                        return 17;
+
+                    float oreTeleportium = Mathf.PerlinNoise((gx + instance.worldSeed) / instance.teleportiumOre / 0.9f, (gy + instance.worldSeed) / instance.teleportiumOre / 0.9f);
+                    if (oreTeleportium > 0.87f && biome == HelperClass.Biomes.Crystal)
+                        return 7;
+
+                    float moss = Mathf.PerlinNoise((gx + 42) / 12f, (gy + 42) / 10f);
+                    if (gy > stoneHeight && moss > 0.15f && moss < 0.2f)
+                    {
+                        bgTile = 12;
+                        return 4;
+                    }
+                    // Установка камня
                     return GetStoneBlock(biome);
                 }
-
+                // Слой земли
                 if (gy < terrainHeight - 1)
                 {
                     bgTile = 1;
                     return GetDirtBlock(biome);
                 }
-
+                // Слой травы
                 if (gy == terrainHeight - 1)
                 {
                     bgTile = 2;
                     return GetSurfaceBlock(biome);
                 }
+
+
             }
         }
-        
 
-        
+        //if (gy < stoneHeight)
+        //{
+        //        bgTile = 3;
+        //        float oreIron = Mathf.PerlinNoise((gx + instance.worldSeed / 2f) / instance.ironOre, (gy + instance.worldSeed / 2f) / instance.ironOre);
+        //        if (oreIron > 0.8f && biome == HelperClass.Biomes.Forest)
+        //            return 6;
 
-        
+        //        float oreCoal = Mathf.PerlinNoise((gx + instance.worldSeed / 4f) / instance.coalOre, (gy + instance.worldSeed / 4f) / instance.coalOre);
+        //        if (oreCoal > 0.8f)
+        //            return 17;
 
+        //        float oreTeleportium = Mathf.PerlinNoise((gx + instance.worldSeed) / instance.teleportiumOre / 0.9f, (gy + instance.worldSeed) / instance.teleportiumOre / 0.9f);
+        //        if (oreTeleportium > 0.87f && biome == HelperClass.Biomes.Crystal)
+        //            return 7;
+
+        //        float moss = Mathf.PerlinNoise((gx + 42) / 12f, (gy + 42) / 10f);
+        //        if (gy > stoneHeight && moss > 0.15f && moss < 0.2f)
+        //        {
+        //            bgTile = 12;
+        //            return 4;
+        //        }
+        //}
         return 0;
     }
 

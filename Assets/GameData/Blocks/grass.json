@@ -1,0 +1,21 @@
+{
+  "ID": "game:grass",
+  "Name": "Grass",
+  "Texture": "grass",
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+  "LightLevel": 0,
+  "Material": 0,
+  "Drop": "game:dirt",
+  "DropCount": 1,
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+  "Tags": [
+    "grass",
+    "dirt"
+  ]
+}

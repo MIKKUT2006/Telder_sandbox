@@ -1,0 +1,8 @@
+{
+  "ID": "game:teleportium_ore",
+  "MinDepth": 30,
+  "MaxDepth": 70,
+  "Rarity": 0.05,
+  "VeinSize": 4,
+  "MinVeinSize": 1
+}

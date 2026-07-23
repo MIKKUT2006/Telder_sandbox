@@ -48,6 +48,7 @@ public class InputScript : MonoBehaviour
     private bool inventoryOpen = false;
     void Start()
     {
+        
         //gameObject.transform.position = new Vector3(HelperClass.worldWidth / 2, HelperClass.worldHeight, 0);
         rb = GetComponent<Rigidbody2D>();
         cellSize = tilemap.cellSize;
@@ -58,6 +59,7 @@ public class InputScript : MonoBehaviour
         HelperClass.AddItemToInventory(BlocksData.allBlocks[22]);
         HelperClass.AddItemToInventory(BlocksData.allBlocks[21]);
         HelperClass.AddItemToInventory(BlocksData.allBlocks[20]);
+        HelperClass.AddItemToInventory(BlocksData.allBlocks[15]);
 
         if (HelperClass.isNewGame == false)
         {
