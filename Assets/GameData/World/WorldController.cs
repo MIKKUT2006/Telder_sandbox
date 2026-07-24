@@ -1,101 +1,197 @@
 using UnityEngine;
-using Game.World.Loading;
 
 
 namespace Game.World
 {
 
-    public class WorldController : MonoBehaviour
+    public class WorldController :
+        MonoBehaviour
     {
 
+        // =====================================================
+        // PLAYER
+        // =====================================================
 
-        public Transform player;
+        [Header("Player")]
+
+        [SerializeField]
+        private Transform player;
 
 
-
-        private ChunkLoader loader;
-
+        // =====================================================
+        // STATE
+        // =====================================================
 
         private WorldManager worldManager;
 
 
-
-        private int lastChunkX;
-
-        private int lastChunkY;
+        private Vector2Int lastPlayerChunk;
 
 
+        private bool initialized;
+
+
+        // =====================================================
+        // START
+        // =====================================================
 
         private void Start()
         {
 
             worldManager =
-                FindObjectOfType<WorldManager>();
+                WorldManager.Instance;
 
 
-            loader =
-                worldManager.GetLoader();
+            if (
+                worldManager == null
+            )
+            {
+
+                Debug.LogError(
+                    "WORLD CONTROLLER: WorldManager is null."
+                );
+
+                enabled =
+                    false;
+
+                return;
+
+            }
 
 
+            if (
+                player == null
+            )
+            {
 
-            UpdateChunks();
+                Debug.LogError(
+                    "WORLD CONTROLLER: Player reference is null."
+                );
+
+                enabled =
+                    false;
+
+                return;
+
+            }
+
+
+            initialized =
+                false;
+
+
+            UpdatePlayerChunk(
+                true
+            );
 
         }
 
 
-
-
+        // =====================================================
+        // UPDATE
+        // =====================================================
 
         private void Update()
         {
 
-            UpdateChunks();
-
-        }
-
-
-
-
-
-        private void UpdateChunks()
-        {
-
-            int chunkX =
-                Mathf.FloorToInt(
-                    player.position.x / Chunk.SizeX
-                );
-
-
-            int chunkY =
-                Mathf.FloorToInt(
-                    player.position.y / Chunk.SizeY
-                );
-
-
-
             if (
-                chunkX == lastChunkX &&
-                chunkY == lastChunkY
+                worldManager == null
             )
             {
                 return;
             }
 
 
+            if (
+                player == null
+            )
+            {
+                return;
+            }
 
-            lastChunkX = chunkX;
 
-            lastChunkY = chunkY;
+            if (
+                !worldManager.IsReady
+            )
+            {
+                return;
+            }
 
 
-
-            loader.Update(
-                chunkX,
-                chunkY
+            UpdatePlayerChunk(
+                false
             );
 
         }
 
+
+        // =====================================================
+        // UPDATE PLAYER CHUNK
+        // =====================================================
+
+        private void UpdatePlayerChunk(
+            bool forceUpdate
+        )
+        {
+
+            int chunkX =
+                Mathf.FloorToInt(
+                    player.position.x /
+                    Chunk.SizeX
+                );
+
+
+            int chunkY =
+                Mathf.FloorToInt(
+                    player.position.y /
+                    Chunk.SizeY
+                );
+
+
+            Vector2Int currentChunk =
+                new Vector2Int(
+                    chunkX,
+                    chunkY
+                );
+
+
+            // =================================================
+            // CHECK SAME CHUNK
+            // =================================================
+
+            if (
+                !forceUpdate &&
+                initialized &&
+                currentChunk ==
+                lastPlayerChunk
+            )
+            {
+                return;
+            }
+
+
+            // =================================================
+            // SAVE
+            // =================================================
+
+            lastPlayerChunk =
+                currentChunk;
+
+
+            initialized =
+                true;
+
+
+            // =================================================
+            // SEND TO WORLD MANAGER
+            // =================================================
+
+            worldManager.UpdatePlayerChunk(
+                currentChunk.x,
+                currentChunk.y
+            );
+
+        }
 
     }
 

@@ -1,3 +1,4 @@
+
 using Game.Content;
 using Game.World.Generation.Ores;
 using UnityEngine;
@@ -20,6 +21,10 @@ namespace Game.World.Generation
 
         private readonly float detailOffset;
 
+
+        // =====================================================
+        // CONSTRUCTOR
+        // =====================================================
 
         public WorldGenerator(
             WorldSettings settings
@@ -50,7 +55,9 @@ namespace Game.World.Generation
                 settings.Seed *
                 0.98765f;
 
+
             oreGenerator.ReloadOres();
+
         }
 
 
@@ -70,10 +77,18 @@ namespace Game.World.Generation
         // CHUNK GENERATION
         // =====================================================
 
-        public void GenerateChunk(
-    Chunk chunk
-)
+        public ChunkData GenerateChunkData(
+            int chunkX,
+            int chunkY
+        )
         {
+
+            ChunkData data =
+                new ChunkData(
+                    chunkX,
+                    chunkY
+                );
+
 
             for (
                 int localX = 0;
@@ -84,34 +99,34 @@ namespace Game.World.Generation
 
                 for (
                     int localY = 0;
-                    localY < Chunk.SizeY;
-                    localY++
+                localY < Chunk.SizeY;
+                localY++
                 )
                 {
 
                     int worldX =
-                        chunk.X *
+                        chunkX *
                         Chunk.SizeX +
                         localX;
 
 
                     int worldY =
-                        chunk.Y *
+                        chunkY *
                         Chunk.SizeY +
                         localY;
 
 
-                    ushort block =
+                    ushort blockID =
                         GenerateBlock(
                             worldX,
                             worldY
                         );
 
 
-                    chunk.SetBlock(
+                    data.SetBlock(
                         localX,
                         localY,
-                        block
+                        blockID
                     );
 
                 }
@@ -119,7 +134,7 @@ namespace Game.World.Generation
             }
 
 
-            oreGenerator.PrintStatistics();
+            return data;
 
         }
 
@@ -129,14 +144,14 @@ namespace Game.World.Generation
         // =====================================================
 
         private ushort GenerateBlock(
-    int worldX,
-    int worldY
-)
+            int worldX,
+            int worldY
+        )
         {
 
-            // =====================================================
-            // œŒÀ”◊¿≈Ã ¬€—Œ“” œŒ¬≈–’ÕŒ—“»
-            // =====================================================
+            // =================================================
+            // SURFACE HEIGHT
+            // =================================================
 
             int surfaceHeight =
                 GetSurfaceHeight(
@@ -144,9 +159,9 @@ namespace Game.World.Generation
                 );
 
 
-            // =====================================================
-            // ¬Œ«ƒ”’ Õ¿ƒ œŒ¬≈–’ÕŒ—“‹ﬁ
-            // =====================================================
+            // =================================================
+            // AIR
+            // =================================================
 
             if (
                 worldY >
@@ -159,9 +174,9 @@ namespace Game.World.Generation
             }
 
 
-            // =====================================================
-            // “–¿¬¿
-            // =====================================================
+            // =================================================
+            // GRASS
+            // =================================================
 
             if (
                 worldY ==
@@ -176,13 +191,14 @@ namespace Game.World.Generation
             }
 
 
-            // =====================================================
-            // «≈ÃÀﬂ
-            // =====================================================
+            // =================================================
+            // DIRT
+            // =================================================
 
             if (
                 worldY >
-                surfaceHeight - 4
+                surfaceHeight -
+                4
             )
             {
 
@@ -193,16 +209,16 @@ namespace Game.World.Generation
             }
 
 
-            // =====================================================
-            // –”ƒ¿
-            // =====================================================
+            // =================================================
+            // ORES
+            // =================================================
 
             ushort ore =
-    oreGenerator.GetOre(
-        worldX,
-        worldY,
-        surfaceHeight
-    );
+                oreGenerator.GetOre(
+                    worldX,
+                    worldY,
+                    surfaceHeight
+                );
 
 
             if (
@@ -215,9 +231,9 @@ namespace Game.World.Generation
             }
 
 
-            // =====================================================
-            //  ¿Ã≈Õ‹
-            // =====================================================
+            // =================================================
+            // STONE
+            // =================================================
 
             return GetBlockID(
                 "game:stone"
@@ -276,6 +292,10 @@ namespace Game.World.Generation
         )
         {
 
+            // =================================================
+            // LARGE TERRAIN
+            // =================================================
+
             float largeTerrain =
                 Mathf.PerlinNoise(
                     (
@@ -283,9 +303,14 @@ namespace Game.World.Generation
                         terrainOffset
                     ) *
                     settings.HillScale,
+
                     0f
                 );
 
+
+            // =================================================
+            // HILLS
+            // =================================================
 
             float hills =
                 Mathf.PerlinNoise(
@@ -294,9 +319,14 @@ namespace Game.World.Generation
                         hillOffset
                     ) *
                     settings.TerrainScale,
+
                     0f
                 );
 
+
+            // =================================================
+            // DETAIL
+            // =================================================
 
             float detail =
                 Mathf.PerlinNoise(
@@ -305,13 +335,22 @@ namespace Game.World.Generation
                         detailOffset
                     ) *
                     settings.TerrainDetailScale,
+
                     0f
                 );
 
 
+            // =================================================
+            // BASE HEIGHT
+            // =================================================
+
             float height =
                 settings.SurfaceHeight;
 
+
+            // =================================================
+            // LARGE TERRAIN
+            // =================================================
 
             height +=
                 (
@@ -321,6 +360,10 @@ namespace Game.World.Generation
                 settings.HillHeight;
 
 
+            // =================================================
+            // HILLS
+            // =================================================
+
             height +=
                 (
                     hills -
@@ -328,6 +371,10 @@ namespace Game.World.Generation
                 ) *
                 settings.TerrainVariation;
 
+
+            // =================================================
+            // DETAIL
+            // =================================================
 
             height +=
                 (
@@ -347,3 +394,4 @@ namespace Game.World.Generation
     }
 
 }
+

@@ -4,26 +4,37 @@ namespace Game.World
     public class Chunk
     {
 
-        // Размер чанка по X
-        public const int SizeX = 32;
+        // =====================================================
+        // SIZE
+        // =====================================================
+
+        public const int SizeX =
+            32;
 
 
-        // Размер чанка по Y
-        public const int SizeY = 32;
+        public const int SizeY =
+            32;
 
 
+        // =====================================================
+        // POSITION
+        // =====================================================
 
-        // Координаты чанка в мире
         public int X;
 
         public int Y;
 
 
+        // =====================================================
+        // BLOCK STORAGE
+        // =====================================================
 
-        // Блоки внутри чанка
         private BlockStorage blocks;
 
 
+        // =====================================================
+        // CONSTRUCTOR
+        // =====================================================
 
         public Chunk(
             int x,
@@ -31,12 +42,19 @@ namespace Game.World
         )
         {
 
-            X = x;
+            X =
+                x;
 
-            Y = y;
+
+            Y =
+                y;
 
 
-            blocks = new BlockStorage(SizeX, SizeY);
+            blocks =
+                new BlockStorage(
+                    SizeX,
+                    SizeY
+                );
 
 
             Initialize();
@@ -44,26 +62,28 @@ namespace Game.World
         }
 
 
-
-
+        // =====================================================
+        // INITIALIZE
+        // =====================================================
 
         private void Initialize()
         {
 
-            ushort airID = 0;
-
-
             blocks.Fill(
-                airID
+                0
             );
 
         }
 
 
+        // =====================================================
+        // GET BLOCK
+        // =====================================================
 
-
-
-        public ushort GetBlock(int x, int y)
+        public ushort GetBlock(
+            int x,
+            int y
+        )
         {
 
             return blocks.Get(
@@ -74,10 +94,15 @@ namespace Game.World
         }
 
 
+        // =====================================================
+        // SET BLOCK
+        // =====================================================
 
-
-
-        public void SetBlock(int x,int y,ushort blockID)
+        public void SetBlock(
+            int x,
+            int y,
+            ushort blockID
+        )
         {
 
             blocks.Set(
@@ -88,6 +113,52 @@ namespace Game.World
 
         }
 
+
+        // =====================================================
+        // APPLY CHUNK DATA
+        // =====================================================
+
+        public void ApplyData(
+            ChunkData data
+        )
+        {
+
+            if (
+                data == null
+            )
+            {
+                return;
+            }
+
+
+            for (
+                int x = 0;
+                x < SizeX;
+                x++
+            )
+            {
+
+                for (
+                    int y = 0;
+                    y < SizeY;
+                    y++
+                )
+                {
+
+                    SetBlock(
+                        x,
+                        y,
+                        data.GetBlock(
+                            x,
+                            y
+                        )
+                    );
+
+                }
+
+            }
+
+        }
 
     }
 

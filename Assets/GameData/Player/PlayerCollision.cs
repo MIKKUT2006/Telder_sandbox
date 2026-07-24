@@ -1,10 +1,15 @@
 
-using UnityEngine;
 using Game.World.Collision;
+using UnityEngine;
 
 
-public class PlayerCollision : MonoBehaviour
+public class PlayerCollision :
+    MonoBehaviour
 {
+
+    // =====================================================
+    // COLLISION
+    // =====================================================
 
     [Header("Collision")]
 
@@ -28,8 +33,16 @@ public class PlayerCollision : MonoBehaviour
         1f;
 
 
+    // =====================================================
+    // WORLD
+    // =====================================================
+
     private WorldCollision worldCollision;
 
+
+    // =====================================================
+    // STATE
+    // =====================================================
 
     public bool IsGrounded
     {
@@ -50,6 +63,10 @@ public class PlayerCollision : MonoBehaviour
         this.worldCollision =
             worldCollision;
 
+
+        IsGrounded =
+            false;
+
     }
 
 
@@ -58,15 +75,17 @@ public class PlayerCollision : MonoBehaviour
     // =====================================================
 
     public void Move(
-    Vector2 movement
-)
+        Vector2 movement
+    )
     {
 
         if (
             worldCollision == null
         )
         {
+
             return;
+
         }
 
 
@@ -74,14 +93,8 @@ public class PlayerCollision : MonoBehaviour
             false;
 
 
-        // Проверяем землю
-        // перед движением.
-
-        CheckGround();
-
-
         // =================================================
-        // X
+        // HORIZONTAL
         // =================================================
 
         if (
@@ -97,7 +110,7 @@ public class PlayerCollision : MonoBehaviour
 
 
         // =================================================
-        // Y
+        // VERTICAL
         // =================================================
 
         if (
@@ -112,8 +125,9 @@ public class PlayerCollision : MonoBehaviour
         }
 
 
-        // Проверяем землю
-        // после движения.
+        // =================================================
+        // GROUND CHECK
+        // =================================================
 
         CheckGround();
 
@@ -121,7 +135,7 @@ public class PlayerCollision : MonoBehaviour
 
 
     // =====================================================
-    // HORIZONTAL
+    // HORIZONTAL MOVEMENT
     // =====================================================
 
     private void MoveHorizontal(
@@ -141,40 +155,8 @@ public class PlayerCollision : MonoBehaviour
             );
 
 
-        float targetX =
-            transform.position.x +
-            movement;
-
-
-        // Полностью свободное движение.
-
-        if (
-            !CheckCollisionAt(
-                targetX,
-                transform.position.y
-            )
-        )
-        {
-
-            transform.position =
-                new Vector3(
-                    targetX,
-                    transform.position.y,
-                    transform.position.z
-                );
-
-
-            return;
-
-        }
-
-
-        // =================================================
-        // ДВИЖЕНИЕ ДО ПРЕПЯТСТВИЯ
-        // =================================================
-
         float step =
-            0.01f;
+            0.02f;
 
 
         float moved =
@@ -187,27 +169,17 @@ public class PlayerCollision : MonoBehaviour
         )
         {
 
-            float next =
-                moved +
-                step;
-
-
-            if (
-                next >
-                distance
-            )
-            {
-
-                next =
-                    distance;
-
-            }
+            float currentStep =
+                Mathf.Min(
+                    step,
+                    distance - moved
+                );
 
 
             float testX =
                 transform.position.x +
                 direction *
-                next;
+                currentStep;
 
 
             if (
@@ -223,26 +195,24 @@ public class PlayerCollision : MonoBehaviour
             }
 
 
-            moved =
-                next;
+            transform.position =
+                new Vector3(
+                    testX,
+                    transform.position.y,
+                    transform.position.z
+                );
+
+
+            moved +=
+                currentStep;
 
         }
-
-
-        transform.position =
-            new Vector3(
-                transform.position.x +
-                direction *
-                moved,
-                transform.position.y,
-                transform.position.z
-            );
 
     }
 
 
     // =====================================================
-    // VERTICAL
+    // VERTICAL MOVEMENT
     // =====================================================
 
     private void MoveVertical(
@@ -262,40 +232,8 @@ public class PlayerCollision : MonoBehaviour
             );
 
 
-        float targetY =
-            transform.position.y +
-            movement;
-
-
-        // Полностью свободное движение.
-
-        if (
-            !CheckCollisionAt(
-                transform.position.x,
-                targetY
-            )
-        )
-        {
-
-            transform.position =
-                new Vector3(
-                    transform.position.x,
-                    targetY,
-                    transform.position.z
-                );
-
-
-            return;
-
-        }
-
-
-        // =================================================
-        // ДВИЖЕНИЕ ДО ПРЕПЯТСТВИЯ
-        // =================================================
-
         float step =
-            0.01f;
+            0.02f;
 
 
         float moved =
@@ -308,27 +246,17 @@ public class PlayerCollision : MonoBehaviour
         )
         {
 
-            float next =
-                moved +
-                step;
-
-
-            if (
-                next >
-                distance
-            )
-            {
-
-                next =
-                    distance;
-
-            }
+            float currentStep =
+                Mathf.Min(
+                    step,
+                    distance - moved
+                );
 
 
             float testY =
                 transform.position.y +
                 direction *
-                next;
+                currentStep;
 
 
             if (
@@ -339,38 +267,32 @@ public class PlayerCollision : MonoBehaviour
             )
             {
 
+                if (
+                    direction < 0f
+                )
+                {
+
+                    IsGrounded =
+                        true;
+
+                }
+
+
                 break;
 
             }
 
 
-            moved =
-                next;
-
-        }
-
-
-        transform.position =
-            new Vector3(
-                transform.position.x,
-                transform.position.y +
-                direction *
-                moved,
-                transform.position.z
-            );
+            transform.position =
+                new Vector3(
+                    transform.position.x,
+                    testY,
+                    transform.position.z
+                );
 
 
-        // Если двигались вниз
-        // и встретили блок,
-        // считаем игрока стоящим на земле.
-
-        if (
-            direction < 0f
-        )
-        {
-
-            IsGrounded =
-                true;
+            moved +=
+                currentStep;
 
         }
 
@@ -384,6 +306,24 @@ public class PlayerCollision : MonoBehaviour
     private void CheckGround()
     {
 
+        if (
+            worldCollision == null
+        )
+        {
+
+            IsGrounded =
+                false;
+
+            return;
+
+        }
+
+
+        float halfWidth =
+            colliderSize.x *
+            0.5f;
+
+
         float bottom =
             transform.position.y -
             colliderSize.y *
@@ -395,20 +335,70 @@ public class PlayerCollision : MonoBehaviour
             skin;
 
 
-        if (
-            CheckCollisionAt(
-                transform.position.x,
-                checkY
-            )
+        float minX =
+            transform.position.x -
+            halfWidth +
+            skin;
+
+
+        float maxX =
+            transform.position.x +
+            halfWidth -
+            skin;
+
+
+        int minBlockX =
+            Mathf.FloorToInt(
+                minX /
+                blockSize
+            );
+
+
+        int maxBlockX =
+            Mathf.FloorToInt(
+                maxX /
+                blockSize
+            );
+
+
+        int blockY =
+            Mathf.FloorToInt(
+                checkY /
+                blockSize
+            );
+
+
+        IsGrounded =
+            false;
+
+
+        for (
+            int x = minBlockX;
+            x <= maxBlockX;
+            x++
         )
         {
 
-            IsGrounded =
-                true;
+            if (
+                worldCollision.IsSolid(
+                    x,
+                    blockY
+                )
+            )
+            {
+
+                IsGrounded =
+                    true;
+
+                return;
+
+            }
 
         }
 
     }
+
+
 
 
     // =====================================================
@@ -421,10 +411,6 @@ public class PlayerCollision : MonoBehaviour
     )
     {
 
-        // =================================================
-        // HALF SIZE
-        // =================================================
-
         float halfWidth =
             colliderSize.x *
             0.5f;
@@ -434,10 +420,6 @@ public class PlayerCollision : MonoBehaviour
             colliderSize.y *
             0.5f;
 
-
-        // =================================================
-        // BOUNDS
-        // =================================================
 
         float minX =
             centerX -
@@ -462,10 +444,6 @@ public class PlayerCollision : MonoBehaviour
             halfHeight -
             skin;
 
-
-        // =================================================
-        // BLOCK COORDINATES
-        // =================================================
 
         int minBlockX =
             Mathf.FloorToInt(
@@ -494,10 +472,6 @@ public class PlayerCollision : MonoBehaviour
                 blockSize
             );
 
-
-        // =================================================
-        // CHECK BLOCKS
-        // =================================================
 
         for (
             int x = minBlockX;
@@ -531,6 +505,96 @@ public class PlayerCollision : MonoBehaviour
 
 
         return false;
+
+    }
+
+
+    // =====================================================
+    // RESOLVE OVERLAPS
+    // =====================================================
+
+    public void ResolveOverlaps()
+    {
+
+        if (
+            worldCollision == null
+        )
+        {
+
+            return;
+
+        }
+
+
+        const int maxIterations =
+            100;
+
+
+        for (
+            int i = 0;
+            i < maxIterations;
+            i++
+        )
+        {
+
+            bool isOverlapping =
+                CheckCollisionAt(
+                    transform.position.x,
+                    transform.position.y
+                );
+
+
+            if (
+                !isOverlapping
+            )
+            {
+
+                break;
+
+            }
+
+
+            // Выталкиваем игрока вверх
+            // маленькими шагами.
+
+            transform.position +=
+                Vector3.up *
+                0.01f;
+
+        }
+
+
+        // После исправления позиции
+        // заново проверяем землю.
+
+        CheckGround();
+
+    }
+
+
+    // =====================================================
+    // GET COLLIDER SIZE
+    // =====================================================
+
+    public Vector2 GetColliderSize()
+    {
+
+        return colliderSize;
+
+    }
+
+
+    // =====================================================
+    // DEBUG
+    // =====================================================
+
+    private void OnDrawGizmosSelected()
+    {
+
+        Gizmos.DrawWireCube(
+            transform.position,
+            colliderSize
+        );
 
     }
 

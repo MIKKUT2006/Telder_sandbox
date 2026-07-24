@@ -1,3 +1,4 @@
+
 using System;
 
 
@@ -7,14 +8,19 @@ namespace Game.World
     public class BlockStorage
     {
 
-        private readonly ushort[,] blocks;
+        private readonly ushort[] blocks;
 
 
+        public int Width
+        {
+            get;
+        }
 
-        public int Width { get; }
 
-        public int Height { get; }
-
+        public int Height
+        {
+            get;
+        }
 
 
         public BlockStorage(
@@ -23,18 +29,34 @@ namespace Game.World
         )
         {
 
-            Width = width;
+            Width =
+                width;
 
-            Height = height;
+            Height =
+                height;
 
 
             blocks =
-                new ushort[width, height];
+                new ushort[
+                    width *
+                    height
+                ];
 
         }
 
 
+        private int GetIndex(
+            int x,
+            int y
+        )
+        {
 
+            return
+                x +
+                y *
+                Width;
+
+        }
 
 
         public ushort Get(
@@ -43,12 +65,14 @@ namespace Game.World
         )
         {
 
-            return blocks[x, y];
+            return blocks[
+                GetIndex(
+                    x,
+                    y
+                )
+            ];
 
         }
-
-
-
 
 
         public void Set(
@@ -58,12 +82,15 @@ namespace Game.World
         )
         {
 
-            blocks[x, y] = id;
+            blocks[
+                GetIndex(
+                    x,
+                    y
+                )
+            ] =
+                id;
 
         }
-
-
-
 
 
         public void Fill(
@@ -71,22 +98,31 @@ namespace Game.World
         )
         {
 
-            for (int x = 0; x < Width; x++)
+            if (
+                id == 0
+            )
             {
 
-                for (int y = 0; y < Height; y++)
-                {
+                Clear();
 
-                    blocks[x, y] = id;
+                return;
 
-                }
+            }
+
+
+            for (
+                int i = 0;
+                i < blocks.Length;
+                i++
+            )
+            {
+
+                blocks[i] =
+                    id;
 
             }
 
         }
-
-
-
 
 
         public void Clear()
@@ -100,6 +136,15 @@ namespace Game.World
 
         }
 
+
+        public ushort[] GetRawData()
+        {
+
+            return blocks;
+
+        }
+
     }
 
 }
+
