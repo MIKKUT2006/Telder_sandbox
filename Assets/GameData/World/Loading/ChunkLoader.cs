@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-
 using UnityEngine;
 
 using Game.World.Collision;
@@ -29,7 +28,7 @@ namespace Game.World.Loading
 
 
         // =====================================================
-        // LOADED
+        // LOADED CHUNKS
         // =====================================================
 
         private readonly HashSet<Vector2Int> loadedChunks =
@@ -37,7 +36,7 @@ namespace Game.World.Loading
 
 
         // =====================================================
-        // QUEUE
+        // LOAD QUEUE
         // =====================================================
 
         private readonly Queue<Vector2Int> loadQueue =
@@ -49,11 +48,10 @@ namespace Game.World.Loading
 
 
         // =====================================================
-        // STATE
+        // PLAYER CHUNK
         // =====================================================
 
         private Vector2Int currentPlayerChunk;
-
 
         private bool initialized;
 
@@ -62,8 +60,14 @@ namespace Game.World.Loading
         // SETTINGS
         // =====================================================
 
-        private const int MaxChunksPerProcess =
-            1;
+        // Сколько чанков максимум
+        // загружаем за один кадр.
+        //
+        // Начинаем с 1 для максимальной стабильности.
+        //
+        // Позже можно увеличить до 2-3.
+
+        private const int MaxChunksPerProcess = 1;
 
 
         // =====================================================
@@ -82,18 +86,14 @@ namespace Game.World.Loading
             this.world =
                 world;
 
-
             this.generator =
                 generator;
-
 
             this.settings =
                 settings;
 
-
             this.renderer =
                 renderer;
-
 
             this.collision =
                 collision;
@@ -115,30 +115,16 @@ namespace Game.World.Loading
         )
         {
 
-            Vector2Int newPlayerChunk =
+            Vector2Int newChunk =
                 new Vector2Int(
                     playerChunkX,
                     playerChunkY
                 );
 
 
-            bool changed =
-                !initialized ||
-                newPlayerChunk !=
-                currentPlayerChunk;
-
-
-            currentPlayerChunk =
-                newPlayerChunk;
-
-
-            if (
-                !changed
-            )
-            {
-                return;
-            }
-
+            // =================================================
+            // ПЕРВЫЙ ЗАПУСК
+            // =================================================
 
             if (
                 !initialized
@@ -149,15 +135,40 @@ namespace Game.World.Loading
                     true;
 
 
-                BuildInitialLoadQueue();
+                currentPlayerChunk =
+                    newChunk;
+
+
+                BuildInitialQueue();
+
+
+                return;
 
             }
-            else
+
+
+            // =================================================
+            // ИГРОК НЕ СМЕНИЛ ЧАНК
+            // =================================================
+
+            if (
+                newChunk ==
+                currentPlayerChunk
+            )
             {
-
-                UpdateLoadQueue();
-
+                return;
             }
+
+
+            // =================================================
+            // ИГРОК СМЕНИЛ ЧАНК
+            // =================================================
+
+            currentPlayerChunk =
+                newChunk;
+
+
+            UpdateLoadQueue();
 
         }
 
@@ -168,12 +179,14 @@ namespace Game.World.Loading
 
         public void Process()
         {
+            Debug.Log(
+                "CHUNK LOADER PROCESS: Queue = " +
+                loadQueue.Count
+            );
 
             ProcessLoadQueue();
 
-
             UnloadFarChunks();
-
         }
 
 
@@ -181,7 +194,7 @@ namespace Game.World.Loading
         // INITIAL QUEUE
         // =====================================================
 
-        private void BuildInitialLoadQueue()
+        private void BuildInitialQueue()
         {
 
             loadQueue.Clear();
@@ -194,7 +207,7 @@ namespace Game.World.Loading
 
 
             // =================================================
-            // CENTER
+            // ЦЕНТР
             // =================================================
 
             EnqueueChunk(
@@ -204,7 +217,7 @@ namespace Game.World.Loading
 
 
             // =================================================
-            // RINGS
+            // ОСТАЛЬНЫЕ ЧАНКИ
             // =================================================
 
             for (
@@ -227,6 +240,8 @@ namespace Game.World.Loading
                         y++
                     )
                     {
+
+                        // Берём только внешний край кольца.
 
                         if (
                             Mathf.Abs(x) != radius &&
@@ -252,7 +267,7 @@ namespace Game.World.Loading
 
 
         // =====================================================
-        // UPDATE QUEUE
+        // UPDATE LOAD QUEUE
         // =====================================================
 
         private void UpdateLoadQueue()
@@ -262,23 +277,27 @@ namespace Game.World.Loading
                 settings.ViewDistance;
 
 
+            // =================================================
+            // ВСЕ ЧАНКИ ВОКРУГ ИГРОКА
+            // =================================================
+
             for (
-                int cx = -viewDistance;
-                cx <= viewDistance;
-                cx++
+                int x = -viewDistance;
+                x <= viewDistance;
+                x++
             )
             {
 
                 for (
-                    int cy = -viewDistance;
-                    cy <= viewDistance;
-                    cy++
+                    int y = -viewDistance;
+                    y <= viewDistance;
+                    y++
                 )
                 {
 
                     EnqueueChunk(
-                        currentPlayerChunk.x + cx,
-                        currentPlayerChunk.y + cy
+                        currentPlayerChunk.x + x,
+                        currentPlayerChunk.y + y
                     );
 
                 }
@@ -305,6 +324,8 @@ namespace Game.World.Loading
                 );
 
 
+            // Уже загружен.
+
             if (
                 loadedChunks.Contains(
                     position
@@ -314,6 +335,8 @@ namespace Game.World.Loading
                 return;
             }
 
+
+            // Уже в очереди.
 
             if (
                 queuedChunks.Contains(
@@ -365,7 +388,7 @@ namespace Game.World.Loading
 
 
                 // =================================================
-                // DISTANCE CHECK
+                // ПРОВЕРЯЕМ ДАЛЬНОСТЬ
                 // =================================================
 
                 int distanceX =
@@ -395,6 +418,20 @@ namespace Game.World.Loading
 
 
                 // =================================================
+                // ПРОВЕРЯЕМ, НЕ СОЗДАН ЛИ УЖЕ
+                // =================================================
+
+                if (
+                    loadedChunks.Contains(
+                        position
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                // =================================================
                 // CREATE CHUNK
                 // =================================================
 
@@ -414,7 +451,7 @@ namespace Game.World.Loading
 
 
                 // =================================================
-                // GENERATE
+                // GENERATE DATA
                 // =================================================
 
                 ChunkData data =
@@ -428,12 +465,20 @@ namespace Game.World.Loading
                     data == null
                 )
                 {
+
+                    world.RemoveChunk(
+                        position.x,
+                        position.y
+                    );
+
+
                     continue;
+
                 }
 
 
                 // =================================================
-                // APPLY
+                // APPLY DATA
                 // =================================================
 
                 chunk.ApplyData(
@@ -460,7 +505,7 @@ namespace Game.World.Loading
 
 
                 // =================================================
-                // LOADED
+                // MARK LOADED
                 // =================================================
 
                 loadedChunks.Add(
@@ -476,13 +521,13 @@ namespace Game.World.Loading
 
 
         // =====================================================
-        // UNLOAD
+        // UNLOAD FAR CHUNKS
         // =====================================================
 
         private void UnloadFarChunks()
         {
 
-            List<Vector2Int> chunksToUnload =
+            List<Vector2Int> toUnload =
                 new List<Vector2Int>();
 
 
@@ -515,7 +560,7 @@ namespace Game.World.Loading
                 )
                 {
 
-                    chunksToUnload.Add(
+                    toUnload.Add(
                         position
                     );
 
@@ -526,7 +571,7 @@ namespace Game.World.Loading
 
             foreach (
                 Vector2Int position
-                in chunksToUnload
+                in toUnload
             )
             {
 

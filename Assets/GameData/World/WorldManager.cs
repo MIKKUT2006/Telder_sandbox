@@ -1,8 +1,11 @@
+using Game.Blocks;
 using Game.Content;
 using Game.World.Collision;
 using Game.World.Generation;
 using Game.World.Loading;
 using Game.World.Rendering;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -20,14 +23,12 @@ namespace Game.World
         // PLAYER
         // =====================================================
 
-        [Header("Player")]
-
         [SerializeField]
         private Transform player;
 
 
         // =====================================================
-        // WORLD SYSTEMS
+        // SYSTEMS
         // =====================================================
 
         private World world;
@@ -52,24 +53,14 @@ namespace Game.World
         private bool worldGenerated;
 
 
-        private Game.World.Vector2Int lastPlayerChunk;
-
-        private bool hasLastPlayerChunk;
-
-
-        // =====================================================
-        // READY
-        // =====================================================
-
         public bool IsReady
         {
             get
             {
                 return
                     worldGenerated &&
-                    world != null &&
                     loader != null &&
-                    worldCollision != null;
+                    world != null;
             }
         }
 
@@ -85,32 +76,16 @@ namespace Game.World
                 this;
 
 
-            // =================================================
-            // CONTENT
-            // =================================================
-
             ContentManager.Initialize();
 
-
-            // =================================================
-            // SETTINGS
-            // =================================================
 
             settings =
                 new WorldSettings();
 
 
-            // =================================================
-            // WORLD
-            // =================================================
-
             world =
                 new World();
 
-
-            // =================================================
-            // WORLD COLLISION
-            // =================================================
 
             worldCollision =
                 new WorldCollision(
@@ -118,19 +93,11 @@ namespace Game.World
                 );
 
 
-            // =================================================
-            // CHUNK COLLISION
-            // =================================================
-
             chunkCollision =
                 new ChunkCollision(
                     worldCollision
                 );
 
-
-            // =================================================
-            // GENERATOR
-            // =================================================
 
             generator =
                 new WorldGenerator(
@@ -141,17 +108,9 @@ namespace Game.World
             generator.ReloadOres();
 
 
-            // =================================================
-            // RENDERER
-            // =================================================
-
             renderer =
                 new ChunkRenderer();
 
-
-            // =================================================
-            // CHUNK LOADER
-            // =================================================
 
             loader =
                 new ChunkLoader(
@@ -164,11 +123,7 @@ namespace Game.World
 
 
             worldGenerated =
-                false;
-
-
-            hasLastPlayerChunk =
-                false;
+                true;
 
 
             Debug.Log(
@@ -182,166 +137,84 @@ namespace Game.World
         // START
         // =====================================================
 
-        private void Start()
+        private IEnumerator Start()
         {
+            // =====================================================
+            // WAIT FOR INITIAL CHUNKS
+            // =====================================================
 
-            if (
+            while (
                 loader == null
             )
             {
-
-                Debug.LogError(
-                    "WORLD MANAGER: ChunkLoader is null."
-                );
-
-                return;
-
+                yield return null;
             }
 
 
-            // =================================================
-            // œ≈–¬€… ¬€«Œ¬ «¿√–”«◊» ¿
-            // =================================================
+            // =====================================================
+            // START INITIAL CHUNK LOADING
+            // =====================================================
 
-            UpdatePlayerChunk(
-                true
+            loader.SetPlayerChunk(
+                0,
+                0
             );
 
+
+            // =====================================================
+            // WAIT UNTIL START AREA IS LOADED
+            // =====================================================
+
+            while (
+                !loader.IsChunkLoaded(
+                    0,
+                    0
+                )
+            )
+            {
+                loader.Process();
+
+                yield return null;
+            }
+
+
+            // =====================================================
+            // WAIT UNTIL INITIAL AREA IS LOADED
+            // =====================================================
+
+            while (
+                loader.GetLoadQueueSize() > 0
+            )
+            {
+                loader.Process();
+
+                yield return null;
+            }
+
+
+            // =====================================================
+            // WORLD READY
+            // =====================================================
 
             worldGenerated =
                 true;
 
 
             Debug.Log(
-                "WORLD: Initial chunk loading started."
+                "WORLD: Initial chunks generated."
             );
 
 
-            // =================================================
+            // =====================================================
             // SPAWN PLAYER
-            // =================================================
+            // =====================================================
 
             SpawnPlayer();
 
         }
 
-
         // =====================================================
-        // UPDATE
-        // =====================================================
-
-        private void Update()
-        {
-
-            if (
-                !worldGenerated
-            )
-            {
-                return;
-            }
-
-
-            if (
-                loader == null
-            )
-            {
-                return;
-            }
-
-
-            if (
-                player == null
-            )
-            {
-                return;
-            }
-
-
-            // =================================================
-            // Œ¡ÕŒ¬Àﬂ≈Ã “≈ ”Ÿ»… ◊¿Õ  »√–Œ ¿
-            // =================================================
-
-            UpdatePlayerChunk(
-                false
-            );
-
-
-            // =================================================
-            // Œ¡–¿¡¿“€¬¿≈Ã Œ◊≈–≈ƒ‹ ◊¿Õ Œ¬
-            // =================================================
-
-            loader.Process();
-
-        }
-
-
-        // =====================================================
-        // PLAYER CHUNK
-        // =====================================================
-
-        private void UpdatePlayerChunk(
-            bool forceUpdate
-        )
-        {
-
-            if (
-                player == null
-            )
-            {
-                return;
-            }
-
-
-            int chunkX =
-                Mathf.FloorToInt(
-                    player.position.x /
-                    Chunk.SizeX
-                );
-
-
-            int chunkY =
-                Mathf.FloorToInt(
-                    player.position.y /
-                    Chunk.SizeY
-                );
-
-
-            Game.World.Vector2Int currentChunk =
-                new Game.World.Vector2Int(
-                    chunkX,
-                    chunkY
-                );
-
-
-            if (
-                !forceUpdate &&
-                hasLastPlayerChunk &&
-                currentChunk ==
-                lastPlayerChunk
-            )
-            {
-                return;
-            }
-
-
-            lastPlayerChunk =
-                currentChunk;
-
-
-            hasLastPlayerChunk =
-                true;
-
-
-            loader.SetPlayerChunk(
-                chunkX,
-                chunkY
-            );
-
-        }
-
-
-        // =====================================================
-        // SPAWN PLAYER
+        // PLAYER SPAWN
         // =====================================================
 
         private void SpawnPlayer()
@@ -354,20 +227,6 @@ namespace Game.World
 
                 Debug.LogError(
                     "WORLD: Player reference is null."
-                );
-
-                return;
-
-            }
-
-
-            if (
-                worldCollision == null
-            )
-            {
-
-                Debug.LogError(
-                    "WORLD: WorldCollision is null."
                 );
 
                 return;
@@ -397,19 +256,24 @@ namespace Game.World
                 playerCollision.GetColliderSize();
 
 
-            Vector3 spawnPosition;
+            int spawnX =
+                0;
+
+
+            int surfaceY;
 
 
             if (
-                !FindPlayerSpawnPosition(
-                    playerSize,
-                    out spawnPosition
+                !TryFindSurface(
+                    spawnX,
+                    out surfaceY
                 )
             )
             {
 
                 Debug.LogError(
-                    "WORLD: Failed to find player spawn position."
+                    "WORLD: Failed to find surface at X = " +
+                    spawnX
                 );
 
                 return;
@@ -417,9 +281,33 @@ namespace Game.World
             }
 
 
-            // =================================================
+            // =====================================================
+            // POSITION PLAYER ABOVE SURFACE
+            // =====================================================
+
+            float playerHalfHeight =
+                playerSize.y *
+                0.5f;
+
+
+            float playerCenterY =
+                surfaceY +
+                1f +
+                playerHalfHeight +
+                0.05f;
+
+
+            Vector3 spawnPosition =
+                new Vector3(
+                    spawnX + 0.5f,
+                    playerCenterY,
+                    0f
+                );
+
+
+            // =====================================================
             // RESET PHYSICS
-            // =================================================
+            // =====================================================
 
             Rigidbody2D rb =
                 player.GetComponent<Rigidbody2D>();
@@ -439,33 +327,29 @@ namespace Game.World
             }
 
 
-            // =================================================
+            // =====================================================
             // SET POSITION
-            // =================================================
+            // =====================================================
 
             player.position =
                 spawnPosition;
 
 
-            // =================================================
-            // Œ¡ÕŒ¬Àﬂ≈Ã ◊¿Õ  œŒ—À≈ SPAWN
-            // =================================================
-
-            UpdatePlayerChunk(
-                true
-            );
-
-
             Debug.Log(
-                "WORLD: PLAYER SPAWNED AT " +
-                spawnPosition
+                "WORLD: PLAYER SPAWNED ABOVE SURFACE. " +
+                "X = " +
+                spawnX +
+                " SURFACE Y = " +
+                surfaceY +
+                " PLAYER Y = " +
+                playerCenterY
             );
 
         }
 
 
         // =====================================================
-        // FIND SPAWN
+        // FIND PLAYER SPAWN
         // =====================================================
 
         private bool FindPlayerSpawnPosition(
@@ -473,13 +357,15 @@ namespace Game.World
             out Vector3 spawnPosition
         )
         {
-
             spawnPosition =
                 Vector3.zero;
 
 
+            // »˘ÂÏ ÒÌ‡˜‡Î‡ ‚ ˆÂÌÚÂ ÏË‡.
+            // «‡ÚÂÏ ÔÓÒÚÂÔÂÌÌÓ ‡Ò¯ËˇÂÏ Ó·Î‡ÒÚ¸ ÔÓËÒÍ‡.
+
             int searchRadius =
-                100;
+                128;
 
 
             for (
@@ -488,6 +374,10 @@ namespace Game.World
                 offset++
             )
             {
+
+                // =============================================
+                // CENTER
+                // =============================================
 
                 if (
                     offset == 0
@@ -502,14 +392,16 @@ namespace Game.World
                         )
                     )
                     {
-
                         return true;
-
                     }
 
                 }
                 else
                 {
+
+                    // =============================================
+                    // LEFT
+                    // =============================================
 
                     if (
                         TryFindSpawnAtX(
@@ -519,11 +411,13 @@ namespace Game.World
                         )
                     )
                     {
-
                         return true;
-
                     }
 
+
+                    // =============================================
+                    // RIGHT
+                    // =============================================
 
                     if (
                         TryFindSpawnAtX(
@@ -533,9 +427,7 @@ namespace Game.World
                         )
                     )
                     {
-
                         return true;
-
                     }
 
                 }
@@ -544,7 +436,6 @@ namespace Game.World
 
 
             return false;
-
         }
 
 
@@ -558,13 +449,8 @@ namespace Game.World
             out Vector3 spawnPosition
         )
         {
-
             spawnPosition =
                 Vector3.zero;
-
-
-            int maxHeight =
-                settings.WorldHeight;
 
 
             float halfWidth =
@@ -577,21 +463,31 @@ namespace Game.World
                 0.5f;
 
 
+            // ÕÂ·ÓÎ¸¯ÓÈ Á‡Ô‡Ò ÏÂÊ‰Û Ë„ÓÍÓÏ Ë ÁÂÏÎ∏È.
+
             float skin =
                 0.02f;
 
 
+            // =================================================
+            // œ–Œ¬≈–ﬂ≈Ã ¬≈—‹ —“ŒÀ¡≈÷
+            // =================================================
+
             for (
-                int y = maxHeight - 1;
-                y >= 0;
-                y--
+                int groundY = settings.WorldHeight - 1;
+                groundY >= 0;
+                groundY--
             )
             {
+
+                // =================================================
+                // 1. »Ÿ≈Ã “¬®–ƒ€… ¡ÀŒ  œŒƒ ÕŒ√¿Ã»
+                // =================================================
 
                 if (
                     !worldCollision.IsSolid(
                         worldX,
-                        y
+                        groundY
                     )
                 )
                 {
@@ -599,7 +495,11 @@ namespace Game.World
                 }
 
 
-                int leftBlock =
+                // =================================================
+                // 2. Œœ–≈ƒ≈Àﬂ≈Ã ÿ»–»Õ” »√–Œ ¿
+                // =================================================
+
+                int leftX =
                     Mathf.FloorToInt(
                         worldX -
                         halfWidth +
@@ -607,7 +507,7 @@ namespace Game.World
                     );
 
 
-                int rightBlock =
+                int rightX =
                     Mathf.FloorToInt(
                         worldX +
                         halfWidth -
@@ -619,17 +519,23 @@ namespace Game.World
                     false;
 
 
+                // =================================================
+                // 3. œ–Œ¬≈–ﬂ≈Ã ¬—ﬁ ÿ»–»Õ” »√–Œ ¿
+                // =================================================
+
                 for (
-                    int x = leftBlock;
-                    x <= rightBlock;
+                    int x = leftX;
+                    x <= rightX;
                     x++
                 )
                 {
 
+                    // œÂ‚˚È ·ÎÓÍ Ì‡‰ ÁÂÏÎ∏È
+
                     if (
                         worldCollision.IsSolid(
                             x,
-                            y + 1
+                            groundY + 1
                         )
                     )
                     {
@@ -642,10 +548,31 @@ namespace Game.World
                     }
 
 
+                    // ¬ÚÓÓÈ ·ÎÓÍ Ì‡‰ ÁÂÏÎ∏È
+
                     if (
                         worldCollision.IsSolid(
                             x,
-                            y + 2
+                            groundY + 2
+                        )
+                    )
+                    {
+
+                        blocked =
+                            true;
+
+                        break;
+
+                    }
+
+
+                    // “ÂÚËÈ ·ÎÓÍ Ì‡‰ ÁÂÏÎ∏È.
+                    // ›ÚÓ ‚‡ÊÌÓ, ÂÒÎË Ë„ÓÍ ‚˚ÒÓÍËÈ.
+
+                    if (
+                        worldCollision.IsSolid(
+                            x,
+                            groundY + 3
                         )
                     )
                     {
@@ -668,10 +595,25 @@ namespace Game.World
                 }
 
 
+                // =================================================
+                // 4. —“¿¬»Ã »√–Œ ¿ Õ¿ œŒ¬≈–’ÕŒ—“‹
+                // =================================================
+
+                float playerCenterY =
+                    groundY +
+                    1f +
+                    halfHeight;
+
+
+                float playerCenterX =
+                    worldX +
+                    0.5f;
+
+
                 spawnPosition =
                     new Vector3(
-                        worldX + 0.5f,
-                        y + 1f + halfHeight,
+                        playerCenterX,
+                        playerCenterY + skin,
                         0f
                     );
 
@@ -682,73 +624,135 @@ namespace Game.World
 
 
             return false;
-
         }
-
-
-        // =====================================================
-        // PUBLIC CHUNK UPDATE
-        // =====================================================
-
-        public void UpdatePlayerChunk(
-            int currentChunkX,
-            int currentChunkY
-        )
-        {
-
-            if (
-                loader == null
-            )
-            {
-                return;
-            }
-
-
-            loader.SetPlayerChunk(
-                currentChunkX,
-                currentChunkY
-            );
-
-        }
-
-
-        // =====================================================
-        // GETTERS
-        // =====================================================
 
         public ChunkLoader GetLoader()
         {
+
             return loader;
+
         }
 
 
         public World GetWorld()
         {
+
             return world;
+
         }
 
 
         public WorldSettings GetSettings()
         {
+
             return settings;
+
         }
 
 
         public WorldGenerator GetGenerator()
         {
+
             return generator;
+
         }
 
 
         public WorldCollision GetWorldCollision()
         {
+
             return worldCollision;
+
         }
 
 
         public ChunkCollision GetChunkCollision()
         {
+
             return chunkCollision;
+
+        }
+        private bool TryFindSurface(int worldX,out int surfaceY)
+        {
+            surfaceY = 0;
+
+
+            World currentWorld =
+                world;
+
+
+            if (
+                currentWorld == null
+            )
+            {
+                return false;
+            }
+
+
+            for (
+                int y = settings.WorldHeight - 1;
+                y >= 0;
+                y--
+            )
+            {
+
+                ushort blockID =
+                    currentWorld.GetBlock(
+                        worldX,
+                        y
+                    );
+
+
+                if (
+                    blockID == 0
+                )
+                {
+                    continue;
+                }
+
+
+                ContentID contentID =
+                    BlockIDRegistry.GetContentID(
+                        blockID
+                    );
+
+
+                if (
+                    !BlockRegistry.Contains(
+                        contentID
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                BlockDefinition block =
+                    BlockRegistry.Get(
+                        contentID
+                    );
+
+
+                if (
+                    block == null ||
+                    !block.Solid
+                )
+                {
+                    continue;
+                }
+
+
+                surfaceY =
+                    y;
+
+
+                return true;
+
+            }
+
+
+            return false;
+
         }
 
     }

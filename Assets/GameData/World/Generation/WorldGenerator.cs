@@ -1,6 +1,7 @@
-
 using Game.Content;
+
 using Game.World.Generation.Ores;
+
 using UnityEngine;
 
 
@@ -21,10 +22,6 @@ namespace Game.World.Generation
 
         private readonly float detailOffset;
 
-
-        // =====================================================
-        // CONSTRUCTOR
-        // =====================================================
 
         public WorldGenerator(
             WorldSettings settings
@@ -74,7 +71,7 @@ namespace Game.World.Generation
 
 
         // =====================================================
-        // CHUNK GENERATION
+        // GENERATE CHUNK DATA
         // =====================================================
 
         public ChunkData GenerateChunkData(
@@ -97,18 +94,18 @@ namespace Game.World.Generation
             )
             {
 
+                int worldX =
+                    chunkX *
+                    Chunk.SizeX +
+                    localX;
+
+
                 for (
                     int localY = 0;
-                localY < Chunk.SizeY;
-                localY++
+                    localY < Chunk.SizeY;
+                    localY++
                 )
                 {
-
-                    int worldX =
-                        chunkX *
-                        Chunk.SizeX +
-                        localX;
-
 
                     int worldY =
                         chunkY *
@@ -140,7 +137,7 @@ namespace Game.World.Generation
 
 
         // =====================================================
-        // BLOCK GENERATION
+        // GENERATE BLOCK
         // =====================================================
 
         private ushort GenerateBlock(
@@ -148,10 +145,6 @@ namespace Game.World.Generation
             int worldY
         )
         {
-
-            // =================================================
-            // SURFACE HEIGHT
-            // =================================================
 
             int surfaceHeight =
                 GetSurfaceHeight(
@@ -210,7 +203,7 @@ namespace Game.World.Generation
 
 
             // =================================================
-            // ORES
+            // ORE
             // =================================================
 
             ushort ore =
@@ -284,17 +277,13 @@ namespace Game.World.Generation
 
 
         // =====================================================
-        // TERRAIN HEIGHT
+        // SURFACE HEIGHT
         // =====================================================
 
-        private int GetSurfaceHeight(
+        public int GetSurfaceHeight(
             int worldX
         )
         {
-
-            // =================================================
-            // LARGE TERRAIN
-            // =================================================
 
             float largeTerrain =
                 Mathf.PerlinNoise(
@@ -303,14 +292,9 @@ namespace Game.World.Generation
                         terrainOffset
                     ) *
                     settings.HillScale,
-
                     0f
                 );
 
-
-            // =================================================
-            // HILLS
-            // =================================================
 
             float hills =
                 Mathf.PerlinNoise(
@@ -319,14 +303,9 @@ namespace Game.World.Generation
                         hillOffset
                     ) *
                     settings.TerrainScale,
-
                     0f
                 );
 
-
-            // =================================================
-            // DETAIL
-            // =================================================
 
             float detail =
                 Mathf.PerlinNoise(
@@ -335,22 +314,13 @@ namespace Game.World.Generation
                         detailOffset
                     ) *
                     settings.TerrainDetailScale,
-
                     0f
                 );
 
 
-            // =================================================
-            // BASE HEIGHT
-            // =================================================
-
             float height =
                 settings.SurfaceHeight;
 
-
-            // =================================================
-            // LARGE TERRAIN
-            // =================================================
 
             height +=
                 (
@@ -360,10 +330,6 @@ namespace Game.World.Generation
                 settings.HillHeight;
 
 
-            // =================================================
-            // HILLS
-            // =================================================
-
             height +=
                 (
                     hills -
@@ -371,10 +337,6 @@ namespace Game.World.Generation
                 ) *
                 settings.TerrainVariation;
 
-
-            // =================================================
-            // DETAIL
-            // =================================================
 
             height +=
                 (
@@ -394,4 +356,3 @@ namespace Game.World.Generation
     }
 
 }
-

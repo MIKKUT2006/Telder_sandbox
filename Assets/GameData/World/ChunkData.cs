@@ -1,3 +1,5 @@
+using System;
+
 
 namespace Game.World
 {
@@ -41,6 +43,17 @@ namespace Game.World
         )
         {
 
+            if (
+                x < 0 ||
+                x >= Chunk.SizeX ||
+                y < 0 ||
+                y >= Chunk.SizeY
+            )
+            {
+                return 0;
+            }
+
+
             return Blocks[
                 x +
                 y *
@@ -57,6 +70,17 @@ namespace Game.World
         )
         {
 
+            if (
+                x < 0 ||
+                x >= Chunk.SizeX ||
+                y < 0 ||
+                y >= Chunk.SizeY
+            )
+            {
+                return;
+            }
+
+
             Blocks[
                 x +
                 y *
@@ -69,4 +93,3 @@ namespace Game.World
     }
 
 }
-

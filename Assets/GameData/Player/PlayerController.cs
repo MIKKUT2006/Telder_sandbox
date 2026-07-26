@@ -1,3 +1,5 @@
+using System.Collections;
+
 using UnityEngine;
 
 using Game.World;
@@ -52,10 +54,17 @@ public class PlayerController :
 
 
     // =====================================================
-    // MOVEMENT STATE
+    // MOVEMENT
     // =====================================================
 
     private float verticalVelocity;
+
+
+    // =====================================================
+    // READY
+    // =====================================================
+
+    private bool ready;
 
 
     // =====================================================
@@ -82,29 +91,40 @@ public class PlayerController :
     // START
     // =====================================================
 
-    private void Start()
+    private IEnumerator Start()
     {
+
+        // =================================================
+        // ∆ƒ®Ã WORLD MANAGER
+        // =================================================
+
+        while (
+            WorldManager.Instance == null
+        )
+        {
+            yield return null;
+        }
+
+
+        // =================================================
+        // ∆ƒ®Ã √Œ“Œ¬ÕŒ—“‹ Ã»–¿
+        // =================================================
+
+        while (
+            !WorldManager.Instance.IsReady
+        )
+        {
+            yield return null;
+        }
+
 
         WorldManager worldManager =
             WorldManager.Instance;
 
 
-        if (
-            worldManager == null
-        )
-        {
-
-            Debug.LogError(
-                "PLAYER: WorldManager is null."
-            );
-
-            enabled =
-                false;
-
-            return;
-
-        }
-
+        // =================================================
+        // WORLD COLLISION
+        // =================================================
 
         worldCollision =
             worldManager.GetWorldCollision();
@@ -119,13 +139,14 @@ public class PlayerController :
                 "PLAYER: WorldCollision is null."
             );
 
-            enabled =
-                false;
-
-            return;
+            yield break;
 
         }
 
+
+        // =================================================
+        // PLAYER COLLISION
+        // =================================================
 
         if (
             playerCollision == null
@@ -136,10 +157,7 @@ public class PlayerController :
                 "PLAYER: PlayerCollision is null."
             );
 
-            enabled =
-                false;
-
-            return;
+            yield break;
 
         }
 
@@ -149,15 +167,20 @@ public class PlayerController :
         );
 
 
+        // =================================================
+        // RESET
+        // =================================================
+
         verticalVelocity =
             0f;
 
 
         // =================================================
-        // FIX OVERLAPS
+        // READY
         // =================================================
 
-        playerCollision.ResolveOverlaps();
+        ready =
+            true;
 
 
         Debug.Log(
@@ -175,7 +198,7 @@ public class PlayerController :
     {
 
         if (
-            playerCollision == null
+            !ready
         )
         {
             return;
@@ -195,7 +218,7 @@ public class PlayerController :
     {
 
         if (
-            playerCollision == null
+            !ready
         )
         {
             return;
@@ -211,7 +234,7 @@ public class PlayerController :
 
 
     // =====================================================
-    // HORIZONTAL MOVEMENT
+    // HORIZONTAL
     // =====================================================
 
     private void HandleHorizontalMovement()
@@ -226,7 +249,8 @@ public class PlayerController :
         if (
             Mathf.Abs(
                 horizontal
-            ) < 0.001f
+            ) <
+            0.001f
         )
         {
             return;
@@ -262,7 +286,8 @@ public class PlayerController :
         {
 
             if (
-                verticalVelocity < 0f
+                verticalVelocity <
+                0f
             )
             {
 
@@ -297,7 +322,8 @@ public class PlayerController :
         if (
             Mathf.Abs(
                 movement
-            ) < 0.0001f
+            ) <
+            0.0001f
         )
         {
             return;
@@ -319,7 +345,8 @@ public class PlayerController :
         if (
             !wasGrounded &&
             playerCollision.IsGrounded &&
-            verticalVelocity < 0f
+            verticalVelocity <
+            0f
         )
         {
 

@@ -1,34 +1,37 @@
 using UnityEngine;
-
+using Game.World.Loading;
 
 namespace Game.World
 {
-
-    public class WorldController :
-        MonoBehaviour
+    public class WorldController : MonoBehaviour
     {
-
         // =====================================================
         // PLAYER
         // =====================================================
 
         [Header("Player")]
-
         [SerializeField]
         private Transform player;
+
+
+        // =====================================================
+        // REFERENCES
+        // =====================================================
+
+        private WorldManager worldManager;
+
+        private ChunkLoader loader;
 
 
         // =====================================================
         // STATE
         // =====================================================
 
-        private WorldManager worldManager;
+        private int lastChunkX;
 
+        private int lastChunkY;
 
-        private Vector2Int lastPlayerChunk;
-
-
-        private bool initialized;
+        private bool hasLastChunk;
 
 
         // =====================================================
@@ -37,53 +40,51 @@ namespace Game.World
 
         private void Start()
         {
-
             worldManager =
                 WorldManager.Instance;
 
 
-            if (
-                worldManager == null
-            )
+            if (worldManager == null)
             {
-
                 Debug.LogError(
                     "WORLD CONTROLLER: WorldManager is null."
                 );
 
-                enabled =
-                    false;
-
                 return;
-
             }
 
 
-            if (
-                player == null
-            )
-            {
+            loader =
+                worldManager.GetLoader();
 
+
+            if (loader == null)
+            {
+                Debug.LogError(
+                    "WORLD CONTROLLER: ChunkLoader is null."
+                );
+
+                return;
+            }
+
+
+            if (player == null)
+            {
                 Debug.LogError(
                     "WORLD CONTROLLER: Player reference is null."
                 );
 
-                enabled =
-                    false;
-
                 return;
-
             }
 
 
-            initialized =
-                false;
-
-
-            UpdatePlayerChunk(
-                true
+            Debug.Log(
+                "WORLD CONTROLLER: Initialized."
             );
 
+
+            // Первичная загрузка
+            UpdateChunks();
         }
 
 
@@ -93,46 +94,39 @@ namespace Game.World
 
         private void Update()
         {
-
-            if (
-                worldManager == null
-            )
+            if (loader == null)
             {
                 return;
             }
 
 
-            if (
-                player == null
-            )
+            if (player == null)
             {
                 return;
             }
 
 
-            if (
-                !worldManager.IsReady
-            )
-            {
-                return;
-            }
+            // Сообщаем загрузчику,
+            // где находится игрок.
+            UpdateChunks();
 
 
-            UpdatePlayerChunk(
-                false
-            );
-
+            // Обрабатываем очередь загрузки.
+            loader.Process();
         }
 
 
         // =====================================================
-        // UPDATE PLAYER CHUNK
+        // UPDATE CHUNKS
         // =====================================================
 
-        private void UpdatePlayerChunk(
-            bool forceUpdate
-        )
+        private void UpdateChunks()
         {
+            if (player == null)
+            {
+                return;
+            }
+
 
             int chunkX =
                 Mathf.FloorToInt(
@@ -148,51 +142,43 @@ namespace Game.World
                 );
 
 
-            Vector2Int currentChunk =
-                new Vector2Int(
-                    chunkX,
-                    chunkY
-                );
-
-
-            // =================================================
-            // CHECK SAME CHUNK
-            // =================================================
-
+            // Если игрок всё ещё
+            // в том же чанке,
+            // новую позицию сообщать не нужно.
             if (
-                !forceUpdate &&
-                initialized &&
-                currentChunk ==
-                lastPlayerChunk
+                hasLastChunk &&
+                chunkX == lastChunkX &&
+                chunkY == lastChunkY
             )
             {
                 return;
             }
 
 
-            // =================================================
-            // SAVE
-            // =================================================
-
-            lastPlayerChunk =
-                currentChunk;
+            lastChunkX =
+                chunkX;
 
 
-            initialized =
+            lastChunkY =
+                chunkY;
+
+
+            hasLastChunk =
                 true;
 
 
-            // =================================================
-            // SEND TO WORLD MANAGER
-            // =================================================
-
-            worldManager.UpdatePlayerChunk(
-                currentChunk.x,
-                currentChunk.y
+            Debug.Log(
+                "WORLD CONTROLLER: Player chunk = " +
+                chunkX +
+                ", " +
+                chunkY
             );
 
+
+            loader.SetPlayerChunk(
+                chunkX,
+                chunkY
+            );
         }
-
     }
-
 }

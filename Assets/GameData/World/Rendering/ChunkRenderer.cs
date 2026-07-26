@@ -8,55 +8,79 @@ namespace Game.World.Rendering
     public class ChunkRenderer
     {
 
-        //private readonly ChunkColliderBuilder colliderBuilder;
-        private readonly Dictionary<Vector2Int, GameObject> chunkObjects =
-            new Dictionary<Vector2Int, GameObject>();
+        // =====================================================
+        // CHUNK RENDER DATA
+        // =====================================================
 
-        public ChunkRenderer()
+        private class ChunkRenderData
         {
 
-            //colliderBuilder =
-            //    new ChunkColliderBuilder();
+            public GameObject GameObject;
+
+            public SpriteRenderer Renderer;
+
+            public Texture2D Texture;
+
+            public Sprite Sprite;
 
         }
+
+
+        // =====================================================
+        // LOADED CHUNKS
+        // =====================================================
+
+        private readonly Dictionary<
+            Vector2Int,
+            ChunkRenderData
+        >
+        chunkObjects =
+            new Dictionary<
+                Vector2Int,
+                ChunkRenderData
+            >();
+
+
+        // =====================================================
+        // RENDER
+        // =====================================================
+
         public void Render(
-    Chunk chunk
-)
+            Chunk chunk
+        )
         {
 
-            Vector2Int chunkPosition =
+            if (
+                chunk == null
+            )
+            {
+                return;
+            }
+
+
+            Vector2Int position =
                 new Vector2Int(
                     chunk.X,
                     chunk.Y
                 );
 
 
-            // Если чанк уже существует
+            // =================================================
+            // ЧАНК УЖЕ СУЩЕСТВУЕТ
+            // =================================================
+
             if (
-                chunkObjects.ContainsKey(
-                    chunkPosition
+                chunkObjects.TryGetValue(
+                    position,
+                    out ChunkRenderData existingData
                 )
             )
             {
 
-                GameObject existingChunkObject =
-                    chunkObjects[
-                        chunkPosition
-                    ];
-
-
-                // Обновляем текстуру
                 UpdateChunk(
                     chunk,
-                    existingChunkObject
+                    existingData
                 );
-
-
-                //// Обновляем коллизию
-                //colliderBuilder.Build(
-                //    chunk,
-                //    existingChunkObject
-                //);
 
 
                 return;
@@ -64,7 +88,10 @@ namespace Game.World.Rendering
             }
 
 
-            // Создаём новый объект чанка
+            // =================================================
+            // СОЗДАЁМ GAMEOBJECT
+            // =================================================
+
             GameObject chunkObject =
                 new GameObject(
                     "Chunk_" +
@@ -74,7 +101,10 @@ namespace Game.World.Rendering
                 );
 
 
-            // Устанавливаем слой Ground
+            // =================================================
+            // LAYER
+            // =================================================
+
             int groundLayer =
                 LayerMask.NameToLayer(
                     "Ground"
@@ -92,7 +122,10 @@ namespace Game.World.Rendering
             }
 
 
-            // Устанавливаем позицию чанка
+            // =================================================
+            // POSITION
+            // =================================================
+
             chunkObject.transform.position =
                 new Vector3(
                     chunk.X *
@@ -105,57 +138,147 @@ namespace Game.World.Rendering
                 );
 
 
-            // Создаём SpriteRenderer
+            // =================================================
+            // SPRITE RENDERER
+            // =================================================
+
             SpriteRenderer spriteRenderer =
-                chunkObject.AddComponent<SpriteRenderer>();
+                chunkObject.AddComponent<
+                    SpriteRenderer
+                >();
 
 
-            // Сохраняем объект
-            chunkObjects.Add(
-                chunkPosition,
-                chunkObject
-            );
+            // =================================================
+            // TEXTURE SIZE
+            // =================================================
+
+            int textureWidth =
+                Chunk.SizeX *
+                BlockRenderer.BlockPixelSize;
 
 
-            // Создаём текстуру
-            UpdateChunk(
-                chunk,
-                chunkObject
-            );
+            int textureHeight =
+                Chunk.SizeY *
+                BlockRenderer.BlockPixelSize;
 
 
-            //// Создаём коллизию
-            //colliderBuilder.Build(
-            //    chunk,
-            //    chunkObject
-            //);
-
-        }
-
-
-        private void UpdateChunk(
-            Chunk chunk,
-            GameObject chunkObject
-        )
-        {
-
-            SpriteRenderer renderer =
-                chunkObject.GetComponent<SpriteRenderer>();
-
+            // =================================================
+            // CREATE TEXTURE
+            // =================================================
 
             Texture2D texture =
                 new Texture2D(
-                    Chunk.SizeX *
-                    BlockRenderer.BlockPixelSize,
-
-                    Chunk.SizeY *
-                    BlockRenderer.BlockPixelSize
+                    textureWidth,
+                    textureHeight,
+                    TextureFormat.RGBA32,
+                    false
                 );
 
 
             texture.filterMode =
                 FilterMode.Point;
 
+
+            texture.wrapMode =
+                TextureWrapMode.Clamp;
+
+
+            // =================================================
+            // CREATE SPRITE
+            // =================================================
+
+            Sprite sprite =
+                Sprite.Create(
+                    texture,
+
+                    new Rect(
+                        0,
+                        0,
+                        texture.width,
+                        texture.height
+                    ),
+
+                    new Vector2(
+                        0f,
+                        0f
+                    ),
+
+                    BlockRenderer.BlockPixelSize
+                );
+
+
+            spriteRenderer.sprite =
+                sprite;
+
+
+            // =================================================
+            // SAVE DATA
+            // =================================================
+
+            ChunkRenderData renderData =
+                new ChunkRenderData
+                {
+
+                    GameObject =
+                        chunkObject,
+
+                    Renderer =
+                        spriteRenderer,
+
+                    Texture =
+                        texture,
+
+                    Sprite =
+                        sprite
+
+                };
+
+
+            chunkObjects.Add(
+                position,
+                renderData
+            );
+
+
+            // =================================================
+            // DRAW
+            // =================================================
+
+            UpdateChunk(
+                chunk,
+                renderData
+            );
+
+        }
+
+
+        // =====================================================
+        // UPDATE CHUNK
+        // =====================================================
+
+        private void UpdateChunk(
+            Chunk chunk,
+            ChunkRenderData renderData
+        )
+        {
+
+            if (
+                chunk == null ||
+                renderData == null ||
+                renderData.Texture == null
+            )
+            {
+                return;
+            }
+
+
+            Texture2D texture =
+                renderData.Texture;
+
+
+            // =================================================
+            // DRAW BLOCKS
+            // =================================================
 
             for (
                 int x = 0;
@@ -190,34 +313,21 @@ namespace Game.World.Rendering
             }
 
 
-            texture.Apply();
+            // =================================================
+            // APPLY
+            // =================================================
 
-
-            Sprite sprite =
-    Sprite.Create(
-        texture,
-
-        new Rect(
-            0,
-            0,
-            texture.width,
-            texture.height
-        ),
-
-        new Vector2(
-            0f,
-            0f
-        ),
-
-        BlockRenderer.BlockPixelSize
-    );
-
-
-            renderer.sprite =
-                sprite;
+            texture.Apply(
+                false,
+                false
+            );
 
         }
 
+
+        // =====================================================
+        // REMOVE CHUNK
+        // =====================================================
 
         public void RemoveChunk(
             int chunkX,
@@ -235,7 +345,7 @@ namespace Game.World.Rendering
             if (
                 !chunkObjects.TryGetValue(
                     position,
-                    out GameObject chunkObject
+                    out ChunkRenderData renderData
                 )
             )
             {
@@ -245,10 +355,57 @@ namespace Game.World.Rendering
             }
 
 
-            Object.Destroy(
-                chunkObject
-            );
+            // =================================================
+            // DESTROY SPRITE
+            // =================================================
 
+            if (
+                renderData.Sprite != null
+            )
+            {
+
+                Object.Destroy(
+                    renderData.Sprite
+                );
+
+            }
+
+
+            // =================================================
+            // DESTROY TEXTURE
+            // =================================================
+
+            if (
+                renderData.Texture != null
+            )
+            {
+
+                Object.Destroy(
+                    renderData.Texture
+                );
+
+            }
+
+
+            // =================================================
+            // DESTROY GAMEOBJECT
+            // =================================================
+
+            if (
+                renderData.GameObject != null
+            )
+            {
+
+                Object.Destroy(
+                    renderData.GameObject
+                );
+
+            }
+
+
+            // =================================================
+            // REMOVE DICTIONARY
+            // =================================================
 
             chunkObjects.Remove(
                 position
@@ -257,22 +414,58 @@ namespace Game.World.Rendering
         }
 
 
+        // =====================================================
+        // CLEAR
+        // =====================================================
+
         public void Clear()
         {
 
             foreach (
-                GameObject chunkObject
+                ChunkRenderData renderData
                 in chunkObjects.Values
             )
             {
 
                 if (
-                    chunkObject != null
+                    renderData == null
+                )
+                {
+                    continue;
+                }
+
+
+                if (
+                    renderData.Sprite != null
                 )
                 {
 
                     Object.Destroy(
-                        chunkObject
+                        renderData.Sprite
+                    );
+
+                }
+
+
+                if (
+                    renderData.Texture != null
+                )
+                {
+
+                    Object.Destroy(
+                        renderData.Texture
+                    );
+
+                }
+
+
+                if (
+                    renderData.GameObject != null
+                )
+                {
+
+                    Object.Destroy(
+                        renderData.GameObject
                     );
 
                 }

@@ -13,21 +13,19 @@ namespace Game.World
         public int y;
 
 
-
         public Vector2Int(
             int x,
             int y
         )
         {
 
-            this.x = x;
+            this.x =
+                x;
 
-            this.y = y;
+            this.y =
+                y;
 
         }
-
-
-
 
 
         public override bool Equals(
@@ -35,8 +33,12 @@ namespace Game.World
         )
         {
 
-            if (obj is not Vector2Int)
+            if (
+                obj is not Vector2Int
+            )
+            {
                 return false;
+            }
 
 
             Vector2Int other =
@@ -50,9 +52,6 @@ namespace Game.World
         }
 
 
-
-
-
         public override int GetHashCode()
         {
 
@@ -62,9 +61,6 @@ namespace Game.World
             );
 
         }
-
-
-
 
 
         public static bool operator ==(
@@ -78,9 +74,6 @@ namespace Game.World
                 a.y == b.y;
 
         }
-
-
-
 
 
         public static bool operator !=(
