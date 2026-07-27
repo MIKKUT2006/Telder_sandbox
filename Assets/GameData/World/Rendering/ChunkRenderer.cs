@@ -42,7 +42,7 @@ namespace Game.World.Rendering
 
 
         // =====================================================
-        // RENDER
+        // RENDER CHUNK
         // =====================================================
 
         public void Render(
@@ -66,7 +66,7 @@ namespace Game.World.Rendering
 
 
             // =================================================
-            // ◊¿Õ  ”∆≈ —”Ÿ≈—“¬”≈“
+            // CHUNK ALREADY EXISTS
             // =================================================
 
             if (
@@ -89,7 +89,7 @@ namespace Game.World.Rendering
 
 
             // =================================================
-            // —Œ«ƒ¿®Ã GAMEOBJECT
+            // CREATE GAME OBJECT
             // =================================================
 
             GameObject chunkObject =
@@ -184,6 +184,22 @@ namespace Game.World.Rendering
 
 
             // =================================================
+            // CLEAR INITIAL TEXTURE
+            // =================================================
+
+            Color32[] clearPixels =
+                new Color32[
+                    textureWidth *
+                    textureHeight
+                ];
+
+
+            texture.SetPixels32(
+                clearPixels
+            );
+
+
+            // =================================================
             // CREATE SPRITE
             // =================================================
 
@@ -241,7 +257,7 @@ namespace Game.World.Rendering
 
 
             // =================================================
-            // DRAW
+            // FIRST RENDER
             // =================================================
 
             UpdateChunk(
@@ -253,7 +269,7 @@ namespace Game.World.Rendering
 
 
         // =====================================================
-        // UPDATE CHUNK
+        // UPDATE WHOLE CHUNK
         // =====================================================
 
         private void UpdateChunk(
@@ -277,7 +293,7 @@ namespace Game.World.Rendering
 
 
             // =================================================
-            // DRAW BLOCKS
+            // DRAW ALL BLOCKS
             // =================================================
 
             for (
@@ -326,6 +342,74 @@ namespace Game.World.Rendering
 
 
         // =====================================================
+        // UPDATE SINGLE BLOCK
+        // =====================================================
+
+        public void UpdateBlock(
+            Chunk chunk,
+            int localX,
+            int localY
+        )
+        {
+
+            if (
+                chunk == null
+            )
+            {
+                return;
+            }
+
+
+            Vector2Int position =
+                new Vector2Int(
+                    chunk.X,
+                    chunk.Y
+                );
+
+
+            if (
+                !chunkObjects.TryGetValue(
+                    position,
+                    out ChunkRenderData renderData
+                )
+            )
+            {
+                return;
+            }
+
+
+            if (
+                renderData.Texture == null
+            )
+            {
+                return;
+            }
+
+
+            ushort blockID =
+                chunk.GetBlock(
+                    localX,
+                    localY
+                );
+
+
+            BlockRenderer.DrawBlock(
+                renderData.Texture,
+                localX,
+                localY,
+                blockID
+            );
+
+
+            renderData.Texture.Apply(
+                false,
+                false
+            );
+
+        }
+
+
+        // =====================================================
         // REMOVE CHUNK
         // =====================================================
 
@@ -349,15 +433,9 @@ namespace Game.World.Rendering
                 )
             )
             {
-
                 return;
-
             }
 
-
-            // =================================================
-            // DESTROY SPRITE
-            // =================================================
 
             if (
                 renderData.Sprite != null
@@ -371,10 +449,6 @@ namespace Game.World.Rendering
             }
 
 
-            // =================================================
-            // DESTROY TEXTURE
-            // =================================================
-
             if (
                 renderData.Texture != null
             )
@@ -387,10 +461,6 @@ namespace Game.World.Rendering
             }
 
 
-            // =================================================
-            // DESTROY GAMEOBJECT
-            // =================================================
-
             if (
                 renderData.GameObject != null
             )
@@ -402,10 +472,6 @@ namespace Game.World.Rendering
 
             }
 
-
-            // =================================================
-            // REMOVE DICTIONARY
-            // =================================================
 
             chunkObjects.Remove(
                 position

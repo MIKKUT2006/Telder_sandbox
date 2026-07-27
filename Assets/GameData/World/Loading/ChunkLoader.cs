@@ -179,10 +179,10 @@ namespace Game.World.Loading
 
         public void Process()
         {
-            Debug.Log(
-                "CHUNK LOADER PROCESS: Queue = " +
-                loadQueue.Count
-            );
+            //Debug.Log(
+            //    "CHUNK LOADER PROCESS: Queue = " +
+            //    loadQueue.Count
+            //);
 
             ProcessLoadQueue();
 

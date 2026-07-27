@@ -1,4 +1,3 @@
-
 using Game.World.Collision;
 using UnityEngine;
 
@@ -8,7 +7,7 @@ public class PlayerCollision :
 {
 
     // =====================================================
-    // COLLISION
+    // COLLISION SETTINGS
     // =====================================================
 
     [Header("Collision")]
@@ -83,9 +82,7 @@ public class PlayerCollision :
             worldCollision == null
         )
         {
-
             return;
-
         }
 
 
@@ -98,7 +95,10 @@ public class PlayerCollision :
         // =================================================
 
         if (
-            movement.x != 0f
+            Mathf.Abs(
+                movement.x
+            ) >
+            0.0001f
         )
         {
 
@@ -114,7 +114,10 @@ public class PlayerCollision :
         // =================================================
 
         if (
-            movement.y != 0f
+            Mathf.Abs(
+                movement.y
+            ) >
+            0.0001f
         )
         {
 
@@ -126,7 +129,7 @@ public class PlayerCollision :
 
 
         // =================================================
-        // GROUND CHECK
+        // FINAL GROUND CHECK
         // =================================================
 
         CheckGround();
@@ -155,7 +158,7 @@ public class PlayerCollision :
             );
 
 
-        float step =
+        const float step =
             0.02f;
 
 
@@ -172,7 +175,8 @@ public class PlayerCollision :
             float currentStep =
                 Mathf.Min(
                     step,
-                    distance - moved
+                    distance -
+                    moved
                 );
 
 
@@ -232,7 +236,7 @@ public class PlayerCollision :
             );
 
 
-        float step =
+        const float step =
             0.02f;
 
 
@@ -249,7 +253,8 @@ public class PlayerCollision :
             float currentStep =
                 Mathf.Min(
                     step,
-                    distance - moved
+                    distance -
+                    moved
                 );
 
 
@@ -268,7 +273,8 @@ public class PlayerCollision :
             {
 
                 if (
-                    direction < 0f
+                    direction <
+                    0f
                 )
                 {
 
@@ -373,8 +379,12 @@ public class PlayerCollision :
 
 
         for (
-            int x = minBlockX;
-            x <= maxBlockX;
+            int x =
+                minBlockX;
+
+            x <=
+                maxBlockX;
+
             x++
         )
         {
@@ -399,8 +409,6 @@ public class PlayerCollision :
     }
 
 
-
-
     // =====================================================
     // COLLISION CHECK
     // =====================================================
@@ -410,6 +418,14 @@ public class PlayerCollision :
         float centerY
     )
     {
+
+        if (
+            worldCollision == null
+        )
+        {
+            return false;
+        }
+
 
         float halfWidth =
             colliderSize.x *
@@ -474,15 +490,23 @@ public class PlayerCollision :
 
 
         for (
-            int x = minBlockX;
-            x <= maxBlockX;
+            int x =
+                minBlockX;
+
+            x <=
+                maxBlockX;
+
             x++
         )
         {
 
             for (
-                int y = minBlockY;
-                y <= maxBlockY;
+                int y =
+                    minBlockY;
+
+                y <=
+                    maxBlockY;
+
                 y++
             )
             {
@@ -510,6 +534,30 @@ public class PlayerCollision :
 
 
     // =====================================================
+    // REFRESH AFTER WORLD CHANGE
+    // =====================================================
+
+    public void RefreshAfterWorldChange()
+    {
+
+        if (
+            worldCollision == null
+        )
+        {
+            return;
+        }
+
+
+        // =================================================
+        // СРАЗУ ОБНОВЛЯЕМ СОСТОЯНИЕ ЗЕМЛИ
+        // =================================================
+
+        CheckGround();
+
+    }
+
+
+    // =====================================================
     // RESOLVE OVERLAPS
     // =====================================================
 
@@ -520,9 +568,7 @@ public class PlayerCollision :
             worldCollision == null
         )
         {
-
             return;
-
         }
 
 
@@ -530,42 +576,48 @@ public class PlayerCollision :
             100;
 
 
+        const float resolveStep =
+            0.01f;
+
+
         for (
             int i = 0;
-            i < maxIterations;
+            i <
+            maxIterations;
+
             i++
         )
         {
 
-            bool isOverlapping =
-                CheckCollisionAt(
+            if (
+                !CheckCollisionAt(
                     transform.position.x,
                     transform.position.y
-                );
-
-
-            if (
-                !isOverlapping
+                )
             )
             {
-
                 break;
-
             }
 
 
-            // Выталкиваем игрока вверх
-            // маленькими шагами.
-
             transform.position +=
                 Vector3.up *
-                0.01f;
+                resolveStep;
 
         }
 
 
-        // После исправления позиции
-        // заново проверяем землю.
+        CheckGround();
+
+    }
+
+
+    // =====================================================
+    // FORCE GROUND CHECK
+    // =====================================================
+
+    public void ForceGroundCheck()
+    {
 
         CheckGround();
 
@@ -579,7 +631,21 @@ public class PlayerCollision :
     public Vector2 GetColliderSize()
     {
 
-        return colliderSize;
+        return
+            colliderSize;
+
+    }
+
+
+    // =====================================================
+    // GET WORLD COLLISION
+    // =====================================================
+
+    public WorldCollision GetWorldCollision()
+    {
+
+        return
+            worldCollision;
 
     }
 
@@ -599,4 +665,3 @@ public class PlayerCollision :
     }
 
 }
-

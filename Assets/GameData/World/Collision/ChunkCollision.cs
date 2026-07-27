@@ -333,12 +333,12 @@ namespace Game.World.Collision
         // =====================================================
 
         private void CreateCollider(
-            GameObject parent,
-            int x,
-            int y,
-            int width,
-            int height
-        )
+    GameObject parent,
+    int x,
+    int y,
+    int width,
+    int height
+)
         {
 
             GameObject colliderObject =
@@ -348,6 +348,23 @@ namespace Game.World.Collision
                     "_" +
                     y
                 );
+
+
+            int groundLayer =
+                LayerMask.NameToLayer(
+                    "Ground"
+                );
+
+
+            if (
+                groundLayer != -1
+            )
+            {
+
+                colliderObject.layer =
+                    groundLayer;
+
+            }
 
 
             colliderObject.transform.SetParent(

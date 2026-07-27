@@ -754,7 +754,304 @@ namespace Game.World
             return false;
 
         }
+        public bool SetBlock(
+    int worldX,
+    int worldY,
+    ushort blockID
+)
+        {
 
+            if (
+                world == null
+            )
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // WORLD -> CHUNK
+            // =====================================================
+
+            int chunkX =
+                Mathf.FloorToInt(
+                    (float)worldX /
+                    Chunk.SizeX
+                );
+
+
+            int chunkY =
+                Mathf.FloorToInt(
+                    (float)worldY /
+                    Chunk.SizeY
+                );
+
+
+            Chunk chunk =
+                world.GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (
+                chunk == null
+            )
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // LOCAL
+            // =====================================================
+
+            int localX =
+                worldX -
+                chunkX *
+                Chunk.SizeX;
+
+
+            int localY =
+                worldY -
+                chunkY *
+                Chunk.SizeY;
+
+
+            if (
+                localX < 0
+            )
+            {
+                localX +=
+                    Chunk.SizeX;
+            }
+
+
+            if (
+                localY < 0
+            )
+            {
+                localY +=
+                    Chunk.SizeY;
+            }
+
+
+            // =====================================================
+            // OLD
+            // =====================================================
+
+            ushort oldBlockID =
+                chunk.GetBlock(
+                    localX,
+                    localY
+                );
+
+
+            if (
+                oldBlockID ==
+                blockID
+            )
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // SET
+            // =====================================================
+
+            chunk.SetBlock(
+                localX,
+                localY,
+                blockID
+            );
+
+
+            // =====================================================
+            // UPDATE RENDER
+            // =====================================================
+
+            if (
+                renderer != null
+            )
+            {
+
+                renderer.UpdateBlock(
+                    chunk,
+                    localX,
+                    localY
+                );
+
+            }
+
+
+            // =====================================================
+            // UPDATE COLLISION
+            // =====================================================
+
+            if (
+                chunkCollision != null
+            )
+            {
+
+                chunkCollision.BuildChunkCollision(
+                    chunk
+                );
+
+            }
+
+
+            // =====================================================
+            // IMPORTANT:
+            // UPDATE NEIGHBOUR CHUNKS
+            //
+            // Если блок находится на границе чанка,
+            // соседняя коллизия может зависеть от него.
+            // =====================================================
+
+            if (
+                localX == 0
+            )
+            {
+
+                UpdateChunkBorder(
+                    chunkX - 1,
+                    chunkY
+                );
+
+            }
+
+
+            if (
+                localX ==
+                Chunk.SizeX - 1
+            )
+            {
+
+                UpdateChunkBorder(
+                    chunkX + 1,
+                    chunkY
+                );
+
+            }
+
+
+            if (
+                localY == 0
+            )
+            {
+
+                UpdateChunkBorder(
+                    chunkX,
+                    chunkY - 1
+                );
+
+            }
+
+
+            if (
+                localY ==
+                Chunk.SizeY - 1
+            )
+            {
+
+                UpdateChunkBorder(
+                    chunkX,
+                    chunkY + 1
+                );
+
+            }
+
+
+            return true;
+
+        }
+
+        private void RebuildChunkCollision(
+    int chunkX,
+    int chunkY
+)
+        {
+            if (
+                world == null ||
+                chunkCollision == null
+            )
+            {
+                return;
+            }
+
+
+            Chunk chunk =
+                world.GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (
+                chunk == null
+            )
+            {
+                return;
+            }
+
+
+            chunkCollision.BuildChunkCollision(
+                chunk
+            );
+        }
+
+        private void UpdateChunkBorder(
+    int chunkX,
+    int chunkY
+)
+        {
+
+            Chunk neighbour =
+                world.GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (
+                neighbour == null
+            )
+            {
+                return;
+            }
+
+
+            if (
+                renderer != null
+            )
+            {
+
+                renderer.Render(
+                    neighbour
+                );
+
+            }
+
+
+            if (
+                chunkCollision != null
+            )
+            {
+
+                chunkCollision.BuildChunkCollision(
+                    neighbour
+                );
+
+            }
+
+        }
+
+        public ChunkRenderer GetChunkRenderer()
+        {
+            return renderer;
+        }
     }
+
 
 }

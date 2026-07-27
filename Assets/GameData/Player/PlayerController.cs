@@ -1,7 +1,4 @@
-using System.Collections;
-
 using UnityEngine;
-
 using Game.World;
 using Game.World.Collision;
 
@@ -23,103 +20,88 @@ public class PlayerController :
 
     [SerializeField]
     private float jumpForce =
-        12f;
+        8f;
 
 
     [SerializeField]
     private float gravity =
-        45f;
+        25f;
 
 
     [SerializeField]
     private float maxFallSpeed =
-        25f;
+        20f;
 
 
     // =====================================================
-    // COLLISION
+    // REFERENCES
     // =====================================================
 
-    [Header("Collision")]
-
-    [SerializeField]
     private PlayerCollision playerCollision;
-
-
-    // =====================================================
-    // WORLD
-    // =====================================================
 
     private WorldCollision worldCollision;
 
 
     // =====================================================
-    // MOVEMENT
+    // STATE
     // =====================================================
 
     private float verticalVelocity;
 
+    private float horizontalInput;
 
-    // =====================================================
-    // READY
-    // =====================================================
-
-    private bool ready;
-
-
-    // =====================================================
-    // AWAKE
-    // =====================================================
-
-    private void Awake()
-    {
-
-        if (
-            playerCollision == null
-        )
-        {
-
-            playerCollision =
-                GetComponent<PlayerCollision>();
-
-        }
-
-    }
+    private bool initialized;
 
 
     // =====================================================
     // START
     // =====================================================
 
-    private IEnumerator Start()
+    private void Start()
     {
 
         // =================================================
-        // ∆ƒ®Ã WORLD MANAGER
+        // PLAYER COLLISION
         // =================================================
 
-        while (
-            WorldManager.Instance == null
+        playerCollision =
+            GetComponent<PlayerCollision>();
+
+
+        if (
+            playerCollision == null
         )
         {
-            yield return null;
+
+            Debug.LogError(
+                "PLAYER CONTROLLER: PlayerCollision not found."
+            );
+
+            return;
+
         }
 
 
         // =================================================
-        // ∆ƒ®Ã √Œ“Œ¬ÕŒ—“‹ Ã»–¿
+        // WORLD MANAGER
         // =================================================
-
-        while (
-            !WorldManager.Instance.IsReady
-        )
-        {
-            yield return null;
-        }
-
 
         WorldManager worldManager =
             WorldManager.Instance;
+
+
+        if (
+            worldManager == null
+        )
+        {
+
+            Debug.LogError(
+                "PLAYER CONTROLLER: WorldManager is null."
+            );
+
+            return;
+
+        }
 
 
         // =================================================
@@ -136,31 +118,17 @@ public class PlayerController :
         {
 
             Debug.LogError(
-                "PLAYER: WorldCollision is null."
+                "PLAYER CONTROLLER: WorldCollision is null."
             );
 
-            yield break;
+            return;
 
         }
 
 
         // =================================================
-        // PLAYER COLLISION
+        // INITIALIZE COLLISION
         // =================================================
-
-        if (
-            playerCollision == null
-        )
-        {
-
-            Debug.LogError(
-                "PLAYER: PlayerCollision is null."
-            );
-
-            yield break;
-
-        }
-
 
         playerCollision.Initialize(
             worldCollision
@@ -168,23 +136,18 @@ public class PlayerController :
 
 
         // =================================================
-        // RESET
+        // INITIAL GROUND CHECK
         // =================================================
 
-        verticalVelocity =
-            0f;
+        playerCollision.ForceGroundCheck();
 
 
-        // =================================================
-        // READY
-        // =================================================
-
-        ready =
+        initialized =
             true;
 
 
         Debug.Log(
-            "PLAYER: INITIALIZED."
+            "PLAYER CONTROLLER: INITIALIZED."
         );
 
     }
@@ -198,14 +161,37 @@ public class PlayerController :
     {
 
         if (
-            !ready
+            !initialized
         )
         {
             return;
         }
 
 
-        HandleJump();
+        // =================================================
+        // HORIZONTAL INPUT
+        // =================================================
+
+        horizontalInput =
+            Input.GetAxisRaw(
+                "Horizontal"
+            );
+
+
+        // =================================================
+        // JUMP
+        // =================================================
+
+        if (
+            Input.GetKeyDown(
+                KeyCode.Space
+            )
+        )
+        {
+
+            Jump();
+
+        }
 
     }
 
@@ -218,57 +204,65 @@ public class PlayerController :
     {
 
         if (
-            !ready
+            !initialized
         )
         {
             return;
         }
 
 
-        HandleHorizontalMovement();
+        // =================================================
+        // HORIZONTAL MOVEMENT
+        // =================================================
 
-
-        HandleGravity();
-
-    }
-
-
-    // =====================================================
-    // HORIZONTAL
-    // =====================================================
-
-    private void HandleHorizontalMovement()
-    {
-
-        float horizontal =
-            Input.GetAxisRaw(
-                "Horizontal"
-            );
-
-
-        if (
-            Mathf.Abs(
-                horizontal
-            ) <
-            0.001f
-        )
-        {
-            return;
-        }
-
-
-        float movement =
-            horizontal *
+        float horizontalMovement =
+            horizontalInput *
             moveSpeed *
             Time.fixedDeltaTime;
 
 
-        playerCollision.Move(
+        // =================================================
+        // GRAVITY
+        // =================================================
+
+        ApplyGravity();
+
+
+        // =================================================
+        // TOTAL MOVEMENT
+        // =================================================
+
+        Vector2 movement =
             new Vector2(
-                movement,
-                0f
-            )
+                horizontalMovement,
+                verticalVelocity *
+                Time.fixedDeltaTime
+            );
+
+
+        // =================================================
+        // MOVE
+        // =================================================
+
+        playerCollision.Move(
+            movement
         );
+
+
+        // =================================================
+        // STOP VERTICAL VELOCITY
+        // =================================================
+
+        if (
+            playerCollision.IsGrounded &&
+            verticalVelocity < 0f
+        )
+        {
+
+            verticalVelocity =
+                0f;
+
+        }
 
     }
 
@@ -277,7 +271,7 @@ public class PlayerController :
     // GRAVITY
     // =====================================================
 
-    private void HandleGravity()
+    private void ApplyGravity()
     {
 
         if (
@@ -296,62 +290,25 @@ public class PlayerController :
 
             }
 
-        }
-        else
-        {
 
-            verticalVelocity -=
-                gravity *
-                Time.fixedDeltaTime;
-
-
-            verticalVelocity =
-                Mathf.Max(
-                    verticalVelocity,
-                    -maxFallSpeed
-                );
+            return;
 
         }
 
 
-        float movement =
-            verticalVelocity *
+        verticalVelocity -=
+            gravity *
             Time.fixedDeltaTime;
 
 
         if (
-            Mathf.Abs(
-                movement
-            ) <
-            0.0001f
-        )
-        {
-            return;
-        }
-
-
-        bool wasGrounded =
-            playerCollision.IsGrounded;
-
-
-        playerCollision.Move(
-            new Vector2(
-                0f,
-                movement
-            )
-        );
-
-
-        if (
-            !wasGrounded &&
-            playerCollision.IsGrounded &&
             verticalVelocity <
-            0f
+            -maxFallSpeed
         )
         {
 
             verticalVelocity =
-                0f;
+                -maxFallSpeed;
 
         }
 
@@ -362,18 +319,8 @@ public class PlayerController :
     // JUMP
     // =====================================================
 
-    private void HandleJump()
+    private void Jump()
     {
-
-        if (
-            !Input.GetKeyDown(
-                KeyCode.Space
-            )
-        )
-        {
-            return;
-        }
-
 
         if (
             !playerCollision.IsGrounded
@@ -385,6 +332,85 @@ public class PlayerController :
 
         verticalVelocity =
             jumpForce;
+
+    }
+
+
+    // =====================================================
+    // WORLD BLOCK CHANGED
+    // =====================================================
+
+    public void OnWorldBlockChanged()
+    {
+
+        if (
+            !initialized ||
+            playerCollision == null
+        )
+        {
+            return;
+        }
+
+
+        // =================================================
+        // Œ¡ÕŒ¬Àﬂ≈Ã —Œ—“ŒﬂÕ»≈ «≈ÃÀ»
+        // =================================================
+
+        playerCollision.RefreshAfterWorldChange();
+
+
+        // =================================================
+        // ≈—À» «≈ÃÀ» Õ≈“
+        // =================================================
+
+        if (
+            !playerCollision.IsGrounded
+        )
+        {
+
+            // ÕÂ ÓÒÚ‡‚ÎˇÂÏ Ë„ÓÍ‡
+            // Ò ÓÚËˆ‡ÚÂÎ¸ÌÓÈ ÒÍÓÓÒÚ¸˛,
+            // ÍÓÚÓ‡ˇ ÏÓ„Î‡ ·˚Ú¸ Ò·Ó¯ÂÌ‡
+            // ‰Ó ËÁÏÂÌÂÌËˇ ·ÎÓÍ‡.
+
+            if (
+                verticalVelocity >=
+                0f
+            )
+            {
+
+                verticalVelocity =
+                    -0.01f;
+
+            }
+
+        }
+
+    }
+
+
+    // =====================================================
+    // GET PLAYER COLLISION
+    // =====================================================
+
+    public PlayerCollision GetPlayerCollision()
+    {
+
+        return
+            playerCollision;
+
+    }
+
+
+    // =====================================================
+    // GET VERTICAL VELOCITY
+    // =====================================================
+
+    public float GetVerticalVelocity()
+    {
+
+        return
+            verticalVelocity;
 
     }
 

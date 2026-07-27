@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
-
 
 namespace Game.World
 {
@@ -13,48 +11,19 @@ namespace Game.World
 
 
         // =====================================================
-        // CHUNKS
+        // CREATE CHUNK
         // =====================================================
 
-        public Chunk GetChunk(
-            int x,
-            int y
-        )
-        {
-
-            Vector2Int position =
-                new Vector2Int(
-                    x,
-                    y
-                );
-
-
-            if (
-                chunks.TryGetValue(
-                    position,
-                    out Chunk chunk
-                )
-            )
-            {
-                return chunk;
-            }
-
-
-            return null;
-
-        }
-
-
         public Chunk CreateChunk(
-            int x,
-            int y
+            int chunkX,
+            int chunkY
         )
         {
 
             Vector2Int position =
                 new Vector2Int(
-                    x,
-                    y
+                    chunkX,
+                    chunkY
                 );
 
 
@@ -65,14 +34,16 @@ namespace Game.World
                 )
             )
             {
+
                 return existingChunk;
+
             }
 
 
             Chunk chunk =
                 new Chunk(
-                    x,
-                    y
+                    chunkX,
+                    chunkY
                 );
 
 
@@ -87,61 +58,52 @@ namespace Game.World
         }
 
 
+        // =====================================================
+        // GET CHUNK
+        // =====================================================
+
+        public Chunk GetChunk(
+            int chunkX,
+            int chunkY
+        )
+        {
+
+            chunks.TryGetValue(
+                new Vector2Int(
+                    chunkX,
+                    chunkY
+                ),
+                out Chunk chunk
+            );
+
+
+            return chunk;
+
+        }
+
+
+        // =====================================================
+        // REMOVE CHUNK
+        // =====================================================
+
         public void RemoveChunk(
             int chunkX,
             int chunkY
         )
         {
 
-            Vector2Int position =
+            chunks.Remove(
                 new Vector2Int(
                     chunkX,
                     chunkY
-                );
-
-
-            chunks.Remove(
-                position
-            );
-
-        }
-
-
-        public bool HasChunk(
-            int x,
-            int y
-        )
-        {
-
-            return chunks.ContainsKey(
-                new Vector2Int(
-                    x,
-                    y
                 )
             );
 
         }
 
 
-        public void Clear()
-        {
-
-            chunks.Clear();
-
-        }
-
-
-        public int ChunkCount
-        {
-            get
-            {
-                return chunks.Count;
-            }
-        }
-
-
         // =====================================================
-        // BLOCK GET
+        // GET BLOCK
         // =====================================================
 
         public ushort GetBlock(
@@ -151,14 +113,30 @@ namespace Game.World
         {
 
             int chunkX =
-                WorldToChunk(
-                    worldX
+                FloorDiv(
+                    worldX,
+                    Chunk.SizeX
                 );
 
 
             int chunkY =
-                WorldToChunk(
-                    worldY
+                FloorDiv(
+                    worldY,
+                    Chunk.SizeY
+                );
+
+
+            int localX =
+                Mod(
+                    worldX,
+                    Chunk.SizeX
+                );
+
+
+            int localY =
+                Mod(
+                    worldY,
+                    Chunk.SizeY
                 );
 
 
@@ -169,27 +147,14 @@ namespace Game.World
                 );
 
 
-            // Чанк не загружен.
-            // Для игрового мира считаем это воздухом.
-
             if (
                 chunk == null
             )
             {
+
                 return 0;
+
             }
-
-
-            int localX =
-                WorldToLocal(
-                    worldX
-                );
-
-
-            int localY =
-                WorldToLocal(
-                    worldY
-                );
 
 
             return chunk.GetBlock(
@@ -201,7 +166,7 @@ namespace Game.World
 
 
         // =====================================================
-        // BLOCK SET
+        // SET BLOCK
         // =====================================================
 
         public bool SetBlock(
@@ -212,14 +177,30 @@ namespace Game.World
         {
 
             int chunkX =
-                WorldToChunk(
-                    worldX
+                FloorDiv(
+                    worldX,
+                    Chunk.SizeX
                 );
 
 
             int chunkY =
-                WorldToChunk(
-                    worldY
+                FloorDiv(
+                    worldY,
+                    Chunk.SizeY
+                );
+
+
+            int localX =
+                Mod(
+                    worldX,
+                    Chunk.SizeX
+                );
+
+
+            int localY =
+                Mod(
+                    worldY,
+                    Chunk.SizeY
                 );
 
 
@@ -230,28 +211,23 @@ namespace Game.World
                 );
 
 
-            // Нельзя изменить блок
-            // в незагруженном чанке.
+            // =================================================
+            // ЧАНК НЕ ЗАГРУЖЕН
+            // =================================================
 
             if (
                 chunk == null
             )
             {
+
                 return false;
+
             }
 
 
-            int localX =
-                WorldToLocal(
-                    worldX
-                );
-
-
-            int localY =
-                WorldToLocal(
-                    worldY
-                );
-
+            // =================================================
+            // ПРОВЕРЯЕМ СТАРОЕ ЗНАЧЕНИЕ
+            // =================================================
 
             ushort oldBlockID =
                 chunk.GetBlock(
@@ -260,17 +236,20 @@ namespace Game.World
                 );
 
 
-            // Если блок уже такой же,
-            // ничего не делаем.
-
             if (
                 oldBlockID ==
                 blockID
             )
             {
+
                 return false;
+
             }
 
+
+            // =================================================
+            // МЕНЯЕМ БЛОК
+            // =================================================
 
             chunk.SetBlock(
                 localX,
@@ -285,46 +264,68 @@ namespace Game.World
 
 
         // =====================================================
-        // WORLD → CHUNK
+        // FLOOR DIV
         // =====================================================
 
-        private int WorldToChunk(
-            int coordinate
+        private int FloorDiv(
+            int value,
+            int divisor
         )
         {
 
-            return Mathf.FloorToInt(
-                (float)coordinate /
-                Chunk.SizeX
-            );
+            int result =
+                value /
+                divisor;
+
+
+            int remainder =
+                value %
+                divisor;
+
+
+            if (
+                remainder != 0 &&
+                value < 0
+            )
+            {
+
+                result--;
+
+            }
+
+
+            return result;
 
         }
 
 
         // =====================================================
-        // WORLD → LOCAL
+        // MOD
         // =====================================================
 
-        private int WorldToLocal(
-            int coordinate
+        private int Mod(
+            int value,
+            int divisor
         )
         {
 
-            int local =
-                coordinate %
-                Chunk.SizeX;
+            int result =
+                value %
+                divisor;
 
 
             if (
-                local < 0
+                result < 0
             )
             {
-                local +=
-                    Chunk.SizeX;
+
+                result +=
+                    divisor;
+
             }
 
 
-            return local;
+            return result;
 
         }
 
