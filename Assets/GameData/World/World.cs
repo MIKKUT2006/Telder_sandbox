@@ -6,8 +6,15 @@ namespace Game.World
     public class World
     {
 
-        private readonly Dictionary<Vector2Int, Chunk> chunks =
-            new Dictionary<Vector2Int, Chunk>();
+        private readonly Dictionary<
+            UnityEngine.Vector2Int,
+            Chunk
+        >
+        chunks =
+            new Dictionary<
+                UnityEngine.Vector2Int,
+                Chunk
+            >();
 
 
         // =====================================================
@@ -20,8 +27,8 @@ namespace Game.World
         )
         {
 
-            Vector2Int position =
-                new Vector2Int(
+            UnityEngine.Vector2Int position =
+                new UnityEngine.Vector2Int(
                     chunkX,
                     chunkY
                 );
@@ -69,7 +76,7 @@ namespace Game.World
         {
 
             chunks.TryGetValue(
-                new Vector2Int(
+                new UnityEngine.Vector2Int(
                     chunkX,
                     chunkY
                 ),
@@ -93,7 +100,7 @@ namespace Game.World
         {
 
             chunks.Remove(
-                new Vector2Int(
+                new UnityEngine.Vector2Int(
                     chunkX,
                     chunkY
                 )
@@ -103,7 +110,7 @@ namespace Game.World
 
 
         // =====================================================
-        // GET BLOCK
+        // GET FOREGROUND BLOCK
         // =====================================================
 
         public ushort GetBlock(
@@ -112,32 +119,14 @@ namespace Game.World
         )
         {
 
-            int chunkX =
-                FloorDiv(
-                    worldX,
-                    Chunk.SizeX
-                );
-
-
-            int chunkY =
-                FloorDiv(
-                    worldY,
-                    Chunk.SizeY
-                );
-
-
-            int localX =
-                Mod(
-                    worldX,
-                    Chunk.SizeX
-                );
-
-
-            int localY =
-                Mod(
-                    worldY,
-                    Chunk.SizeY
-                );
+            GetChunkCoordinates(
+                worldX,
+                worldY,
+                out int chunkX,
+                out int chunkY,
+                out int localX,
+                out int localY
+            );
 
 
             Chunk chunk =
@@ -157,16 +146,17 @@ namespace Game.World
             }
 
 
-            return chunk.GetBlock(
-                localX,
-                localY
-            );
+            return
+                chunk.GetBlock(
+                    localX,
+                    localY
+                );
 
         }
 
 
         // =====================================================
-        // SET BLOCK
+        // SET FOREGROUND BLOCK
         // =====================================================
 
         public bool SetBlock(
@@ -176,32 +166,14 @@ namespace Game.World
         )
         {
 
-            int chunkX =
-                FloorDiv(
-                    worldX,
-                    Chunk.SizeX
-                );
-
-
-            int chunkY =
-                FloorDiv(
-                    worldY,
-                    Chunk.SizeY
-                );
-
-
-            int localX =
-                Mod(
-                    worldX,
-                    Chunk.SizeX
-                );
-
-
-            int localY =
-                Mod(
-                    worldY,
-                    Chunk.SizeY
-                );
+            GetChunkCoordinates(
+                worldX,
+                worldY,
+                out int chunkX,
+                out int chunkY,
+                out int localX,
+                out int localY
+            );
 
 
             Chunk chunk =
@@ -210,10 +182,6 @@ namespace Game.World
                     chunkY
                 );
 
-
-            // =================================================
-            // ЧАНК НЕ ЗАГРУЖЕН
-            // =================================================
 
             if (
                 chunk == null
@@ -224,10 +192,6 @@ namespace Game.World
 
             }
 
-
-            // =================================================
-            // ПРОВЕРЯЕМ СТАРОЕ ЗНАЧЕНИЕ
-            // =================================================
 
             ushort oldBlockID =
                 chunk.GetBlock(
@@ -247,10 +211,6 @@ namespace Game.World
             }
 
 
-            // =================================================
-            // МЕНЯЕМ БЛОК
-            // =================================================
-
             chunk.SetBlock(
                 localX,
                 localY,
@@ -259,6 +219,164 @@ namespace Game.World
 
 
             return true;
+
+        }
+
+
+        // =====================================================
+        // GET BACKGROUND BLOCK
+        // =====================================================
+
+        public ushort GetBackground(
+            int worldX,
+            int worldY
+        )
+        {
+
+            GetChunkCoordinates(
+                worldX,
+                worldY,
+                out int chunkX,
+                out int chunkY,
+                out int localX,
+                out int localY
+            );
+
+
+            Chunk chunk =
+                GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (
+                chunk == null
+            )
+            {
+
+                return 0;
+
+            }
+
+
+            return
+                chunk.GetBackground(
+                    localX,
+                    localY
+                );
+
+        }
+
+
+        // =====================================================
+        // SET BACKGROUND BLOCK
+        // =====================================================
+
+        public bool SetBackground(
+            int worldX,
+            int worldY,
+            ushort blockID
+        )
+        {
+
+            GetChunkCoordinates(
+                worldX,
+                worldY,
+                out int chunkX,
+                out int chunkY,
+                out int localX,
+                out int localY
+            );
+
+
+            Chunk chunk =
+                GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (
+                chunk == null
+            )
+            {
+
+                return false;
+
+            }
+
+
+            ushort oldBlockID =
+                chunk.GetBackground(
+                    localX,
+                    localY
+                );
+
+
+            if (
+                oldBlockID ==
+                blockID
+            )
+            {
+
+                return false;
+
+            }
+
+
+            chunk.SetBackground(
+                localX,
+                localY,
+                blockID
+            );
+
+
+            return true;
+
+        }
+
+
+        // =====================================================
+        // GET CHUNK COORDINATES
+        // =====================================================
+
+        private void GetChunkCoordinates(
+            int worldX,
+            int worldY,
+            out int chunkX,
+            out int chunkY,
+            out int localX,
+            out int localY
+        )
+        {
+
+            chunkX =
+                FloorDiv(
+                    worldX,
+                    Chunk.SizeX
+                );
+
+
+            chunkY =
+                FloorDiv(
+                    worldY,
+                    Chunk.SizeY
+                );
+
+
+            localX =
+                Mod(
+                    worldX,
+                    Chunk.SizeX
+                );
+
+
+            localY =
+                Mod(
+                    worldY,
+                    Chunk.SizeY
+                );
 
         }
 

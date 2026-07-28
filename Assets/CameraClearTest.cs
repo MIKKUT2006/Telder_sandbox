@@ -1,34 +1,34 @@
-using UnityEngine;
+//using UnityEngine;
 
-public class CameraClearTest :
-    MonoBehaviour
-{
+//public class CameraClearTest :
+//    MonoBehaviour
+//{
 
-    private Camera cam;
-
-
-    private void Awake()
-    {
-
-        cam =
-            GetComponent<Camera>();
+//    private Camera cam;
 
 
-        if (
-            cam == null
-        )
-        {
-            return;
-        }
+//    private void Awake()
+//    {
+
+//        cam =
+//            GetComponent<Camera>();
 
 
-        cam.clearFlags =
-            CameraClearFlags.SolidColor;
+//        if (
+//            cam == null
+//        )
+//        {
+//            return;
+//        }
 
 
-        cam.backgroundColor =
-            Color.black;
+//        cam.clearFlags =
+//            CameraClearFlags.SolidColor;
 
-    }
 
-}
+//        cam.backgroundColor =
+//            Color.black;
+
+//    }
+
+//}

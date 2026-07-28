@@ -39,47 +39,52 @@ namespace Game.World.Rendering
                 BlockPixelSize;
 
 
-            // =====================================================
-            // СНАЧАЛА ОЧИЩАЕМ ОБЛАСТЬ БЛОКА
-            //
-            // Это обязательно.
-            //
-            // Если старый блок был STONE,
-            // а новый блок AIR,
-            // старые пиксели нельзя оставлять.
-            // =====================================================
-
-            Color[] clearPixels =
-                new Color[
-                    BlockPixelSize *
-                    BlockPixelSize
-                ];
-
-
-            target.SetPixels(
-                pixelX,
-                pixelY,
-                BlockPixelSize,
-                BlockPixelSize,
-                clearPixels
-            );
-
-
-            // =====================================================
+            // =================================================
             // AIR
-            // =====================================================
+            // =================================================
 
             if (
                 blockID == 0
             )
             {
+
+                Color[] emptyPixels =
+                    new Color[
+                        BlockPixelSize *
+                        BlockPixelSize
+                    ];
+
+
+                for (
+                    int i = 0;
+                    i < emptyPixels.Length;
+                    i++
+                )
+                {
+
+                    emptyPixels[i] =
+                        Color.clear;
+
+                }
+
+
+                target.SetPixels(
+                    pixelX,
+                    pixelY,
+                    BlockPixelSize,
+                    BlockPixelSize,
+                    emptyPixels
+                );
+
+
                 return;
+
             }
 
 
-            // =====================================================
-            // BLOCK DOES NOT EXIST
-            // =====================================================
+            // =================================================
+            // UNKNOWN BLOCK
+            // =================================================
 
             if (
                 !BlockDatabase.Contains(
@@ -91,27 +96,11 @@ namespace Game.World.Rendering
             }
 
 
-            // =====================================================
-            // GET BLOCK
-            // =====================================================
-
             var block =
                 BlockDatabase.Get(
                     blockID
                 );
 
-
-            if (
-                block == null
-            )
-            {
-                return;
-            }
-
-
-            // =====================================================
-            // GET TEXTURE
-            // =====================================================
 
             Texture2D texture =
                 TextureManager.Get(
@@ -127,9 +116,9 @@ namespace Game.World.Rendering
             }
 
 
-            // =====================================================
+            // =================================================
             // DRAW
-            // =====================================================
+            // =================================================
 
             target.SetPixels(
                 pixelX,

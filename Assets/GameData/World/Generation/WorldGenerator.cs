@@ -1,20 +1,34 @@
 using Game.Content;
-
 using Game.World.Generation.Ores;
 
 using UnityEngine;
 
-
 namespace Game.World.Generation
 {
-
     public class WorldGenerator
     {
 
+        // =====================================================
+        // SETTINGS
+        // =====================================================
+
         private readonly WorldSettings settings;
+
+        private readonly CaveSettings caveSettings;
+
+
+        // =====================================================
+        // GENERATORS
+        // =====================================================
 
         private readonly OreGenerator oreGenerator;
 
+        private readonly CaveGenerator caveGenerator;
+
+
+        // =====================================================
+        // TERRAIN OFFSETS
+        // =====================================================
 
         private readonly float terrainOffset;
 
@@ -22,6 +36,10 @@ namespace Game.World.Generation
 
         private readonly float detailOffset;
 
+
+        // =====================================================
+        // CONSTRUCTOR
+        // =====================================================
 
         public WorldGenerator(
             WorldSettings settings
@@ -32,11 +50,34 @@ namespace Game.World.Generation
                 settings;
 
 
+            // =================================================
+            // ORES
+            // =================================================
+
             oreGenerator =
                 new OreGenerator(
                     settings
                 );
 
+
+            // =================================================
+            // CAVES
+            // =================================================
+
+            caveSettings =
+                new CaveSettings();
+
+
+            caveGenerator =
+                new CaveGenerator(
+                    settings,
+                    caveSettings
+                );
+
+
+            // =================================================
+            // TERRAIN SEEDS
+            // =================================================
 
             terrainOffset =
                 settings.Seed *
@@ -53,13 +94,17 @@ namespace Game.World.Generation
                 0.98765f;
 
 
+            // =================================================
+            // ORES
+            // =================================================
+
             oreGenerator.ReloadOres();
 
         }
 
 
         // =====================================================
-        // ORES
+        // RELOAD ORES
         // =====================================================
 
         public void ReloadOres()
@@ -71,7 +116,7 @@ namespace Game.World.Generation
 
 
         // =====================================================
-        // GENERATE CHUNK DATA
+        // GENERATE CHUNK
         // =====================================================
 
         public ChunkData GenerateChunkData(
@@ -81,10 +126,7 @@ namespace Game.World.Generation
         {
 
             ChunkData data =
-                new ChunkData(
-                    chunkX,
-                    chunkY
-                );
+                new ChunkData();
 
 
             for (
@@ -100,6 +142,12 @@ namespace Game.World.Generation
                     localX;
 
 
+                int surfaceHeight =
+                    GetSurfaceHeight(
+                        worldX
+                    );
+
+
                 for (
                     int localY = 0;
                     localY < Chunk.SizeY;
@@ -113,17 +161,33 @@ namespace Game.World.Generation
                         localY;
 
 
-                    ushort blockID =
-                        GenerateBlock(
+                    ushort foreground =
+                        GenerateForegroundBlock(
                             worldX,
-                            worldY
+                            worldY,
+                            surfaceHeight
                         );
 
 
                     data.SetBlock(
                         localX,
                         localY,
-                        blockID
+                        foreground
+                    );
+
+
+                    ushort background =
+                        GenerateBackgroundBlock(
+                            worldX,
+                            worldY,
+                            surfaceHeight
+                        );
+
+
+                    data.SetBackground(
+                        localX,
+                        localY,
+                        background
                     );
 
                 }
@@ -137,78 +201,56 @@ namespace Game.World.Generation
 
 
         // =====================================================
-        // GENERATE BLOCK
+        // FOREGROUND
         // =====================================================
 
-        private ushort GenerateBlock(
-     int worldX,
-     int worldY
- )
+        private ushort GenerateForegroundBlock(
+            int worldX,
+            int worldY,
+            int surfaceHeight
+        )
         {
 
-            // =====================================================
-            // SURFACE
-            // =====================================================
-
-            int surfaceHeight =
-                GetSurfaceHeight(
-                    worldX
-                );
-
-
-            // =====================================================
-            // AIR
-            // =====================================================
+            // =================================================
+            // AIR ABOVE SURFACE
+            // =================================================
 
             if (
                 worldY >
                 surfaceHeight
             )
             {
-
                 return 0;
-
             }
 
 
-            // =====================================================
+            // =================================================
             // GRASS
-            // =====================================================
+            // =================================================
 
             if (
                 worldY ==
                 surfaceHeight
             )
             {
-
                 return GetBlockID(
                     "game:grass"
                 );
-
             }
 
 
-            // =====================================================
-            // DEPTH BELOW SURFACE
-            // =====================================================
+            // =================================================
+            // DEPTH
+            // =================================================
 
             int depth =
                 surfaceHeight -
                 worldY;
 
 
-            // =====================================================
-            // DEEP DIRT
-            // =====================================================
-
-            // Верхний слой земли теперь глубже.
-            //
-            // Основная земля:
-            //
-            // 1 - 8 блоков
-            //
-            // Ниже начинается переход
-            // в камень.
+            // =================================================
+            // DIRT
+            // =================================================
 
             const int dirtDepth =
                 8;
@@ -219,26 +261,15 @@ namespace Game.World.Generation
                 dirtDepth
             )
             {
-
                 return GetBlockID(
                     "game:dirt"
                 );
-
             }
 
 
-            // =====================================================
-            // TRANSITION DIRT -> STONE
-            // =====================================================
-
-            // Здесь создаём переходный слой.
-            //
-            // Чем глубже идём,
-            // тем меньше вероятность земли.
-            //
-            // Используем отдельный Perlin Noise,
-            // чтобы земля не заканчивалась
-            // одной ровной линией.
+            // =================================================
+            // DIRT -> STONE
+            // =================================================
 
             const int transitionDepth =
                 6;
@@ -257,14 +288,16 @@ namespace Game.World.Generation
                             worldX +
                             terrainOffset *
                             1.73f
-                        ) *
+                        )
+                        *
                         0.18f,
 
                         (
                             worldY +
                             hillOffset *
                             2.37f
-                        ) *
+                        )
+                        *
                         0.18f
                     );
 
@@ -283,14 +316,12 @@ namespace Game.World.Generation
                     );
 
 
-                // Добавляем небольшой шум
-                // к вероятности земли.
-
                 dirtChance +=
                     (
                         transitionNoise -
                         0.5f
-                    ) *
+                    )
+                    *
                     0.5f;
 
 
@@ -299,19 +330,33 @@ namespace Game.World.Generation
                     dirtChance
                 )
                 {
-
                     return GetBlockID(
                         "game:dirt"
                     );
-
                 }
 
             }
 
 
-            // =====================================================
-            // ORE
-            // =====================================================
+            // =================================================
+            // CAVE
+            // =================================================
+
+            if (
+                caveGenerator.IsCave(
+                    worldX,
+                    worldY,
+                    surfaceHeight
+                )
+            )
+            {
+                return 0;
+            }
+
+
+            // =================================================
+            // ORES
+            // =================================================
 
             ushort ore =
                 oreGenerator.GetOre(
@@ -325,19 +370,67 @@ namespace Game.World.Generation
                 ore != 0
             )
             {
-
                 return ore;
-
             }
 
 
-            // =====================================================
+            // =================================================
             // STONE
-            // =====================================================
+            // =================================================
 
             return GetBlockID(
                 "game:stone"
             );
+
+        }
+
+
+        // =====================================================
+        // BACKGROUND
+        // =====================================================
+
+        private ushort GenerateBackgroundBlock(
+            int worldX,
+            int worldY,
+            int surfaceHeight
+        )
+        {
+
+            if (
+                worldY >
+                surfaceHeight
+            )
+            {
+                return 0;
+            }
+
+
+            if (
+                worldY ==
+                surfaceHeight
+            )
+            {
+                return 0;
+            }
+
+
+            int depth =
+                surfaceHeight -
+                worldY;
+
+
+            if (
+                depth >
+                2
+            )
+            {
+                return GetBlockID(
+                    "game:stone"
+                );
+            }
+
+
+            return 0;
 
         }
 
@@ -397,8 +490,10 @@ namespace Game.World.Generation
                     (
                         worldX +
                         terrainOffset
-                    ) *
+                    )
+                    *
                     settings.HillScale,
+
                     0f
                 );
 
@@ -408,8 +503,10 @@ namespace Game.World.Generation
                     (
                         worldX +
                         hillOffset
-                    ) *
+                    )
+                    *
                     settings.TerrainScale,
+
                     0f
                 );
 
@@ -419,8 +516,10 @@ namespace Game.World.Generation
                     (
                         worldX +
                         detailOffset
-                    ) *
+                    )
+                    *
                     settings.TerrainDetailScale,
+
                     0f
                 );
 
@@ -433,7 +532,8 @@ namespace Game.World.Generation
                 (
                     largeTerrain -
                     0.5f
-                ) *
+                )
+                *
                 settings.HillHeight;
 
 
@@ -441,7 +541,8 @@ namespace Game.World.Generation
                 (
                     hills -
                     0.5f
-                ) *
+                )
+                *
                 settings.TerrainVariation;
 
 
@@ -449,7 +550,8 @@ namespace Game.World.Generation
                 (
                     detail -
                     0.5f
-                ) *
+                )
+                *
                 settings.TerrainDetail;
 
 
@@ -461,5 +563,4 @@ namespace Game.World.Generation
         }
 
     }
-
 }

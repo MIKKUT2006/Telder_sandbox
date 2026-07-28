@@ -854,9 +854,8 @@ namespace Game.World
                 return false;
             }
 
-
             // =====================================================
-            // SET
+            // SET BLOCK
             // =====================================================
 
             chunk.SetBlock(
@@ -870,11 +869,15 @@ namespace Game.World
             // UPDATE RENDER
             // =====================================================
 
-            if (renderer != null)
+            if (
+                renderer != null
+            )
             {
 
-                renderer.Render(
-                    chunk
+                renderer.UpdateBlock(
+                    chunk,
+                    localX,
+                    localY
                 );
 
             }
@@ -1053,6 +1056,230 @@ namespace Game.World
         public ChunkRenderer GetChunkRenderer()
         {
             return renderer;
+        }
+
+        public bool SetBackground(
+    int worldX,
+    int worldY,
+    ushort blockID
+)
+        {
+            if (
+                world == null
+            )
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // WORLD -> CHUNK
+            // =====================================================
+
+            int chunkX =
+                Mathf.FloorToInt(
+                    (float)worldX /
+                    Chunk.SizeX
+                );
+
+
+            int chunkY =
+                Mathf.FloorToInt(
+                    (float)worldY /
+                    Chunk.SizeY
+                );
+
+
+            Chunk chunk =
+                world.GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (
+                chunk == null
+            )
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // LOCAL POSITION
+            // =====================================================
+
+            int localX =
+                worldX -
+                chunkX *
+                Chunk.SizeX;
+
+
+            int localY =
+                worldY -
+                chunkY *
+                Chunk.SizeY;
+
+
+            // =====================================================
+            // SAFETY
+            // =====================================================
+
+            if (
+                localX < 0
+            )
+            {
+                localX +=
+                    Chunk.SizeX;
+            }
+
+
+            if (
+                localY < 0
+            )
+            {
+                localY +=
+                    Chunk.SizeY;
+            }
+
+
+            // =====================================================
+            // OLD BACKGROUND BLOCK
+            // =====================================================
+
+            ushort oldBlockID =
+                chunk.GetBackground(
+                    localX,
+                    localY
+                );
+
+
+            // Ничего не изменилось.
+
+            if (
+                oldBlockID ==
+                blockID
+            )
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // SET BACKGROUND
+            // =====================================================
+
+            chunk.SetBackground(
+                localX,
+                localY,
+                blockID
+            );
+
+
+            // =====================================================
+            // UPDATE RENDER
+            // =====================================================
+
+            if (
+                renderer != null
+            )
+            {
+
+                renderer.UpdateBlock(
+                    chunk,
+                    localX,
+                    localY
+                );
+
+            }
+
+
+            // =====================================================
+            // UPDATE COLLISION
+            // =====================================================
+            //
+            // ВАЖНО:
+            //
+            // Пока задний фон НЕ является физической коллизией,
+            // здесь ничего обновлять не нужно.
+            //
+            // Передний блок:
+            //     chunk.SetBlock(...)
+            //
+            // Задний блок:
+            //     chunk.SetBackground(...)
+            //
+            // Коллизия работает только с передним слоем.
+            //
+            // =====================================================
+
+
+            // =====================================================
+            // UPDATE NEIGHBOUR CHUNKS
+            // =====================================================
+            //
+            // Если задний блок находится на границе чанка,
+            // соседний чанк нужно перерисовать.
+            //
+            // Это особенно важно, когда фон будет использоваться
+            // для визуального соединения пещер и других областей.
+            //
+
+            if (
+                localX == 0
+            )
+            {
+
+                UpdateChunkBorder(
+                    chunkX - 1,
+                    chunkY
+                );
+
+            }
+
+
+            if (
+                localX ==
+                Chunk.SizeX - 1
+            )
+            {
+
+                UpdateChunkBorder(
+                    chunkX + 1,
+                    chunkY
+                );
+
+            }
+
+
+            if (
+                localY == 0
+            )
+            {
+
+                UpdateChunkBorder(
+                    chunkX,
+                    chunkY - 1
+                );
+
+            }
+
+
+            if (
+                localY ==
+                Chunk.SizeY - 1
+            )
+            {
+
+                UpdateChunkBorder(
+                    chunkX,
+                    chunkY + 1
+                );
+
+            }
+
+
+            return true;
         }
     }
 

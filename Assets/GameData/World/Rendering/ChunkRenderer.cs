@@ -1,20 +1,43 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Game.World;
+
 namespace Game.World.Rendering
 {
+
     public class ChunkRenderer
     {
+
         // =====================================================
         // CHUNK RENDER DATA
         // =====================================================
 
         private class ChunkRenderData
         {
+
             public GameObject GameObject;
-            public SpriteRenderer Renderer;
-            public Texture2D Texture;
-            public Sprite Sprite;
+
+
+            public GameObject BackgroundObject;
+
+            public GameObject ForegroundObject;
+
+
+            public SpriteRenderer BackgroundRenderer;
+
+            public SpriteRenderer ForegroundRenderer;
+
+
+            public Texture2D BackgroundTexture;
+
+            public Texture2D ForegroundTexture;
+
+
+            public Sprite BackgroundSprite;
+
+            public Sprite ForegroundSprite;
+
         }
 
 
@@ -25,7 +48,8 @@ namespace Game.World.Rendering
         private readonly Dictionary<
             UnityEngine.Vector2Int,
             ChunkRenderData
-        > chunkObjects =
+        >
+        chunkObjects =
             new Dictionary<
                 UnityEngine.Vector2Int,
                 ChunkRenderData
@@ -33,14 +57,17 @@ namespace Game.World.Rendering
 
 
         // =====================================================
-        // RENDER
+        // RENDER CHUNK
         // =====================================================
 
         public void Render(
             Chunk chunk
         )
         {
-            if (chunk == null)
+
+            if (
+                chunk == null
+            )
             {
                 return;
             }
@@ -54,7 +81,7 @@ namespace Game.World.Rendering
 
 
             // =================================================
-            // ЧАНК УЖЕ СУЩЕСТВУЕТ
+            // EXISTING
             // =================================================
 
             if (
@@ -64,17 +91,20 @@ namespace Game.World.Rendering
                 )
             )
             {
+
                 UpdateChunk(
                     chunk,
                     existingData
                 );
 
+
                 return;
+
             }
 
 
             // =================================================
-            // СОЗДАЁМ GAMEOBJECT
+            // ROOT OBJECT
             // =================================================
 
             GameObject chunkObject =
@@ -83,6 +113,18 @@ namespace Game.World.Rendering
                     chunk.X +
                     "_" +
                     chunk.Y
+                );
+
+
+            chunkObject.transform.position =
+                new Vector3(
+                    chunk.X *
+                    Chunk.SizeX,
+
+                    chunk.Y *
+                    Chunk.SizeY,
+
+                    0f
                 );
 
 
@@ -100,35 +142,95 @@ namespace Game.World.Rendering
                 groundLayer != -1
             )
             {
+
                 chunkObject.layer =
                     groundLayer;
+
             }
 
 
             // =================================================
-            // POSITION
+            // BACKGROUND OBJECT
             // =================================================
 
-            chunkObject.transform.position =
-                new Vector3(
-                    chunk.X *
-                    Chunk.SizeX,
+            GameObject backgroundObject =
+                new GameObject(
+                    "Background"
+                );
 
-                    chunk.Y *
-                    Chunk.SizeY,
 
-                    0f
+            backgroundObject.transform.SetParent(
+                chunkObject.transform
+            );
+
+
+            backgroundObject.transform.localPosition =
+                Vector3.zero;
+
+
+            SpriteRenderer backgroundRenderer =
+                backgroundObject.AddComponent<
+                    SpriteRenderer
+                >();
+
+
+            // =================================================
+            // BACKGROUND COLOR
+            // =================================================
+            //
+            // Затемняем только задний слой.
+            //
+            // 1.0 = оригинальная яркость
+            // 0.5 = 50% яркости
+            // 0.25 = 25% яркости
+            //
+            // Альфа оставляем 1, чтобы фон
+            // не становился прозрачным.
+            //
+
+            backgroundRenderer.color =
+                new Color(
+                    0.5f,
+                    0.5f,
+                    0.5f,
+                    1f
                 );
 
 
             // =================================================
-            // SPRITE RENDERER
+            // FOREGROUND OBJECT
             // =================================================
 
-            SpriteRenderer spriteRenderer =
-                chunkObject.AddComponent<
+            GameObject foregroundObject =
+                new GameObject(
+                    "Foreground"
+                );
+
+
+            foregroundObject.transform.SetParent(
+                chunkObject.transform
+            );
+
+
+            foregroundObject.transform.localPosition =
+                Vector3.zero;
+
+
+            SpriteRenderer foregroundRenderer =
+                foregroundObject.AddComponent<
                     SpriteRenderer
                 >();
+
+
+            // =================================================
+            // FOREGROUND COLOR
+            // =================================================
+            //
+            // Передний слой остаётся полностью оригинальным.
+            //
+
+            foregroundRenderer.color =
+                Color.white;
 
 
             // =================================================
@@ -146,13 +248,137 @@ namespace Game.World.Rendering
 
 
             // =================================================
-            // CREATE TEXTURE
+            // BACKGROUND TEXTURE
             // =================================================
+
+            Texture2D backgroundTexture =
+                CreateTexture(
+                    textureWidth,
+                    textureHeight
+                );
+
+
+            // =================================================
+            // FOREGROUND TEXTURE
+            // =================================================
+
+            Texture2D foregroundTexture =
+                CreateTexture(
+                    textureWidth,
+                    textureHeight
+                );
+
+
+            // =================================================
+            // BACKGROUND SPRITE
+            // =================================================
+
+            Sprite backgroundSprite =
+                CreateSprite(
+                    backgroundTexture
+                );
+
+
+            // =================================================
+            // FOREGROUND SPRITE
+            // =================================================
+
+            Sprite foregroundSprite =
+                CreateSprite(
+                    foregroundTexture
+                );
+
+
+            backgroundRenderer.sprite =
+                backgroundSprite;
+
+
+            foregroundRenderer.sprite =
+                foregroundSprite;
+
+
+            // =================================================
+            // SORTING
+            // =================================================
+
+            backgroundRenderer.sortingOrder =
+                0;
+
+
+            foregroundRenderer.sortingOrder =
+                1;
+
+
+            // =================================================
+            // SAVE DATA
+            // =================================================
+
+            ChunkRenderData renderData =
+                new ChunkRenderData
+                {
+
+                    GameObject =
+                        chunkObject,
+
+                    BackgroundObject =
+                        backgroundObject,
+
+                    ForegroundObject =
+                        foregroundObject,
+
+                    BackgroundRenderer =
+                        backgroundRenderer,
+
+                    ForegroundRenderer =
+                        foregroundRenderer,
+
+                    BackgroundTexture =
+                        backgroundTexture,
+
+                    ForegroundTexture =
+                        foregroundTexture,
+
+                    BackgroundSprite =
+                        backgroundSprite,
+
+                    ForegroundSprite =
+                        foregroundSprite
+
+                };
+
+
+            chunkObjects.Add(
+                position,
+                renderData
+            );
+
+
+            // =================================================
+            // DRAW
+            // =================================================
+
+            UpdateChunk(
+                chunk,
+                renderData
+            );
+
+        }
+
+
+        // =====================================================
+        // CREATE TEXTURE
+        // =====================================================
+
+        private Texture2D CreateTexture(
+            int width,
+            int height
+        )
+        {
 
             Texture2D texture =
                 new Texture2D(
-                    textureWidth,
-                    textureHeight,
+                    width,
+                    height,
                     TextureFormat.RGBA32,
                     false
                 );
@@ -167,19 +393,55 @@ namespace Game.World.Rendering
 
 
             // =================================================
-            // INITIAL CLEAR
+            // CLEAR TEXTURE
             // =================================================
 
-            ClearTexture(
-                texture
+            Color[] clearPixels =
+                new Color[
+                    width *
+                    height
+                ];
+
+
+            for (
+                int i = 0;
+                i < clearPixels.Length;
+                i++
+            )
+            {
+
+                clearPixels[i] =
+                    Color.clear;
+
+            }
+
+
+            texture.SetPixels(
+                clearPixels
             );
 
 
-            // =================================================
-            // CREATE SPRITE
-            // =================================================
+            texture.Apply(
+                false,
+                false
+            );
 
-            Sprite sprite =
+
+            return texture;
+
+        }
+
+
+        // =====================================================
+        // CREATE SPRITE
+        // =====================================================
+
+        private Sprite CreateSprite(
+            Texture2D texture
+        )
+        {
+
+            return
                 Sprite.Create(
                     texture,
 
@@ -198,46 +460,6 @@ namespace Game.World.Rendering
                     BlockRenderer.BlockPixelSize
                 );
 
-
-            spriteRenderer.sprite =
-                sprite;
-
-
-            // =================================================
-            // SAVE DATA
-            // =================================================
-
-            ChunkRenderData renderData =
-                new ChunkRenderData
-                {
-                    GameObject =
-                        chunkObject,
-
-                    Renderer =
-                        spriteRenderer,
-
-                    Texture =
-                        texture,
-
-                    Sprite =
-                        sprite
-                };
-
-
-            chunkObjects.Add(
-                position,
-                renderData
-            );
-
-
-            // =================================================
-            // DRAW
-            // =================================================
-
-            UpdateChunk(
-                chunk,
-                renderData
-            );
         }
 
 
@@ -246,47 +468,37 @@ namespace Game.World.Rendering
         // =====================================================
 
         private void UpdateChunk(
-    Chunk chunk,
-    ChunkRenderData renderData
-)
+            Chunk chunk,
+            ChunkRenderData renderData
+        )
         {
 
             if (
                 chunk == null ||
-                renderData == null ||
-                renderData.Texture == null
+                renderData == null
             )
             {
                 return;
             }
 
 
-            Texture2D texture =
-                renderData.Texture;
+            // =================================================
+            // CLEAR BOTH LAYERS
+            // =================================================
 
-
-            // =====================================================
-            // ПОЛНОСТЬЮ ОЧИЩАЕМ ТЕКСТУРУ
-            //
-            // Это критически важно.
-            // Старые пиксели больше не могут оставаться.
-            // =====================================================
-
-            Color[] clearPixels =
-                new Color[
-                    texture.width *
-                    texture.height
-                ];
-
-
-            texture.SetPixels(
-                clearPixels
+            ClearTexture(
+                renderData.BackgroundTexture
             );
 
 
-            // =====================================================
-            // DRAW ALL BLOCKS
-            // =====================================================
+            ClearTexture(
+                renderData.ForegroundTexture
+            );
+
+
+            // =================================================
+            // DRAW
+            // =================================================
 
             for (
                 int x = 0;
@@ -302,7 +514,30 @@ namespace Game.World.Rendering
                 )
                 {
 
-                    ushort blockID =
+                    // =========================================
+                    // BACKGROUND
+                    // =========================================
+
+                    ushort backgroundID =
+                        chunk.GetBackground(
+                            x,
+                            y
+                        );
+
+
+                    BlockRenderer.DrawBlock(
+                        renderData.BackgroundTexture,
+                        x,
+                        y,
+                        backgroundID
+                    );
+
+
+                    // =========================================
+                    // FOREGROUND
+                    // =========================================
+
+                    ushort foregroundID =
                         chunk.GetBlock(
                             x,
                             y
@@ -310,10 +545,10 @@ namespace Game.World.Rendering
 
 
                     BlockRenderer.DrawBlock(
-                        texture,
+                        renderData.ForegroundTexture,
                         x,
                         y,
-                        blockID
+                        foregroundID
                     );
 
                 }
@@ -321,11 +556,17 @@ namespace Game.World.Rendering
             }
 
 
-            // =====================================================
-            // APPLY ONCE
-            // =====================================================
+            // =================================================
+            // APPLY
+            // =================================================
 
-            texture.Apply(
+            renderData.BackgroundTexture.Apply(
+                false,
+                false
+            );
+
+
+            renderData.ForegroundTexture.Apply(
                 false,
                 false
             );
@@ -341,6 +582,7 @@ namespace Game.World.Rendering
             Texture2D texture
         )
         {
+
             if (
                 texture == null
             )
@@ -349,32 +591,81 @@ namespace Game.World.Rendering
             }
 
 
-            Color32[] pixels =
-                new Color32[
+            Color[] pixels =
+                new Color[
                     texture.width *
                     texture.height
                 ];
 
 
-            // Все элементы массива Color32
-            // по умолчанию будут:
-            //
-            // R = 0
-            // G = 0
-            // B = 0
-            // A = 0
-            //
-            // То есть полностью прозрачный цвет.
+            for (
+                int i = 0;
+                i < pixels.Length;
+                i++
+            )
+            {
 
-            texture.SetPixels32(
+                pixels[i] =
+                    Color.clear;
+
+            }
+
+
+            texture.SetPixels(
                 pixels
             );
 
+        }
 
-            texture.Apply(
-                false,
-                false
+
+        // =====================================================
+        // UPDATE BLOCK
+        // =====================================================
+
+        public void UpdateBlock(
+            Chunk chunk,
+            int localX,
+            int localY
+        )
+        {
+
+            if (
+                chunk == null
+            )
+            {
+                return;
+            }
+
+
+            UnityEngine.Vector2Int position =
+                new UnityEngine.Vector2Int(
+                    chunk.X,
+                    chunk.Y
+                );
+
+
+            if (
+                !chunkObjects.TryGetValue(
+                    position,
+                    out ChunkRenderData renderData
+                )
+            )
+            {
+
+                return;
+
+            }
+
+
+            // =================================================
+            // ПЕРЕРИСОВЫВАЕМ ЧАНК
+            // =================================================
+
+            UpdateChunk(
+                chunk,
+                renderData
             );
+
         }
 
 
@@ -387,6 +678,7 @@ namespace Game.World.Rendering
             int chunkY
         )
         {
+
             UnityEngine.Vector2Int position =
                 new UnityEngine.Vector2Int(
                     chunkX,
@@ -401,59 +693,100 @@ namespace Game.World.Rendering
                 )
             )
             {
+
+                return;
+
+            }
+
+
+            DestroyRenderData(
+                renderData
+            );
+
+
+            chunkObjects.Remove(
+                position
+            );
+
+        }
+
+
+        // =====================================================
+        // DESTROY DATA
+        // =====================================================
+
+        private void DestroyRenderData(
+            ChunkRenderData renderData
+        )
+        {
+
+            if (
+                renderData == null
+            )
+            {
                 return;
             }
 
 
-            // =================================================
-            // DESTROY SPRITE
-            // =================================================
-
             if (
-                renderData.Sprite != null
+                renderData.BackgroundSprite != null
             )
             {
+
                 Object.Destroy(
-                    renderData.Sprite
+                    renderData.BackgroundSprite
                 );
+
             }
 
 
-            // =================================================
-            // DESTROY TEXTURE
-            // =================================================
-
             if (
-                renderData.Texture != null
+                renderData.ForegroundSprite != null
             )
             {
+
                 Object.Destroy(
-                    renderData.Texture
+                    renderData.ForegroundSprite
                 );
+
             }
 
 
-            // =================================================
-            // DESTROY GAMEOBJECT
-            // =================================================
+            if (
+                renderData.BackgroundTexture != null
+            )
+            {
+
+                Object.Destroy(
+                    renderData.BackgroundTexture
+                );
+
+            }
+
+
+            if (
+                renderData.ForegroundTexture != null
+            )
+            {
+
+                Object.Destroy(
+                    renderData.ForegroundTexture
+                );
+
+            }
+
 
             if (
                 renderData.GameObject != null
             )
             {
+
                 Object.Destroy(
                     renderData.GameObject
                 );
+
             }
 
-
-            // =================================================
-            // REMOVE DICTIONARY
-            // =================================================
-
-            chunkObjects.Remove(
-                position
-            );
         }
 
 
@@ -463,51 +796,24 @@ namespace Game.World.Rendering
 
         public void Clear()
         {
+
             foreach (
                 ChunkRenderData renderData
                 in chunkObjects.Values
             )
             {
-                if (
-                    renderData == null
-                )
-                {
-                    continue;
-                }
 
+                DestroyRenderData(
+                    renderData
+                );
 
-                if (
-                    renderData.Sprite != null
-                )
-                {
-                    Object.Destroy(
-                        renderData.Sprite
-                    );
-                }
-
-
-                if (
-                    renderData.Texture != null
-                )
-                {
-                    Object.Destroy(
-                        renderData.Texture
-                    );
-                }
-
-
-                if (
-                    renderData.GameObject != null
-                )
-                {
-                    Object.Destroy(
-                        renderData.GameObject
-                    );
-                }
             }
 
 
             chunkObjects.Clear();
+
         }
+
     }
+
 }

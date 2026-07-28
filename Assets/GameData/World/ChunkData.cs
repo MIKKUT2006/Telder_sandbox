@@ -1,41 +1,55 @@
-using System;
-
-
 namespace Game.World
 {
 
-    public sealed class ChunkData
+    public class ChunkData
     {
 
-        public readonly int X;
+        // =====================================================
+        // STORAGE
+        // =====================================================
 
-        public readonly int Y;
+        private readonly BlockStorage foregroundBlocks;
+
+        private readonly BlockStorage backgroundBlocks;
 
 
-        public readonly ushort[] Blocks;
+        // =====================================================
+        // CONSTRUCTOR
+        // =====================================================
 
-
-        public ChunkData(
-            int x,
-            int y
-        )
+        public ChunkData()
         {
 
-            X =
-                x;
-
-            Y =
-                y;
-
-
-            Blocks =
-                new ushort[
-                    Chunk.SizeX *
+            foregroundBlocks =
+                new BlockStorage(
+                    Chunk.SizeX,
                     Chunk.SizeY
-                ];
+                );
+
+
+            backgroundBlocks =
+                new BlockStorage(
+                    Chunk.SizeX,
+                    Chunk.SizeY
+                );
+
+
+            foregroundBlocks.Fill(
+                0
+            );
+
+
+            backgroundBlocks.Fill(
+                0
+            );
 
         }
 
+
+        // =====================================================
+        // FOREGROUND
+        // GET
+        // =====================================================
 
         public ushort GetBlock(
             int x,
@@ -43,25 +57,19 @@ namespace Game.World
         )
         {
 
-            if (
-                x < 0 ||
-                x >= Chunk.SizeX ||
-                y < 0 ||
-                y >= Chunk.SizeY
-            )
-            {
-                return 0;
-            }
-
-
-            return Blocks[
-                x +
-                y *
-                Chunk.SizeX
-            ];
+            return
+                foregroundBlocks.Get(
+                    x,
+                    y
+                );
 
         }
 
+
+        // =====================================================
+        // FOREGROUND
+        // SET
+        // =====================================================
 
         public void SetBlock(
             int x,
@@ -70,23 +78,52 @@ namespace Game.World
         )
         {
 
-            if (
-                x < 0 ||
-                x >= Chunk.SizeX ||
-                y < 0 ||
-                y >= Chunk.SizeY
-            )
-            {
-                return;
-            }
+            foregroundBlocks.Set(
+                x,
+                y,
+                blockID
+            );
+
+        }
 
 
-            Blocks[
-                x +
-                y *
-                Chunk.SizeX
-            ] =
-                blockID;
+        // =====================================================
+        // BACKGROUND
+        // GET
+        // =====================================================
+
+        public ushort GetBackground(
+            int x,
+            int y
+        )
+        {
+
+            return
+                backgroundBlocks.Get(
+                    x,
+                    y
+                );
+
+        }
+
+
+        // =====================================================
+        // BACKGROUND
+        // SET
+        // =====================================================
+
+        public void SetBackground(
+            int x,
+            int y,
+            ushort blockID
+        )
+        {
+
+            backgroundBlocks.Set(
+                x,
+                y,
+                blockID
+            );
 
         }
 

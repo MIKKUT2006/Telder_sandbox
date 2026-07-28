@@ -1,3 +1,5 @@
+using Game.World;
+
 namespace Game.World
 {
 
@@ -29,7 +31,35 @@ namespace Game.World
         // BLOCK STORAGE
         // =====================================================
 
-        private BlockStorage blocks;
+        // Передний слой.
+        //
+        // Здесь находятся:
+        // stone
+        // dirt
+        // grass
+        // ores
+        // и другие обычные блоки.
+        //
+        // Этот слой участвует в коллизии.
+
+        private BlockStorage foregroundBlocks;
+
+
+        // =====================================================
+        // BACKGROUND STORAGE
+        // =====================================================
+
+        // Задний слой.
+        //
+        // Например:
+        // stone_wall
+        // dirt_wall
+        // cave_wall
+        //
+        // Этот слой НЕ участвует
+        // в физической коллизии.
+
+        private BlockStorage backgroundBlocks;
 
 
         // =====================================================
@@ -50,7 +80,22 @@ namespace Game.World
                 y;
 
 
-            blocks =
+            // =================================================
+            // FOREGROUND
+            // =================================================
+
+            foregroundBlocks =
+                new BlockStorage(
+                    SizeX,
+                    SizeY
+                );
+
+
+            // =================================================
+            // BACKGROUND
+            // =================================================
+
+            backgroundBlocks =
                 new BlockStorage(
                     SizeX,
                     SizeY
@@ -69,7 +114,20 @@ namespace Game.World
         private void Initialize()
         {
 
-            blocks.Fill(
+            // =================================================
+            // FOREGROUND
+            // =================================================
+
+            foregroundBlocks.Fill(
+                0
+            );
+
+
+            // =================================================
+            // BACKGROUND
+            // =================================================
+
+            backgroundBlocks.Fill(
                 0
             );
 
@@ -77,7 +135,8 @@ namespace Game.World
 
 
         // =====================================================
-        // GET BLOCK
+        // FOREGROUND
+        // GET
         // =====================================================
 
         public ushort GetBlock(
@@ -86,16 +145,18 @@ namespace Game.World
         )
         {
 
-            return blocks.Get(
-                x,
-                y
-            );
+            return
+                foregroundBlocks.Get(
+                    x,
+                    y
+                );
 
         }
 
 
         // =====================================================
-        // SET BLOCK
+        // FOREGROUND
+        // SET
         // =====================================================
 
         public void SetBlock(
@@ -105,7 +166,48 @@ namespace Game.World
         )
         {
 
-            blocks.Set(
+            foregroundBlocks.Set(
+                x,
+                y,
+                blockID
+            );
+
+        }
+
+
+        // =====================================================
+        // BACKGROUND
+        // GET
+        // =====================================================
+
+        public ushort GetBackground(
+            int x,
+            int y
+        )
+        {
+
+            return
+                backgroundBlocks.Get(
+                    x,
+                    y
+                );
+
+        }
+
+
+        // =====================================================
+        // BACKGROUND
+        // SET
+        // =====================================================
+
+        public void SetBackground(
+            int x,
+            int y,
+            ushort blockID
+        )
+        {
+
+            backgroundBlocks.Set(
                 x,
                 y,
                 blockID
@@ -145,10 +247,28 @@ namespace Game.World
                 )
                 {
 
+                    // =========================================
+                    // FOREGROUND
+                    // =========================================
+
                     SetBlock(
                         x,
                         y,
                         data.GetBlock(
+                            x,
+                            y
+                        )
+                    );
+
+
+                    // =========================================
+                    // BACKGROUND
+                    // =========================================
+
+                    SetBackground(
+                        x,
+                        y,
+                        data.GetBackground(
                             x,
                             y
                         )
