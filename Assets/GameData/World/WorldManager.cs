@@ -5,7 +5,6 @@ using Game.World.Generation;
 using Game.World.Loading;
 using Game.World.Rendering;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -672,7 +671,7 @@ namespace Game.World
             return chunkCollision;
 
         }
-        private bool TryFindSurface(int worldX,out int surfaceY)
+        private bool TryFindSurface(int worldX, out int surfaceY)
         {
             surfaceY = 0;
 
@@ -871,15 +870,11 @@ namespace Game.World
             // UPDATE RENDER
             // =====================================================
 
-            if (
-                renderer != null
-            )
+            if (renderer != null)
             {
 
-                renderer.UpdateBlock(
-                    chunk,
-                    localX,
-                    localY
+                renderer.Render(
+                    chunk
                 );
 
             }
@@ -1007,7 +1002,7 @@ namespace Game.World
 )
         {
 
-            Chunk neighbour =
+            Chunk neighbourChunk =
                 world.GetChunk(
                     chunkX,
                     chunkY
@@ -1015,12 +1010,16 @@ namespace Game.World
 
 
             if (
-                neighbour == null
+                neighbourChunk == null
             )
             {
                 return;
             }
 
+
+            // =====================================================
+            // UPDATE RENDER
+            // =====================================================
 
             if (
                 renderer != null
@@ -1028,11 +1027,15 @@ namespace Game.World
             {
 
                 renderer.Render(
-                    neighbour
+                    neighbourChunk
                 );
 
             }
 
+
+            // =====================================================
+            // UPDATE COLLISION
+            // =====================================================
 
             if (
                 chunkCollision != null
@@ -1040,7 +1043,7 @@ namespace Game.World
             {
 
                 chunkCollision.BuildChunkCollision(
-                    neighbour
+                    neighbourChunk
                 );
 
             }

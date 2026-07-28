@@ -10,16 +10,8 @@ namespace Game.World.Rendering
     public static class BlockRenderer
     {
 
-        // =====================================================
-        // SETTINGS
-        // =====================================================
-
         public const int BlockPixelSize = 16;
 
-
-        // =====================================================
-        // DRAW BLOCK
-        // =====================================================
 
         public static void DrawBlock(
             Texture2D target,
@@ -37,10 +29,6 @@ namespace Game.World.Rendering
             }
 
 
-            // =================================================
-            // BLOCK PIXEL POSITION
-            // =================================================
-
             int pixelX =
                 x *
                 BlockPixelSize;
@@ -51,38 +39,47 @@ namespace Game.World.Rendering
                 BlockPixelSize;
 
 
-            // =================================================
-            // AIR
-            // =================================================
+            // =====================================================
+            // СНАЧАЛА ОЧИЩАЕМ ОБЛАСТЬ БЛОКА
+            //
+            // Это обязательно.
+            //
+            // Если старый блок был STONE,
+            // а новый блок AIR,
+            // старые пиксели нельзя оставлять.
+            // =====================================================
 
-            // ВАЖНО:
-            // Раньше здесь был просто return.
-            //
-            // Из-за этого при удалении блока старые пиксели
-            // оставались в Texture2D.
-            //
-            // Теперь область блока полностью очищается.
+            Color[] clearPixels =
+                new Color[
+                    BlockPixelSize *
+                    BlockPixelSize
+                ];
+
+
+            target.SetPixels(
+                pixelX,
+                pixelY,
+                BlockPixelSize,
+                BlockPixelSize,
+                clearPixels
+            );
+
+
+            // =====================================================
+            // AIR
+            // =====================================================
 
             if (
                 blockID == 0
             )
             {
-
-                ClearBlockPixels(
-                    target,
-                    pixelX,
-                    pixelY
-                );
-
-
                 return;
-
             }
 
 
-            // =================================================
+            // =====================================================
             // BLOCK DOES NOT EXIST
-            // =================================================
+            // =====================================================
 
             if (
                 !BlockDatabase.Contains(
@@ -90,22 +87,13 @@ namespace Game.World.Rendering
                 )
             )
             {
-
-                ClearBlockPixels(
-                    target,
-                    pixelX,
-                    pixelY
-                );
-
-
                 return;
-
             }
 
 
-            // =================================================
+            // =====================================================
             // GET BLOCK
-            // =================================================
+            // =====================================================
 
             var block =
                 BlockDatabase.Get(
@@ -117,22 +105,13 @@ namespace Game.World.Rendering
                 block == null
             )
             {
-
-                ClearBlockPixels(
-                    target,
-                    pixelX,
-                    pixelY
-                );
-
-
                 return;
-
             }
 
 
-            // =================================================
+            // =====================================================
             // GET TEXTURE
-            // =================================================
+            // =====================================================
 
             Texture2D texture =
                 TextureManager.Get(
@@ -144,22 +123,13 @@ namespace Game.World.Rendering
                 texture == null
             )
             {
-
-                ClearBlockPixels(
-                    target,
-                    pixelX,
-                    pixelY
-                );
-
-
                 return;
-
             }
 
 
-            // =================================================
+            // =====================================================
             // DRAW
-            // =================================================
+            // =====================================================
 
             target.SetPixels(
                 pixelX,
@@ -167,44 +137,6 @@ namespace Game.World.Rendering
                 BlockPixelSize,
                 BlockPixelSize,
                 texture.GetPixels()
-            );
-
-        }
-
-
-        // =====================================================
-        // CLEAR BLOCK
-        // =====================================================
-
-        private static void ClearBlockPixels(
-            Texture2D target,
-            int pixelX,
-            int pixelY
-        )
-        {
-
-            Color32[] pixels =
-                new Color32[
-                    BlockPixelSize *
-                    BlockPixelSize
-                ];
-
-
-            // Все значения Color32 по умолчанию:
-            //
-            // R = 0
-            // G = 0
-            // B = 0
-            // A = 0
-            //
-            // То есть полностью прозрачный пиксель.
-
-            target.SetPixels32(
-                pixelX,
-                pixelY,
-                BlockPixelSize,
-                BlockPixelSize,
-                pixels
             );
 
         }
