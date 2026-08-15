@@ -15,18 +15,38 @@ namespace Game.World.Generation
         private readonly CaveGenerator caveGenerator;
 
 
-        private readonly float terrainOffset;
+        // =====================================================
+        // TERRAIN OFFSETS
+        // =====================================================
+        private readonly float soilTransitionOffset;
+
+        private readonly float largeTerrainOffset;
+
         private readonly float hillOffset;
-        private readonly float detailOffset;
+
         private readonly float mountainOffset;
+
         private readonly float mountainDetailOffset;
 
+        private readonly float surfaceDetailOffset;
+
+
+        // =====================================================
+        // BLOCK IDS
+        // =====================================================
 
         private readonly ushort airID;
+
         private readonly ushort grassID;
+
         private readonly ushort dirtID;
+
         private readonly ushort stoneID;
 
+
+        // =====================================================
+        // CONSTRUCTOR
+        // =====================================================
 
         public WorldGenerator(
             WorldSettings settings
@@ -36,12 +56,14 @@ namespace Game.World.Generation
                 settings;
 
 
-            // =================================================
-            // CAVES
-            // =================================================
-
             caveSettings =
                 new CaveSettings();
+
+
+            oreGenerator =
+                new OreGenerator(
+                    settings
+                );
 
 
             caveGenerator =
@@ -52,42 +74,34 @@ namespace Game.World.Generation
 
 
             // =================================================
-            // ORES
+            // DETERMINISTIC OFFSETS
             // =================================================
 
-            oreGenerator =
-                new OreGenerator(
-                    settings
-                );
+            soilTransitionOffset = settings.Seed * 4.73129f;
 
-
-            // =================================================
-            // TERRAIN SEEDS
-            // =================================================
-
-            terrainOffset =
+            largeTerrainOffset =
                 settings.Seed *
-                0.12345f;
+                0.17321f;
 
 
             hillOffset =
                 settings.Seed *
-                0.54321f;
-
-
-            detailOffset =
-                settings.Seed *
-                0.98765f;
+                0.73129f;
 
 
             mountainOffset =
                 settings.Seed *
-                1.73127f;
+                1.91371f;
 
 
             mountainDetailOffset =
                 settings.Seed *
-                2.91317f;
+                2.47193f;
+
+
+            surfaceDetailOffset =
+                settings.Seed *
+                3.71391f;
 
 
             // =================================================
@@ -117,10 +131,6 @@ namespace Game.World.Generation
                     "game:stone"
                 );
 
-
-            // =================================================
-            // ORES
-            // =================================================
 
             oreGenerator.ReloadOres();
         }
@@ -160,7 +170,7 @@ namespace Game.World.Generation
 
 
             // =================================================
-            // SURFACE
+            // SURFACE HEIGHTS
             // =================================================
 
             int[] surfaces =
@@ -195,7 +205,7 @@ namespace Game.World.Generation
 
 
             // =================================================
-            // BLOCKS
+            // BLOCK GENERATION
             // =================================================
 
             for (
@@ -230,7 +240,7 @@ namespace Game.World.Generation
 
 
                     // =================================================
-                    // AIR ABOVE SURFACE
+                    // ABOVE SURFACE
                     // =================================================
 
                     if (
@@ -255,7 +265,7 @@ namespace Game.World.Generation
 
 
                     // =================================================
-                    // GRASS
+                    // SURFACE
                     // =================================================
 
                     else if (
@@ -279,23 +289,19 @@ namespace Game.World.Generation
                             worldY;
 
 
-                        // ---------------------------------------------
-                        // DIRT
-                        // ---------------------------------------------
+                        int soilDepth =
+                            GetSoilDepth(
+                                worldX
+                            );
+
 
                         if (
-                            depth <= 8
+                            depth <= soilDepth
                         )
                         {
                             foreground =
                                 dirtID;
                         }
-
-
-                        // ---------------------------------------------
-                        // STONE / ORE
-                        // ---------------------------------------------
-
                         else
                         {
                             ushort ore =
@@ -354,8 +360,334 @@ namespace Game.World.Generation
 
             return data;
         }
+        private int GetSoilDepth(
+    int worldX
+)
+        {
+            // =====================================================
+            // LARGE SOIL SHAPE
+            // =====================================================
+
+            float large =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        soilTransitionOffset
+                    )
+                    *
+                    settings.SoilDepthScale,
+
+                    0f
+                );
 
 
+            // =====================================================
+            // DETAIL
+            // =====================================================
+
+            float detail =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        soilTransitionOffset *
+                        2.17f
+                    )
+                    *
+                    settings.SoilDepthDetailScale,
+
+                    0f
+                );
+
+
+            // =====================================================
+            // COMBINE
+            // =====================================================
+
+            float depth =
+                settings.SoilDepthBase;
+
+
+            depth +=
+                (
+                    large -
+                    0.5f
+                )
+                *
+                2f *
+                settings.SoilDepthVariation;
+
+
+            depth +=
+                (
+                    detail -
+                    0.5f
+                )
+                *
+                2f *
+                settings.SoilDepthDetailStrength;
+
+
+            return Mathf.Clamp(
+                Mathf.RoundToInt(
+                    depth
+                ),
+                4,
+                16
+            );
+        }
+
+        // =====================================================
+        // SURFACE HEIGHT
+        // =====================================================
+
+        public int GetSurfaceHeight(int worldX)
+        {
+            // Чем меньше значение,
+            // тем чаще меняется рельеф.
+            const int sampleDistance = 2;
+
+            int leftX =
+                Mathf.FloorToInt(
+                    worldX / (float)sampleDistance
+                ) * sampleDistance;
+
+            int rightX =
+                leftX + sampleDistance;
+
+
+            float t =
+                (worldX - leftX) /
+                (float)sampleDistance;
+
+
+            // Плавный переход между точками.
+            t =
+                t * t *
+                (3f - 2f * t);
+
+
+            float left =
+                GetLandscapeSample(
+                    leftX
+                );
+
+            float right =
+                GetLandscapeSample(
+                    rightX
+                );
+
+
+            return
+                Mathf.RoundToInt(
+                    Mathf.Lerp(
+                        left,
+                        right,
+                        t
+                    )
+                );
+        }
+
+        private float GetLandscapeSample(int worldX)
+        {
+            float seed =
+                settings.Seed;
+
+
+            // =====================================================
+            // LARGE TERRAIN
+            // =====================================================
+
+            float large =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        seed * 0.137f
+                    )
+                    *
+                    0.0028f,
+
+                    0f
+                );
+
+
+            float largeHeight =
+                (
+                    large -
+                    0.5f
+                )
+                *
+                18f;
+
+
+            // =====================================================
+            // MEDIUM HILLS
+            // =====================================================
+
+            float hills =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        seed * 0.731f
+                    )
+                    *
+                    0.007f,
+
+                    0f
+                );
+
+
+            float hillHeight =
+                (
+                    hills -
+                    0.5f
+                )
+                *
+                16f;
+
+
+            // =====================================================
+            // SMALL HILLS
+            // =====================================================
+
+            float smallHills =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        seed * 1.913f
+                    )
+                    *
+                    0.018f,
+
+                    0f
+                );
+
+
+            float smallHillHeight =
+                (
+                    smallHills -
+                    0.5f
+                )
+                *
+                7f;
+
+
+            // =====================================================
+            // MOUNTAIN REGION
+            // =====================================================
+
+            float mountainRegion =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        seed * 2.371f
+                    )
+                    *
+                    0.0028f,
+
+                    0f
+                );
+
+
+            float mountainMask =
+                Mathf.SmoothStep(
+                    0.58f,
+                    0.72f,
+                    mountainRegion
+                );
+
+
+            // =====================================================
+            // MOUNTAIN SHAPE
+            // =====================================================
+
+            float mountain =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        seed * 3.193f
+                    )
+                    *
+                    0.0055f,
+
+                    0f
+                );
+
+
+            float mountainShape =
+                (
+                    mountain -
+                    0.5f
+                )
+                *
+                2f;
+
+
+            // =====================================================
+            // MOUNTAIN DETAIL
+            // =====================================================
+
+            float mountainDetail =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        seed * 4.731f
+                    )
+                    *
+                    0.014f,
+
+                    0f
+                );
+
+
+            float mountainDetailShape =
+                (
+                    mountainDetail -
+                    0.5f
+                )
+                *
+                2f;
+
+
+            // =====================================================
+            // MOUNTAIN HEIGHT
+            // =====================================================
+
+            float mountainHeight =
+                28f +
+                mountainShape * 25f +
+                mountainDetailShape * 5f;
+
+
+            mountainHeight *=
+                mountainMask;
+
+
+            // =====================================================
+            // FINAL TERRAIN
+            // =====================================================
+
+            float height =
+                settings.SurfaceHeight;
+
+
+            height +=
+                largeHeight;
+
+
+            height +=
+                hillHeight;
+
+
+            height +=
+                smallHillHeight;
+
+
+            height +=
+                mountainHeight;
+
+
+            return height;
+        }
         // =====================================================
         // BACKGROUND
         // =====================================================
@@ -391,14 +723,19 @@ namespace Game.World.Generation
             }
 
 
+
             // =================================================
-            // SHALLOW AREA
+            // DEPTH
             // =================================================
 
             int depth =
                 surface -
                 worldY;
 
+
+            // =================================================
+            // SHALLOW
+            // =================================================
 
             if (
                 depth <= 2
@@ -409,7 +746,7 @@ namespace Game.World.Generation
 
 
             // =================================================
-            // ORE BACKGROUND
+            // FRONT ORE
             // =================================================
 
             if (
@@ -422,170 +759,32 @@ namespace Game.World.Generation
             }
 
 
+            // =================================================
+            // BACKGROUND ORES
+            // =================================================
+
+            ushort backgroundOre =
+                oreGenerator.GetOre(
+                    worldX + 100000,
+                    worldY + 100000,
+                    surface
+                );
+
+
+            if (
+                backgroundOre != 0
+            )
+            {
+                return backgroundOre;
+            }
+
+
             return stoneID;
         }
 
 
         // =====================================================
-        // SURFACE
-        // =====================================================
-
-        public int GetSurfaceHeight(
-            int worldX
-        )
-        {
-            // =================================================
-            // LARGE HILLS
-            // =================================================
-
-            float large =
-                Mathf.PerlinNoise(
-                    (
-                        worldX +
-                        terrainOffset
-                    )
-                    *
-                    settings.HillScale,
-                    0f
-                );
-
-
-            // =================================================
-            // MEDIUM TERRAIN
-            // =================================================
-
-            float medium =
-                Mathf.PerlinNoise(
-                    (
-                        worldX +
-                        hillOffset
-                    )
-                    *
-                    settings.TerrainScale,
-                    0f
-                );
-
-
-            // =================================================
-            // DETAIL
-            // =================================================
-
-            float detail =
-                Mathf.PerlinNoise(
-                    (
-                        worldX +
-                        detailOffset
-                    )
-                    *
-                    settings.TerrainDetailScale,
-                    0f
-                );
-
-
-            // =================================================
-            // MOUNTAIN
-            // =================================================
-
-            float mountain =
-                Mathf.PerlinNoise(
-                    (
-                        worldX +
-                        mountainOffset
-                    )
-                    *
-                    settings.MountainScale,
-                    0f
-                );
-
-
-            float mountainDetail =
-                Mathf.PerlinNoise(
-                    (
-                        worldX +
-                        mountainDetailOffset
-                    )
-                    *
-                    settings.MountainDetailScale,
-                    0f
-                );
-
-
-            float mountainMask =
-                Mathf.InverseLerp(
-                    0.47f,
-                    0.72f,
-                    mountain
-                );
-
-
-            mountainMask =
-                Mathf.Pow(
-                    mountainMask,
-                    settings.MountainPower
-                );
-
-
-            // =================================================
-            // HEIGHT
-            // =================================================
-
-            float height =
-                settings.SurfaceHeight;
-
-
-            height +=
-                (
-                    large -
-                    0.5f
-                )
-                *
-                settings.HillHeight;
-
-
-            height +=
-                (
-                    medium -
-                    0.5f
-                )
-                *
-                settings.TerrainVariation;
-
-
-            height +=
-                (
-                    detail -
-                    0.5f
-                )
-                *
-                settings.TerrainDetail;
-
-
-            float mountainHeight =
-                mountainMask *
-                (
-                    settings.MountainHeight +
-                    (
-                        mountainDetail -
-                        0.5f
-                    )
-                    *
-                    settings.MountainDetailHeight
-                );
-
-
-            height +=
-                mountainHeight;
-
-
-            return
-                Mathf.RoundToInt(
-                    height
-                );
-        }
-
-
-        // =====================================================
-        // ORE
+        // ORE TEST
         // =====================================================
 
         private bool IsOre(
@@ -624,7 +823,6 @@ namespace Game.World.Generation
                     "WORLD GENERATOR: BLOCK NOT REGISTERED: " +
                     blockID
                 );
-
 
                 return 0;
             }

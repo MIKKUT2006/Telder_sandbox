@@ -41,35 +41,86 @@ namespace Game.World
         // TERRAIN
         // =====================================================
 
-        public int HillHeight;
+        // Базовая высота поверхности.
+        public int BaseSurfaceHeight;
 
+        // =====================================================
+        // SOIL
+        // =====================================================
+
+        public float SoilDepthScale;
+
+        public float SoilDepthBase;
+
+        public float SoilDepthVariation;
+
+        public float SoilDepthDetailScale;
+
+        public float SoilDepthDetailStrength;
+
+        // =====================================================
+        // LARGE LANDSCAPE
+        // =====================================================
+
+        // Очень крупные изменения высоты.
+        public float LargeTerrainScale;
+
+        public int LargeTerrainHeight;
+
+
+        // =====================================================
+        // HILLS
+        // =====================================================
+
+        // Обычные холмы.
         public float HillScale;
 
-        public int TerrainVariation;
-
-        public float TerrainScale;
-
-        public int TerrainDetail;
-
-        public float TerrainDetailScale;
+        public int HillHeight;
 
 
         // =====================================================
         // MOUNTAINS
         // =====================================================
 
+        // Частота расположения гор.
         public float MountainScale;
 
+        // Максимальная высота гор.
         public int MountainHeight;
 
+        // Детализация гор.
         public float MountainDetailScale;
 
         public int MountainDetailHeight;
 
-        public float MountainPower;
+
+        // =====================================================
+        // MOUNTAIN SHAPE
+        // =====================================================
+
+        // Чем выше значение, тем реже горы.
+        public float MountainThreshold;
+
+        // Насколько мягко начинается гора.
+        public float MountainTransition;
 
 
-        
+        // =====================================================
+        // SURFACE DETAIL
+        // =====================================================
+
+        public float SurfaceDetailScale;
+
+        public int SurfaceDetailHeight;
+
+
+        // =====================================================
+        // CAVES
+        // =====================================================
+
+        public int CaveMinDepth;
+
+        public int CaveMaxDepth;
 
 
         // =====================================================
@@ -78,6 +129,10 @@ namespace Game.World
 
         public WorldSettings()
         {
+            // -------------------------------------------------
+            // WORLD
+            // -------------------------------------------------
+
             ChunkSize =
                 32;
 
@@ -94,68 +149,102 @@ namespace Game.World
                 new Random().Next();
 
 
-            // =================================================
-            // SURFACE
-            // =================================================
+            // -------------------------------------------------
+            // BASE SURFACE
+            // -------------------------------------------------
 
             SurfaceHeight =
                 100;
 
+            BaseSurfaceHeight =
+                100;
 
-            // =================================================
-            // LARGE HILLS
-            // =================================================
 
-            HillHeight =
-                26;
+            SoilDepthScale = 0.012f;
+
+            SoilDepthBase =
+                8f;
+
+            SoilDepthVariation =
+                5f;
+
+            SoilDepthDetailScale =
+                0.035f;
+
+            SoilDepthDetailStrength =
+                1.5f;
+
+            // -------------------------------------------------
+            // LARGE LANDSCAPE
+            // -------------------------------------------------
+
+            LargeTerrainScale =
+                0.0018f;
+
+            LargeTerrainHeight =
+                32;
+
+
+            // -------------------------------------------------
+            // HILLS
+            // -------------------------------------------------
 
             HillScale =
-                0.0032f;
+                0.0065f;
+
+            HillHeight =
+                10;
 
 
-            // =================================================
-            // MEDIUM TERRAIN
-            // =================================================
-
-            TerrainVariation =
-                18;
-
-            TerrainScale =
-                0.011f;
-
-
-            // =================================================
-            // SMALL DETAIL
-            // =================================================
-
-            TerrainDetail =
-                5;
-
-            TerrainDetailScale =
-                0.045f;
-
-
-            // =================================================
+            // -------------------------------------------------
             // MOUNTAINS
-            // =================================================
+            // -------------------------------------------------
 
             MountainScale =
-                0.00125f;
+                0.0028f;
 
             MountainHeight =
-                72;
+                60;
 
             MountainDetailScale =
-                0.010f;
+                0.014f;
 
             MountainDetailHeight =
-                24;
-
-            MountainPower =
-                1.75f;
+                18;
 
 
-            
+            // -------------------------------------------------
+            // MOUNTAIN SHAPE
+            // -------------------------------------------------
+
+            MountainThreshold =
+                0.57f;
+
+            MountainTransition =
+                0.16f;
+
+
+            // -------------------------------------------------
+            // SURFACE DETAIL
+            // -------------------------------------------------
+
+            SurfaceDetailScale =
+                0.045f;
+
+            SurfaceDetailHeight =
+                4;
+
+
+            // -------------------------------------------------
+            // CAVES
+            // -------------------------------------------------
+
+            CaveMinDepth =
+                14;
+
+            CaveMaxDepth =
+                WorldHeight -
+                20;
         }
     }
 }
