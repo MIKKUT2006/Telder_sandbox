@@ -1,63 +1,39 @@
 using Game.Content;
 using Game.World.Generation.Ores;
-
 using UnityEngine;
 
 namespace Game.World.Generation
 {
     public class WorldGenerator
     {
-
-        // =====================================================
-        // SETTINGS
-        // =====================================================
-
         private readonly WorldSettings settings;
 
         private readonly CaveSettings caveSettings;
-
-
-        // =====================================================
-        // GENERATORS
-        // =====================================================
 
         private readonly OreGenerator oreGenerator;
 
         private readonly CaveGenerator caveGenerator;
 
 
-        // =====================================================
-        // TERRAIN OFFSETS
-        // =====================================================
-
         private readonly float terrainOffset;
-
         private readonly float hillOffset;
-
         private readonly float detailOffset;
+        private readonly float mountainOffset;
+        private readonly float mountainDetailOffset;
 
 
-        // =====================================================
-        // CONSTRUCTOR
-        // =====================================================
+        private readonly ushort airID;
+        private readonly ushort grassID;
+        private readonly ushort dirtID;
+        private readonly ushort stoneID;
+
 
         public WorldGenerator(
             WorldSettings settings
         )
         {
-
             this.settings =
                 settings;
-
-
-            // =================================================
-            // ORES
-            // =================================================
-
-            oreGenerator =
-                new OreGenerator(
-                    settings
-                );
 
 
             // =================================================
@@ -72,6 +48,16 @@ namespace Game.World.Generation
                 new CaveGenerator(
                     settings,
                     caveSettings
+                );
+
+
+            // =================================================
+            // ORES
+            // =================================================
+
+            oreGenerator =
+                new OreGenerator(
+                    settings
                 );
 
 
@@ -94,29 +80,64 @@ namespace Game.World.Generation
                 0.98765f;
 
 
+            mountainOffset =
+                settings.Seed *
+                1.73127f;
+
+
+            mountainDetailOffset =
+                settings.Seed *
+                2.91317f;
+
+
+            // =================================================
+            // BLOCK IDS
+            // =================================================
+
+            airID =
+                GetBlockID(
+                    "game:air"
+                );
+
+
+            grassID =
+                GetBlockID(
+                    "game:grass"
+                );
+
+
+            dirtID =
+                GetBlockID(
+                    "game:dirt"
+                );
+
+
+            stoneID =
+                GetBlockID(
+                    "game:stone"
+                );
+
+
             // =================================================
             // ORES
             // =================================================
 
             oreGenerator.ReloadOres();
-
         }
 
 
         // =====================================================
-        // RELOAD ORES
+        // ORES
         // =====================================================
 
         public void ReloadOres()
         {
-
             oreGenerator.ReloadOres();
-
         }
 
 
         // =====================================================
-        // GENERATE CHUNK
+        // CHUNK
         // =====================================================
 
         public ChunkData GenerateChunkData(
@@ -124,264 +145,214 @@ namespace Game.World.Generation
             int chunkY
         )
         {
-
             ChunkData data =
                 new ChunkData();
 
 
+            int originX =
+                chunkX *
+                Chunk.SizeX;
+
+
+            int originY =
+                chunkY *
+                Chunk.SizeY;
+
+
+            // =================================================
+            // SURFACE
+            // =================================================
+
+            int[] surfaces =
+                new int[Chunk.SizeX];
+
+
             for (
-                int localX = 0;
-                localX < Chunk.SizeX;
-                localX++
+                int x = 0;
+                x < Chunk.SizeX;
+                x++
             )
             {
-
-                int worldX =
-                    chunkX *
-                    Chunk.SizeX +
-                    localX;
-
-
-                int surfaceHeight =
+                surfaces[x] =
                     GetSurfaceHeight(
-                        worldX
+                        originX + x
                     );
+            }
+
+
+            // =================================================
+            // CAVE MASK
+            // =================================================
+
+            bool[,] caveMask =
+                caveGenerator.GenerateCaveMask(
+                    originX,
+                    originY,
+                    Chunk.SizeX,
+                    Chunk.SizeY,
+                    surfaces
+                );
+
+
+            // =================================================
+            // BLOCKS
+            // =================================================
+
+            for (
+                int x = 0;
+                x < Chunk.SizeX;
+                x++
+            )
+            {
+                int worldX =
+                    originX + x;
+
+
+                int surface =
+                    surfaces[x];
 
 
                 for (
-                    int localY = 0;
-                    localY < Chunk.SizeY;
-                    localY++
+                    int y = 0;
+                    y < Chunk.SizeY;
+                    y++
                 )
                 {
-
                     int worldY =
-                        chunkY *
-                        Chunk.SizeY +
-                        localY;
+                        originY + y;
 
 
-                    ushort foreground =
-                        GenerateForegroundBlock(
+                    bool cave =
+                        caveMask[x, y];
+
+
+                    ushort foreground;
+
+
+                    // =================================================
+                    // AIR ABOVE SURFACE
+                    // =================================================
+
+                    if (
+                        worldY >
+                        surface
+                    )
+                    {
+                        foreground =
+                            airID;
+                    }
+
+
+                    // =================================================
+                    // CAVE
+                    // =================================================
+
+                    else if (cave)
+                    {
+                        foreground =
+                            airID;
+                    }
+
+
+                    // =================================================
+                    // GRASS
+                    // =================================================
+
+                    else if (
+                        worldY ==
+                        surface
+                    )
+                    {
+                        foreground =
+                            grassID;
+                    }
+
+
+                    // =================================================
+                    // UNDERGROUND
+                    // =================================================
+
+                    else
+                    {
+                        int depth =
+                            surface -
+                            worldY;
+
+
+                        // ---------------------------------------------
+                        // DIRT
+                        // ---------------------------------------------
+
+                        if (
+                            depth <= 8
+                        )
+                        {
+                            foreground =
+                                dirtID;
+                        }
+
+
+                        // ---------------------------------------------
+                        // STONE / ORE
+                        // ---------------------------------------------
+
+                        else
+                        {
+                            ushort ore =
+                                oreGenerator.GetOre(
+                                    worldX,
+                                    worldY,
+                                    surface
+                                );
+
+
+                            if (
+                                ore != 0
+                            )
+                            {
+                                foreground =
+                                    ore;
+                            }
+                            else
+                            {
+                                foreground =
+                                    stoneID;
+                            }
+                        }
+                    }
+
+
+                    // =================================================
+                    // BACKGROUND
+                    // =================================================
+
+                    ushort background =
+                        GenerateBackground(
                             worldX,
                             worldY,
-                            surfaceHeight
+                            surface,
+                            foreground,
+                            cave
                         );
 
 
                     data.SetBlock(
-                        localX,
-                        localY,
+                        x,
+                        y,
                         foreground
                     );
 
 
-                    ushort background =
-                        GenerateBackgroundBlock(
-                            worldX,
-                            worldY,
-                            surfaceHeight
-                        );
-
-
                     data.SetBackground(
-                        localX,
-                        localY,
+                        x,
+                        y,
                         background
                     );
-
                 }
-
             }
 
 
             return data;
-
-        }
-
-
-        // =====================================================
-        // FOREGROUND
-        // =====================================================
-
-        private ushort GenerateForegroundBlock(
-            int worldX,
-            int worldY,
-            int surfaceHeight
-        )
-        {
-
-            // =================================================
-            // AIR ABOVE SURFACE
-            // =================================================
-
-            if (
-                worldY >
-                surfaceHeight
-            )
-            {
-                return 0;
-            }
-
-
-            // =================================================
-            // GRASS
-            // =================================================
-
-            if (
-                worldY ==
-                surfaceHeight
-            )
-            {
-                return GetBlockID(
-                    "game:grass"
-                );
-            }
-
-
-            // =================================================
-            // DEPTH
-            // =================================================
-
-            int depth =
-                surfaceHeight -
-                worldY;
-
-
-            // =================================================
-            // DIRT
-            // =================================================
-
-            const int dirtDepth =
-                8;
-
-
-            if (
-                depth <=
-                dirtDepth
-            )
-            {
-                return GetBlockID(
-                    "game:dirt"
-                );
-            }
-
-
-            // =================================================
-            // DIRT -> STONE
-            // =================================================
-
-            const int transitionDepth =
-                6;
-
-
-            if (
-                depth <=
-                dirtDepth +
-                transitionDepth
-            )
-            {
-
-                float transitionNoise =
-                    Mathf.PerlinNoise(
-                        (
-                            worldX +
-                            terrainOffset *
-                            1.73f
-                        )
-                        *
-                        0.18f,
-
-                        (
-                            worldY +
-                            hillOffset *
-                            2.37f
-                        )
-                        *
-                        0.18f
-                    );
-
-
-                int transitionDepthFromSurface =
-                    depth -
-                    dirtDepth;
-
-
-                float dirtChance =
-                    1f -
-                    (
-                        (float)
-                        transitionDepthFromSurface /
-                        transitionDepth
-                    );
-
-
-                dirtChance +=
-                    (
-                        transitionNoise -
-                        0.5f
-                    )
-                    *
-                    0.5f;
-
-
-                if (
-                    transitionNoise <
-                    dirtChance
-                )
-                {
-                    return GetBlockID(
-                        "game:dirt"
-                    );
-                }
-
-            }
-
-
-            // =================================================
-            // CAVE
-            // =================================================
-
-            if (
-                caveGenerator.IsCave(
-                    worldX,
-                    worldY,
-                    surfaceHeight
-                )
-            )
-            {
-                return 0;
-            }
-
-
-            // =================================================
-            // ORES
-            // =================================================
-
-            ushort ore =
-                oreGenerator.GetOre(
-                    worldX,
-                    worldY,
-                    surfaceHeight
-                );
-
-
-            if (
-                ore != 0
-            )
-            {
-                return ore;
-            }
-
-
-            // =================================================
-            // STONE
-            // =================================================
-
-            return GetBlockID(
-                "game:stone"
-            );
-
         }
 
 
@@ -389,103 +360,85 @@ namespace Game.World.Generation
         // BACKGROUND
         // =====================================================
 
-        private ushort GenerateBackgroundBlock(
+        private ushort GenerateBackground(
             int worldX,
             int worldY,
-            int surfaceHeight
+            int surface,
+            ushort foreground,
+            bool cave
         )
         {
+            // =================================================
+            // ABOVE SURFACE
+            // =================================================
 
             if (
-                worldY >
-                surfaceHeight
+                worldY >=
+                surface
             )
             {
-                return 0;
+                return airID;
             }
 
 
-            if (
-                worldY ==
-                surfaceHeight
-            )
+            // =================================================
+            // CAVE
+            // =================================================
+
+            if (cave)
             {
-                return 0;
+                return stoneID;
             }
 
+
+            // =================================================
+            // SHALLOW AREA
+            // =================================================
 
             int depth =
-                surfaceHeight -
+                surface -
                 worldY;
 
 
             if (
-                depth >
-                2
+                depth <= 2
             )
             {
-                return GetBlockID(
-                    "game:stone"
-                );
+                return airID;
             }
 
 
-            return 0;
-
-        }
-
-
-        // =====================================================
-        // BLOCK ID
-        // =====================================================
-
-        private ushort GetBlockID(
-            string blockID
-        )
-        {
-
-            ContentID id =
-                ContentID.Parse(
-                    blockID
-                );
-
+            // =================================================
+            // ORE BACKGROUND
+            // =================================================
 
             if (
-                !BlockIDRegistry.Contains(
-                    id
+                IsOre(
+                    foreground
                 )
             )
             {
-
-                Debug.LogError(
-                    "WORLD GENERATOR: BLOCK NOT REGISTERED: " +
-                    blockID
-                );
-
-
-                return 0;
-
+                return stoneID;
             }
 
 
-            return
-                BlockIDRegistry.GetID(
-                    id
-                );
-
+            return stoneID;
         }
 
 
         // =====================================================
-        // SURFACE HEIGHT
+        // SURFACE
         // =====================================================
 
         public int GetSurfaceHeight(
             int worldX
         )
         {
+            // =================================================
+            // LARGE HILLS
+            // =================================================
 
-            float largeTerrain =
+            float large =
                 Mathf.PerlinNoise(
                     (
                         worldX +
@@ -493,12 +446,15 @@ namespace Game.World.Generation
                     )
                     *
                     settings.HillScale,
-
                     0f
                 );
 
 
-            float hills =
+            // =================================================
+            // MEDIUM TERRAIN
+            // =================================================
+
+            float medium =
                 Mathf.PerlinNoise(
                     (
                         worldX +
@@ -506,10 +462,13 @@ namespace Game.World.Generation
                     )
                     *
                     settings.TerrainScale,
-
                     0f
                 );
 
+
+            // =================================================
+            // DETAIL
+            // =================================================
 
             float detail =
                 Mathf.PerlinNoise(
@@ -519,10 +478,56 @@ namespace Game.World.Generation
                     )
                     *
                     settings.TerrainDetailScale,
-
                     0f
                 );
 
+
+            // =================================================
+            // MOUNTAIN
+            // =================================================
+
+            float mountain =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        mountainOffset
+                    )
+                    *
+                    settings.MountainScale,
+                    0f
+                );
+
+
+            float mountainDetail =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        mountainDetailOffset
+                    )
+                    *
+                    settings.MountainDetailScale,
+                    0f
+                );
+
+
+            float mountainMask =
+                Mathf.InverseLerp(
+                    0.47f,
+                    0.72f,
+                    mountain
+                );
+
+
+            mountainMask =
+                Mathf.Pow(
+                    mountainMask,
+                    settings.MountainPower
+                );
+
+
+            // =================================================
+            // HEIGHT
+            // =================================================
 
             float height =
                 settings.SurfaceHeight;
@@ -530,7 +535,7 @@ namespace Game.World.Generation
 
             height +=
                 (
-                    largeTerrain -
+                    large -
                     0.5f
                 )
                 *
@@ -539,7 +544,7 @@ namespace Game.World.Generation
 
             height +=
                 (
-                    hills -
+                    medium -
                     0.5f
                 )
                 *
@@ -555,12 +560,80 @@ namespace Game.World.Generation
                 settings.TerrainDetail;
 
 
+            float mountainHeight =
+                mountainMask *
+                (
+                    settings.MountainHeight +
+                    (
+                        mountainDetail -
+                        0.5f
+                    )
+                    *
+                    settings.MountainDetailHeight
+                );
+
+
+            height +=
+                mountainHeight;
+
+
             return
                 Mathf.RoundToInt(
                     height
                 );
-
         }
 
+
+        // =====================================================
+        // ORE
+        // =====================================================
+
+        private bool IsOre(
+            ushort id
+        )
+        {
+            return
+                id != airID &&
+                id != grassID &&
+                id != dirtID &&
+                id != stoneID;
+        }
+
+
+        // =====================================================
+        // BLOCK ID
+        // =====================================================
+
+        private ushort GetBlockID(
+            string blockID
+        )
+        {
+            ContentID id =
+                ContentID.Parse(
+                    blockID
+                );
+
+
+            if (
+                !BlockIDRegistry.Contains(
+                    id
+                )
+            )
+            {
+                Debug.LogError(
+                    "WORLD GENERATOR: BLOCK NOT REGISTERED: " +
+                    blockID
+                );
+
+
+                return 0;
+            }
+
+
+            return
+                BlockIDRegistry.GetID(
+                    id
+                );
+        }
     }
 }

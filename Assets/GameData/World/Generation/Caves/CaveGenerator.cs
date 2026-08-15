@@ -4,21 +4,28 @@ namespace Game.World.Generation
 {
     public class CaveGenerator
     {
-
-        // =====================================================
-        // SETTINGS
-        // =====================================================
-
         private readonly WorldSettings worldSettings;
         private readonly CaveSettings settings;
-
 
         // =====================================================
         // SEEDS
         // =====================================================
 
-        private readonly float tunnelSeed;
-        private readonly float roomSeed;
+        private readonly float largeSeedX;
+        private readonly float largeSeedY;
+
+        private readonly float mediumSeedX;
+        private readonly float mediumSeedY;
+
+        private readonly float detailSeedX;
+        private readonly float detailSeedY;
+
+        private readonly float warpSeedX;
+        private readonly float warpSeedY;
+
+        private readonly float tunnelSeedX;
+        private readonly float tunnelSeedY;
+
         private readonly float entranceSeed;
 
 
@@ -31,7 +38,6 @@ namespace Game.World.Generation
             CaveSettings settings
         )
         {
-
             this.worldSettings =
                 worldSettings;
 
@@ -39,18 +45,78 @@ namespace Game.World.Generation
                 settings;
 
 
-            tunnelSeed =
-                worldSettings.Seed *
-                0.17321f;
+            // -------------------------------------------------
+            // НЕ используем огромные значения Seed напрямую.
+            //
+            // Это важно для бесконечного мира:
+            // Unity float имеет ограниченную точность.
+            // -------------------------------------------------
 
-            roomSeed =
-                worldSettings.Seed *
-                0.73129f;
+            largeSeedX =
+                HashSeed(
+                    worldSettings.Seed,
+                    101
+                );
+
+            largeSeedY =
+                HashSeed(
+                    worldSettings.Seed,
+                    102
+                );
+
+            mediumSeedX =
+                HashSeed(
+                    worldSettings.Seed,
+                    201
+                );
+
+            mediumSeedY =
+                HashSeed(
+                    worldSettings.Seed,
+                    202
+                );
+
+            detailSeedX =
+                HashSeed(
+                    worldSettings.Seed,
+                    301
+                );
+
+            detailSeedY =
+                HashSeed(
+                    worldSettings.Seed,
+                    302
+                );
+
+            warpSeedX =
+                HashSeed(
+                    worldSettings.Seed,
+                    401
+                );
+
+            warpSeedY =
+                HashSeed(
+                    worldSettings.Seed,
+                    402
+                );
+
+            tunnelSeedX =
+                HashSeed(
+                    worldSettings.Seed,
+                    501
+                );
+
+            tunnelSeedY =
+                HashSeed(
+                    worldSettings.Seed,
+                    502
+                );
 
             entranceSeed =
-                worldSettings.Seed *
-                1.91371f;
-
+                HashSeed(
+                    worldSettings.Seed,
+                    601
+                );
         }
 
 
@@ -58,963 +124,872 @@ namespace Game.World.Generation
         // PUBLIC
         // =====================================================
 
-        public bool IsCave(
-            int worldX,
-            int worldY,
-            int surfaceHeight
+        public bool[,] GenerateCaveMask(
+            int originX,
+            int originY,
+            int width,
+            int height,
+            int[] surfaceHeights
         )
         {
+            bool[,] mask =
+                new bool[
+                    width,
+                    height
+                ];
 
-            // -------------------------------------------------
-            // ABOVE SURFACE
-            // -------------------------------------------------
 
-            if (
-                worldY >
-                surfaceHeight
+            // =================================================
+            // NATURAL CAVE FIELD
+            // =================================================
+
+            for (
+                int x = 0;
+                x < width;
+                x++
             )
             {
-                return false;
+                int worldX =
+                    originX + x;
+
+                int surface =
+                    surfaceHeights[x];
+
+
+                for (
+                    int y = 0;
+                    y < height;
+                    y++
+                )
+                {
+                    int worldY =
+                        originY + y;
+
+
+                    // -----------------------------------------
+                    // ABOVE SURFACE
+                    // -----------------------------------------
+
+                    if (
+                        worldY >
+                        surface
+                    )
+                    {
+                        continue;
+                    }
+
+
+                    int depth =
+                        surface -
+                        worldY;
+
+
+                    // -----------------------------------------
+                    // PROTECTION NEAR SURFACE
+                    // -----------------------------------------
+
+                    if (
+                        depth <
+                        settings.StartDepth
+                    )
+                    {
+                        continue;
+                    }
+
+
+                    // -----------------------------------------
+                    // DOMAIN WARP
+                    // -----------------------------------------
+
+                    float warpX =
+                        Mathf.PerlinNoise(
+                            (
+                                worldX +
+                                warpSeedX
+                            ) *
+                            settings.WarpScale,
+
+                            (
+                                worldY +
+                                warpSeedY
+                            ) *
+                            settings.WarpScale
+                        );
+
+
+                    float warpY =
+                        Mathf.PerlinNoise(
+                            (
+                                worldX +
+                                warpSeedY +
+                                731.17f
+                            ) *
+                            settings.WarpScale,
+
+                            (
+                                worldY +
+                                warpSeedX +
+                                319.71f
+                            ) *
+                            settings.WarpScale
+                        );
+
+
+                    float sampleX =
+                        worldX +
+                        (
+                            warpX -
+                            0.5f
+                        ) *
+                        settings.WarpStrength;
+
+
+                    float sampleY =
+                        worldY +
+                        (
+                            warpY -
+                            0.5f
+                        ) *
+                        settings.WarpStrength;
+
+
+                    // =================================================
+                    // LARGE FIELD
+                    // =================================================
+
+                    float large =
+                        Mathf.PerlinNoise(
+                            (
+                                sampleX +
+                                largeSeedX
+                            ) *
+                            settings.LargeScale,
+
+                            (
+                                sampleY +
+                                largeSeedY
+                            ) *
+                            settings.LargeScale
+                        );
+
+
+                    // =================================================
+                    // MEDIUM FIELD
+                    // =================================================
+
+                    float medium =
+                        Mathf.PerlinNoise(
+                            (
+                                sampleX +
+                                mediumSeedX
+                            ) *
+                            settings.MediumScale,
+
+                            (
+                                sampleY +
+                                mediumSeedY
+                            ) *
+                            settings.MediumScale
+                        );
+
+
+                    // =================================================
+                    // DETAIL FIELD
+                    // =================================================
+
+                    float detail =
+                        Mathf.PerlinNoise(
+                            (
+                                sampleX +
+                                detailSeedX
+                            ) *
+                            settings.DetailScale,
+
+                            (
+                                sampleY +
+                                detailSeedY
+                            ) *
+                            settings.DetailScale
+                        );
+
+
+                    // =================================================
+                    // COMBINE
+                    // =================================================
+
+                    float weightSum =
+                        settings.LargeWeight +
+                        settings.MediumWeight +
+                        settings.DetailWeight;
+
+
+                    if (
+                        weightSum <= 0.0001f
+                    )
+                    {
+                        weightSum =
+                            1f;
+                    }
+
+
+                    float density =
+                    (
+                        large *
+                        settings.LargeWeight +
+
+                        medium *
+                        settings.MediumWeight +
+
+                        detail *
+                        settings.DetailWeight
+                    )
+                    /
+                    weightSum;
+
+
+                    // =================================================
+                    // SHAPE THE FIELD
+                    // =================================================
+
+                    density =
+                        Mathf.SmoothStep(
+                            0.18f,
+                            0.82f,
+                            density
+                        );
+
+
+                    // =================================================
+                    // DEPTH
+                    // =================================================
+
+                    float depth01 =
+                        Mathf.Clamp01(
+                            (
+                                depth -
+                                settings.StartDepth
+                            )
+                            /
+                            Mathf.Max(
+                                1f,
+                                settings.SurfaceTransition
+                            )
+                        );
+
+
+                    float depthMask =
+                        Mathf.SmoothStep(
+                            0f,
+                            1f,
+                            depth01
+                        );
+
+
+                    // -------------------------------------------------
+                    // Не удаляем пещеры ниже определённой высоты.
+                    //
+                    // После переходной зоны mask = 1 навсегда.
+                    // Поэтому мир может продолжаться вниз бесконечно.
+                    // -------------------------------------------------
+
+                    density *=
+                        Mathf.Lerp(
+                            0.05f,
+                            1f,
+                            depthMask
+                        );
+
+
+                    // =================================================
+                    // TUNNEL FIELD
+                    // =================================================
+
+                    float tunnelNoise =
+                        Mathf.PerlinNoise(
+                            (
+                                sampleX +
+                                tunnelSeedX
+                            ) *
+                            settings.TunnelScale,
+
+                            (
+                                sampleY +
+                                tunnelSeedY
+                            ) *
+                            settings.TunnelScale
+                        );
+
+
+                    // -------------------------------------------------
+                    // RIDGED PERLIN
+                    // -------------------------------------------------
+
+                    float tunnel =
+                        1f -
+                        Mathf.Abs(
+                            tunnelNoise -
+                            0.5f
+                        ) *
+                        2f;
+
+
+                    // -------------------------------------------------
+                    // Делаем тоннели РЕДКИМИ.
+                    //
+                    // В старой системе здесь был главный косяк:
+                    // низкий threshold превращал почти весь ridge
+                    // в тоннель.
+                    // -------------------------------------------------
+
+                    float tunnelMask =
+                        Mathf.SmoothStep(
+                            settings.TunnelThreshold,
+                            Mathf.Min(
+                                0.99f,
+                                settings.TunnelThreshold +
+                                0.08f
+                            ),
+                            tunnel
+                        );
+
+
+                    // =================================================
+                    // TUNNEL INFLUENCE
+                    // =================================================
+
+                    float tunnelInfluence =
+                        tunnelMask *
+                        settings.TunnelStrength *
+                        depthMask;
+
+
+                    // -------------------------------------------------
+                    // НЕ прибавляем tunnel к density.
+                    //
+                    // Мы плавно приближаем существующую плотность
+                    // к 1.
+                    // -------------------------------------------------
+
+                    density =
+                        Mathf.Lerp(
+                            density,
+                            1f,
+                            Mathf.Clamp01(
+                                tunnelInfluence
+                            )
+                        );
+
+
+                    // =================================================
+                    // FINAL CLAMP
+                    // =================================================
+
+                    density =
+                        Mathf.Clamp01(
+                            density
+                        );
+
+
+                    // =================================================
+                    // CAVE
+                    // =================================================
+
+                    if (
+                        density >=
+                        settings.CaveThreshold
+                    )
+                    {
+                        mask[x, y] =
+                            true;
+                    }
+                }
             }
 
 
-            // -------------------------------------------------
-            // DEPTH
-            // -------------------------------------------------
-
-            int depth =
-                surfaceHeight -
-                worldY;
-
-
-            // -------------------------------------------------
-            // SURFACE ENTRANCE
-            // -------------------------------------------------
+            // =================================================
+            // SURFACE ENTRANCES
+            // =================================================
 
             if (
                 settings.EnableSurfaceEntrances
             )
             {
+                GenerateSurfaceEntrances(
+                    mask,
+                    originX,
+                    originY,
+                    width,
+                    height,
+                    surfaceHeights
+                );
+            }
+
+
+            return mask;
+        }
+
+
+        // =====================================================
+        // SURFACE ENTRANCES
+        // =====================================================
+
+        private void GenerateSurfaceEntrances(
+            bool[,] mask,
+            int originX,
+            int originY,
+            int width,
+            int height,
+            int[] surfaceHeights
+        )
+        {
+            int regionSize =
+                Mathf.Max(
+                    16,
+                    settings.EntranceRegionSize
+                );
+
+
+            int minRegion =
+                FloorDiv(
+                    originX,
+                    regionSize
+                ) - 1;
+
+
+            int maxRegion =
+                FloorDiv(
+                    originX +
+                    width -
+                    1,
+                    regionSize
+                ) + 1;
+
+
+            for (
+                int regionX = minRegion;
+                regionX <= maxRegion;
+                regionX++
+            )
+            {
+                // -------------------------------------------------
+                // Редкий вход.
+                // -------------------------------------------------
+
+                float chance =
+                    Hash01(
+                        regionX,
+                        0,
+                        900
+                    );
+
 
                 if (
-                    IsSurfaceEntrance(
-                        worldX,
-                        worldY,
-                        surfaceHeight
-                    )
+                    chance >
+                    settings.SurfaceEntranceChance
                 )
                 {
-                    return true;
+                    continue;
                 }
 
-            }
 
+                int entranceX =
+                    regionX *
+                    regionSize +
 
-            // -------------------------------------------------
-            // SURFACE PROTECTION
-            // -------------------------------------------------
-
-            if (
-                depth <
-                settings.SurfaceProtectionDepth
-            )
-            {
-                return false;
-            }
-
-
-            // -------------------------------------------------
-            // NORMAL CAVES
-            // -------------------------------------------------
-
-            if (
-                depth <
-                settings.StartDepth
-            )
-            {
-                return false;
-            }
-
-
-            // -------------------------------------------------
-            // TUNNELS
-            // -------------------------------------------------
-
-            if (
-                IsTunnel(
-                    worldX,
-                    worldY,
-                    surfaceHeight
-                )
-            )
-            {
-                return true;
-            }
-
-
-            // -------------------------------------------------
-            // ROOMS
-            // -------------------------------------------------
-
-            if (
-                IsRoom(
-                    worldX,
-                    worldY,
-                    surfaceHeight
-                )
-            )
-            {
-                return true;
-            }
-
-
-            return false;
-        }
-
-
-        // =====================================================
-        // TUNNEL
-        // =====================================================
-
-        private bool IsTunnel(
-            int worldX,
-            int worldY,
-            int surfaceHeight
-        )
-        {
-
-            float regionSize =
-                settings.TunnelRegionSize;
-
-
-            int regionX =
-                Mathf.FloorToInt(
-                    worldX /
-                    regionSize
-                );
-
-
-            int regionY =
-                Mathf.FloorToInt(
-                    worldY /
-                    regionSize
-                );
-
-
-            // Проверяем соседние регионы.
-            //
-            // Это важно, чтобы тоннель не обрывался
-            // ровно на границе области.
-
-            for (
-                int offsetX = -1;
-                offsetX <= 1;
-                offsetX++
-            )
-            {
-
-                for (
-                    int offsetY = -1;
-                    offsetY <= 1;
-                    offsetY++
-                )
-                {
-
-                    int cellX =
-                        regionX +
-                        offsetX;
-
-
-                    int cellY =
-                        regionY +
-                        offsetY;
-
-
-                    if (
-                        IsInsideTunnelSystem(
-                            worldX,
-                            worldY,
-                            surfaceHeight,
-                            cellX,
-                            cellY
-                        )
-                    )
-                    {
-                        return true;
-                    }
-
-                }
-
-            }
-
-
-            return false;
-        }
-
-
-        // =====================================================
-        // TUNNEL SYSTEM
-        // =====================================================
-
-        private bool IsInsideTunnelSystem(
-            int worldX,
-            int worldY,
-            int surfaceHeight,
-            int cellX,
-            int cellY
-        )
-        {
-
-            // -------------------------------------------------
-            // RANDOM
-            // -------------------------------------------------
-
-            float spawn =
-                Hash01(
-                    cellX,
-                    cellY,
-                    100
-                );
-
-
-            if (
-                spawn >
-                settings.TunnelSpawnChance *
-                settings.CaveDensity
-            )
-            {
-                return false;
-            }
-
-
-            // -------------------------------------------------
-            // CENTER
-            // -------------------------------------------------
-
-            float centerX =
-                (
-                    cellX +
-                    0.5f +
-                    (
+                    Mathf.FloorToInt(
                         Hash01(
-                            cellX,
-                            cellY,
-                            101
-                        ) -
-                        0.5f
-                    )
-                    *
-                    0.7f
-                )
-                *
-                settings.TunnelRegionSize;
-
-
-            float centerY =
-                (
-                    cellY +
-                    0.5f +
-                    (
-                        Hash01(
-                            cellX,
-                            cellY,
-                            102
-                        ) -
-                        0.5f
-                    )
-                    *
-                    0.7f
-                )
-                *
-                settings.TunnelRegionSize;
-
-
-            // -------------------------------------------------
-            // DEPTH
-            // -------------------------------------------------
-
-            float minDepth =
-                settings.StartDepth +
-                10f;
-
-
-            float caveDepth =
-                surfaceHeight -
-                centerY;
-
-
-            if (
-                caveDepth <
-                minDepth
-            )
-            {
-                return false;
-            }
-
-
-            // -------------------------------------------------
-            // DIRECTION
-            // -------------------------------------------------
-
-            float angle =
-                Hash01(
-                    cellX,
-                    cellY,
-                    103
-                )
-                *
-                Mathf.PI *
-                2f;
-
-
-            Vector2 direction =
-                new Vector2(
-                    Mathf.Cos(angle),
-                    Mathf.Sin(angle)
-                );
-
-
-            // -------------------------------------------------
-            // LENGTH
-            // -------------------------------------------------
-
-            float length =
-                settings.TunnelLength +
-                (
-                    Hash01(
-                        cellX,
-                        cellY,
-                        104
-                    ) -
-                    0.5f
-                )
-                *
-                settings.TunnelLengthVariation;
-
-
-            // -------------------------------------------------
-            // LOCAL POSITION
-            // -------------------------------------------------
-
-            Vector2 point =
-                new Vector2(
-                    worldX,
-                    worldY
-                );
-
-
-            Vector2 center =
-                new Vector2(
-                    centerX,
-                    centerY
-                );
-
-
-            Vector2 relative =
-                point -
-                center;
-
-
-            float along =
-                Vector2.Dot(
-                    relative,
-                    direction
-                );
-
-
-            // -------------------------------------------------
-            // LENGTH CHECK
-            // -------------------------------------------------
-
-            if (
-                Mathf.Abs(
-                    along
-                )
-                >
-                length
-            )
-            {
-                return false;
-            }
-
-
-            // -------------------------------------------------
-            // PERPENDICULAR DISTANCE
-            // -------------------------------------------------
-
-            float perpendicular =
-                Mathf.Abs(
-                    Vector2.Dot(
-                        relative,
-                        new Vector2(
-                            -direction.y,
-                            direction.x
-                        )
-                    )
-                );
-
-
-            // -------------------------------------------------
-            // CURVE
-            // -------------------------------------------------
-
-            float curve =
-                Mathf.PerlinNoise(
-                    (
-                        worldX +
-                        tunnelSeed
-                    )
-                    *
-                    settings.TunnelWanderScale,
-
-                    (
-                        worldY +
-                        tunnelSeed
-                    )
-                    *
-                    settings.TunnelWanderScale
-                );
-
-
-            float curveOffset =
-                (
-                    curve -
-                    0.5f
-                )
-                *
-                settings.TunnelWander;
-
-
-            perpendicular =
-                Mathf.Abs(
-                    perpendicular -
-                    curveOffset
-                );
-
-
-            // -------------------------------------------------
-            // WIDTH
-            // -------------------------------------------------
-
-            float widthNoise =
-                Mathf.PerlinNoise(
-                    (
-                        worldX +
-                        tunnelSeed *
-                        2f
-                    )
-                    *
-                    0.04f,
-
-                    (
-                        worldY +
-                        tunnelSeed *
-                        2f
-                    )
-                    *
-                    0.04f
-                );
-
-
-            float radius =
-                Mathf.Lerp(
-                    settings.TunnelRadiusMin,
-                    settings.TunnelRadiusMax,
-                    widthNoise
-                );
-
-
-            // -------------------------------------------------
-            // SOFT EDGE
-            // -------------------------------------------------
-
-            return
-                perpendicular <=
-                radius;
-        }
-
-
-        // =====================================================
-        // ROOM
-        // =====================================================
-
-        private bool IsRoom(
-            int worldX,
-            int worldY,
-            int surfaceHeight
-        )
-        {
-
-            float regionSize =
-                settings.RoomRegionSize;
-
-
-            int regionX =
-                Mathf.FloorToInt(
-                    worldX /
-                    regionSize
-                );
-
-
-            int regionY =
-                Mathf.FloorToInt(
-                    worldY /
-                    regionSize
-                );
-
-
-            for (
-                int offsetX = -1;
-                offsetX <= 1;
-                offsetX++
-            )
-            {
-
-                for (
-                    int offsetY = -1;
-                    offsetY <= 1;
-                    offsetY++
-                )
-                {
-
-                    int cellX =
-                        regionX +
-                        offsetX;
-
-
-                    int cellY =
-                        regionY +
-                        offsetY;
-
-
-                    if (
-                        IsInsideRoom(
-                            worldX,
-                            worldY,
-                            surfaceHeight,
-                            cellX,
-                            cellY
-                        )
-                    )
-                    {
-                        return true;
-                    }
-
-                }
-
-            }
-
-
-            return false;
-        }
-
-
-        // =====================================================
-        // ROOM INSTANCE
-        // =====================================================
-
-        private bool IsInsideRoom(
-            int worldX,
-            int worldY,
-            int surfaceHeight,
-            int cellX,
-            int cellY
-        )
-        {
-
-            float spawn =
-                Hash01(
-                    cellX,
-                    cellY,
-                    200
-                );
-
-
-            if (
-                spawn >
-                settings.RoomSpawnChance
-            )
-            {
-                return false;
-            }
-
-
-            // -------------------------------------------------
-            // CENTER
-            // -------------------------------------------------
-
-            float centerX =
-                (
-                    cellX +
-                    0.5f +
-                    (
-                        Hash01(
-                            cellX,
-                            cellY,
-                            201
-                        ) -
-                        0.5f
-                    )
-                    *
-                    0.7f
-                )
-                *
-                settings.RoomRegionSize;
-
-
-            float centerY =
-                (
-                    cellY +
-                    0.5f +
-                    (
-                        Hash01(
-                            cellX,
-                            cellY,
-                            202
-                        ) -
-                        0.5f
-                    )
-                    *
-                    0.7f
-                )
-                *
-                settings.RoomRegionSize;
-
-
-            // -------------------------------------------------
-            // DEPTH
-            // -------------------------------------------------
-
-            int depth =
-                surfaceHeight -
-                Mathf.RoundToInt(
-                    centerY
-                );
-
-
-            if (
-                depth <
-                settings.StartDepth
-            )
-            {
-                return false;
-            }
-
-
-            // -------------------------------------------------
-            // RADIUS
-            // -------------------------------------------------
-
-            float radius =
-                Mathf.Lerp(
-                    settings.RoomRadiusMin,
-                    settings.RoomRadiusMax,
-                    Hash01(
-                        cellX,
-                        cellY,
-                        203
-                    )
-                );
-
-
-            // -------------------------------------------------
-            // STRETCH
-            // -------------------------------------------------
-
-            float stretchX =
-                Mathf.Lerp(
-                    1f,
-                    settings.RoomStretchX,
-                    Hash01(
-                        cellX,
-                        cellY,
-                        204
-                    )
-                );
-
-
-            float stretchY =
-                Mathf.Lerp(
-                    1f,
-                    settings.RoomStretchY,
-                    Hash01(
-                        cellX,
-                        cellY,
-                        205
-                    )
-                );
-
-
-            // -------------------------------------------------
-            // POSITION
-            // -------------------------------------------------
-
-            float dx =
-                (
-                    worldX -
-                    centerX
-                )
-                /
-                (
-                    radius *
-                    stretchX
-                );
-
-
-            float dy =
-                (
-                    worldY -
-                    centerY
-                )
-                /
-                (
-                    radius *
-                    stretchY
-                );
-
-
-            float distance =
-                dx *
-                dx +
-                dy *
-                dy;
-
-
-            // -------------------------------------------------
-            // WARP
-            // -------------------------------------------------
-
-            float warp =
-                Mathf.PerlinNoise(
-                    (
-                        worldX +
-                        roomSeed
-                    )
-                    *
-                    settings.RoomWarpScale,
-
-                    (
-                        worldY +
-                        roomSeed
-                    )
-                    *
-                    settings.RoomWarpScale
-                );
-
-
-            float edge =
-                (
-                    warp -
-                    0.5f
-                )
-                *
-                settings.RoomWarpStrength;
-
-
-            // -------------------------------------------------
-            // DETAIL
-            // -------------------------------------------------
-
-            float detail =
-                Mathf.PerlinNoise(
-                    (
-                        worldX +
-                        roomSeed *
-                        2f
-                    )
-                    *
-                    settings.DetailScale,
-
-                    (
-                        worldY +
-                        roomSeed *
-                        2f
-                    )
-                    *
-                    settings.DetailScale
-                );
-
-
-            // -------------------------------------------------
-            // FINAL SHAPE
-            // -------------------------------------------------
-
-            return
-                distance <
-                1f +
-                edge *
-                0.7f +
-                (
-                    detail -
-                    0.5f
-                )
-                *
-                settings.DetailStrength;
-        }
-
-
-        // =====================================================
-        // SURFACE ENTRANCE
-        // =====================================================
-
-        private bool IsSurfaceEntrance(
-            int worldX,
-            int worldY,
-            int surfaceHeight
-        )
-        {
-
-            int depth =
-                surfaceHeight -
-                worldY;
-
-
-            // -------------------------------------------------
-            // ONLY NEAR SURFACE
-            // -------------------------------------------------
-
-            if (
-                depth <
-                0 ||
-                depth >
-                settings.EntranceTunnelLength +
-                10
-            )
-            {
-                return false;
-            }
-
-
-            // -------------------------------------------------
-            // FIND SURFACE REGION
-            // -------------------------------------------------
-
-            int cellX =
-                Mathf.FloorToInt(
-                    worldX /
-                    80f
-                );
-
-
-            // -------------------------------------------------
-            // RANDOM ENTRANCE
-            // -------------------------------------------------
-
-            float spawn =
-                Hash01(
-                    cellX,
-                    0,
-                    500
-                );
-
-
-            if (
-                spawn >
-                settings.SurfaceEntranceChance
-            )
-            {
-                return false;
-            }
-
-
-            // -------------------------------------------------
-            // ENTRANCE X
-            // -------------------------------------------------
-
-            float entranceX =
-                (
-                    cellX +
-                    0.5f +
-                    (
-                        Hash01(
-                            cellX,
+                            regionX,
                             0,
-                            501
-                        ) -
-                        0.5f
-                    )
-                    *
-                    0.7f
+                            901
+                        )
+                        *
+                        regionSize
+                    );
+
+
+                int localX =
+                    entranceX -
+                    originX;
+
+
+                if (
+                    localX < 0 ||
+                    localX >= width
                 )
-                *
-                80f;
+                {
+                    continue;
+                }
 
 
-            float dx =
-                worldX -
-                entranceX;
+                int surface =
+                    surfaceHeights[localX];
 
 
-            // -------------------------------------------------
-            // WANDER
-            // -------------------------------------------------
+                // -------------------------------------------------
+                // Начинаем немного над поверхностью.
+                // -------------------------------------------------
 
-            float wander =
-                Mathf.Sin(
-                    worldY *
-                    0.08f +
-                    entranceSeed
+                Vector2 current =
+                    new Vector2(
+                        entranceX,
+                        surface + 1f
+                    );
+
+
+                float direction =
+                    -90f;
+
+
+                int length =
+                    Mathf.Max(
+                        1,
+                        settings.EntranceLength
+                    );
+
+
+                for (
+                    int i = 0;
+                    i < length;
+                    i++
                 )
-                *
-                settings.EntranceWander;
+                {
+                    float t =
+                        i /
+                        (float)
+                        Mathf.Max(
+                            1,
+                            length - 1
+                        );
 
 
-            float distance =
-                Mathf.Abs(
-                    dx -
-                    wander
-                );
+                    // ---------------------------------------------
+                    // Плавное изменение направления.
+                    // ---------------------------------------------
+
+                    float wanderNoise =
+                        Mathf.PerlinNoise(
+                            (
+                                regionX *
+                                17.17f +
+                                i *
+                                settings.EntranceWanderScale +
+                                entranceSeed
+                            ),
+                            0.37f
+                        );
 
 
-            float radius =
-                settings.EntranceTunnelRadius;
+                    float targetAngle =
+                        -90f +
+                        (
+                            wanderNoise -
+                            0.5f
+                        )
+                        *
+                        settings.EntranceWander;
 
 
-            // -------------------------------------------------
-            // ENTRY
-            // -------------------------------------------------
+                    direction =
+                        Mathf.LerpAngle(
+                            direction,
+                            targetAngle,
+                            0.12f
+                        );
 
-            if (
-                distance >
-                radius
-            )
-            {
-                return false;
+
+                    Vector2 directionVector =
+                        new Vector2(
+                            Mathf.Cos(
+                                direction *
+                                Mathf.Deg2Rad
+                            ),
+                            Mathf.Sin(
+                                direction *
+                                Mathf.Deg2Rad
+                            )
+                        );
+
+
+                    // ---------------------------------------------
+                    // Вход сначала узкий, потом расширяется.
+                    // ---------------------------------------------
+
+                    float radius =
+                        Mathf.Lerp(
+                            settings.EntranceRadius,
+                            settings.EntranceRadiusBottom,
+                            t
+                        );
+
+
+                    // ---------------------------------------------
+                    // Шаг.
+                    // ---------------------------------------------
+
+                    Vector2 next =
+                        current +
+                        directionVector *
+                        1.15f;
+
+
+                    // ---------------------------------------------
+                    // Не просто круг.
+                    //
+                    // StampOrganicBrush создаёт неровную форму
+                    // на основе Perlin.
+                    // ---------------------------------------------
+
+                    StampOrganicBrush(
+                        mask,
+                        originX,
+                        originY,
+                        width,
+                        height,
+                        current,
+                        radius,
+                        regionX,
+                        i
+                    );
+
+
+                    StampOrganicBrush(
+                        mask,
+                        originX,
+                        originY,
+                        width,
+                        height,
+                        next,
+                        radius,
+                        regionX,
+                        i + 1
+                    );
+
+
+                    current =
+                        next;
+                }
             }
-
-
-            // -------------------------------------------------
-            // TOP OPENING
-            // -------------------------------------------------
-
-            if (
-                depth <=
-                settings.EntranceRadius
-            )
-            {
-                return true;
-            }
-
-
-            // -------------------------------------------------
-            // TUNNEL DOWN
-            // -------------------------------------------------
-
-            if (
-                depth <=
-                settings.EntranceTunnelLength
-            )
-            {
-                return true;
-            }
-
-
-            return false;
         }
 
 
         // =====================================================
-        // HASH
+        // ORGANIC BRUSH
+        // =====================================================
+
+        private void StampOrganicBrush(
+            bool[,] mask,
+            int originX,
+            int originY,
+            int width,
+            int height,
+            Vector2 center,
+            float radius,
+            int regionX,
+            int step
+        )
+        {
+            int minX =
+                Mathf.Max(
+                    0,
+                    Mathf.FloorToInt(
+                        center.x -
+                        radius -
+                        2f
+                    ) -
+                    originX
+                );
+
+
+            int maxX =
+                Mathf.Min(
+                    width - 1,
+                    Mathf.CeilToInt(
+                        center.x +
+                        radius +
+                        2f
+                    ) -
+                    originX
+                );
+
+
+            int minY =
+                Mathf.Max(
+                    0,
+                    Mathf.FloorToInt(
+                        center.y -
+                        radius -
+                        2f
+                    ) -
+                    originY
+                );
+
+
+            int maxY =
+                Mathf.Min(
+                    height - 1,
+                    Mathf.CeilToInt(
+                        center.y +
+                        radius +
+                        2f
+                    ) -
+                    originY
+                );
+
+
+            for (
+                int x = minX;
+                x <= maxX;
+                x++
+            )
+            {
+                int worldX =
+                    originX + x;
+
+
+                for (
+                    int y = minY;
+                    y <= maxY;
+                    y++
+                )
+                {
+                    int worldY =
+                        originY + y;
+
+
+                    float dx =
+                        (
+                            worldX -
+                            center.x
+                        )
+                        /
+                        Mathf.Max(
+                            0.01f,
+                            radius
+                        );
+
+
+                    float dy =
+                        (
+                            worldY -
+                            center.y
+                        )
+                        /
+                        Mathf.Max(
+                            0.01f,
+                            radius
+                        );
+
+
+                    float distance =
+                        Mathf.Sqrt(
+                            dx * dx +
+                            dy * dy
+                        );
+
+
+                    // ---------------------------------------------
+                    // Если далеко от центра — сразу пропускаем.
+                    // ---------------------------------------------
+
+                    if (
+                        distance >
+                        1.35f
+                    )
+                    {
+                        continue;
+                    }
+
+
+                    // ---------------------------------------------
+                    // Organic deformation.
+                    // ---------------------------------------------
+
+                    float noise =
+                        Mathf.PerlinNoise(
+                            (
+                                worldX +
+                                regionX *
+                                83.17f +
+                                entranceSeed
+                            )
+                            *
+                            0.11f,
+
+                            (
+                                worldY +
+                                step *
+                                47.31f +
+                                entranceSeed
+                            )
+                            *
+                            0.11f
+                        );
+
+
+                    float localRadius =
+                        0.82f +
+                        noise *
+                        0.38f;
+
+
+                    if (
+                        distance <=
+                        localRadius
+                    )
+                    {
+                        mask[x, y] =
+                            true;
+                    }
+                }
+            }
+        }
+
+
+        // =====================================================
+        // SEED
+        // =====================================================
+
+        private float HashSeed(
+            int seed,
+            int salt
+        )
+        {
+            unchecked
+            {
+                uint h =
+                    (uint)seed;
+
+                h ^=
+                    (uint)salt *
+                    0x9E3779B9u;
+
+                h ^=
+                    h >> 16;
+
+                h *=
+                    0x85EBCA6Bu;
+
+                h ^=
+                    h >> 13;
+
+                h *=
+                    0xC2B2AE35u;
+
+                h ^=
+                    h >> 16;
+
+
+                return
+                    (
+                        h %
+                        100000u
+                    );
+            }
+        }
+
+
+        // =====================================================
+        // HASH 0..1
         // =====================================================
 
         private float Hash01(
@@ -1023,51 +998,69 @@ namespace Game.World.Generation
             int salt
         )
         {
-
             unchecked
             {
+                uint h =
+                    (uint)worldSettings.Seed;
 
-                int hash =
-                    x *
-                    374761393 +
+                h ^=
+                    (uint)x *
+                    374761393u;
 
-                    y *
-                    668265263 +
+                h ^=
+                    (uint)y *
+                    668265263u;
 
-                    salt *
-                    1442695041 +
+                h ^=
+                    (uint)salt *
+                    2246822519u;
 
-                    worldSettings.Seed;
+                h ^=
+                    h >> 13;
 
+                h *=
+                    1274126177u;
 
-                hash =
-                    (
-                        hash ^
-                        (
-                            hash >>
-                            13
-                        )
-                    )
-                    *
-                    1274126177;
-
-
-                hash ^=
-                    hash >>
-                    16;
+                h ^=
+                    h >> 16;
 
 
                 return
                     (
-                        hash &
-                        0x7fffffff
+                        h &
+                        0x00FFFFFFu
                     )
                     /
-                    2147483647f;
-
+                    16777215f;
             }
-
         }
 
+
+        // =====================================================
+        // FLOOR DIVISION
+        // =====================================================
+
+        private int FloorDiv(
+            int value,
+            int divisor
+        )
+        {
+            int result =
+                value /
+                divisor;
+
+
+            if (
+                value < 0 &&
+                value %
+                divisor != 0
+            )
+            {
+                result--;
+            }
+
+
+            return result;
+        }
     }
 }

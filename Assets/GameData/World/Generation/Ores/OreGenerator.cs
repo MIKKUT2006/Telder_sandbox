@@ -1,78 +1,43 @@
 using Game.Content;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 namespace Game.World.Generation.Ores
 {
-
     public class OreGenerator
     {
-
         private readonly WorldSettings settings;
 
         private readonly List<OreData> ores =
             new List<OreData>();
 
 
-        // =====================================================
-        // DEBUG STATISTICS
-        // =====================================================
-
-        private readonly Dictionary<string, OreStatistics>
-            statistics =
-            new Dictionary<string, OreStatistics>();
-
-
         public OreGenerator(
             WorldSettings settings
         )
         {
-
             this.settings =
                 settings;
-
         }
 
 
         // =====================================================
-        // RELOAD ORES
+        // RELOAD
         // =====================================================
 
         public void ReloadOres()
         {
-
             LoadOres();
-
         }
 
 
         // =====================================================
-        // LOAD ORES
+        // LOAD
         // =====================================================
 
         private void LoadOres()
         {
-
             ores.Clear();
-
-            statistics.Clear();
-
-
-            Debug.Log(
-                "========================================"
-            );
-
-
-            Debug.Log(
-                "ORE GENERATOR: LOADING ORES"
-            );
-
-
-            Debug.Log(
-                "========================================"
-            );
 
 
             foreach (
@@ -80,7 +45,6 @@ namespace Game.World.Generation.Ores
                 in OreRegistry.GetAll()
             )
             {
-
                 if (
                     definition ==
                     null
@@ -96,20 +60,8 @@ namespace Game.World.Generation.Ores
                     )
                 )
                 {
-
-                    Debug.LogWarning(
-                        "ORE WITHOUT ID"
-                    );
-
                     continue;
-
                 }
-
-
-                Debug.Log(
-                    "ORE FOUND IN REGISTRY: " +
-                    definition.ID
-                );
 
 
                 ContentID contentID =
@@ -124,14 +76,12 @@ namespace Game.World.Generation.Ores
                     )
                 )
                 {
-
                     Debug.LogError(
                         "ORE BLOCK NOT FOUND: " +
                         definition.ID
                     );
 
                     continue;
-
                 }
 
 
@@ -142,100 +92,48 @@ namespace Game.World.Generation.Ores
 
 
                 OreData data =
-                    new OreData();
+                    new OreData
+                    {
+                        ID =
+                            definition.ID,
 
+                        BlockID =
+                            blockID,
 
-                data.ID =
-                    definition.ID;
+                        MinDepth =
+                            Mathf.Max(
+                                definition.MinDepth,
+                                0
+                            ),
 
+                        MaxDepth =
+                            Mathf.Max(
+                                definition.MaxDepth,
+                                definition.MinDepth
+                            ),
 
-                data.BlockID =
-                    blockID;
+                        Rarity =
+                            Mathf.Clamp01(
+                                definition.Rarity
+                            ),
 
+                        MinVeinSize =
+                            Mathf.Max(
+                                definition.MinVeinSize,
+                                1
+                            ),
 
-                data.MinDepth =
-                    Mathf.Max(
-                        definition.MinDepth,
-                        0
-                    );
-
-
-                data.MaxDepth =
-                    Mathf.Max(
-                        definition.MaxDepth,
-                        data.MinDepth
-                    );
-
-
-                data.Rarity =
-                    Mathf.Clamp01(
-                        definition.Rarity
-                    );
-
-
-                data.MinVeinSize =
-                    Mathf.Max(
-                        definition.MinVeinSize,
-                        1
-                    );
-
-
-                data.MaxVeinSize =
-                    Mathf.Max(
-                        definition.VeinSize,
-                        data.MinVeinSize
-                    );
+                        MaxVeinSize =
+                            Mathf.Max(
+                                definition.VeinSize,
+                                definition.MinVeinSize
+                            )
+                    };
 
 
                 ores.Add(
                     data
                 );
-
-
-                statistics.Add(
-                    data.ID,
-                    new OreStatistics()
-                );
-
-
-                Debug.Log(
-                    "ORE REGISTERED:"
-                );
-
-
-                Debug.Log(
-                    "ID: " +
-                    data.ID
-                );
-
-
-                Debug.Log(
-                    "BLOCK ID: " +
-                    data.BlockID
-                );
-
-
-                Debug.Log(
-                    "DEPTH: " +
-                    data.MinDepth +
-                    " - " +
-                    data.MaxDepth
-                );
-
-
-                Debug.Log(
-                    "RARITY: " +
-                    data.Rarity
-                );
-
-
-                Debug.Log(
-                    "VEIN SIZE: " +
-                    data.MinVeinSize +
-                    " - " +
-                    data.MaxVeinSize
-                );
-
             }
 
 
@@ -243,7 +141,6 @@ namespace Game.World.Generation.Ores
                 "TOTAL ORES REGISTERED: " +
                 ores.Count
             );
-
         }
 
 
@@ -252,43 +149,33 @@ namespace Game.World.Generation.Ores
         // =====================================================
 
         public ushort GetOre(
-    int worldX,
-    int worldY,
-    int surfaceHeight
-)
+            int worldX,
+            int worldY,
+            int surfaceHeight
+        )
         {
             if (
-                ores.Count == 0
+                ores.Count ==
+                0
             )
             {
                 return 0;
             }
 
-
-            // =====================================================
-            // √À”¡»Õ¿ Œ“ÕŒ—»“≈À‹ÕŒ œŒ¬≈–’ÕŒ—“»
-            // =====================================================
 
             int depth =
                 surfaceHeight -
                 worldY;
 
 
-            // =====================================================
-            // Õ≈ √≈Õ≈–»–”≈Ã –”ƒ” Õ¿ƒ œŒ¬≈–’ÕŒ—“‹ﬁ
-            // =====================================================
-
             if (
-                depth <= 0
+                depth <=
+                0
             )
             {
                 return 0;
             }
 
-
-            // =====================================================
-            // œ–Œ¬≈– ¿ ¬—≈’ –”ƒ
-            // =====================================================
 
             for (
                 int i = 0;
@@ -296,20 +183,9 @@ namespace Game.World.Generation.Ores
                 i++
             )
             {
-
                 OreData ore =
                     ores[i];
 
-
-                OreStatistics stat =
-                    statistics[
-                        ore.ID
-                    ];
-
-
-                // =================================================
-                // œ–Œ¬≈– ¿ ƒ»¿œ¿«ŒÕ¿ √À”¡»Õ€
-                // =================================================
 
                 if (
                     depth <
@@ -329,55 +205,25 @@ namespace Game.World.Generation.Ores
                 }
 
 
-                // =================================================
-                // √À”¡»Õ¿ œŒƒ’Œƒ»“
-                // =================================================
-
-                stat.ValidDepthChecks++;
-
-
-                // =================================================
-                // œ–Œ¬≈– ¿ ∆»À€
-                // =================================================
-
-                bool isOrePosition =
+                if (
                     IsOrePosition(
                         worldX,
                         worldY,
                         ore
-                    );
-
-
-                if (
-                    !isOrePosition
+                    )
                 )
                 {
-                    continue;
+                    return ore.BlockID;
                 }
-
-
-                // =================================================
-                // –”ƒ¿ Õ¿…ƒ≈Õ¿
-                // =================================================
-
-                stat.GeneratedBlocks++;
-
-
-                return ore.BlockID;
-
             }
 
-
-            // =====================================================
-            // –”ƒ€ Õ≈“
-            // =====================================================
 
             return 0;
         }
 
 
         // =====================================================
-        // CHECK ORE POSITION
+        // ORE POSITION
         // =====================================================
 
         private bool IsOrePosition(
@@ -386,7 +232,6 @@ namespace Game.World.Generation.Ores
             OreData ore
         )
         {
-
             int cellSize =
                 Mathf.Max(
                     ore.MaxVeinSize * 3,
@@ -395,15 +240,15 @@ namespace Game.World.Generation.Ores
 
 
             int cellX =
-                Mathf.FloorToInt(
-                    (float)worldX /
+                FloorDiv(
+                    worldX,
                     cellSize
                 );
 
 
             int cellY =
-                Mathf.FloorToInt(
-                    (float)worldY /
+                FloorDiv(
+                    worldY,
                     cellSize
                 );
 
@@ -414,14 +259,12 @@ namespace Game.World.Generation.Ores
                 offsetX++
             )
             {
-
                 for (
                     int offsetY = -1;
                     offsetY <= 1;
                     offsetY++
                 )
                 {
-
                     int currentCellX =
                         cellX +
                         offsetX;
@@ -432,30 +275,16 @@ namespace Game.World.Generation.Ores
                         offsetY;
 
 
-                    int seed =
-                        GetSeed(
+                    float spawnChance =
+                        Hash01(
                             currentCellX,
                             currentCellY,
                             ore.ID
                         );
 
 
-                    System.Random random =
-                        new System.Random(
-                            seed
-                        );
-
-
-                    // =================================================
-                    // CHECK VEIN SPAWN
-                    // =================================================
-
-                    double chance =
-                        random.NextDouble();
-
-
                     if (
-                        chance >
+                        spawnChance >
                         ore.Rarity
                     )
                     {
@@ -463,15 +292,18 @@ namespace Game.World.Generation.Ores
                     }
 
 
-                    // =================================================
-                    // VEIN CENTER
-                    // =================================================
-
                     int centerX =
                         currentCellX *
                         cellSize +
-                        random.Next(
-                            0,
+
+                        Mathf.FloorToInt(
+                            Hash01(
+                                currentCellX,
+                                currentCellY,
+                                ore.ID +
+                                "_X"
+                            )
+                            *
                             cellSize
                         );
 
@@ -479,20 +311,31 @@ namespace Game.World.Generation.Ores
                     int centerY =
                         currentCellY *
                         cellSize +
-                        random.Next(
-                            0,
+
+                        Mathf.FloorToInt(
+                            Hash01(
+                                currentCellX,
+                                currentCellY,
+                                ore.ID +
+                                "_Y"
+                            )
+                            *
                             cellSize
                         );
 
 
-                    // =================================================
-                    // VEIN SIZE
-                    // =================================================
-
                     int veinSize =
-                        random.Next(
+                        (int)Mathf.Lerp(
                             ore.MinVeinSize,
-                            ore.MaxVeinSize + 1
+
+                            ore.MaxVeinSize,
+
+                            Hash01(
+                                currentCellX,
+                                currentCellY,
+                                ore.ID +
+                                "_SIZE"
+                            )
                         );
 
 
@@ -522,32 +365,17 @@ namespace Game.World.Generation.Ores
                     }
 
 
-                    // =================================================
-                    // IRREGULARITY
-                    // =================================================
-
-                    int coordinateSeed =
-                        GetSeed(
-                            worldX,
-                            worldY,
-                            ore.ID
-                        );
-
-
-                    System.Random coordinateRandom =
-                        new System.Random(
-                            coordinateSeed
-                        );
-
-
                     float shape =
                         0.75f +
-                        (
-                            (float)
-                            coordinateRandom.NextDouble()
-                            *
-                            0.5f
-                        );
+
+                        Hash01(
+                            worldX,
+                            worldY,
+                            ore.ID +
+                            "_SHAPE"
+                        )
+                        *
+                        0.5f;
 
 
                     if (
@@ -556,35 +384,28 @@ namespace Game.World.Generation.Ores
                         shape
                     )
                     {
-
                         return true;
-
                     }
-
                 }
-
             }
 
 
             return false;
-
         }
 
 
         // =====================================================
-        // SEED
+        // HASH
         // =====================================================
 
-        private int GetSeed(
+        private float Hash01(
             int x,
             int y,
-            string oreID
+            string value
         )
         {
-
             unchecked
             {
-
                 int hash =
                     settings.Seed;
 
@@ -601,107 +422,82 @@ namespace Game.World.Generation.Ores
 
                 for (
                     int i = 0;
-                    i < oreID.Length;
+                    i < value.Length;
                     i++
                 )
                 {
-
                     hash =
                         hash * 31 +
-                        oreID[i];
-
+                        value[i];
                 }
 
 
-                return hash;
+                hash ^=
+                    hash >>
+                    13;
 
+
+                hash *=
+                    1274126177;
+
+
+                hash ^=
+                    hash >>
+                    16;
+
+
+                return
+                    (
+                        hash &
+                        0x7fffffff
+                    )
+                    /
+                    2147483647f;
             }
-
         }
 
 
         // =====================================================
-        // DEBUG
+        // FLOOR DIV
         // =====================================================
 
-        public void PrintStatistics()
+        private int FloorDiv(
+            int value,
+            int divisor
+        )
         {
-
-            Debug.Log(
-                "========================================"
-            );
-
-
-            Debug.Log(
-                "ORE GENERATION STATISTICS"
-            );
+            int result =
+                value /
+                divisor;
 
 
-            Debug.Log(
-                "========================================"
-            );
+            int remainder =
+                value %
+                divisor;
 
 
-            foreach (
-                OreData ore
-                in ores
+            if (
+                remainder !=
+                0 &&
+                remainder <
+                0
             )
             {
-
-                OreStatistics stat =
-                    statistics[
-                        ore.ID
-                    ];
-
-
-                Debug.Log(
-                    "ORE: " +
-                    ore.ID
-                );
-
-
-                Debug.Log(
-                    "VALID DEPTH CHECKS: " +
-                    stat.ValidDepthChecks
-                );
-
-
-                Debug.Log(
-                    "GENERATED BLOCKS: " +
-                    stat.GeneratedBlocks
-                );
-
-
-                Debug.Log(
-                    "========================================"
-                );
-
+                result--;
             }
 
-        }
-        private int CalculateDepth(
-    int worldY
-)
-        {
 
-            int depth =
-                settings.SurfaceHeight -
-                worldY;
-
-
-            return depth;
-
+            return result;
         }
     }
 
 
-    // =========================================================
+    // =====================================================
     // ORE DATA
-    // =========================================================
+    // =====================================================
 
     public class OreData
     {
-
         public string ID;
 
         public ushort BlockID;
@@ -715,21 +511,5 @@ namespace Game.World.Generation.Ores
         public int MinVeinSize;
 
         public int MaxVeinSize;
-
     }
-
-
-    // =========================================================
-    // STATISTICS
-    // =========================================================
-
-    public class OreStatistics
-    {
-
-        public int ValidDepthChecks;
-
-        public int GeneratedBlocks;
-
-    }
-
 }
