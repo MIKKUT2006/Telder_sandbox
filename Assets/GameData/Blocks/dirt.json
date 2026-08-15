@@ -7,5 +7,10 @@
 
   "Hardness": 1,
 
-  "Solid": true
+  "Solid": true,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0
 }

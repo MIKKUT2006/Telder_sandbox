@@ -1,51 +1,55 @@
-using UnityEngine;
-
 namespace Game.World.Lighting
 {
     public struct LightSource
     {
-        public bool Enabled;
+        public int X;
+        public int Y;
 
-        public float R;
-        public float G;
-        public float B;
+        public byte R;
+        public byte G;
+        public byte B;
 
-        public float Intensity;
+        public byte Sunlight;
+
 
         public LightSource(
-            Color color,
-            float intensity
+            int x,
+            int y,
+            byte r,
+            byte g,
+            byte b,
+            byte sunlight
         )
         {
-            Enabled =
-                true;
+            X = x;
+            Y = y;
 
-            R =
-                color.r;
+            R = r;
+            G = g;
+            B = b;
 
-            G =
-                color.g;
-
-            B =
-                color.b;
-
-            Intensity =
-                intensity;
+            Sunlight = sunlight;
         }
 
-        public LightValue ToLight()
-        {
-            if (!Enabled)
-            {
-                return LightValue.Black;
-            }
 
-            return new LightValue(
-                R * Intensity,
-                G * Intensity,
-                B * Intensity,
-                0f
-            );
+        public bool HasRGB
+        {
+            get
+            {
+                return
+                    R > 0 ||
+                    G > 0 ||
+                    B > 0;
+            }
+        }
+
+
+        public bool HasSunlight
+        {
+            get
+            {
+                return Sunlight > 0;
+            }
         }
     }
 }

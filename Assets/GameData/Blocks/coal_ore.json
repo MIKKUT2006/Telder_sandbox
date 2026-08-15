@@ -9,5 +9,10 @@
   "BlocksLight": true,
   "LightLevel": 0,
   "DropCount": 1,
-  "Tags": []
+  "Tags": [],
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0
 }

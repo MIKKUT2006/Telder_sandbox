@@ -40,10 +40,12 @@ namespace Game.Blocks
         public bool BlocksLight;
 
 
+        // Освещение 
+        public byte LightOpacity;
 
-        // Свет, который испускает блок
-
-        public int LightLevel;
+        public byte LightEmissionR;
+        public byte LightEmissionG;
+        public byte LightEmissionB;
 
 
 
@@ -104,7 +106,11 @@ namespace Game.Blocks
             BlocksLight = true;
 
 
-            LightLevel = 0;
+            LightOpacity = 15;
+
+            LightEmissionR = 0;
+            LightEmissionG = 0;
+            LightEmissionB = 0;
 
 
             DropCount = 1;

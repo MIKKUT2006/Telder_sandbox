@@ -7,10 +7,6 @@ namespace Game.World.Lighting
         public float R;
         public float G;
         public float B;
-
-        // Солнечная составляющая.
-        // 0 = нет солнечного света.
-        // 1 = полный солнечный свет.
         public float Sun;
 
         public LightValue(
@@ -37,6 +33,39 @@ namespace Game.World.Lighting
                     0f
                 );
             }
+        }
+
+        public float MaxRGB
+        {
+            get
+            {
+                return Mathf.Max(
+                    R,
+                    Mathf.Max(G, B)
+                );
+            }
+        }
+
+        public bool IsBlack
+        {
+            get
+            {
+                return
+                    R <= 0f &&
+                    G <= 0f &&
+                    B <= 0f &&
+                    Sun <= 0f;
+            }
+        }
+
+        public LightValue Clamp()
+        {
+            return new LightValue(
+                Mathf.Clamp01(R),
+                Mathf.Clamp01(G),
+                Mathf.Clamp01(B),
+                Mathf.Clamp01(Sun)
+            );
         }
 
         public Color ToColor(

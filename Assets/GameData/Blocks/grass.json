@@ -17,5 +17,10 @@
   "Tags": [
     "grass",
     "dirt"
-  ]
+  ],
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0
 }

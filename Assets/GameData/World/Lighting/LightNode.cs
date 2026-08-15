@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace Game.World.Lighting
 {
     public struct LightNode
@@ -7,28 +5,29 @@ namespace Game.World.Lighting
         public int X;
         public int Y;
 
-        public LightValue Light;
+        public byte R;
+        public byte G;
+        public byte B;
+        public byte Sunlight;
+
 
         public LightNode(
             int x,
             int y,
-            LightValue light
+            byte r,
+            byte g,
+            byte b,
+            byte sunlight
         )
         {
             X = x;
             Y = y;
-            Light = light;
-        }
 
-        public Vector2Int Position
-        {
-            get
-            {
-                return new Vector2Int(
-                    X,
-                    Y
-                );
-            }
+            R = r;
+            G = g;
+            B = b;
+
+            Sunlight = sunlight;
         }
     }
 }
