@@ -1,58 +1,67 @@
-using UnityEngine;
+using System;
 
 namespace Game.World.Lighting
 {
     public class ChunkLightData
     {
-        private readonly byte[] sunlight;
-        private readonly byte[] red;
-        private readonly byte[] green;
-        private readonly byte[] blue;
+        public const int Width = Chunk.SizeX;
+        public const int Height = Chunk.SizeY;
 
-        private readonly int width;
-        private readonly int height;
+        private readonly LightNode[,] lights;
 
-
-        public ChunkLightData(
-            int width,
-            int height
-        )
+        public ChunkLightData()
         {
-            this.width = width;
-            this.height = height;
-
-            int size =
-                width *
-                height;
-
-            sunlight =
-                new byte[size];
-
-            red =
-                new byte[size];
-
-            green =
-                new byte[size];
-
-            blue =
-                new byte[size];
+            lights =
+                new LightNode[
+                    Width,
+                    Height
+                ];
         }
 
+        public LightNode Get(
+            int x,
+            int y
+        )
+        {
+            if (
+                x < 0 ||
+                x >= Width ||
+                y < 0 ||
+                y >= Height
+            )
+            {
+                return LightNode.None;
+            }
 
-        // =====================================================
-        // SUNLIGHT
-        // =====================================================
+            return lights[x, y];
+        }
+
+        public void Set(
+            int x,
+            int y,
+            LightNode value
+        )
+        {
+            if (
+                x < 0 ||
+                x >= Width ||
+                y < 0 ||
+                y >= Height
+            )
+            {
+                return;
+            }
+
+            lights[x, y] = value;
+        }
 
         public byte GetSunlight(
             int x,
             int y
         )
         {
-            return sunlight[
-                y * width + x
-            ];
+            return Get(x, y).Sun;
         }
-
 
         public void SetSunlight(
             int x,
@@ -60,219 +69,49 @@ namespace Game.World.Lighting
             byte value
         )
         {
-            sunlight[
-                y * width + x
-            ] = value;
+            LightNode light =
+                Get(x, y);
+
+            light.Sun = value;
+
+            Set(
+                x,
+                y,
+                light
+            );
         }
-
-
-        // =====================================================
-        // RED
-        // =====================================================
 
         public byte GetRed(
             int x,
             int y
         )
         {
-            return red[
-                y * width + x
-            ];
+            return Get(x, y).R;
         }
-
-
-        public void SetRed(
-            int x,
-            int y,
-            byte value
-        )
-        {
-            red[
-                y * width + x
-            ] = value;
-        }
-
-
-        // =====================================================
-        // GREEN
-        // =====================================================
 
         public byte GetGreen(
             int x,
             int y
         )
         {
-            return green[
-                y * width + x
-            ];
+            return Get(x, y).G;
         }
-
-
-        public void SetGreen(
-            int x,
-            int y,
-            byte value
-        )
-        {
-            green[
-                y * width + x
-            ] = value;
-        }
-
-
-        // =====================================================
-        // BLUE
-        // =====================================================
 
         public byte GetBlue(
             int x,
             int y
         )
         {
-            return blue[
-                y * width + x
-            ];
+            return Get(x, y).B;
         }
-
-
-        public void SetBlue(
-            int x,
-            int y,
-            byte value
-        )
-        {
-            blue[
-                y * width + x
-            ] = value;
-        }
-
-
-        // =====================================================
-        // RGB
-        // =====================================================
-
-        public Color32 GetColor(
-            int x,
-            int y
-        )
-        {
-            return new Color32(
-                red[y * width + x],
-                green[y * width + x],
-                blue[y * width + x],
-                255
-            );
-        }
-
-
-        public void SetColor(
-            int x,
-            int y,
-            byte r,
-            byte g,
-            byte b
-        )
-        {
-            int index =
-                y * width + x;
-
-            red[index] = r;
-            green[index] = g;
-            blue[index] = b;
-        }
-
-
-        // =====================================================
-        // CLEAR
-        // =====================================================
 
         public void Clear()
         {
-            System.Array.Clear(
-                sunlight,
+            Array.Clear(
+                lights,
                 0,
-                sunlight.Length
+                lights.Length
             );
-
-            System.Array.Clear(
-                red,
-                0,
-                red.Length
-            );
-
-            System.Array.Clear(
-                green,
-                0,
-                green.Length
-            );
-
-            System.Array.Clear(
-                blue,
-                0,
-                blue.Length
-            );
-        }
-
-
-        // =====================================================
-        // CLEAR SUNLIGHT ONLY
-        // =====================================================
-
-        public void ClearSunlight()
-        {
-            System.Array.Clear(
-                sunlight,
-                0,
-                sunlight.Length
-            );
-        }
-
-
-        // =====================================================
-        // CLEAR RGB ONLY
-        // =====================================================
-
-        public void ClearRGB()
-        {
-            System.Array.Clear(
-                red,
-                0,
-                red.Length
-            );
-
-            System.Array.Clear(
-                green,
-                0,
-                green.Length
-            );
-
-            System.Array.Clear(
-                blue,
-                0,
-                blue.Length
-            );
-        }
-
-
-        // =====================================================
-        // SIZE
-        // =====================================================
-
-        public int Width
-        {
-            get
-            {
-                return width;
-            }
-        }
-
-
-        public int Height
-        {
-            get
-            {
-                return height;
-            }
         }
     }
 }

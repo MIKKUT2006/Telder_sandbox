@@ -7,16 +7,13 @@ namespace Game.World.Lighting
     {
         private readonly ILightWorld world;
 
-
-        private readonly Queue<LightNode>
+        private readonly Queue<LightNodePosition>
             propagationQueue =
-                new Queue<LightNode>();
+                new Queue<LightNodePosition>();
 
-
-        private readonly Queue<LightNode>
+        private readonly Queue<LightNodePosition>
             removalQueue =
-                new Queue<LightNode>();
-
+                new Queue<LightNodePosition>();
 
         private static readonly int[] OffsetX =
         {
@@ -26,7 +23,6 @@ namespace Game.World.Lighting
             0
         };
 
-
         private static readonly int[] OffsetY =
         {
             0,
@@ -35,24 +31,27 @@ namespace Game.World.Lighting
             -1
         };
 
-
         public LightPropagationEngine(
             ILightWorld world
         )
         {
-            this.world =
-                world;
+            this.world = world;
         }
 
-
         // =====================================================
-        // ADD LIGHT SOURCE
+        // ADD SOURCE
         // =====================================================
 
         public void AddLightSource(
             LightSource source
         )
         {
+            if (source == null)
+                return;
+
+            if (!source.Enabled)
+                return;
+
             if (
                 !world.IsLoaded(
                     source.X,
@@ -63,29 +62,22 @@ namespace Game.World.Lighting
                 return;
             }
 
-
-            LightNode node =
-                new LightNode(
-                    source.X,
-                    source.Y,
-                    source.R,
-                    source.G,
-                    source.B,
-                    source.Sunlight
-                );
-
+            LightNode light =
+                source.ToLight();
 
             propagationQueue.Enqueue(
-                node
+                new LightNodePosition(
+                    source.X,
+                    source.Y,
+                    light
+                )
             );
-
 
             ProcessPropagation();
         }
 
-
         // =====================================================
-        // REMOVE LIGHT SOURCE
+        // REMOVE SOURCE
         // =====================================================
 
         public void RemoveLightSource(
@@ -103,62 +95,14 @@ namespace Game.World.Lighting
                 return;
             }
 
-
-            ChunkLightData light =
-                world.GetLightData(
+            LightNode old =
+                world.GetLight(
                     worldX,
                     worldY
                 );
 
-
-            if (light == null)
-            {
+            if (old.IsEmpty)
                 return;
-            }
-
-
-            byte oldR =
-                GetLocalRed(
-                    light,
-                    worldX,
-                    worldY
-                );
-
-
-            byte oldG =
-                GetLocalGreen(
-                    light,
-                    worldX,
-                    worldY
-                );
-
-
-            byte oldB =
-                GetLocalBlue(
-                    light,
-                    worldX,
-                    worldY
-                );
-
-
-            byte oldSun =
-                GetLocalSunlight(
-                    light,
-                    worldX,
-                    worldY
-                );
-
-
-            if (
-                oldR == 0 &&
-                oldG == 0 &&
-                oldB == 0 &&
-                oldSun == 0
-            )
-            {
-                return;
-            }
-
 
             world.SetLight(
                 worldX,
@@ -169,22 +113,16 @@ namespace Game.World.Lighting
                 0
             );
 
-
             removalQueue.Enqueue(
-                new LightNode(
+                new LightNodePosition(
                     worldX,
                     worldY,
-                    oldR,
-                    oldG,
-                    oldB,
-                    oldSun
+                    old
                 )
             );
 
-
             ProcessRemoval();
         }
-
 
         // =====================================================
         // PROPAGATION
@@ -196,9 +134,8 @@ namespace Game.World.Lighting
                 propagationQueue.Count > 0
             )
             {
-                LightNode node =
+                LightNodePosition node =
                     propagationQueue.Dequeue();
-
 
                 for (
                     int i = 0;
@@ -210,11 +147,9 @@ namespace Game.World.Lighting
                         node.X +
                         OffsetX[i];
 
-
                     int ny =
                         node.Y +
                         OffsetY[i];
-
 
                     if (
                         !world.IsLoaded(
@@ -226,193 +161,76 @@ namespace Game.World.Lighting
                         continue;
                     }
 
-
                     ushort blockID =
                         world.GetBlock(
                             nx,
                             ny
                         );
 
-
                     BlockDefinition block =
                         world.GetBlockDefinition(
                             blockID
                         );
 
-
                     if (block == null)
-                    {
                         continue;
-                    }
-
 
                     byte opacity =
                         block.LightOpacity;
 
+                    if (opacity >= 15)
+                        continue;
+
+                    LightNode current =
+                        world.GetLight(
+                            nx,
+                            ny
+                        );
+
+                    LightNode next =
+                        Attenuate(
+                            node.Light,
+                            opacity
+                        );
+
+                    if (next.IsEmpty)
+                        continue;
+
+                    LightNode result =
+                        MaxLight(
+                            current,
+                            next
+                        );
 
                     if (
-                        opacity >= 15
+                        SameLight(
+                            current,
+                            result
+                        )
                     )
                     {
                         continue;
                     }
-
-
-                    ChunkLightData light =
-                        world.GetLightData(
-                            nx,
-                            ny
-                        );
-
-
-                    if (light == null)
-                    {
-                        continue;
-                    }
-
-
-                    byte oldR =
-                        GetLocalRed(
-                            light,
-                            nx,
-                            ny
-                        );
-
-
-                    byte oldG =
-                        GetLocalGreen(
-                            light,
-                            nx,
-                            ny
-                        );
-
-
-                    byte oldB =
-                        GetLocalBlue(
-                            light,
-                            nx,
-                            ny
-                        );
-
-
-                    byte oldSun =
-                        GetLocalSunlight(
-                            light,
-                            nx,
-                            ny
-                        );
-
-
-                    byte newR =
-                        Attenuate(
-                            node.R,
-                            opacity
-                        );
-
-
-                    byte newG =
-                        Attenuate(
-                            node.G,
-                            opacity
-                        );
-
-
-                    byte newB =
-                        Attenuate(
-                            node.B,
-                            opacity
-                        );
-
-
-                    byte newSun =
-                        AttenuateSunlight(
-                            node.Sunlight,
-                            opacity
-                        );
-
-
-                    bool changed =
-                        false;
-
-
-                    if (
-                        newR > oldR
-                    )
-                    {
-                        oldR =
-                            newR;
-
-                        changed =
-                            true;
-                    }
-
-
-                    if (
-                        newG > oldG
-                    )
-                    {
-                        oldG =
-                            newG;
-
-                        changed =
-                            true;
-                    }
-
-
-                    if (
-                        newB > oldB
-                    )
-                    {
-                        oldB =
-                            newB;
-
-                        changed =
-                            true;
-                    }
-
-
-                    if (
-                        newSun > oldSun
-                    )
-                    {
-                        oldSun =
-                            newSun;
-
-                        changed =
-                            true;
-                    }
-
-
-                    if (!changed)
-                    {
-                        continue;
-                    }
-
 
                     world.SetLight(
                         nx,
                         ny,
-                        oldSun,
-                        oldR,
-                        oldG,
-                        oldB
+                        result.Sun,
+                        result.R,
+                        result.G,
+                        result.B
                     );
 
-
                     propagationQueue.Enqueue(
-                        new LightNode(
+                        new LightNodePosition(
                             nx,
                             ny,
-                            oldR,
-                            oldG,
-                            oldB,
-                            oldSun
+                            result
                         )
                     );
                 }
             }
         }
-
 
         // =====================================================
         // REMOVAL
@@ -420,17 +238,16 @@ namespace Game.World.Lighting
 
         private void ProcessRemoval()
         {
-            Queue<LightNode> relightQueue =
-                new Queue<LightNode>();
-
+            Queue<LightNodePosition>
+                relightQueue =
+                    new Queue<LightNodePosition>();
 
             while (
                 removalQueue.Count > 0
             )
             {
-                LightNode removed =
+                LightNodePosition removed =
                     removalQueue.Dequeue();
-
 
                 for (
                     int i = 0;
@@ -442,11 +259,9 @@ namespace Game.World.Lighting
                         removed.X +
                         OffsetX[i];
 
-
                     int ny =
                         removed.Y +
                         OffsetY[i];
-
 
                     if (
                         !world.IsLoaded(
@@ -458,383 +273,189 @@ namespace Game.World.Lighting
                         continue;
                     }
 
-
-                    ChunkLightData light =
-                        world.GetLightData(
+                    LightNode neighbour =
+                        world.GetLight(
                             nx,
                             ny
                         );
 
-
-                    if (light == null)
+                    if (
+                        neighbour.IsEmpty
+                    )
                     {
                         continue;
                     }
 
-
-                    byte r =
-                        GetLocalRed(
-                            light,
-                            nx,
-                            ny
-                        );
-
-
-                    byte g =
-                        GetLocalGreen(
-                            light,
-                            nx,
-                            ny
-                        );
-
-
-                    byte b =
-                        GetLocalBlue(
-                            light,
-                            nx,
-                            ny
-                        );
-
-
-                    byte sun =
-                        GetLocalSunlight(
-                            light,
-                            nx,
-                            ny
-                        );
-
-
-                    /*
-                     * Если соседний блок всё ещё содержит свет,
-                     * значит он потенциально может быть источником
-                     * света для дальнейшей области.
-                     */
-
                     if (
-                        r > 0 ||
-                        g > 0 ||
-                        b > 0 ||
-                        sun > 0
+                        IsAffectedBy(
+                            neighbour,
+                            removed.Light
+                        )
                     )
                     {
-                        relightQueue.Enqueue(
-                            new LightNode(
-                                nx,
-                                ny,
-                                r,
-                                g,
-                                b,
-                                sun
-                            )
+                        world.SetLight(
+                            nx,
+                            ny,
+                            0,
+                            0,
+                            0,
+                            0
                         );
 
-
-                        continue;
+                        removalQueue.Enqueue(
+                            new LightNodePosition(
+                                nx,
+                                ny,
+                                neighbour
+                            )
+                        );
+                    }
+                    else
+                    {
+                        relightQueue.Enqueue(
+                            new LightNodePosition(
+                                nx,
+                                ny,
+                                neighbour
+                            )
+                        );
                     }
                 }
             }
-
-
-            /*
-             * Повторно распространяем оставшийся свет.
-             */
 
             while (
                 relightQueue.Count > 0
             )
             {
-                LightNode node =
-                    relightQueue.Dequeue();
-
-
                 propagationQueue.Enqueue(
-                    node
+                    relightQueue.Dequeue()
                 );
             }
 
-
             ProcessPropagation();
         }
-
-
-        // =====================================================
-        // REBUILD
-        // =====================================================
-
-        private void RebuildNearbyLight()
-        {
-            /*
-             * После удаления источника нам необходимо
-             * восстановить свет от других источников.
-             *
-             * Для этого смотрим соседние клетки.
-             *
-             * Если там остался свет,
-             * снова запускаем propagation.
-             */
-
-            propagationQueue.Clear();
-
-
-            for (
-                int i = 0;
-                i < removalQueue.Count;
-                i++
-            )
-            {
-                // Очередь уже очищена выше,
-                // поэтому здесь намеренно ничего
-                // не делаем.
-            }
-        }
-
 
         // =====================================================
         // ATTENUATION
         // =====================================================
 
-        private byte Attenuate(
+        private LightNode Attenuate(
+            LightNode light,
+            byte opacity
+        )
+        {
+            byte sun =
+                AttenuateChannel(
+                    light.Sun,
+                    opacity
+                );
+
+            byte r =
+                AttenuateChannel(
+                    light.R,
+                    opacity
+                );
+
+            byte g =
+                AttenuateChannel(
+                    light.G,
+                    opacity
+                );
+
+            byte b =
+                AttenuateChannel(
+                    light.B,
+                    opacity
+                );
+
+            return new LightNode(
+                sun,
+                r,
+                g,
+                b
+            );
+        }
+
+        private byte AttenuateChannel(
             byte value,
             byte opacity
         )
         {
-            if (
-                value == 0
-            )
-            {
+            if (value == 0)
                 return 0;
-            }
-
 
             int result =
                 value -
                 1 -
                 opacity;
 
-
-            if (
-                result <= 0
-            )
-            {
+            if (result <= 0)
                 return 0;
-            }
 
-
-            if (
-                result > 15
-            )
-            {
+            if (result > 15)
                 result = 15;
-            }
 
-
-            return
-                (byte)result;
+            return (byte)result;
         }
-
-
-        private byte AttenuateSunlight(
-            byte value,
-            byte opacity
-        )
-        {
-            if (
-                value == 0
-            )
-            {
-                return 0;
-            }
-
-
-            if (
-                opacity >= 15
-            )
-            {
-                return 0;
-            }
-
-
-            int result =
-                value -
-                1 -
-                opacity;
-
-
-            if (
-                result <= 0
-            )
-            {
-                return 0;
-            }
-
-
-            if (
-                result > 15
-            )
-            {
-                result = 15;
-            }
-
-
-            return
-                (byte)result;
-        }
-
 
         // =====================================================
-        // AFFECTED TEST
+        // MAX
         // =====================================================
 
-        private bool IsAffected(
-            LightNode source,
-            byte currentR,
-            byte currentG,
-            byte currentB,
-            byte currentSun
+        private LightNode MaxLight(
+            LightNode a,
+            LightNode b
+        )
+        {
+            return new LightNode(
+                MaxByte(a.Sun, b.Sun),
+                MaxByte(a.R, b.R),
+                MaxByte(a.G, b.G),
+                MaxByte(a.B, b.B)
+            );
+        }
+
+        private byte MaxByte(
+            byte a,
+            byte b
         )
         {
             return
-                currentR <= source.R ||
-                currentG <= source.G ||
-                currentB <= source.B ||
-                currentSun <= source.Sunlight;
+                a > b
+                    ? a
+                    : b;
         }
-
 
         // =====================================================
-        // LOCAL COORDINATES
+        // EQUALITY
         // =====================================================
 
-        private byte GetLocalRed(
-            ChunkLightData data,
-            int worldX,
-            int worldY
+        private bool SameLight(
+            LightNode a,
+            LightNode b
         )
         {
-            int x =
-                Mod(
-                    worldX,
-                    data.Width
-                );
-
-
-            int y =
-                Mod(
-                    worldY,
-                    data.Height
-                );
-
-
             return
-                data.GetRed(
-                    x,
-                    y
-                );
+                a.Sun == b.Sun &&
+                a.R == b.R &&
+                a.G == b.G &&
+                a.B == b.B;
         }
 
+        // =====================================================
+        // REMOVAL TEST
+        // =====================================================
 
-        private byte GetLocalGreen(
-            ChunkLightData data,
-            int worldX,
-            int worldY
+        private bool IsAffectedBy(
+            LightNode neighbour,
+            LightNode source
         )
         {
-            int x =
-                Mod(
-                    worldX,
-                    data.Width
-                );
-
-
-            int y =
-                Mod(
-                    worldY,
-                    data.Height
-                );
-
-
             return
-                data.GetGreen(
-                    x,
-                    y
-                );
-        }
-
-
-        private byte GetLocalBlue(
-            ChunkLightData data,
-            int worldX,
-            int worldY
-        )
-        {
-            int x =
-                Mod(
-                    worldX,
-                    data.Width
-                );
-
-
-            int y =
-                Mod(
-                    worldY,
-                    data.Height
-                );
-
-
-            return
-                data.GetBlue(
-                    x,
-                    y
-                );
-        }
-
-
-        private byte GetLocalSunlight(
-            ChunkLightData data,
-            int worldX,
-            int worldY
-        )
-        {
-            int x =
-                Mod(
-                    worldX,
-                    data.Width
-                );
-
-
-            int y =
-                Mod(
-                    worldY,
-                    data.Height
-                );
-
-
-            return
-                data.GetSunlight(
-                    x,
-                    y
-                );
-        }
-
-
-        private int Mod(
-            int value,
-            int size
-        )
-        {
-            int result =
-                value % size;
-
-
-            if (
-                result < 0
-            )
-            {
-                result += size;
-            }
-
-
-            return result;
+                neighbour.R <= source.R &&
+                neighbour.G <= source.G &&
+                neighbour.B <= source.B &&
+                neighbour.Sun <= source.Sun;
         }
     }
 }

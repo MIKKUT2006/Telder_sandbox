@@ -9,73 +9,40 @@ namespace Game.World.Lighting
         private readonly int chunkWidth;
         private readonly int chunkHeight;
 
-        private readonly Dictionary<
-            Vector2Int,
-            ChunkLightData
-        > chunks =
-            new Dictionary<
-                Vector2Int,
-                ChunkLightData
-            >();
+        private readonly Dictionary<Vector2Int, ChunkLightData> chunks =
+            new Dictionary<Vector2Int, ChunkLightData>();
 
-        private readonly Queue<LightNode>
-            addQueue =
-                new Queue<LightNode>();
+        private readonly Queue<LightNodePosition> addQueue =
+            new Queue<LightNodePosition>();
 
-        private readonly Queue<LightNode>
-            removeQueue =
-                new Queue<LightNode>();
+        private readonly Queue<LightNodePosition> removeQueue =
+            new Queue<LightNodePosition>();
 
-        private readonly Queue<LightNode>
-            removalPropagationQueue =
-                new Queue<LightNode>();
+        private readonly Queue<LightNodePosition> removalQueue =
+            new Queue<LightNodePosition>();
 
         private readonly DayNightSystem dayNight;
 
-        /*
-         * Проверяет, может ли блок пропускать свет.
-         *
-         * true  = свет проходит
-         * false = блокирует свет
-         */
-        private readonly Func<int, int, bool>
-            isTransparent;
+        private readonly Func<int, int, bool> isTransparent;
 
-        /*
-         * Насколько быстро затухает обычный свет.
-         */
-        private readonly float lightFalloff;
-
-        /*
-         * Максимальное количество операций
-         * за один Process().
-         */
         private readonly int maxOperationsPerUpdate;
+
+        // =====================================================
+        // CONSTRUCTOR
+        // =====================================================
 
         public LightSystem(
             int chunkWidth,
             int chunkHeight,
             DayNightSettings dayNightSettings,
             Func<int, int, bool> isTransparent,
-            float lightFalloff = 0.08f,
             int maxOperationsPerUpdate = 5000
         )
         {
-            this.chunkWidth =
-                chunkWidth;
+            this.chunkWidth = chunkWidth;
+            this.chunkHeight = chunkHeight;
 
-            this.chunkHeight =
-                chunkHeight;
-
-            this.isTransparent =
-                isTransparent;
-
-            this.lightFalloff =
-                Mathf.Clamp(
-                    lightFalloff,
-                    0.001f,
-                    1f
-                );
+            this.isTransparent = isTransparent;
 
             this.maxOperationsPerUpdate =
                 Mathf.Max(
@@ -107,25 +74,22 @@ namespace Game.World.Lighting
             if (
                 chunks.TryGetValue(
                     key,
-                    out ChunkLightData chunk
+                    out ChunkLightData existing
                 )
             )
             {
-                return chunk;
+                return existing;
             }
 
-            chunk =
-                new ChunkLightData(
-                    chunkWidth,
-                    chunkHeight
-                );
+            ChunkLightData data =
+                new ChunkLightData();
 
             chunks.Add(
                 key,
-                chunk
+                data
             );
 
-            return chunk;
+            return data;
         }
 
         public void RemoveChunk(
@@ -156,8 +120,8 @@ namespace Game.World.Lighting
             }
 
             return
-                (value - (size - 1))
-                / size;
+                (value - (size - 1)) /
+                size;
         }
 
         private int WorldToLocal(
@@ -180,7 +144,7 @@ namespace Game.World.Lighting
         // GET LIGHT
         // =====================================================
 
-        public LightValue GetLight(
+        public LightNode GetLight(
             int worldX,
             int worldY
         )
@@ -219,13 +183,14 @@ namespace Game.World.Lighting
                 )
             )
             {
-                return LightValue.Black;
+                return LightNode.None;
             }
 
-            return chunk.Get(
-                localX,
-                localY
-            );
+            return
+                chunk.Get(
+                    localX,
+                    localY
+                );
         }
 
         // =====================================================
@@ -235,7 +200,7 @@ namespace Game.World.Lighting
         private void SetLight(
             int worldX,
             int worldY,
-            LightValue light
+            LightNode light
         )
         {
             int chunkX =
@@ -271,12 +236,12 @@ namespace Game.World.Lighting
             chunk.Set(
                 localX,
                 localY,
-                light.Clamp()
+                light
             );
         }
 
         // =====================================================
-        // ADD SOURCE
+        // ADD LIGHT SOURCE
         // =====================================================
 
         public void AddLightSource(
@@ -285,27 +250,22 @@ namespace Game.World.Lighting
             LightSource source
         )
         {
-            if (
-                !source.Enabled
-            )
+            if (source == null)
             {
                 return;
             }
 
-            LightValue light =
-                source.ToLight();
-
             addQueue.Enqueue(
-                new LightNode(
+                new LightNodePosition(
                     worldX,
                     worldY,
-                    light
+                    source.ToLight()
                 )
             );
         }
 
         // =====================================================
-        // REMOVE SOURCE
+        // REMOVE LIGHT SOURCE
         // =====================================================
 
         public void RemoveLightSource(
@@ -314,16 +274,16 @@ namespace Game.World.Lighting
         )
         {
             removeQueue.Enqueue(
-                new LightNode(
+                new LightNodePosition(
                     worldX,
                     worldY,
-                    LightValue.Black
+                    LightNode.None
                 )
             );
         }
 
         // =====================================================
-        // PROCESS
+        // UPDATE
         // =====================================================
 
         public void Update(
@@ -337,12 +297,16 @@ namespace Game.World.Lighting
             ProcessLight();
         }
 
+        // =====================================================
+        // PROCESS
+        // =====================================================
+
         private void ProcessLight()
         {
             int operations = 0;
 
             // -------------------------------------------------
-            // REMOVE
+            // REMOVE SOURCES
             // -------------------------------------------------
 
             while (
@@ -350,7 +314,7 @@ namespace Game.World.Lighting
                 operations < maxOperationsPerUpdate
             )
             {
-                LightNode node =
+                LightNodePosition node =
                     removeQueue.Dequeue();
 
                 RemoveLight(
@@ -366,12 +330,12 @@ namespace Game.World.Lighting
             // -------------------------------------------------
 
             while (
-                removalPropagationQueue.Count > 0 &&
+                removalQueue.Count > 0 &&
                 operations < maxOperationsPerUpdate
             )
             {
-                LightNode node =
-                    removalPropagationQueue.Dequeue();
+                LightNodePosition node =
+                    removalQueue.Dequeue();
 
                 PropagateRemoval(
                     node
@@ -381,7 +345,7 @@ namespace Game.World.Lighting
             }
 
             // -------------------------------------------------
-            // ADD
+            // ADD LIGHT
             // -------------------------------------------------
 
             while (
@@ -389,7 +353,7 @@ namespace Game.World.Lighting
                 operations < maxOperationsPerUpdate
             )
             {
-                LightNode node =
+                LightNodePosition node =
                     addQueue.Dequeue();
 
                 PropagateAddition(
@@ -405,33 +369,31 @@ namespace Game.World.Lighting
         // =====================================================
 
         private void RemoveLight(
-            int worldX,
-            int worldY
+            int x,
+            int y
         )
         {
-            LightValue old =
+            LightNode old =
                 GetLight(
-                    worldX,
-                    worldY
+                    x,
+                    y
                 );
 
-            if (
-                old.IsBlack
-            )
+            if (old.IsEmpty)
             {
                 return;
             }
 
             SetLight(
-                worldX,
-                worldY,
-                LightValue.Black
+                x,
+                y,
+                LightNode.None
             );
 
-            removalPropagationQueue.Enqueue(
-                new LightNode(
-                    worldX,
-                    worldY,
+            removalQueue.Enqueue(
+                new LightNodePosition(
+                    x,
+                    y,
                     old
                 )
             );
@@ -442,44 +404,34 @@ namespace Game.World.Lighting
         // =====================================================
 
         private void PropagateRemoval(
-            LightNode node
+            LightNodePosition node
         )
         {
             for (
-                int i = 0;
-                i < 4;
-                i++
+                int direction = 0;
+                direction < 4;
+                direction++
             )
             {
-                int nx;
-                int ny;
-
                 GetNeighbour(
                     node.X,
                     node.Y,
-                    i,
-                    out nx,
-                    out ny
+                    direction,
+                    out int nx,
+                    out int ny
                 );
 
-                LightValue neighbour =
+                LightNode neighbour =
                     GetLight(
                         nx,
                         ny
                     );
 
-                if (
-                    neighbour.IsBlack
-                )
+                if (neighbour.IsEmpty)
                 {
                     continue;
                 }
 
-                /*
-                 * Если сосед имеет меньше света,
-                 * скорее всего он был частью
-                 * распространения этого источника.
-                 */
                 if (
                     IsAffectedBy(
                         neighbour,
@@ -490,11 +442,11 @@ namespace Game.World.Lighting
                     SetLight(
                         nx,
                         ny,
-                        LightValue.Black
+                        LightNode.None
                     );
 
-                    removalPropagationQueue.Enqueue(
-                        new LightNode(
+                    removalQueue.Enqueue(
+                        new LightNodePosition(
                             nx,
                             ny,
                             neighbour
@@ -509,16 +461,21 @@ namespace Game.World.Lighting
         // =====================================================
 
         private void PropagateAddition(
-            LightNode node
+            LightNodePosition node
         )
         {
-            LightValue current =
+            if (node.Light.IsEmpty)
+            {
+                return;
+            }
+
+            LightNode current =
                 GetLight(
                     node.X,
                     node.Y
                 );
 
-            LightValue result =
+            LightNode merged =
                 MaxLight(
                     current,
                     node.Light
@@ -527,7 +484,7 @@ namespace Game.World.Lighting
             if (
                 SameLight(
                     current,
-                    result
+                    merged
                 )
             )
             {
@@ -537,24 +494,31 @@ namespace Game.World.Lighting
             SetLight(
                 node.X,
                 node.Y,
-                result
+                merged
             );
 
+            LightNode next =
+                Attenuate(
+                    merged
+                );
+
+            if (next.IsEmpty)
+            {
+                return;
+            }
+
             for (
-                int i = 0;
-                i < 4;
-                i++
+                int direction = 0;
+                direction < 4;
+                direction++
             )
             {
-                int nx;
-                int ny;
-
                 GetNeighbour(
                     node.X,
                     node.Y,
-                    i,
-                    out nx,
-                    out ny
+                    direction,
+                    out int nx,
+                    out int ny
                 );
 
                 if (
@@ -567,25 +531,13 @@ namespace Game.World.Lighting
                     continue;
                 }
 
-                LightValue next =
-                    Attenuate(
-                        result
-                    );
-
-                if (
-                    next.IsBlack
-                )
-                {
-                    continue;
-                }
-
-                LightValue neighbour =
+                LightNode neighbour =
                     GetLight(
                         nx,
                         ny
                     );
 
-                LightValue merged =
+                LightNode result =
                     MaxLight(
                         neighbour,
                         next
@@ -594,7 +546,7 @@ namespace Game.World.Lighting
                 if (
                     SameLight(
                         neighbour,
-                        merged
+                        result
                     )
                 )
                 {
@@ -602,7 +554,7 @@ namespace Game.World.Lighting
                 }
 
                 addQueue.Enqueue(
-                    new LightNode(
+                    new LightNodePosition(
                         nx,
                         ny,
                         next
@@ -615,50 +567,69 @@ namespace Game.World.Lighting
         // ATTENUATION
         // =====================================================
 
-        private LightValue Attenuate(
-            LightValue value
+        private LightNode Attenuate(
+            LightNode value
         )
         {
-            float amount =
-                1f -
-                lightFalloff;
+            return new LightNode(
+                AttenuateChannel(
+                    value.Sun
+                ),
 
-            return new LightValue(
-                value.R * amount,
-                value.G * amount,
-                value.B * amount,
-                0f
+                AttenuateChannel(
+                    value.R
+                ),
+
+                AttenuateChannel(
+                    value.G
+                ),
+
+                AttenuateChannel(
+                    value.B
+                )
             );
+        }
+
+        private byte AttenuateChannel(
+            byte value
+        )
+        {
+            if (value <= 1)
+            {
+                return 0;
+            }
+
+            return (byte)(value - 1);
         }
 
         // =====================================================
         // MAX LIGHT
         // =====================================================
 
-        private LightValue MaxLight(
-            LightValue a,
-            LightValue b
-        )
+        private LightNode MaxLight(
+    LightNode a,
+    LightNode b
+)
         {
-            return new LightValue(
-                Mathf.Max(
+            return new LightNode(
+                (byte)Mathf.Max(
+                    a.Sun,
+                    b.Sun
+                ),
+
+                (byte)Mathf.Max(
                     a.R,
                     b.R
                 ),
 
-                Mathf.Max(
+                (byte)Mathf.Max(
                     a.G,
                     b.G
                 ),
 
-                Mathf.Max(
+                (byte)Mathf.Max(
                     a.B,
                     b.B
-                ),
-
-                Mathf.Max(
-                    a.Sun,
-                    b.Sun
                 )
             );
         }
@@ -668,19 +639,15 @@ namespace Game.World.Lighting
         // =====================================================
 
         private bool IsAffectedBy(
-            LightValue neighbour,
-            LightValue source
+            LightNode neighbour,
+            LightNode source
         )
         {
             return
-                neighbour.R <=
-                source.R + 0.001f &&
-
-                neighbour.G <=
-                source.G + 0.001f &&
-
-                neighbour.B <=
-                source.B + 0.001f;
+                neighbour.Sun <= source.Sun &&
+                neighbour.R <= source.R &&
+                neighbour.G <= source.G &&
+                neighbour.B <= source.B;
         }
 
         // =====================================================
@@ -688,29 +655,15 @@ namespace Game.World.Lighting
         // =====================================================
 
         private bool SameLight(
-            LightValue a,
-            LightValue b
+            LightNode a,
+            LightNode b
         )
         {
-            const float epsilon =
-                0.001f;
-
             return
-                Mathf.Abs(
-                    a.R - b.R
-                ) < epsilon &&
-
-                Mathf.Abs(
-                    a.G - b.G
-                ) < epsilon &&
-
-                Mathf.Abs(
-                    a.B - b.B
-                ) < epsilon &&
-
-                Mathf.Abs(
-                    a.Sun - b.Sun
-                ) < epsilon;
+                a.Sun == b.Sun &&
+                a.R == b.R &&
+                a.G == b.G &&
+                a.B == b.B;
         }
 
         // =====================================================
@@ -760,4 +713,6 @@ namespace Game.World.Lighting
             }
         }
     }
+
+    
 }

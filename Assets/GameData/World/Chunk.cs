@@ -1,21 +1,16 @@
-using Game.World;
+using Game.World.Lighting;
 
 namespace Game.World
 {
-
     public class Chunk
     {
-
         // =====================================================
         // SIZE
         // =====================================================
 
-        public const int SizeX =
-            32;
+        public const int SizeX = 32;
 
-
-        public const int SizeY =
-            32;
+        public const int SizeY = 32;
 
 
         // =====================================================
@@ -31,17 +26,6 @@ namespace Game.World
         // BLOCK STORAGE
         // =====================================================
 
-        // Передний слой.
-        //
-        // Здесь находятся:
-        // stone
-        // dirt
-        // grass
-        // ores
-        // и другие обычные блоки.
-        //
-        // Этот слой участвует в коллизии.
-
         private BlockStorage foregroundBlocks;
 
 
@@ -49,17 +33,14 @@ namespace Game.World
         // BACKGROUND STORAGE
         // =====================================================
 
-        // Задний слой.
-        //
-        // Например:
-        // stone_wall
-        // dirt_wall
-        // cave_wall
-        //
-        // Этот слой НЕ участвует
-        // в физической коллизии.
-
         private BlockStorage backgroundBlocks;
+
+
+        // =====================================================
+        // LIGHT STORAGE
+        // =====================================================
+
+        private readonly ChunkLightData lightData;
 
 
         // =====================================================
@@ -71,13 +52,9 @@ namespace Game.World
             int y
         )
         {
+            X = x;
 
-            X =
-                x;
-
-
-            Y =
-                y;
+            Y = y;
 
 
             // =================================================
@@ -102,8 +79,15 @@ namespace Game.World
                 );
 
 
-            Initialize();
+            // =================================================
+            // LIGHT
+            // =================================================
 
+            lightData =
+                new ChunkLightData();
+
+
+            Initialize();
         }
 
 
@@ -113,30 +97,16 @@ namespace Game.World
 
         private void Initialize()
         {
+            foregroundBlocks.Fill(0);
 
-            // =================================================
-            // FOREGROUND
-            // =================================================
+            backgroundBlocks.Fill(0);
 
-            foregroundBlocks.Fill(
-                0
-            );
-
-
-            // =================================================
-            // BACKGROUND
-            // =================================================
-
-            backgroundBlocks.Fill(
-                0
-            );
-
+            lightData.Clear();
         }
 
 
         // =====================================================
-        // FOREGROUND
-        // GET
+        // FOREGROUND GET
         // =====================================================
 
         public ushort GetBlock(
@@ -144,19 +114,16 @@ namespace Game.World
             int y
         )
         {
-
             return
                 foregroundBlocks.Get(
                     x,
                     y
                 );
-
         }
 
 
         // =====================================================
-        // FOREGROUND
-        // SET
+        // FOREGROUND SET
         // =====================================================
 
         public void SetBlock(
@@ -165,19 +132,16 @@ namespace Game.World
             ushort blockID
         )
         {
-
             foregroundBlocks.Set(
                 x,
                 y,
                 blockID
             );
-
         }
 
 
         // =====================================================
-        // BACKGROUND
-        // GET
+        // BACKGROUND GET
         // =====================================================
 
         public ushort GetBackground(
@@ -185,19 +149,16 @@ namespace Game.World
             int y
         )
         {
-
             return
                 backgroundBlocks.Get(
                     x,
                     y
                 );
-
         }
 
 
         // =====================================================
-        // BACKGROUND
-        // SET
+        // BACKGROUND SET
         // =====================================================
 
         public void SetBackground(
@@ -206,13 +167,21 @@ namespace Game.World
             ushort blockID
         )
         {
-
             backgroundBlocks.Set(
                 x,
                 y,
                 blockID
             );
+        }
 
+
+        // =====================================================
+        // LIGHT DATA
+        // =====================================================
+
+        public ChunkLightData GetLightData()
+        {
+            return lightData;
         }
 
 
@@ -224,7 +193,6 @@ namespace Game.World
             ChunkData data
         )
         {
-
             if (
                 data == null
             )
@@ -239,18 +207,12 @@ namespace Game.World
                 x++
             )
             {
-
                 for (
                     int y = 0;
                     y < SizeY;
                     y++
                 )
                 {
-
-                    // =========================================
-                    // FOREGROUND
-                    // =========================================
-
                     SetBlock(
                         x,
                         y,
@@ -261,10 +223,6 @@ namespace Game.World
                     );
 
 
-                    // =========================================
-                    // BACKGROUND
-                    // =========================================
-
                     SetBackground(
                         x,
                         y,
@@ -273,13 +231,8 @@ namespace Game.World
                             y
                         )
                     );
-
                 }
-
             }
-
         }
-
     }
-
 }

@@ -1,6 +1,6 @@
 namespace Game.World.Lighting
 {
-    public struct LightSource
+    public class LightSource
     {
         public int X;
         public int Y;
@@ -9,16 +9,14 @@ namespace Game.World.Lighting
         public byte G;
         public byte B;
 
-        public byte Sunlight;
-
+        public bool Enabled;
 
         public LightSource(
             int x,
             int y,
             byte r,
             byte g,
-            byte b,
-            byte sunlight
+            byte b
         )
         {
             X = x;
@@ -28,28 +26,17 @@ namespace Game.World.Lighting
             G = g;
             B = b;
 
-            Sunlight = sunlight;
+            Enabled = true;
         }
 
-
-        public bool HasRGB
+        public LightNode ToLight()
         {
-            get
-            {
-                return
-                    R > 0 ||
-                    G > 0 ||
-                    B > 0;
-            }
-        }
-
-
-        public bool HasSunlight
-        {
-            get
-            {
-                return Sunlight > 0;
-            }
+            return new LightNode(
+                0,
+                R,
+                G,
+                B
+            );
         }
     }
 }

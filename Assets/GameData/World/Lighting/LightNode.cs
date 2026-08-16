@@ -2,32 +2,60 @@ namespace Game.World.Lighting
 {
     public struct LightNode
     {
-        public int X;
-        public int Y;
-
+        public byte Sun;
         public byte R;
         public byte G;
         public byte B;
-        public byte Sunlight;
-
 
         public LightNode(
-            int x,
-            int y,
+            byte sun,
             byte r,
             byte g,
-            byte b,
-            byte sunlight
+            byte b
         )
         {
-            X = x;
-            Y = y;
-
+            Sun = sun;
             R = r;
             G = g;
             B = b;
+        }
 
-            Sunlight = sunlight;
+        public bool IsEmpty
+        {
+            get
+            {
+                return
+                    Sun == 0 &&
+                    R == 0 &&
+                    G == 0 &&
+                    B == 0;
+            }
+        }
+
+        public static LightNode None
+        {
+            get
+            {
+                return new LightNode(
+                    0,
+                    0,
+                    0,
+                    0
+                );
+            }
+        }
+
+        public static LightNode Sunlight
+        {
+            get
+            {
+                return new LightNode(
+                    15,
+                    0,
+                    0,
+                    0
+                );
+            }
         }
     }
 }
