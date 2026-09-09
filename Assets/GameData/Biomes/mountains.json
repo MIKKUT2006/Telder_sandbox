@@ -1,0 +1,40 @@
+{
+  "ID": "game:mountains",
+  "DisplayName": "MOUNTAINS",
+  "AllowedDimensionTypes": [
+    "*"
+  ],
+  "Weight": 1.0,
+  "Rare": false,
+  "Terrain": {
+    "TopBlock": "game:grass",
+    "SoilBlock": "game:dirt",
+    "StoneBlock": "game:stone",
+    "BackgroundBlock": "game:stone",
+    "SoilDepth": 4,
+    "HeightOffset": 9.0,
+    "HillHeightMultiplier": 2.15,
+    "HillScaleMultiplier": 0.72,
+    "TerrainVariationMultiplier": 1.65,
+    "TerrainScaleMultiplier": 0.78,
+    "DetailMultiplier": 1.15,
+    "DetailScaleMultiplier": 0.85,
+    "DistortionStrength": 0.0,
+    "DistortionScale": 0.0035,
+    "RidgeStrength": 0.0,
+    "RidgeScale": 0.01,
+    "WaveStrength": 0.0,
+    "WaveScale": 0.024
+  },
+  "Caves": {
+    "FrequencyMultiplier": 1.1,
+    "SizeMultiplier": 1.15,
+    "ChamberMultiplier": 1.1,
+    "EntranceMultiplier": 0.85
+  },
+  "Climate": {
+    "Temperature": 0.32,
+    "Humidity": 0.42,
+    "Weirdness": 0.4
+  }
+}

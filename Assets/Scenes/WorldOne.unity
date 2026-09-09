@@ -3122,7 +3122,7 @@ GameObject:
   - component: {fileID: 248244850}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3262,7 +3262,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interactionDistance: 6
   placeBlockID: 1
-  placementInterval: 0.05
+  breakInterval: 0.08
+  placeInterval: 0.08
   playerCamera: {fileID: 2144204362}
 --- !u!1 &248999880
 GameObject:
@@ -3436,9 +3437,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0508d2fd6e6c409dab881d0ed203bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shader: {fileID: 4800000, guid: 09755a4891f8d4526a7e0690a23dec7b, type: 3}
-  spriteLightRT: {fileID: 0}
-  intensity: 1.054
 --- !u!20 &255704880
 Camera:
   m_ObjectHideFlags: 0
@@ -14916,16 +14914,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bf289cc4aa0b424487c4228a0e8464d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainCamera: {fileID: 255704880}
-  lightLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  rtFormat: 7
-  rtTextureDepth: 0
-  rtFilterMode: 0
-  rtSizeMultiplier: 1
-  _spriteLightCamera: {fileID: 494114811}
-  scale: 0
 --- !u!114 &494114815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22655,6 +22643,82 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1247279909
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1247279911}
+  - component: {fileID: 1247279913}
+  - component: {fileID: 1247279912}
+  m_Layer: 0
+  m_Name: Dimension Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1247279911
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1247279909}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -103.15141, y: 73.50864, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1247279912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1247279909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ebdfe12c41125e40a055216c062c6c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  menuKey: 116
+  portalManager: {fileID: 1247279913}
+  interfaceFont: {fileID: 0}
+  backgroundColor: {r: 0.006, g: 0.008, b: 0.015, a: 0.985}
+  panelColor: {r: 0.024, g: 0.029, b: 0.043, a: 0.98}
+  cardColor: {r: 0.043, g: 0.05, b: 0.07, a: 0.98}
+  hoverColor: {r: 0.078, g: 0.09, b: 0.122, a: 1}
+  textColor: {r: 0.94, g: 0.95, b: 0.98, a: 1}
+  mutedTextColor: {r: 0.52, g: 0.57, b: 0.66, a: 1}
+--- !u!114 &1247279913
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1247279909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f58136336c514840b917b2501c4629e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  worldCamera: {fileID: 2144204362}
+  portalSize: {x: 1.1, y: 3.2}
+  portalWorldZ: -1
+  openDuration: 0.65
+  collapseDuration: 0.55
+  coreColor: {r: 0.14229, g: 0.023362402, b: 0.1981132, a: 1}
+  rimColor: {r: 0.37129104, g: 0.07471521, b: 0.6886792, a: 1}
+  distortion: 0.07
+  collapseSuction: 0.135
+  rimGlow: 1
 --- !u!1 &1262120487
 GameObject:
   m_ObjectHideFlags: 0
@@ -36481,13 +36545,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de2faea55fbfe4e2ab31d46f2e9fbf6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  colorChannel: 1
-  waveFunction: 0
-  offset: 0.223
-  amplitude: 2
-  phase: 0
-  frequency: 0.01
-  affectsIntensity: 1
 --- !u!483693784 &1610997408
 TilemapRenderer:
   m_ObjectHideFlags: 0
@@ -44903,13 +44960,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de2faea55fbfe4e2ab31d46f2e9fbf6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  colorChannel: 1
-  waveFunction: 0
-  offset: 0.223
-  amplitude: 2
-  phase: 0
-  frequency: 0.01
-  affectsIntensity: 1
 --- !u!1 &1876341380
 GameObject:
   m_ObjectHideFlags: 3
@@ -60195,3 +60245,4 @@ SceneRoots:
   - {fileID: 125309213}
   - {fileID: 1929778660}
   - {fileID: 859635130}
+  - {fileID: 1247279911}

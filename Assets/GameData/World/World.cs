@@ -1,20 +1,76 @@
 ﻿using System.Collections.Generic;
 
+using Game.Blocks;
+using Game.Content;
+using Game.World.Lighting;
+
+
 namespace Game.World
 {
-
-    public class World
+    public class World :
+        ILightWorld
     {
+        // =====================================================
+        // CHUNKS
+        // =====================================================
 
         private readonly Dictionary<
-            UnityEngine.Vector2Int,
+            Vector2Int,
             Chunk
         >
         chunks =
             new Dictionary<
-                UnityEngine.Vector2Int,
+                Vector2Int,
                 Chunk
             >();
+
+
+        // =====================================================
+        // LIGHT ENGINE
+        // =====================================================
+
+        private readonly LightPropagationEngine lightEngine;
+
+
+        // =====================================================
+        // WORLD HEIGHT
+        // =====================================================
+
+        private int worldHeight = 256;
+
+
+        // =====================================================
+        // CONSTRUCTOR
+        // =====================================================
+
+        public World()
+        {
+            lightEngine =
+                new LightPropagationEngine(
+                    this
+                );
+        }
+
+
+        // =====================================================
+        // WORLD HEIGHT
+        // =====================================================
+
+        public void SetWorldHeight(
+            int height
+        )
+        {
+            if (
+                height <= 0
+            )
+            {
+                return;
+            }
+
+
+            worldHeight =
+                height;
+        }
 
 
         // =====================================================
@@ -26,9 +82,8 @@ namespace Game.World
             int chunkY
         )
         {
-
-            UnityEngine.Vector2Int position =
-                new UnityEngine.Vector2Int(
+            Vector2Int position =
+                new Vector2Int(
                     chunkX,
                     chunkY
                 );
@@ -41,9 +96,12 @@ namespace Game.World
                 )
             )
             {
+                EnsureLightData(
+                    position
+                );
+
 
                 return existingChunk;
-
             }
 
 
@@ -60,8 +118,51 @@ namespace Game.World
             );
 
 
-            return chunk;
+            EnsureLightData(
+                position
+            );
 
+
+            return chunk;
+        }
+
+
+        // =====================================================
+        // CHUNK GENERATED
+        // =====================================================
+
+        public void NotifyChunkGenerated(
+            int chunkX,
+            int chunkY
+        )
+        {
+            lightEngine.RebuildAfterChunkGenerated(
+                chunkX,
+                chunkY,
+                worldHeight
+            );
+        }
+
+
+        // =====================================================
+        // REBUILD LIGHT
+        // =====================================================
+
+        public void RebuildLighting()
+        {
+            lightEngine.RebuildLoadedWorld(
+                worldHeight
+            );
+        }
+
+
+        // =====================================================
+        // GET ENGINE
+        // =====================================================
+
+        public LightPropagationEngine GetLightEngine()
+        {
+            return lightEngine;
         }
 
 
@@ -74,9 +175,8 @@ namespace Game.World
             int chunkY
         )
         {
-
             chunks.TryGetValue(
-                new UnityEngine.Vector2Int(
+                new Vector2Int(
                     chunkX,
                     chunkY
                 ),
@@ -85,7 +185,22 @@ namespace Game.World
 
 
             return chunk;
+        }
 
+
+        // =====================================================
+        // GET LOADED CHUNKS
+        // =====================================================
+
+        public IEnumerable<
+            KeyValuePair<
+                Vector2Int,
+                Chunk
+            >
+        >
+        GetLoadedChunks()
+        {
+            return chunks;
         }
 
 
@@ -98,19 +213,21 @@ namespace Game.World
             int chunkY
         )
         {
-
-            chunks.Remove(
-                new UnityEngine.Vector2Int(
+            Vector2Int position =
+                new Vector2Int(
                     chunkX,
                     chunkY
-                )
-            );
+                );
 
+
+            chunks.Remove(
+                position
+            );
         }
 
 
         // =====================================================
-        // GET FOREGROUND BLOCK
+        // GET BLOCK
         // =====================================================
 
         public ushort GetBlock(
@@ -118,7 +235,6 @@ namespace Game.World
             int worldY
         )
         {
-
             GetChunkCoordinates(
                 worldX,
                 worldY,
@@ -140,23 +256,19 @@ namespace Game.World
                 chunk == null
             )
             {
-
                 return 0;
-
             }
 
 
-            return
-                chunk.GetBlock(
-                    localX,
-                    localY
-                );
-
+            return chunk.GetBlock(
+                localX,
+                localY
+            );
         }
 
 
         // =====================================================
-        // SET FOREGROUND BLOCK
+        // SET BLOCK
         // =====================================================
 
         public bool SetBlock(
@@ -165,7 +277,6 @@ namespace Game.World
             ushort blockID
         )
         {
-
             GetChunkCoordinates(
                 worldX,
                 worldY,
@@ -187,9 +298,7 @@ namespace Game.World
                 chunk == null
             )
             {
-
                 return false;
-
             }
 
 
@@ -205,9 +314,7 @@ namespace Game.World
                 blockID
             )
             {
-
                 return false;
-
             }
 
 
@@ -218,13 +325,23 @@ namespace Game.World
             );
 
 
-            return true;
+            // =================================================
+            // LIGHT REBUILD
+            // =================================================
 
+            lightEngine.RebuildAfterBlockChanged(
+                worldX,
+                worldY,
+                worldHeight
+            );
+
+
+            return true;
         }
 
 
         // =====================================================
-        // GET BACKGROUND BLOCK
+        // GET BACKGROUND
         // =====================================================
 
         public ushort GetBackground(
@@ -232,7 +349,6 @@ namespace Game.World
             int worldY
         )
         {
-
             GetChunkCoordinates(
                 worldX,
                 worldY,
@@ -254,23 +370,19 @@ namespace Game.World
                 chunk == null
             )
             {
-
                 return 0;
-
             }
 
 
-            return
-                chunk.GetBackground(
-                    localX,
-                    localY
-                );
-
+            return chunk.GetBackground(
+                localX,
+                localY
+            );
         }
 
 
         // =====================================================
-        // SET BACKGROUND BLOCK
+        // SET BACKGROUND
         // =====================================================
 
         public bool SetBackground(
@@ -279,7 +391,6 @@ namespace Game.World
             ushort blockID
         )
         {
-
             GetChunkCoordinates(
                 worldX,
                 worldY,
@@ -301,9 +412,7 @@ namespace Game.World
                 chunk == null
             )
             {
-
                 return false;
-
             }
 
 
@@ -319,9 +428,7 @@ namespace Game.World
                 blockID
             )
             {
-
                 return false;
-
             }
 
 
@@ -333,12 +440,244 @@ namespace Game.World
 
 
             return true;
-
         }
 
 
         // =====================================================
-        // GET CHUNK COORDINATES
+        // IS LOADED
+        // =====================================================
+
+        public bool IsLoaded(
+            int worldX,
+            int worldY
+        )
+        {
+            GetChunkCoordinates(
+                worldX,
+                worldY,
+                out int chunkX,
+                out int chunkY,
+                out int localX,
+                out int localY
+            );
+
+
+            return
+                GetChunk(
+                    chunkX,
+                    chunkY
+                ) != null;
+        }
+
+
+        // =====================================================
+        // GET LIGHT DATA
+        // =====================================================
+
+        public ChunkLightData GetLightData(
+            int worldX,
+            int worldY
+        )
+        {
+            GetChunkCoordinates(
+                worldX,
+                worldY,
+                out int chunkX,
+                out int chunkY,
+                out int localX,
+                out int localY
+            );
+
+
+            Chunk chunk =
+                GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (
+                chunk == null
+            )
+            {
+                return null;
+            }
+
+
+            return chunk.GetLightData();
+        }
+
+
+        // =====================================================
+        // GET LIGHT
+        // =====================================================
+
+        public LightNode GetLight(
+            int worldX,
+            int worldY
+        )
+        {
+            GetChunkCoordinates(
+                worldX,
+                worldY,
+                out int chunkX,
+                out int chunkY,
+                out int localX,
+                out int localY
+            );
+
+
+            Chunk chunk =
+                GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (
+                chunk == null
+            )
+            {
+                return LightNode.None;
+            }
+
+
+            ChunkLightData data =
+                chunk.GetLightData();
+
+
+            return data.Get(
+                localX,
+                localY
+            );
+        }
+
+
+        // =====================================================
+        // SET LIGHT
+        // =====================================================
+
+        public void SetLight(
+            int worldX,
+            int worldY,
+            byte sun,
+            byte red,
+            byte green,
+            byte blue
+        )
+        {
+            GetChunkCoordinates(
+                worldX,
+                worldY,
+                out int chunkX,
+                out int chunkY,
+                out int localX,
+                out int localY
+            );
+
+
+            Chunk chunk =
+                GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (
+                chunk == null
+            )
+            {
+                return;
+            }
+
+
+            ChunkLightData data =
+                chunk.GetLightData();
+
+
+            data.Set(
+                localX,
+                localY,
+                new LightNode(
+                    sun,
+                    red,
+                    green,
+                    blue
+                )
+            );
+        }
+
+
+        // =====================================================
+        // BLOCK DEFINITION
+        // =====================================================
+
+        public BlockDefinition GetBlockDefinition(
+            ushort blockID
+        )
+        {
+            // ID 0 = AIR.
+            // Никакого JSON для воздуха.
+
+            if (
+                blockID == 0
+            )
+            {
+                return null;
+            }
+
+
+            ContentID contentID =
+                BlockIDRegistry.GetContentID(
+                    blockID
+                );
+
+
+            if (
+                !BlockRegistry.Contains(
+                    contentID
+                )
+            )
+            {
+                return null;
+            }
+
+
+            return BlockRegistry.Get(
+                contentID
+            );
+        }
+
+
+        // =====================================================
+        // ENSURE LIGHT DATA
+        // =====================================================
+
+        private ChunkLightData EnsureLightData(
+            Vector2Int position
+        )
+        {
+            Chunk chunk =
+                GetChunk(
+                    position.x,
+                    position.y
+                );
+
+
+            if (
+                chunk == null
+            )
+            {
+                return null;
+            }
+
+
+            return chunk.GetLightData();
+        }
+
+
+        // =====================================================
+        // COORDINATES
         // =====================================================
 
         private void GetChunkCoordinates(
@@ -350,7 +689,6 @@ namespace Game.World
             out int localY
         )
         {
-
             chunkX =
                 FloorDiv(
                     worldX,
@@ -377,7 +715,6 @@ namespace Game.World
                     worldY,
                     Chunk.SizeY
                 );
-
         }
 
 
@@ -390,7 +727,6 @@ namespace Game.World
             int divisor
         )
         {
-
             int result =
                 value /
                 divisor;
@@ -406,14 +742,11 @@ namespace Game.World
                 value < 0
             )
             {
-
                 result--;
-
             }
 
 
             return result;
-
         }
 
 
@@ -426,7 +759,6 @@ namespace Game.World
             int divisor
         )
         {
-
             int result =
                 value %
                 divisor;
@@ -436,17 +768,11 @@ namespace Game.World
                 result < 0
             )
             {
-
-                result +=
-                    divisor;
-
+                result += divisor;
             }
 
 
             return result;
-
         }
-
     }
-
 }

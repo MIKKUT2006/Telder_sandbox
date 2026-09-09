@@ -1,0 +1,40 @@
+{
+  "ID": "game:distorted_fields",
+  "DisplayName": "DISTORTED FIELDS",
+  "AllowedDimensionTypes": [
+    "distorted"
+  ],
+  "Weight": 1.0,
+  "Rare": false,
+  "Terrain": {
+    "TopBlock": "game:blue_grass",
+    "SoilBlock": "game:blue_stone",
+    "StoneBlock": "game:blue_stone",
+    "BackgroundBlock": "game:blue_stone",
+    "SoilDepth": 7,
+    "HeightOffset": 2.0,
+    "HillHeightMultiplier": 1.35,
+    "HillScaleMultiplier": 0.82,
+    "TerrainVariationMultiplier": 1.85,
+    "TerrainScaleMultiplier": 0.72,
+    "DetailMultiplier": 1.45,
+    "DetailScaleMultiplier": 0.82,
+    "DistortionStrength": 82.0,
+    "DistortionScale": 0.0028,
+    "RidgeStrength": 23.0,
+    "RidgeScale": 0.0085,
+    "WaveStrength": 11.0,
+    "WaveScale": 0.026
+  },
+  "Caves": {
+    "FrequencyMultiplier": 1.35,
+    "SizeMultiplier": 1.35,
+    "ChamberMultiplier": 1.55,
+    "EntranceMultiplier": 0.7
+  },
+  "Climate": {
+    "Temperature": 0.42,
+    "Humidity": 0.31,
+    "Weirdness": 1.0
+  }
+}

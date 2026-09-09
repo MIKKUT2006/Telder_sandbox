@@ -139,15 +139,20 @@ namespace Game.Content
 
 
         public static bool Contains(
-            ContentID id
-        )
+    ContentID id
+)
         {
-
             return idByBlock.ContainsKey(id);
-
         }
 
-
+        public static bool Contains(
+    ushort id
+)
+        {
+            return blockByID.ContainsKey(
+                id
+            );
+        }
 
 
 

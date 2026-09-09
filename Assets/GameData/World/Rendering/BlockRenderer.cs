@@ -1,17 +1,27 @@
+using System.Collections.Generic;
+
 using UnityEngine;
 
 using Game.Resources;
-using Game.World;
-
 
 namespace Game.World.Rendering
 {
-
     public static class BlockRenderer
     {
-
         public const int BlockPixelSize = 16;
 
+        private static readonly Dictionary<
+            ushort,
+            Color32[]
+        > pixelCache =
+            new Dictionary<
+                ushort,
+                Color32[]
+            >();
+
+        private static readonly Color32[]
+            transparentPixels =
+            CreateTransparentPixels();
 
         public static void DrawBlock(
             Texture2D target,
@@ -20,116 +30,111 @@ namespace Game.World.Rendering
             ushort blockID
         )
         {
-
-            if (
-                target == null
-            )
-            {
+            if (target == null)
                 return;
-            }
-
 
             int pixelX =
-                x *
-                BlockPixelSize;
-
+                x * BlockPixelSize;
 
             int pixelY =
-                y *
-                BlockPixelSize;
+                y * BlockPixelSize;
 
-
-            // =================================================
-            // AIR
-            // =================================================
-
-            if (
-                blockID == 0
-            )
+            if (blockID == 0)
             {
-
-                Color[] emptyPixels =
-                    new Color[
-                        BlockPixelSize *
-                        BlockPixelSize
-                    ];
-
-
-                for (
-                    int i = 0;
-                    i < emptyPixels.Length;
-                    i++
-                )
-                {
-
-                    emptyPixels[i] =
-                        Color.clear;
-
-                }
-
-
-                target.SetPixels(
+                target.SetPixels32(
                     pixelX,
                     pixelY,
                     BlockPixelSize,
                     BlockPixelSize,
-                    emptyPixels
+                    transparentPixels
                 );
 
-
                 return;
-
             }
 
+            if (!BlockDatabase.Contains(blockID))
+                return;
 
-            // =================================================
-            // UNKNOWN BLOCK
-            // =================================================
+            Color32[] pixels =
+                GetPixels(blockID);
 
+            if (pixels == null)
+                return;
+
+            target.SetPixels32(
+                pixelX,
+                pixelY,
+                BlockPixelSize,
+                BlockPixelSize,
+                pixels
+            );
+        }
+
+        private static Color32[] GetPixels(
+            ushort blockID
+        )
+        {
             if (
-                !BlockDatabase.Contains(
-                    blockID
-                )
+                pixelCache.TryGetValue(
+                    blockID,
+                    out Color32[] cached)
             )
             {
-                return;
+                return cached;
             }
 
-
             var block =
-                BlockDatabase.Get(
-                    blockID
-                );
-
+                BlockDatabase.Get(blockID);
 
             Texture2D texture =
                 TextureManager.Get(
                     block.Texture
                 );
 
+            if (texture == null)
+                return null;
 
-            if (
-                texture == null
-            )
+            Color32[] pixels =
+                texture.GetPixels32();
+
+            int expected =
+                BlockPixelSize *
+                BlockPixelSize;
+
+            if (pixels.Length != expected)
             {
-                return;
+                Debug.LogError(
+                    "Block texture must be " +
+                    BlockPixelSize +
+                    "x" +
+                    BlockPixelSize +
+                    ": " +
+                    block.Texture
+                );
+
+                return null;
             }
 
-
-            // =================================================
-            // DRAW
-            // =================================================
-
-            target.SetPixels(
-                pixelX,
-                pixelY,
-                BlockPixelSize,
-                BlockPixelSize,
-                texture.GetPixels()
+            pixelCache.Add(
+                blockID,
+                pixels
             );
 
+            return pixels;
         }
 
-    }
+        private static Color32[]
+            CreateTransparentPixels()
+        {
+            return new Color32[
+                BlockPixelSize *
+                BlockPixelSize
+            ];
+        }
 
+        public static void ClearCache()
+        {
+            pixelCache.Clear();
+        }
+    }
 }

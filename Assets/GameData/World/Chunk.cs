@@ -181,7 +181,7 @@ namespace Game.World
 
         public ChunkLightData GetLightData()
         {
-            return lightData;
+                return lightData;
         }
 
 

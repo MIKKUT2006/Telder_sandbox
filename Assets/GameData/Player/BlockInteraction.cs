@@ -1,6 +1,8 @@
+ï»¿using Game.World;
+using System;
 using UnityEngine;
-
-using Game.World;
+using UnityEngine.LightTransport;
+using UnityEngine.UIElements;
 
 
 public class BlockInteraction :
@@ -22,6 +24,15 @@ public class BlockInteraction :
     private ushort placeBlockID =
         1;
 
+
+    [Header("Break")]
+
+    [SerializeField]
+    private float breakInterval =
+        0.08f;
+
+
+    [Header("Place")]
 
     [SerializeField]
     private float placeInterval =
@@ -46,7 +57,6 @@ public class BlockInteraction :
 
     private World world;
 
-
     private PlayerCollision playerCollision;
 
 
@@ -55,6 +65,8 @@ public class BlockInteraction :
     // =====================================================
 
     private bool initialized;
+
+    private float nextBreakTime;
 
     private float nextPlaceTime;
 
@@ -74,10 +86,8 @@ public class BlockInteraction :
             playerCamera == null
         )
         {
-
             playerCamera =
                 Camera.main;
-
         }
 
 
@@ -85,13 +95,11 @@ public class BlockInteraction :
             playerCamera == null
         )
         {
-
             Debug.LogError(
                 "BLOCK INTERACTION: Camera not found."
             );
 
             return;
-
         }
 
 
@@ -107,13 +115,11 @@ public class BlockInteraction :
             worldManager == null
         )
         {
-
             Debug.LogError(
                 "BLOCK INTERACTION: WorldManager is null."
             );
 
             return;
-
         }
 
 
@@ -129,13 +135,11 @@ public class BlockInteraction :
             world == null
         )
         {
-
             Debug.LogError(
                 "BLOCK INTERACTION: World is null."
             );
 
             return;
-
         }
 
 
@@ -148,15 +152,18 @@ public class BlockInteraction :
 
 
         // =================================================
-        // INITIALIZED
+        // STATE
         // =================================================
 
-        initialized =
-            true;
-
+        nextBreakTime =
+            0f;
 
         nextPlaceTime =
             0f;
+
+
+        initialized =
+            true;
 
 
         Debug.Log(
@@ -184,15 +191,36 @@ public class BlockInteraction :
         // =================================================
         // BREAK
         // =================================================
+        //
+        // Ð¢ÐµÐ¿ÐµÑ€ÑŒ Ð¼Ð¾Ð¶Ð½Ð¾ Ð´ÐµÑ€Ð¶Ð°Ñ‚ÑŒ Ð›ÐšÐœ.
+        //
 
         if (
-            Input.GetMouseButtonDown(
-                0
-            )
+            Input.GetMouseButton(0)
         )
         {
 
-            BreakBlock();
+            if (
+                Time.time >=
+                nextBreakTime
+            )
+            {
+
+                BreakBlock();
+
+
+                nextBreakTime =
+                    Time.time +
+                    breakInterval;
+
+            }
+
+        }
+        else
+        {
+
+            nextBreakTime =
+                0f;
 
         }
 
@@ -200,11 +228,12 @@ public class BlockInteraction :
         // =================================================
         // PLACE
         // =================================================
+        //
+        // Ð¢ÐµÐ¿ÐµÑ€ÑŒ Ð¼Ð¾Ð¶Ð½Ð¾ Ð´ÐµÑ€Ð¶Ð°Ñ‚ÑŒ ÐŸÐšÐœ.
+        //
 
         if (
-            Input.GetMouseButton(
-                1
-            )
+            Input.GetMouseButton(1)
         )
         {
 
@@ -214,27 +243,12 @@ public class BlockInteraction :
             )
             {
 
-                if (
-                    PlaceBlock()
-                )
-                {
+                PlaceBlock();
 
-                    nextPlaceTime =
-                        Time.time +
-                        placeInterval;
 
-                }
-                else
-                {
-
-                    // Åñëè ïîñòàâèòü áëîê íå óäàëîñü,
-                    // íå áëîêèðóåì ñëåäóþùóþ ïîïûòêó.
-
-                    nextPlaceTime =
-                        Time.time +
-                        placeInterval;
-
-                }
+                nextPlaceTime =
+                    Time.time +
+                    placeInterval;
 
             }
 
@@ -254,18 +268,20 @@ public class BlockInteraction :
     // BREAK BLOCK
     // =====================================================
 
-    private void BreakBlock()
+    private bool BreakBlock()
     {
 
+        // =================================================
+        // GET CELL
+        // =================================================
+
         if (
-            !TryGetMouseBlock(
+            !TryGetMouseCell(
                 out UnityEngine.Vector2Int blockPosition
             )
         )
         {
-
-            return;
-
+            return false;
         }
 
 
@@ -280,6 +296,9 @@ public class BlockInteraction :
         // =================================================
         // FOREGROUND
         // =================================================
+        //
+        // Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° Ð²ÑÐµÐ³Ð´Ð° Ð»Ð¾Ð¼Ð°ÐµÐ¼ foreground.
+        //
 
         ushort foregroundID =
             world.GetBlock(
@@ -305,21 +324,11 @@ public class BlockInteraction :
                 changed
             )
             {
-
                 ForcePlayerCollisionUpdate();
-
-
-                Debug.Log(
-                    "BLOCK INTERACTION: FOREGROUND BLOCK BROKEN " +
-                    x +
-                    ", " +
-                    y
-                );
-
             }
 
 
-            return;
+            return changed;
 
         }
 
@@ -327,6 +336,10 @@ public class BlockInteraction :
         // =================================================
         // BACKGROUND
         // =================================================
+        //
+        // Ð•ÑÐ»Ð¸ foreground ÑƒÐ¶Ðµ Ð¿ÑƒÑÑ‚,
+        // Ð»Ð¾Ð¼Ð°ÐµÐ¼ background.
+        //
 
         ushort backgroundID =
             world.GetBackground(
@@ -336,36 +349,22 @@ public class BlockInteraction :
 
 
         if (
-            backgroundID != 0
+            backgroundID == 0
         )
         {
-
-            bool changed =
-                worldManager.SetBackground(
-                    x,
-                    y,
-                    0
-                );
-
-
-            if (
-                changed
-            )
-            {
-
-                Debug.Log(
-                    "BLOCK INTERACTION: BACKGROUND BLOCK BROKEN " +
-                    x +
-                    ", " +
-                    y
-                );
-
-            }
-
-
-            return;
-
+            return false;
         }
+
+
+        bool backgroundChanged =
+            worldManager.SetBackground(
+                x,
+                y,
+                0
+            );
+
+
+        return backgroundChanged;
 
     }
 
@@ -377,27 +376,18 @@ public class BlockInteraction :
     private bool PlaceBlock()
     {
 
+        // =================================================
+        // GET CELL UNDER MOUSE
+        // =================================================
+
         if (
-            !TryGetMouseBlock(
-                out UnityEngine.Vector2Int targetPosition
+            !TryGetMouseCell(
+                out UnityEngine.Vector2Int placePosition
             )
         )
         {
-
             return false;
-
         }
-
-
-        Vector2 mouseWorld =
-            GetMouseWorldPosition();
-
-
-        UnityEngine.Vector2Int placePosition =
-            GetAdjacentBlockPosition(
-                targetPosition,
-                mouseWorld
-            );
 
 
         int x =
@@ -409,7 +399,7 @@ public class BlockInteraction :
 
 
         // =================================================
-        // CHECK FOREGROUND
+        // FOREGROUND MUST BE EMPTY
         // =================================================
 
         ushort foregroundID =
@@ -423,15 +413,31 @@ public class BlockInteraction :
             foregroundID != 0
         )
         {
-
             return false;
-
         }
 
 
         // =================================================
-        // CHECK BACKGROUND
+        // DON'T PLACE INSIDE PLAYER
         // =================================================
+
+        if (
+            IsInsidePlayer(
+                placePosition
+            )
+        )
+        {
+            return false;
+        }
+
+
+        // =================================================
+        // BACKGROUND
+        // =================================================
+        //
+        // Ð•ÑÐ»Ð¸ background ÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÐµÑ‚,
+        // foreground Ð¼Ð¾Ð¶Ð½Ð¾ Ð¿Ð¾ÑÑ‚Ð°Ð²Ð¸Ñ‚ÑŒ Ð¿Ñ€ÑÐ¼Ð¾ Ð¿Ð¾Ð²ÐµÑ€Ñ… Ð½ÐµÐ³Ð¾.
+        //
 
         ushort backgroundID =
             world.GetBackground(
@@ -440,30 +446,10 @@ public class BlockInteraction :
             );
 
 
-        // =================================================
-        // PLACE IN FOREGROUND
-        // =================================================
-        //
-        // Åñëè ìåñòî ïîëíîñòüþ ïóñòîå,
-        // ñòàâèì îáû÷íûé áëîê.
-        //
-
         if (
-            backgroundID == 0
+            backgroundID != 0
         )
         {
-
-            if (
-                IsInsidePlayer(
-                    placePosition
-                )
-            )
-            {
-
-                return false;
-
-            }
-
 
             return
                 worldManager.SetBlock(
@@ -476,25 +462,27 @@ public class BlockInteraction :
 
 
         // =================================================
-        // BACKGROUND EXISTS
+        // NO BACKGROUND
         // =================================================
         //
-        // Åñëè åñòü ôîí, íî ïåðåäíèé ñëîé ïóñò,
-        // îáû÷íûé áëîê âñ¸ ðàâíî ìîæíî ïîñòàâèòü
-        // ïîâåðõ çàäíåãî ôîíà.
+        // Ð’ Ð¿Ð¾Ð»Ð½Ð¾ÑÑ‚ÑŒÑŽ Ð¿ÑƒÑÑ‚Ð¾Ð¹ ÐºÐ»ÐµÑ‚ÐºÐµ Ð¼Ð¾Ð¶Ð½Ð¾ ÑÑ‚Ñ€Ð¾Ð¸Ñ‚ÑŒ,
+        // ÐµÑÐ»Ð¸ ÐµÑÑ‚ÑŒ Ñ…Ð¾Ñ‚Ñ Ð±Ñ‹ Ð¾Ð´Ð¸Ð½ ÑÐ¾ÑÐµÐ´Ð½Ð¸Ð¹ foreground.
         //
 
         if (
-            IsInsidePlayer(
-                placePosition
+            !HasAdjacentForegroundBlock(
+                x,
+                y
             )
         )
         {
-
             return false;
-
         }
 
+
+        // =================================================
+        // PLACE
+        // =================================================
 
         return
             worldManager.SetBlock(
@@ -507,35 +495,78 @@ public class BlockInteraction :
 
 
     // =====================================================
-    // GET MOUSE BLOCK
+    // GET MOUSE CELL
+    // =====================================================
+    //
+    // ÐŸÐ¾Ð»ÑƒÑ‡Ð°ÐµÑ‚ Ð¸Ð¼ÐµÐ½Ð½Ð¾ ÐºÐ»ÐµÑ‚ÐºÑƒ Ð¿Ð¾Ð´ ÐºÑƒÑ€ÑÐ¾Ñ€Ð¾Ð¼.
+    //
+    // ÐÐ¸ÐºÐ°ÐºÐ¾Ð³Ð¾ Ð¿Ð¾Ð¸ÑÐºÐ° Ð±Ð»Ð¸Ð¶Ð°Ð¹ÑˆÐµÐ³Ð¾ Ð±Ð»Ð¾ÐºÐ°.
+    // ÐÐ¸ÐºÐ°ÐºÐ¸Ñ… Ð³Ñ€Ð°Ð½Ð¸Ñ†.
+    //
     // =====================================================
 
-    private bool TryGetMouseBlock(
-        out UnityEngine.Vector2Int blockPosition
+    private bool TryGetMouseCell(
+        out UnityEngine.Vector2Int cell
     )
     {
 
-        blockPosition =
+        cell =
             UnityEngine.Vector2Int.zero;
 
 
         if (
-            playerCamera == null
+            playerCamera == null ||
+            world == null
         )
         {
-
             return false;
-
         }
 
+
+        // =================================================
+        // MOUSE -> WORLD
+        // =================================================
 
         Vector2 mouseWorld =
             GetMouseWorldPosition();
 
 
         // =================================================
+        // WORLD -> CELL
+        // =================================================
+
+        int x =
+            Mathf.FloorToInt(
+                mouseWorld.x
+            );
+
+
+        int y =
+            Mathf.FloorToInt(
+                mouseWorld.y
+            );
+
+
+        cell =
+            new UnityEngine.Vector2Int(
+                x,
+                y
+            );
+
+
+        // =================================================
         // DISTANCE
         // =================================================
+        //
+        // ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼ Ñ€Ð°ÑÑÑ‚Ð¾ÑÐ½Ð¸Ðµ Ð´Ð¾ Ñ†ÐµÐ½Ñ‚Ñ€Ð° ÐºÐ»ÐµÑ‚ÐºÐ¸.
+        //
+
+        Vector2 cellCenter =
+            new Vector2(
+                x + 0.5f,
+                y + 0.5f
+            );
+
 
         Vector2 playerPosition =
             new Vector2(
@@ -547,7 +578,7 @@ public class BlockInteraction :
         float distance =
             Vector2.Distance(
                 playerPosition,
-                mouseWorld
+                cellCenter
             );
 
 
@@ -556,75 +587,113 @@ public class BlockInteraction :
             interactionDistance
         )
         {
-
             return false;
-
         }
 
 
-        // =================================================
-        // WORLD -> BLOCK
-        // =================================================
-        //
-        // ÂÀÆÍÎ:
-        //
-        // Ìû ÍÅ èùåì áëèæàéøèé áëîê ïî ëó÷ó.
-        //
-        // Ìû áåð¸ì èìåííî òó êëåòêó,
-        // â êîòîðóþ ïîïàëà ìûøü.
-        //
+        return true;
 
-        blockPosition =
-            new UnityEngine.Vector2Int(
-                Mathf.FloorToInt(
-                    mouseWorld.x
-                ),
+    }
 
-                Mathf.FloorToInt(
-                    mouseWorld.y
-                )
+
+    // =====================================================
+    // GET MOUSE WORLD POSITION
+    // =====================================================
+
+    private Vector2 GetMouseWorldPosition()
+    {
+
+        Vector3 mouseScreenPosition =
+            Input.mousePosition;
+
+
+        mouseScreenPosition.z =
+            Mathf.Abs(
+                playerCamera.transform.position.z
             );
 
 
+        Vector3 mouseWorldPosition =
+            playerCamera.ScreenToWorldPoint(
+                mouseScreenPosition
+            );
+
+
+        return new Vector2(
+            mouseWorldPosition.x,
+            mouseWorldPosition.y
+        );
+
+    }
+
+
+    // =====================================================
+    // HAS ADJACENT FOREGROUND BLOCK
+    // =====================================================
+
+    private bool HasAdjacentForegroundBlock(
+        int x,
+        int y
+    )
+    {
+
         // =================================================
-        // CHECK FOREGROUND
+        // LEFT
         // =================================================
 
-        ushort foregroundID =
+        if (
             world.GetBlock(
-                blockPosition.x,
-                blockPosition.y
-            );
-
-
-        if (
-            foregroundID != 0
+                x - 1,
+                y
+            ) != 0
         )
         {
-
             return true;
-
         }
 
 
         // =================================================
-        // CHECK BACKGROUND
+        // RIGHT
         // =================================================
 
-        ushort backgroundID =
-            world.GetBackground(
-                blockPosition.x,
-                blockPosition.y
-            );
-
-
         if (
-            backgroundID != 0
+            world.GetBlock(
+                x + 1,
+                y
+            ) != 0
         )
         {
-
             return true;
+        }
 
+
+        // =================================================
+        // BELOW
+        // =================================================
+
+        if (
+            world.GetBlock(
+                x,
+                y - 1
+            ) != 0
+        )
+        {
+            return true;
+        }
+
+
+        // =================================================
+        // ABOVE
+        // =================================================
+
+        if (
+            world.GetBlock(
+                x,
+                y + 1
+            ) != 0
+        )
+        {
+            return true;
         }
 
 
@@ -634,131 +703,7 @@ public class BlockInteraction :
 
 
     // =====================================================
-    // MOUSE WORLD POSITION
-    // =====================================================
-
-    private Vector2 GetMouseWorldPosition()
-    {
-
-        Vector3 mouse =
-            Input.mousePosition;
-
-
-        mouse.z =
-            Mathf.Abs(
-                playerCamera.transform.position.z
-            );
-
-
-        Vector3 worldPoint =
-            playerCamera.ScreenToWorldPoint(
-                mouse
-            );
-
-
-        return new Vector2(
-            worldPoint.x,
-            worldPoint.y
-        );
-
-    }
-
-
-    // =====================================================
-    // GET ADJACENT BLOCK
-    // =====================================================
-
-    private UnityEngine.Vector2Int
-        GetAdjacentBlockPosition(
-            UnityEngine.Vector2Int target,
-            Vector2 mouseWorld
-        )
-    {
-
-        Vector2 center =
-            new Vector2(
-                target.x +
-                0.5f,
-
-                target.y +
-                0.5f
-            );
-
-
-        Vector2 direction =
-            mouseWorld -
-            center;
-
-
-        // =================================================
-        // HORIZONTAL
-        // =================================================
-
-        if (
-            Mathf.Abs(
-                direction.x
-            )
-            >
-            Mathf.Abs(
-                direction.y
-            )
-        )
-        {
-
-            if (
-                direction.x >
-                0f
-            )
-            {
-
-                return
-                    new UnityEngine.Vector2Int(
-                        target.x + 1,
-                        target.y
-                    );
-
-            }
-
-
-            return
-                new UnityEngine.Vector2Int(
-                    target.x - 1,
-                    target.y
-                );
-
-        }
-
-
-        // =================================================
-        // VERTICAL
-        // =================================================
-
-        if (
-            direction.y >
-            0f
-        )
-        {
-
-            return
-                new UnityEngine.Vector2Int(
-                    target.x,
-                    target.y + 1
-                );
-
-        }
-
-
-        return
-            new UnityEngine.Vector2Int(
-                target.x,
-                target.y - 1
-            );
-
-    }
-
-
-    // =====================================================
-    // PLAYER COLLISION UPDATE
+    // FORCE PLAYER COLLISION UPDATE
     // =====================================================
 
     private void ForcePlayerCollisionUpdate()
@@ -772,16 +717,7 @@ public class BlockInteraction :
         }
 
 
-        // =================================================
-        // RESOLVE OVERLAPS
-        // =================================================
-
         playerCollision.ResolveOverlaps();
-
-
-        // =================================================
-        // FORCE GROUND CHECK
-        // =================================================
 
         playerCollision.ForceGroundCheck();
 
@@ -789,7 +725,7 @@ public class BlockInteraction :
 
 
     // =====================================================
-    // PLAYER COLLISION
+    // IS INSIDE PLAYER
     // =====================================================
 
     private bool IsInsidePlayer(
@@ -801,50 +737,48 @@ public class BlockInteraction :
             playerCollision == null
         )
         {
-
             return false;
-
         }
 
 
-        Vector2 size =
+        // =================================================
+        // PLAYER
+        // =================================================
+
+        Vector2 playerSize =
             playerCollision.GetColliderSize();
 
 
-        Vector2 position =
+        Vector2 playerPosition =
             transform.position;
 
 
-        // =================================================
-        // PLAYER BOUNDS
-        // =================================================
-
         float playerLeft =
-            position.x -
-            size.x *
+            playerPosition.x -
+            playerSize.x *
             0.5f;
 
 
         float playerRight =
-            position.x +
-            size.x *
+            playerPosition.x +
+            playerSize.x *
             0.5f;
 
 
         float playerBottom =
-            position.y -
-            size.y *
+            playerPosition.y -
+            playerSize.y *
             0.5f;
 
 
         float playerTop =
-            position.y +
-            size.y *
+            playerPosition.y +
+            playerSize.y *
             0.5f;
 
 
         // =================================================
-        // BLOCK BOUNDS
+        // BLOCK
         // =================================================
 
         float blockLeft =

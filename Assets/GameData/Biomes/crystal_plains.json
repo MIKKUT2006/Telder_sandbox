@@ -1,0 +1,40 @@
+{
+  "ID": "game:crystal_plains",
+  "DisplayName": "CRYSTAL PLAINS",
+  "AllowedDimensionTypes": [
+    "crystalline"
+  ],
+  "Weight": 1.0,
+  "Rare": false,
+  "Terrain": {
+    "TopBlock": "game:crystal_stone_grass",
+    "SoilBlock": "game:crystal_stone",
+    "StoneBlock": "game:crystal_stone",
+    "BackgroundBlock": "game:crystal_stone",
+    "SoilDepth": 8,
+    "HeightOffset": 0.0,
+    "HillHeightMultiplier": 0.65,
+    "HillScaleMultiplier": 1.0,
+    "TerrainVariationMultiplier": 0.75,
+    "TerrainScaleMultiplier": 1.0,
+    "DetailMultiplier": 0.65,
+    "DetailScaleMultiplier": 1.0,
+    "DistortionStrength": 0.0,
+    "DistortionScale": 0.0035,
+    "RidgeStrength": 0.0,
+    "RidgeScale": 0.01,
+    "WaveStrength": 0.0,
+    "WaveScale": 0.024
+  },
+  "Caves": {
+    "FrequencyMultiplier": 1.0,
+    "SizeMultiplier": 1.0,
+    "ChamberMultiplier": 1.0,
+    "EntranceMultiplier": 1.0
+  },
+  "Climate": {
+    "Temperature": 0.55,
+    "Humidity": 0.55,
+    "Weirdness": 0.2
+  }
+}

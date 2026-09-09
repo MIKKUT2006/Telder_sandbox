@@ -1,0 +1,40 @@
+{
+  "ID": "game:barrens",
+  "DisplayName": "BARRENS",
+  "AllowedDimensionTypes": [
+    "*"
+  ],
+  "Weight": 1.0,
+  "Rare": false,
+  "Terrain": {
+    "TopBlock": "game:dirt",
+    "SoilBlock": "game:dirt",
+    "StoneBlock": "game:stone",
+    "BackgroundBlock": "game:stone",
+    "SoilDepth": 5,
+    "HeightOffset": -5.0,
+    "HillHeightMultiplier": 0.35,
+    "HillScaleMultiplier": 1.2,
+    "TerrainVariationMultiplier": 0.5,
+    "TerrainScaleMultiplier": 0.9,
+    "DetailMultiplier": 0.35,
+    "DetailScaleMultiplier": 1.15,
+    "DistortionStrength": 0.0,
+    "DistortionScale": 0.0035,
+    "RidgeStrength": 0.0,
+    "RidgeScale": 0.01,
+    "WaveStrength": 0.0,
+    "WaveScale": 0.024
+  },
+  "Caves": {
+    "FrequencyMultiplier": 0.9,
+    "SizeMultiplier": 0.9,
+    "ChamberMultiplier": 0.75,
+    "EntranceMultiplier": 1.2
+  },
+  "Climate": {
+    "Temperature": 0.78,
+    "Humidity": 0.14,
+    "Weirdness": 0.35
+  }
+}

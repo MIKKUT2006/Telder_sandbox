@@ -1,20 +1,18 @@
 using Game.Blocks;
 using Game.Content;
 using Game.World.Collision;
+using Game.World.Dimensions;
 using Game.World.Generation;
+using Game.World.Lighting;
 using Game.World.Loading;
 using Game.World.Rendering;
 using System.Collections;
 using UnityEngine;
 
-
 namespace Game.World
 {
-
-    public class WorldManager :
-        MonoBehaviour
+    public class WorldManager : MonoBehaviour
     {
-
         public static WorldManager Instance;
 
 
@@ -44,6 +42,8 @@ namespace Game.World
 
         private ChunkRenderer renderer;
 
+        private LightPropagationEngine lighting;
+
 
         // =====================================================
         // STATE
@@ -70,21 +70,41 @@ namespace Game.World
 
         private void Awake()
         {
+            Instance = this;
 
-            Instance =
-                this;
 
+            // =====================================================
+            // CONTENT
+            // =====================================================
 
             ContentManager.Initialize();
 
 
-            settings =
-                new WorldSettings();
+            settings = new WorldSettings();
+
+            settings.Seed = DimensionTravelRuntime.Current.Seed;
+            
+            // =====================================================
+            // WORLD
+            // =====================================================
+
+            world = new World();
+
+            world.SetWorldHeight(
+                settings.WorldHeight
+            );
 
 
-            world =
-                new World();
+            // Используем единственный lighting engine,
+            // который принадлежит World.
 
+            lighting =
+                world.GetLightEngine();
+
+
+            // =====================================================
+            // COLLISION
+            // =====================================================
 
             worldCollision =
                 new WorldCollision(
@@ -98,6 +118,10 @@ namespace Game.World
                 );
 
 
+            // =====================================================
+            // GENERATOR
+            // =====================================================
+
             generator =
                 new WorldGenerator(
                     settings
@@ -107,9 +131,19 @@ namespace Game.World
             generator.ReloadOres();
 
 
-            renderer =
-                new ChunkRenderer();
+            // =====================================================
+            // RENDERER
+            // =====================================================
 
+            renderer =
+                new ChunkRenderer(
+                    world
+                );
+
+
+            // =====================================================
+            // CHUNK LOADER
+            // =====================================================
 
             loader =
                 new ChunkLoader(
@@ -121,14 +155,12 @@ namespace Game.World
                 );
 
 
-            worldGenerated =
-                true;
+            worldGenerated = true;
 
 
             Debug.Log(
                 "WORLD MANAGER: SYSTEMS INITIALIZED."
             );
-
         }
 
 
@@ -139,12 +171,10 @@ namespace Game.World
         private IEnumerator Start()
         {
             // =====================================================
-            // WAIT FOR INITIAL CHUNKS
+            // WAIT FOR LOADER
             // =====================================================
 
-            while (
-                loader == null
-            )
+            while (loader == null)
             {
                 yield return null;
             }
@@ -161,7 +191,7 @@ namespace Game.World
 
 
             // =====================================================
-            // WAIT UNTIL START AREA IS LOADED
+            // WAIT FOR START CHUNK
             // =====================================================
 
             while (
@@ -178,7 +208,7 @@ namespace Game.World
 
 
             // =====================================================
-            // WAIT UNTIL INITIAL AREA IS LOADED
+            // WAIT FOR INITIAL AREA
             // =====================================================
 
             while (
@@ -192,11 +222,17 @@ namespace Game.World
 
 
             // =====================================================
+            // INITIAL LIGHTING
+            // =====================================================
+
+            GenerateInitialLighting();
+
+
+            // =====================================================
             // WORLD READY
             // =====================================================
 
-            worldGenerated =
-                true;
+            worldGenerated = true;
 
 
             Debug.Log(
@@ -209,8 +245,21 @@ namespace Game.World
             // =====================================================
 
             SpawnPlayer();
-
         }
+
+
+        // =====================================================
+        // UPDATE
+        // =====================================================
+
+        private void Update()
+        {
+            if (renderer != null)
+            {
+                renderer.UpdateDirtyLighting(6);
+            }
+        }
+
 
         // =====================================================
         // PLAYER SPAWN
@@ -218,18 +267,13 @@ namespace Game.World
 
         private void SpawnPlayer()
         {
-
-            if (
-                player == null
-            )
+            if (player == null)
             {
-
                 Debug.LogError(
                     "WORLD: Player reference is null."
                 );
 
                 return;
-
             }
 
 
@@ -237,17 +281,13 @@ namespace Game.World
                 player.GetComponent<PlayerCollision>();
 
 
-            if (
-                playerCollision == null
-            )
+            if (playerCollision == null)
             {
-
                 Debug.LogError(
                     "WORLD: PlayerCollision component not found."
                 );
 
                 return;
-
             }
 
 
@@ -255,9 +295,7 @@ namespace Game.World
                 playerCollision.GetColliderSize();
 
 
-            int spawnX =
-                0;
-
+            int spawnX = 0;
 
             int surfaceY;
 
@@ -269,24 +307,21 @@ namespace Game.World
                 )
             )
             {
-
                 Debug.LogError(
                     "WORLD: Failed to find surface at X = " +
                     spawnX
                 );
 
                 return;
-
             }
 
 
             // =====================================================
-            // POSITION PLAYER ABOVE SURFACE
+            // PLAYER POSITION
             // =====================================================
 
             float playerHalfHeight =
-                playerSize.y *
-                0.5f;
+                playerSize.y * 0.5f;
 
 
             float playerCenterY =
@@ -312,17 +347,13 @@ namespace Game.World
                 player.GetComponent<Rigidbody2D>();
 
 
-            if (
-                rb != null
-            )
+            if (rb != null)
             {
-
                 rb.linearVelocity =
                     Vector2.zero;
 
                 rb.angularVelocity =
                     0f;
-
             }
 
 
@@ -343,12 +374,11 @@ namespace Game.World
                 " PLAYER Y = " +
                 playerCenterY
             );
-
         }
 
 
         // =====================================================
-        // FIND PLAYER SPAWN
+        // FIND PLAYER SPAWN POSITION
         // =====================================================
 
         private bool FindPlayerSpawnPosition(
@@ -360,11 +390,7 @@ namespace Game.World
                 Vector3.zero;
 
 
-            // Ищем сначала в центре мира.
-            // Затем постепенно расширяем область поиска.
-
-            int searchRadius =
-                128;
+            int searchRadius = 128;
 
 
             for (
@@ -373,16 +399,12 @@ namespace Game.World
                 offset++
             )
             {
-
-                // =============================================
+                // =================================================
                 // CENTER
-                // =============================================
+                // =================================================
 
-                if (
-                    offset == 0
-                )
+                if (offset == 0)
                 {
-
                     if (
                         TryFindSpawnAtX(
                             0,
@@ -393,14 +415,12 @@ namespace Game.World
                     {
                         return true;
                     }
-
                 }
                 else
                 {
-
-                    // =============================================
+                    // =================================================
                     // LEFT
-                    // =============================================
+                    // =================================================
 
                     if (
                         TryFindSpawnAtX(
@@ -414,9 +434,9 @@ namespace Game.World
                     }
 
 
-                    // =============================================
+                    // =================================================
                     // RIGHT
-                    // =============================================
+                    // =================================================
 
                     if (
                         TryFindSpawnAtX(
@@ -428,9 +448,7 @@ namespace Game.World
                     {
                         return true;
                     }
-
                 }
-
             }
 
 
@@ -453,23 +471,18 @@ namespace Game.World
 
 
             float halfWidth =
-                playerSize.x *
-                0.5f;
+                playerSize.x * 0.5f;
 
 
             float halfHeight =
-                playerSize.y *
-                0.5f;
+                playerSize.y * 0.5f;
 
 
-            // Небольшой запас между игроком и землёй.
-
-            float skin =
-                0.02f;
+            float skin = 0.02f;
 
 
             // =================================================
-            // ПРОВЕРЯЕМ ВЕСЬ СТОЛБЕЦ
+            // CHECK COLUMN
             // =================================================
 
             for (
@@ -478,9 +491,8 @@ namespace Game.World
                 groundY--
             )
             {
-
                 // =================================================
-                // 1. ИЩЕМ ТВЁРДЫЙ БЛОК ПОД НОГАМИ
+                // SOLID GROUND
                 // =================================================
 
                 if (
@@ -495,7 +507,7 @@ namespace Game.World
 
 
                 // =================================================
-                // 2. ОПРЕДЕЛЯЕМ ШИРИНУ ИГРОКА
+                // PLAYER WIDTH
                 // =================================================
 
                 int leftX =
@@ -514,12 +526,11 @@ namespace Game.World
                     );
 
 
-                bool blocked =
-                    false;
+                bool blocked = false;
 
 
                 // =================================================
-                // 3. ПРОВЕРЯЕМ ВСЮ ШИРИНУ ИГРОКА
+                // CHECK PLAYER HEIGHT
                 // =================================================
 
                 for (
@@ -528,9 +539,6 @@ namespace Game.World
                     x++
                 )
                 {
-
-                    // Первый блок над землёй
-
                     if (
                         worldCollision.IsSolid(
                             x,
@@ -538,16 +546,10 @@ namespace Game.World
                         )
                     )
                     {
-
-                        blocked =
-                            true;
-
+                        blocked = true;
                         break;
-
                     }
 
-
-                    // Второй блок над землёй
 
                     if (
                         worldCollision.IsSolid(
@@ -556,17 +558,10 @@ namespace Game.World
                         )
                     )
                     {
-
-                        blocked =
-                            true;
-
+                        blocked = true;
                         break;
-
                     }
 
-
-                    // Третий блок над землёй.
-                    // Это важно, если игрок высокий.
 
                     if (
                         worldCollision.IsSolid(
@@ -575,27 +570,20 @@ namespace Game.World
                         )
                     )
                     {
-
-                        blocked =
-                            true;
-
+                        blocked = true;
                         break;
-
                     }
-
                 }
 
 
-                if (
-                    blocked
-                )
+                if (blocked)
                 {
                     continue;
                 }
 
 
                 // =================================================
-                // 4. СТАВИМ ИГРОКА НА ПОВЕРХНОСТЬ
+                // SPAWN POSITION
                 // =================================================
 
                 float playerCenterY =
@@ -618,60 +606,73 @@ namespace Game.World
 
 
                 return true;
-
             }
 
 
             return false;
         }
 
+
+        // =====================================================
+        // GETTERS
+        // =====================================================
+
         public ChunkLoader GetLoader()
         {
-
             return loader;
-
         }
 
 
         public World GetWorld()
         {
-
             return world;
+        }
 
+
+        public LightPropagationEngine GetLighting()
+        {
+            return lighting;
         }
 
 
         public WorldSettings GetSettings()
         {
-
             return settings;
-
         }
 
 
         public WorldGenerator GetGenerator()
         {
-
             return generator;
-
         }
 
 
         public WorldCollision GetWorldCollision()
         {
-
             return worldCollision;
-
         }
 
 
         public ChunkCollision GetChunkCollision()
         {
-
             return chunkCollision;
-
         }
-        private bool TryFindSurface(int worldX, out int surfaceY)
+
+
+        public ChunkRenderer GetChunkRenderer()
+        {
+            return renderer;
+        }
+
+
+        // =====================================================
+        // FIND SURFACE
+        // =====================================================
+
+        private bool TryFindSurface(
+            int worldX,
+            out int surfaceY
+        )
         {
             surfaceY = 0;
 
@@ -680,9 +681,7 @@ namespace Game.World
                 world;
 
 
-            if (
-                currentWorld == null
-            )
+            if (currentWorld == null)
             {
                 return false;
             }
@@ -694,7 +693,6 @@ namespace Game.World
                 y--
             )
             {
-
                 ushort blockID =
                     currentWorld.GetBlock(
                         worldX,
@@ -702,9 +700,7 @@ namespace Game.World
                     );
 
 
-                if (
-                    blockID == 0
-                )
+                if (blockID == 0)
                 {
                     continue;
                 }
@@ -741,47 +737,47 @@ namespace Game.World
                 }
 
 
-                surfaceY =
-                    y;
+                surfaceY = y;
 
 
                 return true;
-
             }
 
 
             return false;
-
         }
-        public bool SetBlock(
-    int worldX,
-    int worldY,
-    ushort blockID
-)
-        {
 
-            if (
-                world == null
-            )
+
+        // =====================================================
+        // SET FOREGROUND BLOCK
+        // =====================================================
+
+        public bool SetBlock(
+            int worldX,
+            int worldY,
+            ushort blockID
+        )
+        {
+            if (world == null)
             {
                 return false;
             }
 
 
             // =====================================================
-            // WORLD -> CHUNK
+            // FIND CHUNK
             // =====================================================
 
             int chunkX =
-                Mathf.FloorToInt(
-                    (float)worldX /
+                FloorDiv(
+                    worldX,
                     Chunk.SizeX
                 );
 
 
             int chunkY =
-                Mathf.FloorToInt(
-                    (float)worldY /
+                FloorDiv(
+                    worldY,
                     Chunk.SizeY
                 );
 
@@ -793,50 +789,28 @@ namespace Game.World
                 );
 
 
-            if (
-                chunk == null
-            )
+            if (chunk == null)
             {
                 return false;
             }
 
 
             // =====================================================
-            // LOCAL
+            // LOCAL COORDINATES
             // =====================================================
 
             int localX =
                 worldX -
-                chunkX *
-                Chunk.SizeX;
+                chunkX * Chunk.SizeX;
 
 
             int localY =
                 worldY -
-                chunkY *
-                Chunk.SizeY;
-
-
-            if (
-                localX < 0
-            )
-            {
-                localX +=
-                    Chunk.SizeX;
-            }
-
-
-            if (
-                localY < 0
-            )
-            {
-                localY +=
-                    Chunk.SizeY;
-            }
+                chunkY * Chunk.SizeY;
 
 
             // =====================================================
-            // OLD
+            // GET OLD BLOCK
             // =====================================================
 
             ushort oldBlockID =
@@ -846,129 +820,170 @@ namespace Game.World
                 );
 
 
+            if (oldBlockID == blockID)
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // WORLD CHANGE
+            // =====================================================
+
             if (
-                oldBlockID ==
-                blockID
+                !world.SetBlock(
+                    worldX,
+                    worldY,
+                    blockID
+                )
             )
             {
                 return false;
             }
 
-            // =====================================================
-            // SET BLOCK
-            // =====================================================
-
-            chunk.SetBlock(
-                localX,
-                localY,
-                blockID
-            );
-
 
             // =====================================================
-            // UPDATE RENDER
+            // IMMEDIATE VISUAL UPDATE
             // =====================================================
 
-            if (
-                renderer != null
-            )
+            if (renderer != null)
             {
-
                 renderer.UpdateBlock(
                     chunk,
                     localX,
                     localY
                 );
-
             }
 
 
             // =====================================================
-            // UPDATE COLLISION
+            // COLLISION
             // =====================================================
 
-            if (
-                chunkCollision != null
-            )
+            if (chunkCollision != null)
             {
-
                 chunkCollision.BuildChunkCollision(
                     chunk
                 );
-
-            }
-
-
-            // =====================================================
-            // IMPORTANT:
-            // UPDATE NEIGHBOUR CHUNKS
-            //
-            // Если блок находится на границе чанка,
-            // соседняя коллизия может зависеть от него.
-            // =====================================================
-
-            if (
-                localX == 0
-            )
-            {
-
-                UpdateChunkBorder(
-                    chunkX - 1,
-                    chunkY
-                );
-
-            }
-
-
-            if (
-                localX ==
-                Chunk.SizeX - 1
-            )
-            {
-
-                UpdateChunkBorder(
-                    chunkX + 1,
-                    chunkY
-                );
-
-            }
-
-
-            if (
-                localY == 0
-            )
-            {
-
-                UpdateChunkBorder(
-                    chunkX,
-                    chunkY - 1
-                );
-
-            }
-
-
-            if (
-                localY ==
-                Chunk.SizeY - 1
-            )
-            {
-
-                UpdateChunkBorder(
-                    chunkX,
-                    chunkY + 1
-                );
-
             }
 
 
             return true;
-
         }
 
+
+        // =====================================================
+        // SET BACKGROUND BLOCK
+        // =====================================================
+
+        public bool SetBackground(
+            int worldX,
+            int worldY,
+            ushort blockID
+        )
+        {
+            if (world == null)
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // CHANGE WORLD DATA
+            // =====================================================
+
+            bool changed =
+                world.SetBackground(
+                    worldX,
+                    worldY,
+                    blockID
+                );
+
+
+            if (!changed)
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // FIND CHUNK
+            // =====================================================
+
+            int chunkX =
+                FloorDiv(
+                    worldX,
+                    Chunk.SizeX
+                );
+
+
+            int chunkY =
+                FloorDiv(
+                    worldY,
+                    Chunk.SizeY
+                );
+
+
+            Chunk chunk =
+                world.GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (chunk == null)
+            {
+                return true;
+            }
+
+
+            // =====================================================
+            // LOCAL COORDINATES
+            // =====================================================
+
+            int localX =
+                worldX -
+                chunkX * Chunk.SizeX;
+
+
+            int localY =
+                worldY -
+                chunkY * Chunk.SizeY;
+
+
+            // =====================================================
+            // IMPORTANT
+            // =====================================================
+            //
+            // НЕ перерисовываем весь chunk.
+            //
+            // Обновляем только одну background-клетку.
+            //
+            // Это происходит СРАЗУ после изменения данных.
+            //
+
+            if (renderer != null)
+            {
+                renderer.UpdateBackgroundBlock(
+                    chunk,
+                    localX,
+                    localY
+                );
+            }
+
+
+            return true;
+        }
+
+
+        // =====================================================
+        // CHUNK COLLISION
+        // =====================================================
+
         private void RebuildChunkCollision(
-    int chunkX,
-    int chunkY
-)
+            int chunkX,
+            int chunkY
+        )
         {
             if (
                 world == null ||
@@ -986,9 +1001,7 @@ namespace Game.World
                 );
 
 
-            if (
-                chunk == null
-            )
+            if (chunk == null)
             {
                 return;
             }
@@ -999,11 +1012,21 @@ namespace Game.World
             );
         }
 
+
+        // =====================================================
+        // CHUNK BORDER UPDATE
+        // =====================================================
+
         private void UpdateChunkBorder(
-    int chunkX,
-    int chunkY
-)
+            int chunkX,
+            int chunkY
+        )
         {
+            if (world == null)
+            {
+                return;
+            }
+
 
             Chunk neighbourChunk =
                 world.GetChunk(
@@ -1012,276 +1035,111 @@ namespace Game.World
                 );
 
 
-            if (
-                neighbourChunk == null
-            )
+            if (neighbourChunk == null)
             {
                 return;
             }
 
 
             // =====================================================
-            // UPDATE RENDER
+            // RENDER
             // =====================================================
 
-            if (
-                renderer != null
-            )
+            if (renderer != null)
             {
-
                 renderer.Render(
                     neighbourChunk
                 );
-
             }
 
 
             // =====================================================
-            // UPDATE COLLISION
+            // COLLISION
             // =====================================================
 
-            if (
-                chunkCollision != null
-            )
+            if (chunkCollision != null)
             {
-
                 chunkCollision.BuildChunkCollision(
                     neighbourChunk
                 );
-
             }
-
         }
 
-        public ChunkRenderer GetChunkRenderer()
-        {
-            return renderer;
-        }
 
-        public bool SetBackground(
-    int worldX,
-    int worldY,
-    ushort blockID
-)
+        // =====================================================
+        // INITIAL LIGHTING
+        // =====================================================
+
+        private void GenerateInitialLighting()
         {
             if (
+                lighting == null ||
                 world == null
             )
             {
-                return false;
+                return;
             }
 
 
-            // =====================================================
-            // WORLD -> CHUNK
-            // =====================================================
-
-            int chunkX =
-                Mathf.FloorToInt(
-                    (float)worldX /
-                    Chunk.SizeX
-                );
-
-
-            int chunkY =
-                Mathf.FloorToInt(
-                    (float)worldY /
-                    Chunk.SizeY
-                );
-
-
-            Chunk chunk =
-                world.GetChunk(
-                    chunkX,
-                    chunkY
-                );
-
-
-            if (
-                chunk == null
-            )
-            {
-                return false;
-            }
-
-
-            // =====================================================
-            // LOCAL POSITION
-            // =====================================================
-
-            int localX =
-                worldX -
-                chunkX *
-                Chunk.SizeX;
-
-
-            int localY =
-                worldY -
-                chunkY *
-                Chunk.SizeY;
-
-
-            // =====================================================
-            // SAFETY
-            // =====================================================
-
-            if (
-                localX < 0
-            )
-            {
-                localX +=
-                    Chunk.SizeX;
-            }
-
-
-            if (
-                localY < 0
-            )
-            {
-                localY +=
-                    Chunk.SizeY;
-            }
-
-
-            // =====================================================
-            // OLD BACKGROUND BLOCK
-            // =====================================================
-
-            ushort oldBlockID =
-                chunk.GetBackground(
-                    localX,
-                    localY
-                );
-
-
-            // Ничего не изменилось.
-
-            if (
-                oldBlockID ==
-                blockID
-            )
-            {
-                return false;
-            }
-
-
-            // =====================================================
-            // SET BACKGROUND
-            // =====================================================
-
-            chunk.SetBackground(
-                localX,
-                localY,
-                blockID
+            lighting.RebuildLoadedWorld(
+                settings.WorldHeight
             );
 
 
-            // =====================================================
-            // UPDATE RENDER
-            // =====================================================
+            Debug.Log(
+                "WORLD LIGHTING: Initial lighting generated."
+            );
 
-            if (
-                renderer != null
-            )
+
+            if (renderer != null)
             {
-
-                renderer.UpdateBlock(
-                    chunk,
-                    localX,
-                    localY
+                renderer.RenderAllLoaded(
+                    world
                 );
-
             }
+        }
 
 
-            // =====================================================
-            // UPDATE COLLISION
-            // =====================================================
-            //
-            // ВАЖНО:
-            //
-            // Пока задний фон НЕ является физической коллизией,
-            // здесь ничего обновлять не нужно.
-            //
-            // Передний блок:
-            //     chunk.SetBlock(...)
-            //
-            // Задний блок:
-            //     chunk.SetBackground(...)
-            //
-            // Коллизия работает только с передним слоем.
-            //
-            // =====================================================
+        // =====================================================
+        // FLOOR DIVISION
+        // =====================================================
+        //
+        // Нужна именно такая функция, потому что обычное
+        // целочисленное деление C# неправильно работает
+        // с отрицательными координатами.
+        //
+        // Например:
+        //
+        // -1 / 32 = 0   <- неправильно для chunk
+        //
+        // Нам нужен:
+        //
+        // -1 -> chunk -1, local 31
+        //
+
+        private int FloorDiv(
+            int value,
+            int divisor
+        )
+        {
+            int result =
+                value / divisor;
 
 
-            // =====================================================
-            // UPDATE NEIGHBOUR CHUNKS
-            // =====================================================
-            //
-            // Если задний блок находится на границе чанка,
-            // соседний чанк нужно перерисовать.
-            //
-            // Это особенно важно, когда фон будет использоваться
-            // для визуального соединения пещер и других областей.
-            //
-
-            if (
-                localX == 0
-            )
-            {
-
-                UpdateChunkBorder(
-                    chunkX - 1,
-                    chunkY
-                );
-
-            }
+            int remainder =
+                value % divisor;
 
 
             if (
-                localX ==
-                Chunk.SizeX - 1
+                remainder != 0 &&
+                value < 0
             )
             {
-
-                UpdateChunkBorder(
-                    chunkX + 1,
-                    chunkY
-                );
-
+                result--;
             }
 
 
-            if (
-                localY == 0
-            )
-            {
-
-                UpdateChunkBorder(
-                    chunkX,
-                    chunkY - 1
-                );
-
-            }
-
-
-            if (
-                localY ==
-                Chunk.SizeY - 1
-            )
-            {
-
-                UpdateChunkBorder(
-                    chunkX,
-                    chunkY + 1
-                );
-
-            }
-
-
-            return true;
+            return result;
         }
     }
-
-
 }
