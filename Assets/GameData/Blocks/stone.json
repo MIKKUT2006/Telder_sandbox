@@ -1,13 +1,28 @@
 {
   "ID": "game:stone",
-
   "Name": "Stone",
-
   "Texture": "stone",
 
-  "Hardness": 3,
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
 
   "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+
+  "LightLevel": 0,
+  "Material": 0,
+
+  "Drop": "game:stone",
+  "DropCount": 1,
+
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+
+  "Tags": [
+    "stone"
+  ],
 
   "LightOpacity": 15,
   "LightEmissionR": 0,

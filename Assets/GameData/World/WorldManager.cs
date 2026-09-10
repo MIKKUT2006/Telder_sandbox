@@ -7,6 +7,7 @@ using Game.World.Lighting;
 using Game.World.Loading;
 using Game.World.Rendering;
 using System.Collections;
+using Game.World.Effects;
 using UnityEngine;
 
 namespace Game.World
@@ -841,7 +842,23 @@ namespace Game.World
                 return false;
             }
 
+            // =============================================
+            // BREAK DEBRIS
+            // =============================================
 
+            if (
+                oldBlockID != 0 &&
+                blockID == 0
+            )
+            {
+                BlockBreakDebrisSystem.Emit(
+                    world,
+                    worldX,
+                    worldY,
+                    oldBlockID,
+                    false
+                );
+            }
             // =====================================================
             // IMMEDIATE VISUAL UPDATE
             // =====================================================
@@ -877,30 +894,12 @@ namespace Game.World
         // =====================================================
 
         public bool SetBackground(
-            int worldX,
-            int worldY,
-            ushort blockID
-        )
+    int worldX,
+    int worldY,
+    ushort blockID
+)
         {
             if (world == null)
-            {
-                return false;
-            }
-
-
-            // =====================================================
-            // CHANGE WORLD DATA
-            // =====================================================
-
-            bool changed =
-                world.SetBackground(
-                    worldX,
-                    worldY,
-                    blockID
-                );
-
-
-            if (!changed)
             {
                 return false;
             }
@@ -931,9 +930,15 @@ namespace Game.World
                 );
 
 
+            // Если chunk не загружен,
+            // всё равно можем попробовать изменить world data.
             if (chunk == null)
             {
-                return true;
+                return world.SetBackground(
+                    worldX,
+                    worldY,
+                    blockID
+                );
             }
 
 
@@ -943,24 +948,80 @@ namespace Game.World
 
             int localX =
                 worldX -
-                chunkX * Chunk.SizeX;
+                chunkX *
+                Chunk.SizeX;
 
 
             int localY =
                 worldY -
-                chunkY * Chunk.SizeY;
+                chunkY *
+                Chunk.SizeY;
 
 
             // =====================================================
-            // IMPORTANT
+            // SAVE OLD BLOCK
             // =====================================================
-            //
-            // НЕ перерисовываем весь chunk.
-            //
-            // Обновляем только одну background-клетку.
-            //
-            // Это происходит СРАЗУ после изменения данных.
-            //
+
+            ushort oldBlockID =
+                chunk.GetBackground(
+                    localX,
+                    localY
+                );
+
+
+            // =====================================================
+            // NO CHANGE
+            // =====================================================
+
+            if (
+                oldBlockID ==
+                blockID
+            )
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // CHANGE WORLD DATA
+            // =====================================================
+
+            bool changed =
+                world.SetBackground(
+                    worldX,
+                    worldY,
+                    blockID
+                );
+
+
+            if (!changed)
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // BREAK DEBRIS
+            // =====================================================
+
+            if (
+                oldBlockID != 0 &&
+                blockID == 0
+            )
+            {
+                BlockBreakDebrisSystem.Emit(
+                    world,
+                    worldX,
+                    worldY,
+                    oldBlockID,
+                    true
+                );
+            }
+
+
+            // =====================================================
+            // UPDATE RENDER
+            // =====================================================
 
             if (renderer != null)
             {

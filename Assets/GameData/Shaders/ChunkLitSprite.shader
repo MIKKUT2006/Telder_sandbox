@@ -5,27 +5,30 @@ Shader "Game/ChunkLitSprite"
         [PerRendererData]
         _MainTex ("Sprite Texture", 2D) = "white" {}
 
+        _Color ("Tint", Color) = (1,1,1,1)
+
         _LightTex ("Light Texture", 2D) = "white" {}
 
-        _LightUVScaleOffset(
+        _LightUVScaleOffset (
             "Light UV Scale Offset",
             Vector
         ) = (1,1,0,0)
 
-        _LayerBrightness(
+        _LayerBrightness (
             "Layer Brightness",
             Float
         ) = 1
 
-        _Ambient(
+        _Ambient (
             "Ambient",
-            Float
-        ) = 0.005
+            Range(0,1)
+        ) = 0.05
 
-        _LightGamma(
+        _LightGamma (
             "Light Gamma",
-            Float
-        ) = 0.58
+            Range(0.01,3)
+        ) = 0.72
+
     }
 
     SubShader
@@ -51,33 +54,41 @@ Shader "Game/ChunkLitSprite"
 
             #pragma vertex vert
             #pragma fragment frag
-
             #include "UnityCG.cginc"
+
 
             struct appdata
             {
                 float4 vertex : POSITION;
-                float4 color : COLOR;
                 float2 uv : TEXCOORD0;
+                fixed4 color : COLOR;
             };
+
 
             struct v2f
             {
                 float4 vertex : SV_POSITION;
-                fixed4 color : COLOR;
                 float2 uv : TEXCOORD0;
+                fixed4 color : COLOR;
             };
+
 
             sampler2D _MainTex;
             sampler2D _LightTex;
+
+            fixed4 _Color;
 
             float4 _LightUVScaleOffset;
 
             float _LayerBrightness;
             float _Ambient;
             float _LightGamma;
+            float _DebugFullBright;
 
-            v2f vert(appdata input)
+
+            v2f vert(
+                appdata input
+            )
             {
                 v2f output;
 
@@ -90,56 +101,86 @@ Shader "Game/ChunkLitSprite"
                     input.uv;
 
                 output.color =
-                    input.color;
+                    input.color *
+                    _Color;
 
                 return output;
             }
 
-            fixed4 frag(v2f input)
-                : SV_Target
+
+            fixed4 frag(
+                v2f input
+            ) : SV_Target
             {
                 fixed4 sprite =
                     tex2D(
                         _MainTex,
                         input.uv
-                    );
-
-                sprite *=
+                    ) *
                     input.color;
 
-                float2 lightUV;
 
-                lightUV.x =
-                    input.uv.x *
-                    _LightUVScaleOffset.x +
-                    _LightUVScaleOffset.z;
+                float2 lightUV =
+                    input.uv *
+                    _LightUVScaleOffset.xy +
+                    _LightUVScaleOffset.zw;
 
-                lightUV.y =
-                    input.uv.y *
-                    _LightUVScaleOffset.y +
-                    _LightUVScaleOffset.w;
 
-                fixed3 lightColor =
+                float3 light =
                     tex2D(
                         _LightTex,
                         lightUV
                     ).rgb;
 
-                lightColor =
-                    max(
-                        lightColor,
-                        _Ambient
+
+                // Smooth low-light curve.
+                light =
+                    pow(
+                        saturate(
+                            light
+                        ),
+                        max(
+                            _LightGamma,
+                            0.01
+                        )
                     );
 
-                lightColor =
-                    pow(
-                        saturate(lightColor),
-                        _LightGamma
+
+                light =
+                    max(
+                        light,
+                        _Ambient.xxx
                     );
+
+
+                light *=
+                    _LayerBrightness;
+
+
+                // Debug mode.
+                //
+                // No lighting rebuild is needed.
+                // One global shader float makes all loaded and
+                // future chunks immediately full-bright.
+                light =
+                    lerp(
+                        light,
+                        float3(
+                            1.0,
+                            1.0,
+                            1.0
+                        ),
+                        saturate(
+                            _DebugFullBright
+                        )
+                    );
+
 
                 sprite.rgb *=
-                    lightColor *
-                    _LayerBrightness;
+                    saturate(
+                        light
+                    );
+
 
                 return sprite;
             }
@@ -147,4 +188,6 @@ Shader "Game/ChunkLitSprite"
             ENDCG
         }
     }
+
+    Fallback "Sprites/Default"
 }

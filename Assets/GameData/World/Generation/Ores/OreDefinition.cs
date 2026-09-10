@@ -58,7 +58,8 @@ namespace Game.World.Generation.Ores
         // Максимальный размер жилы.
         public int VeinSize;
 
-
+        // Биомы в которых генерируется руда
+        public string[] Biomes;
         public OreDefinition()
         {
 

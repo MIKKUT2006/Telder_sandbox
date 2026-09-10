@@ -1,0 +1,10 @@
+Сюда положи Sprite-текстуры предметов.
+
+Пример:
+Assets/GameData/Resources/ItemTextures/stone.png
+Assets/GameData/Resources/ItemTextures/crystal_stone.png
+
+Import Settings:
+Texture Type = Sprite (2D and UI)
+Filter Mode = Point
+Compression = None (желательно для пиксель-арта)

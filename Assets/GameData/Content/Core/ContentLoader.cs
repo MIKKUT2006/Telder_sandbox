@@ -83,39 +83,8 @@ namespace Game.Content
 
         private static void LoadItems()
         {
-
-            ItemRegistry.Register(
-
-                new ItemDefinition()
-                {
-
-                    ID = new ContentID(
-                        "game",
-                        "stone"
-                    ),
-
-
-                    Name = "Stone",
-
-
-                    Texture = "stone",
-
-
-                    Type = ItemType.Block,
-
-
-                    MaxStack = 999
-
-                }
-
-            );
-
-
+            ItemFolderLoader.LoadDefaultFolder();
         }
-
-
-
-
 
         private static void LoadFluids()
         {

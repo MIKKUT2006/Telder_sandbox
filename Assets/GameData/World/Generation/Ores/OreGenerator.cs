@@ -1,4 +1,5 @@
 using Game.Content;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,9 +9,14 @@ namespace Game.World.Generation.Ores
     {
         private readonly WorldSettings settings;
 
+
         private readonly List<OreData> ores =
             new List<OreData>();
 
+
+        // =====================================================
+        // CONSTRUCTOR
+        // =====================================================
 
         public OreGenerator(
             WorldSettings settings
@@ -64,6 +70,10 @@ namespace Game.World.Generation.Ores
                 }
 
 
+                // =================================================
+                // BLOCK
+                // =================================================
+
                 ContentID contentID =
                     ContentID.Parse(
                         definition.ID
@@ -90,6 +100,20 @@ namespace Game.World.Generation.Ores
                         contentID
                     );
 
+
+                // =================================================
+                // BIOMES
+                // =================================================
+
+                string[] biomes =
+                    NormalizeBiomes(
+                        definition.Biomes
+                    );
+
+
+                // =================================================
+                // DATA
+                // =================================================
 
                 OreData data =
                     new OreData
@@ -127,12 +151,33 @@ namespace Game.World.Generation.Ores
                             Mathf.Max(
                                 definition.VeinSize,
                                 definition.MinVeinSize
-                            )
+                            ),
+
+                        Biomes =
+                            biomes
                     };
 
 
                 ores.Add(
                     data
+                );
+
+
+                // =================================================
+                // DEBUG
+                // =================================================
+
+                Debug.Log(
+                    "ORE REGISTERED: " +
+                    data.ID +
+                    " | DEPTH: " +
+                    data.MinDepth +
+                    "-" +
+                    data.MaxDepth +
+                    " | BIOMES: " +
+                    GetBiomeDebugString(
+                        data.Biomes
+                    )
                 );
             }
 
@@ -151,7 +196,8 @@ namespace Game.World.Generation.Ores
         public ushort GetOre(
             int worldX,
             int worldY,
-            int surfaceHeight
+            int surfaceHeight,
+            string biomeID
         )
         {
             if (
@@ -168,6 +214,10 @@ namespace Game.World.Generation.Ores
                 worldY;
 
 
+            // =================================================
+            // ABOVE SURFACE
+            // =================================================
+
             if (
                 depth <=
                 0
@@ -176,6 +226,10 @@ namespace Game.World.Generation.Ores
                 return 0;
             }
 
+
+            // =================================================
+            // CHECK ORES
+            // =================================================
 
             for (
                 int i = 0;
@@ -186,6 +240,10 @@ namespace Game.World.Generation.Ores
                 OreData ore =
                     ores[i];
 
+
+                // =================================================
+                // DEPTH
+                // =================================================
 
                 if (
                     depth <
@@ -205,6 +263,25 @@ namespace Game.World.Generation.Ores
                 }
 
 
+                // =================================================
+                // BIOME
+                // =================================================
+
+                if (
+                    !CanGenerateInBiome(
+                        ore,
+                        biomeID
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                // =================================================
+                // VEIN
+                // =================================================
+
                 if (
                     IsOrePosition(
                         worldX,
@@ -219,6 +296,236 @@ namespace Game.World.Generation.Ores
 
 
             return 0;
+        }
+
+
+        // =====================================================
+        // OLD API
+        // =====================================================
+
+        public ushort GetOre(
+            int worldX,
+            int worldY,
+            int surfaceHeight
+        )
+        {
+            // -------------------------------------------------
+            // Оставлено, чтобы старый WorldGenerator
+            // продолжал компилироваться.
+            //
+            // Но руда, у которой задан список Biomes,
+            // через этот метод НЕ появится.
+            //
+            // Для новой системы нужно передавать biomeID.
+            // -------------------------------------------------
+
+            return GetOre(
+                worldX,
+                worldY,
+                surfaceHeight,
+                null
+            );
+        }
+
+
+        // =====================================================
+        // BIOME CHECK
+        // =====================================================
+
+        private bool CanGenerateInBiome(
+            OreData ore,
+            string biomeID
+        )
+        {
+            if (
+                ore ==
+                null
+            )
+            {
+                return false;
+            }
+
+
+            // -------------------------------------------------
+            // Нет ограничения по биомам.
+            //
+            // Старые JSON без Biomes продолжают работать.
+            // -------------------------------------------------
+
+            if (
+                ore.Biomes ==
+                null ||
+                ore.Biomes.Length ==
+                0
+            )
+            {
+                return true;
+            }
+
+
+            // -------------------------------------------------
+            // Если руда ограничена биомами,
+            // но нам не сообщили текущий биом,
+            // генерировать её нельзя.
+            // -------------------------------------------------
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    biomeID
+                )
+            )
+            {
+                return false;
+            }
+
+
+            for (
+                int i = 0;
+                i < ore.Biomes.Length;
+                i++
+            )
+            {
+                string allowedBiome =
+                    ore.Biomes[i];
+
+
+                if (
+                    string.IsNullOrWhiteSpace(
+                        allowedBiome
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                // =============================================
+                // ALL BIOMES
+                // =============================================
+
+                if (
+                    allowedBiome ==
+                    "*"
+                )
+                {
+                    return true;
+                }
+
+
+                // =============================================
+                // EXACT BIOME
+                // =============================================
+
+                if (
+                    string.Equals(
+                        allowedBiome,
+                        biomeID,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                {
+                    return true;
+                }
+            }
+
+
+            return false;
+        }
+
+
+        // =====================================================
+        // NORMALIZE BIOMES
+        // =====================================================
+
+        private string[] NormalizeBiomes(
+            string[] source
+        )
+        {
+            if (
+                source ==
+                null ||
+                source.Length ==
+                0
+            )
+            {
+                return Array.Empty<string>();
+            }
+
+
+            List<string> result =
+                new List<string>();
+
+
+            HashSet<string> added =
+                new HashSet<string>(
+                    StringComparer.OrdinalIgnoreCase
+                );
+
+
+            for (
+                int i = 0;
+                i < source.Length;
+                i++
+            )
+            {
+                string biome =
+                    source[i];
+
+
+                if (
+                    string.IsNullOrWhiteSpace(
+                        biome
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                biome =
+                    biome.Trim();
+
+
+                if (
+                    added.Add(
+                        biome
+                    )
+                )
+                {
+                    result.Add(
+                        biome
+                    );
+                }
+            }
+
+
+            return result.ToArray();
+        }
+
+
+        // =====================================================
+        // DEBUG BIOMES
+        // =====================================================
+
+        private string GetBiomeDebugString(
+            string[] biomes
+        )
+        {
+            if (
+                biomes ==
+                null ||
+                biomes.Length ==
+                0
+            )
+            {
+                return "ALL";
+            }
+
+
+            return string.Join(
+                ", ",
+                biomes
+            );
         }
 
 
@@ -253,6 +560,10 @@ namespace Game.World.Generation.Ores
                 );
 
 
+            // =================================================
+            // NEIGHBOUR CELLS
+            // =================================================
+
             for (
                 int offsetX = -1;
                 offsetX <= 1;
@@ -275,6 +586,10 @@ namespace Game.World.Generation.Ores
                         offsetY;
 
 
+                    // =========================================
+                    // SPAWN CHANCE
+                    // =========================================
+
                     float spawnChance =
                         Hash01(
                             currentCellX,
@@ -292,6 +607,10 @@ namespace Game.World.Generation.Ores
                     }
 
 
+                    // =========================================
+                    // CENTER X
+                    // =========================================
+
                     int centerX =
                         currentCellX *
                         cellSize +
@@ -307,6 +626,10 @@ namespace Game.World.Generation.Ores
                             cellSize
                         );
 
+
+                    // =========================================
+                    // CENTER Y
+                    // =========================================
 
                     int centerY =
                         currentCellY *
@@ -324,20 +647,37 @@ namespace Game.World.Generation.Ores
                         );
 
 
+                    // =========================================
+                    // VEIN SIZE
+                    // =========================================
+
                     int veinSize =
-                        (int)Mathf.Lerp(
-                            ore.MinVeinSize,
+                        Mathf.RoundToInt(
+                            Mathf.Lerp(
+                                ore.MinVeinSize,
+                                ore.MaxVeinSize,
 
-                            ore.MaxVeinSize,
-
-                            Hash01(
-                                currentCellX,
-                                currentCellY,
-                                ore.ID +
-                                "_SIZE"
+                                Hash01(
+                                    currentCellX,
+                                    currentCellY,
+                                    ore.ID +
+                                    "_SIZE"
+                                )
                             )
                         );
 
+
+                    veinSize =
+                        Mathf.Clamp(
+                            veinSize,
+                            ore.MinVeinSize,
+                            ore.MaxVeinSize
+                        );
+
+
+                    // =========================================
+                    // DISTANCE
+                    // =========================================
 
                     float dx =
                         worldX -
@@ -364,6 +704,10 @@ namespace Game.World.Generation.Ores
                         continue;
                     }
 
+
+                    // =========================================
+                    // IRREGULAR SHAPE
+                    // =========================================
 
                     float shape =
                         0.75f +
@@ -492,9 +836,9 @@ namespace Game.World.Generation.Ores
     }
 
 
-    // =====================================================
+    // =========================================================
     // ORE DATA
-    // =====================================================
+    // =========================================================
 
     public class OreData
     {
@@ -502,14 +846,31 @@ namespace Game.World.Generation.Ores
 
         public ushort BlockID;
 
+
+        // =====================================================
+        // DEPTH
+        // =====================================================
+
         public int MinDepth;
 
         public int MaxDepth;
+
+
+        // =====================================================
+        // GENERATION
+        // =====================================================
 
         public float Rarity;
 
         public int MinVeinSize;
 
         public int MaxVeinSize;
+
+
+        // =====================================================
+        // BIOMES
+        // =====================================================
+
+        public string[] Biomes;
     }
 }

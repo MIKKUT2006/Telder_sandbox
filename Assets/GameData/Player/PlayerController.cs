@@ -413,5 +413,13 @@ public class PlayerController :
             verticalVelocity;
 
     }
+    // =====================================================
+    // GET HORIZONTAL INPUT
+    // =====================================================
+
+    public float GetHorizontalInput()
+    {
+        return horizontalInput;
+    }
 
 }

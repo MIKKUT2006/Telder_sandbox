@@ -1,8 +1,13 @@
-﻿using Game.World;
-using System;
+using Game.Blocks;
+using Game.Content;
+using Game.Inventory;
+using Game.Inventory.UI;
+using Game.Items;
+using Game.World;
+using Game.World.Collision;
+using Game.World.Items;
+
 using UnityEngine;
-using UnityEngine.LightTransport;
-using UnityEngine.UIElements;
 
 
 public class BlockInteraction :
@@ -18,11 +23,6 @@ public class BlockInteraction :
     [SerializeField]
     private float interactionDistance =
         6f;
-
-
-    [SerializeField]
-    private ushort placeBlockID =
-        1;
 
 
     [Header("Break")]
@@ -47,6 +47,16 @@ public class BlockInteraction :
 
     [SerializeField]
     private Camera playerCamera;
+
+
+    // =====================================================
+    // INVENTORY
+    // =====================================================
+
+    [Header("Inventory")]
+
+    [SerializeField]
+    private PlayerInventory playerInventory;
 
 
     // =====================================================
@@ -152,6 +162,30 @@ public class BlockInteraction :
 
 
         // =================================================
+        // PLAYER INVENTORY
+        // =================================================
+
+        if (
+            playerInventory == null
+        )
+        {
+            playerInventory =
+                GetComponent<PlayerInventory>();
+        }
+
+
+        if (
+            playerInventory == null
+        )
+        {
+            Debug.LogWarning(
+                "BLOCK INTERACTION: PlayerInventory not found. " +
+                "Breaking will work, but placing from hotbar will not."
+            );
+        }
+
+
+        // =================================================
         // STATE
         // =================================================
 
@@ -189,10 +223,32 @@ public class BlockInteraction :
 
 
         // =================================================
+        // INVENTORY OPEN
+        // =================================================
+        //
+        // Не ломаем и не ставим блоки через UI.
+        //
+
+        if (
+            InventoryUI.Instance != null &&
+            InventoryUI.Instance.IsOpen
+        )
+        {
+            nextBreakTime =
+                0f;
+
+            nextPlaceTime =
+                0f;
+
+            return;
+        }
+
+
+        // =================================================
         // BREAK
         // =================================================
         //
-        // Теперь можно держать ЛКМ.
+        // ЛКМ можно держать.
         //
 
         if (
@@ -229,7 +285,7 @@ public class BlockInteraction :
         // PLACE
         // =================================================
         //
-        // Теперь можно держать ПКМ.
+        // ПКМ можно держать.
         //
 
         if (
@@ -297,7 +353,10 @@ public class BlockInteraction :
         // FOREGROUND
         // =================================================
         //
-        // Сначала всегда ломаем foreground.
+        // Всегда сначала ломаем foreground.
+        //
+        // ВАЖНО:
+        // definition получаем ДО SetBlock(..., 0).
         //
 
         ushort foregroundID =
@@ -312,6 +371,12 @@ public class BlockInteraction :
         )
         {
 
+            BlockDefinition foregroundDefinition =
+                world.GetBlockDefinition(
+                    foregroundID
+                );
+
+
             bool changed =
                 worldManager.SetBlock(
                     x,
@@ -321,14 +386,24 @@ public class BlockInteraction :
 
 
             if (
-                changed
+                !changed
             )
             {
-                ForcePlayerCollisionUpdate();
+                return false;
             }
 
 
-            return changed;
+            ForcePlayerCollisionUpdate();
+
+
+            SpawnBlockDrop(
+                foregroundDefinition,
+                x,
+                y
+            );
+
+
+            return true;
 
         }
 
@@ -337,8 +412,10 @@ public class BlockInteraction :
         // BACKGROUND
         // =================================================
         //
-        // Если foreground уже пуст,
+        // Если foreground пустой,
         // ломаем background.
+        //
+        // Definition тоже сохраняем ДО удаления.
         //
 
         ushort backgroundID =
@@ -356,6 +433,12 @@ public class BlockInteraction :
         }
 
 
+        BlockDefinition backgroundDefinition =
+            world.GetBlockDefinition(
+                backgroundID
+            );
+
+
         bool backgroundChanged =
             worldManager.SetBackground(
                 x,
@@ -364,8 +447,122 @@ public class BlockInteraction :
             );
 
 
-        return backgroundChanged;
+        if (
+            !backgroundChanged
+        )
+        {
+            return false;
+        }
 
+
+        SpawnBlockDrop(
+            backgroundDefinition,
+            x,
+            y
+        );
+
+
+        return true;
+
+    }
+
+
+    // =====================================================
+    // SPAWN BLOCK DROP
+    // =====================================================
+
+    private void SpawnBlockDrop(
+    BlockDefinition definition,
+    int x,
+    int y
+)
+    {
+        if (definition == null)
+        {
+            Debug.LogError(
+                "DROP DEBUG: BlockDefinition is NULL."
+            );
+
+            return;
+        }
+
+
+        Debug.Log(
+            "DROP DEBUG: Block = " +
+            definition.ID +
+            " Drop = " +
+            definition.Drop +
+            " Count = " +
+            definition.DropCount
+        );
+
+
+        if (definition.DropCount <= 0)
+        {
+            Debug.LogWarning(
+                "DROP DEBUG: DropCount <= 0"
+            );
+
+            return;
+        }
+
+
+        string dropID =
+            definition.Drop.ToString();
+
+
+        Debug.Log(
+            "DROP DEBUG: Drop string = " +
+            dropID
+        );
+
+
+        if (!ItemRegistry.TryGet(
+                dropID,
+                out ItemDefinition itemDefinition
+            ))
+        {
+            Debug.LogError(
+                "DROP DEBUG: ITEM NOT FOUND IN ItemRegistry: " +
+                dropID
+            );
+
+            return;
+        }
+
+
+        Debug.Log(
+            "DROP DEBUG: Item found: " +
+            itemDefinition.Name
+        );
+
+
+        if (ItemDropSpawner.Instance == null)
+        {
+            Debug.LogError(
+                "DROP DEBUG: ItemDropSpawner.Instance IS NULL."
+            );
+
+            return;
+        }
+
+
+        bool spawned =
+            ItemDropSpawner.Instance
+                .SpawnFromBlock(
+                    dropID,
+                    definition.DropCount,
+                    new Vector2(
+                        x + 0.5f,
+                        y + 0.5f
+                    )
+                );
+
+
+        Debug.Log(
+            "DROP DEBUG: Spawn result = " +
+            spawned
+        );
     }
 
 
@@ -375,6 +572,32 @@ public class BlockInteraction :
 
     private bool PlaceBlock()
     {
+
+        // =================================================
+        // INVENTORY
+        // =================================================
+
+        if (
+            playerInventory == null
+        )
+        {
+            return false;
+        }
+
+
+        // =================================================
+        // SELECTED HOTBAR ITEM -> BLOCK ID
+        // =================================================
+
+        if (
+            !TryGetSelectedBlockID(
+                out ushort selectedBlockID
+            )
+        )
+        {
+            return false;
+        }
+
 
         // =================================================
         // GET CELL UNDER MOUSE
@@ -432,11 +655,11 @@ public class BlockInteraction :
 
 
         // =================================================
-        // BACKGROUND
+        // BACKGROUND EXISTS
         // =================================================
         //
-        // Если background существует,
-        // foreground можно поставить прямо поверх него.
+        // Если background есть,
+        // foreground разрешено поставить поверх него.
         //
 
         ushort backgroundID =
@@ -450,14 +673,11 @@ public class BlockInteraction :
             backgroundID != 0
         )
         {
-
-            return
-                worldManager.SetBlock(
-                    x,
-                    y,
-                    placeBlockID
-                );
-
+            return TryPlaceSelectedBlock(
+                x,
+                y,
+                selectedBlockID
+            );
         }
 
 
@@ -465,8 +685,11 @@ public class BlockInteraction :
         // NO BACKGROUND
         // =================================================
         //
-        // В полностью пустой клетке можно строить,
-        // если есть хотя бы один соседний foreground.
+        // Если background отсутствует,
+        // разрешаем строительство при наличии
+        // хотя бы одного соседнего foreground-блока.
+        //
+        // Благодаря этому можно строить столбы в небо.
         //
 
         if (
@@ -480,16 +703,234 @@ public class BlockInteraction :
         }
 
 
+        return TryPlaceSelectedBlock(
+            x,
+            y,
+            selectedBlockID
+        );
+
+    }
+
+
+    // =====================================================
+    // GET SELECTED BLOCK ID
+    // =====================================================
+
+    private bool TryGetSelectedBlockID(
+        out ushort blockID
+    )
+    {
+
+        blockID =
+            0;
+
+
+        if (
+            playerInventory == null
+        )
+        {
+            return false;
+        }
+
+
+        string selectedItemID =
+            playerInventory
+                .GetSelectedItemId();
+
+
+        if (
+            string.IsNullOrWhiteSpace(
+                selectedItemID
+            )
+        )
+        {
+            return false;
+        }
+
+
         // =================================================
-        // PLACE
+        // STRING -> CONTENT ID
         // =================================================
 
+        ContentID contentID;
+
+
+        try
+        {
+            contentID =
+                ContentID.Parse(
+                    selectedItemID
+                );
+        }
+        catch
+        {
+            Debug.LogWarning(
+                "BLOCK INTERACTION: Invalid selected item ID: " +
+                selectedItemID
+            );
+
+            return false;
+        }
+
+
+        // =================================================
+        // ITEM MUST EXIST
+        // =================================================
+
+        if (
+            !ItemRegistry.TryGet(
+                selectedItemID,
+                out ItemDefinition itemDefinition
+            )
+        )
+        {
+            Debug.LogWarning(
+                "BLOCK INTERACTION: Selected item is not registered: " +
+                selectedItemID
+            );
+
+            return false;
+        }
+
+
+        // =================================================
+        // ITEM MUST BE A BLOCK
+        // =================================================
+
+        if (
+            itemDefinition.Type !=
+            ItemType.Block
+        )
+        {
+            return false;
+        }
+
+
+        // =================================================
+        // BLOCK MUST EXIST
+        // =================================================
+
+        if (
+            !BlockRegistry.Contains(
+                contentID
+            )
+        )
+        {
+            Debug.LogWarning(
+                "BLOCK INTERACTION: No block definition for item: " +
+                selectedItemID
+            );
+
+            return false;
+        }
+
+
+        if (
+            !BlockIDRegistry.Contains(
+                contentID
+            )
+        )
+        {
+            Debug.LogWarning(
+                "BLOCK INTERACTION: No numeric block ID for item: " +
+                selectedItemID
+            );
+
+            return false;
+        }
+
+
+        blockID =
+            BlockIDRegistry.GetID(
+                contentID
+            );
+
+
         return
+            blockID != 0;
+
+    }
+
+
+    // =====================================================
+    // PLACE SELECTED BLOCK
+    // =====================================================
+
+    private bool TryPlaceSelectedBlock(
+        int x,
+        int y,
+        ushort blockID
+    )
+    {
+
+        if (
+            blockID == 0
+        )
+        {
+            return false;
+        }
+
+
+        bool changed =
             worldManager.SetBlock(
                 x,
                 y,
-                placeBlockID
+                blockID
             );
+
+
+        if (
+            !changed
+        )
+        {
+            return false;
+        }
+
+
+        // =================================================
+        // CONSUME ONLY AFTER SUCCESSFUL PLACEMENT
+        // =================================================
+
+        bool consumed =
+            playerInventory
+                .TryConsumeSelected(
+                    1
+                );
+
+
+        if (
+            !consumed
+        )
+        {
+            // Теоретически сюда попадать не должны,
+            // потому что до SetBlock уже был выбран
+            // существующий предмет.
+            //
+            // Но чтобы нельзя было получить бесплатный
+            // блок при неожиданном рассинхроне,
+            // откатываем установку.
+
+            worldManager.SetBlock(
+                x,
+                y,
+                0
+            );
+
+
+            Debug.LogWarning(
+                "BLOCK INTERACTION: Failed to consume selected item. " +
+                "Placed block was rolled back."
+            );
+
+
+            return false;
+        }
+
+
+        ForcePlayerCollisionUpdate();
+
+
+        return true;
 
     }
 
@@ -498,10 +939,8 @@ public class BlockInteraction :
     // GET MOUSE CELL
     // =====================================================
     //
-    // Получает именно клетку под курсором.
-    //
-    // Никакого поиска ближайшего блока.
-    // Никаких границ.
+    // Получаем ИМЕННО пустую/занятую клетку,
+    // на которую указывает мышь.
     //
     // =====================================================
 
@@ -523,17 +962,9 @@ public class BlockInteraction :
         }
 
 
-        // =================================================
-        // MOUSE -> WORLD
-        // =================================================
-
         Vector2 mouseWorld =
             GetMouseWorldPosition();
 
-
-        // =================================================
-        // WORLD -> CELL
-        // =================================================
 
         int x =
             Mathf.FloorToInt(
@@ -555,11 +986,8 @@ public class BlockInteraction :
 
 
         // =================================================
-        // DISTANCE
+        // DISTANCE TO CELL CENTER
         // =================================================
-        //
-        // Проверяем расстояние до центра клетки.
-        //
 
         Vector2 cellCenter =
             new Vector2(
@@ -569,10 +997,7 @@ public class BlockInteraction :
 
 
         Vector2 playerPosition =
-            new Vector2(
-                transform.position.x,
-                transform.position.y
-            );
+            transform.position;
 
 
         float distance =
@@ -637,10 +1062,6 @@ public class BlockInteraction :
     )
     {
 
-        // =================================================
-        // LEFT
-        // =================================================
-
         if (
             world.GetBlock(
                 x - 1,
@@ -651,10 +1072,6 @@ public class BlockInteraction :
             return true;
         }
 
-
-        // =================================================
-        // RIGHT
-        // =================================================
 
         if (
             world.GetBlock(
@@ -667,10 +1084,6 @@ public class BlockInteraction :
         }
 
 
-        // =================================================
-        // BELOW
-        // =================================================
-
         if (
             world.GetBlock(
                 x,
@@ -681,10 +1094,6 @@ public class BlockInteraction :
             return true;
         }
 
-
-        // =================================================
-        // ABOVE
-        // =================================================
 
         if (
             world.GetBlock(

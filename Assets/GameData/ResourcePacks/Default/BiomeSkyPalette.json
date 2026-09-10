@@ -1,0 +1,37 @@
+{
+  "FallbackTop": "#171A2B",
+  "FallbackBottom": "#05060B",
+  "TransitionSpeed": 5.0,
+  "Biomes": [
+    {
+      "Biome": "Forest",
+      "Top": "#577C9A",
+      "Bottom": "#A4B9A1"
+    },
+    {
+      "Biome": "Plains",
+      "Top": "#6595BC",
+      "Bottom": "#B8CBA7"
+    },
+    {
+      "Biome": "Desert",
+      "Top": "#9A705A",
+      "Bottom": "#D6B77D"
+    },
+    {
+      "Biome": "Snow",
+      "Top": "#526B82",
+      "Bottom": "#BECED9"
+    },
+    {
+      "Biome": "Mountains",
+      "Top": "#394B63",
+      "Bottom": "#84919D"
+    },
+    {
+      "Biome": "Crystal",
+      "Top": "#32134F",
+      "Bottom": "#8B45D1"
+    }
+  ]
+}

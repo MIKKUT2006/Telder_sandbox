@@ -1,0 +1,12 @@
+{
+  "ID": "game:crystal_ore",
+  "MinDepth": 30,
+  "MaxDepth": 150,
+  "Rarity": 0.40,
+  "VeinSize": 4,
+  "MinVeinSize": 1,
+
+  "Biomes": [
+    "game:crystal_plains"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "ID": "game:crystal_ore",
+  "Name": "Crystal Ore",
+  "Texture": "crystal_ore",
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+  "LightLevel": 0,
+  "Material": 0,
+  "Drop": "game:crystal_ore",
+  "DropCount": 1,
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+  "Tags": [
+    "crystal_ore",
+    "ore"
+  ],
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0
+}

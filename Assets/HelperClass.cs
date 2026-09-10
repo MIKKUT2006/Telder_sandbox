@@ -1,5 +1,4 @@
-﻿using MySql.Data.MySqlClient;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,13 +10,6 @@ using UnityEngine.UI;
 
 public class HelperClass : MonoBehaviour
 {
-    // Подключение к бд
-    [SerializeField] public static MySqlConnection mySqlConnection
-        = new MySqlConnection("Database=sql8750060; Data Source = sql8.freemysqlhosting.net; " +
-        "User Id=sql8750060; Password=tzZf4N113d; port=3306; charset=utf8");
-
-    public const string url = "https://saoxywsrefjufpncyivz.supabase.co";
-    public const string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNhb3h5d3NyZWZqdWZwbmN5aXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI1NDc3MDMsImV4cCI6MjA0ODEyMzcwM30.Qin9g5rC-SgOg3xdyF4yP9344t54uMBc0HQlUZxInJg";
 
 
     [SerializeField] public static string login = null;

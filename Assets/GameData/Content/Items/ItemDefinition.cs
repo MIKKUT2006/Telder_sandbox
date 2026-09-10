@@ -1,49 +1,20 @@
 using System;
-using System.Collections.Generic;
 using Game.Content;
-
 
 namespace Game.Items
 {
-
     [Serializable]
     public class ItemDefinition
     {
-
         public ContentID ID;
-
-
         public string Name;
-
-
         public string Texture;
-
-
-        public int MaxStack;
-
-
         public ItemType Type;
+        public int MaxStack = 100;
 
-
-        public int Durability;
-
-
-        public int Damage;
-
-
-        public List<string> Tags;
-
-
-
-        public ItemDefinition()
+        public int GetMaxStack()
         {
-
-            MaxStack = 64;
-
-            Tags = new List<string>();
-
+            return MaxStack > 0 ? MaxStack : 100;
         }
-
     }
-
 }

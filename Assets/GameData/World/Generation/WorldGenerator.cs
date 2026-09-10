@@ -297,12 +297,16 @@ namespace Game.World.Generation
 
 
         private ushort GenerateForegroundBlock(
-            int worldX,
-            int worldY,
-            int surfaceHeight,
-            BiomeRuntimeData biome
-        )
+    int worldX,
+    int worldY,
+    int surfaceHeight,
+    BiomeRuntimeData biome
+)
         {
+            // =====================================================
+            // ABOVE SURFACE
+            // =====================================================
+
             if (
                 worldY >
                 surfaceHeight
@@ -311,6 +315,10 @@ namespace Game.World.Generation
                 return 0;
             }
 
+
+            // =====================================================
+            // SURFACE
+            // =====================================================
 
             if (
                 worldY ==
@@ -327,6 +335,10 @@ namespace Game.World.Generation
                 worldY;
 
 
+            // =====================================================
+            // SOIL
+            // =====================================================
+
             if (
                 depth <=
                 biome.Definition
@@ -338,6 +350,10 @@ namespace Game.World.Generation
                     biome.SoilBlockID;
             }
 
+
+            // =====================================================
+            // CAVE
+            // =====================================================
 
             if (
                 caveQuery.IsCave(
@@ -351,33 +367,55 @@ namespace Game.World.Generation
             }
 
 
+            // =====================================================
+            // BIOME ID
+            // =====================================================
+
+            string biomeID =
+                biome.Definition.ID;
+
+
+            // =====================================================
+            // ORE
+            // =====================================================
+
             ushort ore =
                 oreGenerator.GetOre(
                     worldX,
                     worldY,
-                    surfaceHeight
+                    surfaceHeight,
+                    biomeID
                 );
 
 
-            if (ore != 0)
+            if (
+                ore != 0
+            )
             {
                 return ore;
             }
 
 
+            // =====================================================
+            // STONE
+            // =====================================================
+
             return
                 biome.StoneBlockID;
         }
 
-
         private ushort GenerateBackgroundBlock(
-            int worldX,
-            int worldY,
-            int surfaceHeight,
-            ushort foreground,
-            BiomeRuntimeData biome
-        )
+    int worldX,
+    int worldY,
+    int surfaceHeight,
+    ushort foreground,
+    BiomeRuntimeData biome
+)
         {
+            // =====================================================
+            // SURFACE / ABOVE
+            // =====================================================
+
             if (
                 worldY >=
                 surfaceHeight
@@ -392,11 +430,21 @@ namespace Game.World.Generation
                 worldY;
 
 
-            if (depth <= 2)
+            // =====================================================
+            // NO BACKGROUND NEAR SURFACE
+            // =====================================================
+
+            if (
+                depth <= 2
+            )
             {
                 return 0;
             }
 
+
+            // =====================================================
+            // FOREGROUND ORE
+            // =====================================================
 
             if (
                 IsOre(
@@ -409,6 +457,10 @@ namespace Game.World.Generation
                     biome.BackgroundBlockID;
             }
 
+
+            // =====================================================
+            // CAVE BACKGROUND
+            // =====================================================
 
             if (
                 caveQuery.IsCave(
@@ -423,6 +475,10 @@ namespace Game.World.Generation
             }
 
 
+            // =====================================================
+            // BACKGROUND ORE
+            // =====================================================
+
             if (
                 IsBackgroundOre(
                     worldX,
@@ -430,19 +486,29 @@ namespace Game.World.Generation
                 )
             )
             {
+                string biomeID =
+                    biome.Definition.ID;
+
+
+                // -------------------------------------------------
+                // Смещаем только X.
+                //
+                // Это даёт другую deterministic ore distribution,
+                // но не ломает вычисление глубины по worldY.
+                // -------------------------------------------------
+
                 ushort backgroundOre =
                     oreGenerator.GetOre(
-                        worldX +
-                        100000,
-
-                        worldY +
-                        100000,
-
-                        surfaceHeight
+                        worldX + 100000,
+                        worldY,
+                        surfaceHeight,
+                        biomeID
                     );
 
 
-                if (backgroundOre != 0)
+                if (
+                    backgroundOre != 0
+                )
                 {
                     return
                         backgroundOre;
@@ -450,10 +516,13 @@ namespace Game.World.Generation
             }
 
 
+            // =====================================================
+            // NORMAL BACKGROUND
+            // =====================================================
+
             return
                 biome.BackgroundBlockID;
         }
-
 
         private bool IsOre(
             ushort blockID,
