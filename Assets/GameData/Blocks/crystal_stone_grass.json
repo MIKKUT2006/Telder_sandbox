@@ -9,7 +9,7 @@
   "BlocksLight": true,
   "LightLevel": 0,
   "Material": 0,
-  "Drop": "game:crystal_stone_grass",
+  "Drop": "game:crystal_stone",
   "DropCount": 1,
   "PlaceSound": "",
   "BreakSound": "",

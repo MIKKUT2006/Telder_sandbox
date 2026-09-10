@@ -1090,6 +1090,114 @@ namespace Game.Inventory
         }
 
 
+
+        // =====================================================
+        // RESTORE FROM SAVE
+        // =====================================================
+
+        public void RestoreFromSave(
+            string[] itemIds,
+            int[] counts,
+            int selectedIndex
+        )
+        {
+
+            for (
+                int i = 0;
+                i < slots.Length;
+                i++
+            )
+            {
+
+                slots[i].Clear();
+
+            }
+
+
+            if (
+                itemIds != null
+                &&
+                counts != null
+            )
+            {
+
+                int length =
+                    Mathf.Min(
+                        slots.Length,
+                        Mathf.Min(
+                            itemIds.Length,
+                            counts.Length
+                        )
+                    );
+
+
+                for (
+                    int i = 0;
+                    i < length;
+                    i++
+                )
+                {
+
+                    if (
+                        string.IsNullOrWhiteSpace(
+                            itemIds[i]
+                        )
+                        ||
+                        counts[i] <= 0
+                    )
+                    {
+
+                        continue;
+
+                    }
+
+
+                    if (
+                        !ItemRegistry.TryGet(
+                            itemIds[i],
+                            out ItemDefinition item
+                        )
+                    )
+                    {
+
+                        continue;
+
+                    }
+
+
+                    int maxStack =
+                        Mathf.Max(
+                            1,
+                            item.GetMaxStack()
+                        );
+
+
+                    slots[i].Set(
+                        itemIds[i],
+                        Mathf.Min(
+                            counts[i],
+                            maxStack
+                        )
+                    );
+
+                }
+
+            }
+
+
+            selectedHotbarIndex =
+                Mathf.Clamp(
+                    selectedIndex,
+                    0,
+                    HotbarSize - 1
+                );
+
+
+            NotifyChanged();
+
+        }
+
+
         // =====================================================
         // HELPERS
         // =====================================================

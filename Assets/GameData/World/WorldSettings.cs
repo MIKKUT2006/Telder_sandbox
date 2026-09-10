@@ -1,13 +1,11 @@
-using System;
+using Game.Save;
+using Game.World.Dimensions;
+
 
 namespace Game.World
 {
     public class WorldSettings
     {
-        // =====================================================
-        // WORLD
-        // =====================================================
-
         public int Seed;
 
         public int ChunkSize;
@@ -18,10 +16,6 @@ namespace Game.World
 
         public string WorldName;
 
-
-        // =====================================================
-        // VERTICAL
-        // =====================================================
 
         public int SurfaceHeight;
 
@@ -37,16 +31,8 @@ namespace Game.World
         }
 
 
-        // =====================================================
-        // TERRAIN
-        // =====================================================
-
-        // Базовая высота поверхности.
         public int BaseSurfaceHeight;
 
-        // =====================================================
-        // SOIL
-        // =====================================================
 
         public float SoilDepthScale;
 
@@ -58,81 +44,43 @@ namespace Game.World
 
         public float SoilDepthDetailStrength;
 
-        // =====================================================
-        // LARGE LANDSCAPE
-        // =====================================================
 
-        // Очень крупные изменения высоты.
         public float LargeTerrainScale;
 
         public int LargeTerrainHeight;
 
 
-        // =====================================================
-        // HILLS
-        // =====================================================
-
-        // Обычные холмы.
         public float HillScale;
 
         public int HillHeight;
 
 
-        // =====================================================
-        // MOUNTAINS
-        // =====================================================
-
-        // Частота расположения гор.
         public float MountainScale;
 
-        // Максимальная высота гор.
         public int MountainHeight;
 
-        // Детализация гор.
         public float MountainDetailScale;
 
         public int MountainDetailHeight;
 
 
-        // =====================================================
-        // MOUNTAIN SHAPE
-        // =====================================================
-
-        // Чем выше значение, тем реже горы.
         public float MountainThreshold;
 
-        // Насколько мягко начинается гора.
         public float MountainTransition;
 
-
-        // =====================================================
-        // SURFACE DETAIL
-        // =====================================================
 
         public float SurfaceDetailScale;
 
         public int SurfaceDetailHeight;
 
 
-        // =====================================================
-        // CAVES
-        // =====================================================
-
         public int CaveMinDepth;
 
         public int CaveMaxDepth;
 
 
-        // =====================================================
-        // CONSTRUCTOR
-        // =====================================================
-
         public WorldSettings()
         {
-            // -------------------------------------------------
-            // WORLD
-            // -------------------------------------------------
-
             ChunkSize =
                 32;
 
@@ -142,16 +90,28 @@ namespace Game.World
             WorldHeight =
                 256;
 
-            WorldName =
-                "New World";
+
+            DimensionDefinition dimension =
+                DimensionTravelRuntime.Current;
+
 
             Seed =
-                new Random().Next();
+                dimension != null
+                    ? dimension.Seed
+                    : 0;
 
 
-            // -------------------------------------------------
-            // BASE SURFACE
-            // -------------------------------------------------
+            WorldName =
+                !string.IsNullOrWhiteSpace(
+                    SaveGameRuntime.CurrentSaveName
+                )
+                    ? SaveGameRuntime.CurrentSaveName
+                    : (
+                        dimension != null
+                            ? dimension.Name
+                            : "New World"
+                    );
+
 
             SurfaceHeight =
                 100;
@@ -160,7 +120,8 @@ namespace Game.World
                 100;
 
 
-            SoilDepthScale = 0.012f;
+            SoilDepthScale =
+                0.012f;
 
             SoilDepthBase =
                 8f;
@@ -174,9 +135,6 @@ namespace Game.World
             SoilDepthDetailStrength =
                 1.5f;
 
-            // -------------------------------------------------
-            // LARGE LANDSCAPE
-            // -------------------------------------------------
 
             LargeTerrainScale =
                 0.0018f;
@@ -185,20 +143,12 @@ namespace Game.World
                 32;
 
 
-            // -------------------------------------------------
-            // HILLS
-            // -------------------------------------------------
-
             HillScale =
                 0.0065f;
 
             HillHeight =
                 10;
 
-
-            // -------------------------------------------------
-            // MOUNTAINS
-            // -------------------------------------------------
 
             MountainScale =
                 0.0028f;
@@ -213,10 +163,6 @@ namespace Game.World
                 18;
 
 
-            // -------------------------------------------------
-            // MOUNTAIN SHAPE
-            // -------------------------------------------------
-
             MountainThreshold =
                 0.57f;
 
@@ -224,20 +170,12 @@ namespace Game.World
                 0.16f;
 
 
-            // -------------------------------------------------
-            // SURFACE DETAIL
-            // -------------------------------------------------
-
             SurfaceDetailScale =
                 0.045f;
 
             SurfaceDetailHeight =
                 4;
 
-
-            // -------------------------------------------------
-            // CAVES
-            // -------------------------------------------------
 
             CaveMinDepth =
                 14;

@@ -1,0 +1,7 @@
+{
+  "ID": "game:blue_stone",
+  "Name": "Blue Stone",
+  "Texture": "blue_stone",
+  "Type": "Block",
+  "MaxStack": 100
+}

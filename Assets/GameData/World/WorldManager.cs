@@ -8,6 +8,7 @@ using Game.World.Loading;
 using Game.World.Rendering;
 using System.Collections;
 using Game.World.Effects;
+using Game.Save;
 using UnityEngine;
 
 namespace Game.World
@@ -884,7 +885,7 @@ namespace Game.World
                 );
             }
 
-
+            SaveGameRuntime.RecordForegroundChange(worldX,worldY,blockID);
             return true;
         }
 
@@ -1032,6 +1033,7 @@ namespace Game.World
                 );
             }
 
+            SaveGameRuntime.RecordBackgroundChange(worldX,worldY,blockID);
 
             return true;
         }
