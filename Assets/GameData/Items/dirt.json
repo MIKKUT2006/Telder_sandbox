@@ -1,0 +1,7 @@
+{
+  "ID": "game:dirt",
+  "Name": "Dirt",
+  "Texture": "dirt",
+  "Type": "Block",
+  "MaxStack": 100
+}

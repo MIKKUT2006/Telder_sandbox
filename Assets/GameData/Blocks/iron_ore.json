@@ -9,6 +9,7 @@
   "BlocksLight": true,
   "LightLevel": 0,
   "DropCount": 1,
+  "Drop": "game:iron_ore",
   "Tags": [],
 
   "LightOpacity": 15,

@@ -1,0 +1,7 @@
+{
+  "ID": "game:coal_ore",
+  "Name": "Coal ore",
+  "Texture": "coal_ore",
+  "Type": "Block",
+  "MaxStack": 100
+}
