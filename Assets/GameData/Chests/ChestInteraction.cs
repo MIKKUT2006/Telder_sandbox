@@ -207,6 +207,24 @@ namespace Game.Chests
                 {
 
                     if (
+                        chestManager.IsClosedChestAt(
+                            worldX,
+                            worldY
+                        )
+                    )
+                    {
+
+                        Debug.Log(
+                            "CHEST: This chest is closed."
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    if (
                         ChestUIController.Instance !=
                         null
                     )

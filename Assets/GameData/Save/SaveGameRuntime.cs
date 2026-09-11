@@ -1057,22 +1057,8 @@ namespace Game.Save
             }
 
 
-            // An empty chest does not need its own data record.
-            // The chest block itself is already persisted by
-            // the regular block-change save system.
-            if (
-                !hasItems
-            )
-            {
-                runtime.Chests.Remove(
-                    key
-                );
-
-
-                return;
-            }
-
-
+            // Keep even an empty initialized chest.
+            // Generated loot must not reroll after reload.
             runtime.Chests[
                 key
             ] =

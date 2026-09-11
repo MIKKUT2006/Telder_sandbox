@@ -6,6 +6,7 @@ using Game.Save;
 using Game.World.Collision;
 using Game.World.Generation;
 using Game.World.Rendering;
+using Game.World.Structures;
 
 
 namespace Game.World.Loading
@@ -477,6 +478,19 @@ namespace Game.World.Loading
                     continue;
 
                 }
+
+
+                // =================================================
+                // PROCEDURAL STRUCTURES
+                // =================================================
+
+                StructureGenerationRuntime.ApplyToChunk(
+                    generator,
+                    settings,
+                    data,
+                    position.x,
+                    position.y
+                );
 
 
                 // =================================================

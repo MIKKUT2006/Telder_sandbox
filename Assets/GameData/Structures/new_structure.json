@@ -1,0 +1,98 @@
+{
+    "ID": "new_structure",
+    "DisplayName": "New Structure",
+    "Width": 12,
+    "Height": 8,
+    "OriginX": 0,
+    "OriginY": 0,
+    "SpawnType": 1,
+    "SpawnChance": 1.0,
+    "RegionSize": 64,
+    "UseHeightRange": false,
+    "MinY": 10,
+    "MaxY": 90,
+    "RequireFreeSpace": true,
+    "FreeSpacePadding": 1,
+    "Biomes": [
+        "game:plains"
+    ],
+    "Cells": [
+        {
+            "X": 5,
+            "Y": 0,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 1,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 2,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 4,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 2,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 4,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 3,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 4,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 2,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        }
+    ]
+}

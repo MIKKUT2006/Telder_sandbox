@@ -8,6 +8,8 @@
   "Hardness": 1,
 
   "Solid": true,
+  "Drop": "game:stone",
+  "DropCount": 1,
 
   "LightOpacity": 15,
   "LightEmissionR": 0,

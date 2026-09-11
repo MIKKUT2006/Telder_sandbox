@@ -1,241 +1,177 @@
-using System.Collections.Generic;
 
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
+using Game.Blocks;
 using Game.Content;
 using Game.Inventory;
 using Game.Save;
 using Game.World;
+using Game.World.Dimensions;
 using Game.World.Items;
-
 
 namespace Game.Chests
 {
-
-    public class ChestManager :
-        MonoBehaviour
+    public class ChestManager : MonoBehaviour
     {
+        public static ChestManager Instance { get; private set; }
 
-        public static ChestManager Instance
-        {
-            get;
-            private set;
-        }
-
-
-        [Header("Chest Block")]
-
-        [SerializeField]
-        private string chestBlockContentId =
-            "game:chest";
-
+        [Header("Chest Tag")]
+        [SerializeField] private string chestTag = "chest";
 
         [Header("References")]
+        [SerializeField] private PlayerInventory playerInventory;
 
-        [SerializeField]
-        private PlayerInventory playerInventory;
+        private readonly Dictionary<long, ChestInventoryRuntime>
+            runtimeChests =
+                new Dictionary<long, ChestInventoryRuntime>();
 
-
-        private readonly Dictionary<
-            long,
-            ChestInventoryRuntime
-        > runtimeChests =
-            new Dictionary<
-                long,
-                ChestInventoryRuntime
-            >();
-
-
-        public string ChestBlockContentId =>
-            chestBlockContentId;
-
-
-        public PlayerInventory PlayerInventory =>
-            playerInventory;
-
+        public PlayerInventory PlayerInventory => playerInventory;
 
         private void Awake()
         {
+            Instance = this;
 
-            Instance =
-                this;
-
-
-            if (
-                playerInventory == null
-            )
-            {
-
-                playerInventory =
-                    GetComponent<
-                        PlayerInventory
-                    >();
-
-            }
-
-
+            if (playerInventory == null)
+                playerInventory = GetComponent<PlayerInventory>();
         }
-
 
         private void OnEnable()
         {
-
-            SaveGameRuntime.ForegroundCleared +=
-                HandleForegroundCleared;
-
+            SaveGameRuntime.ForegroundCleared += HandleForegroundCleared;
         }
-
 
         private void OnDisable()
         {
-
-            SaveGameRuntime.ForegroundCleared -=
-                HandleForegroundCleared;
-
+            SaveGameRuntime.ForegroundCleared -= HandleForegroundCleared;
         }
-
 
         private void OnDestroy()
         {
-
-            if (
-                Instance ==
-                this
-            )
-            {
-
-                Instance =
-                    null;
-
-            }
-
+            if (Instance == this)
+                Instance = null;
         }
 
-
-        // =====================================================
-        // BLOCK CHECK
-        // =====================================================
-
-        public bool IsChestBlock(
-            ushort blockId
-        )
+        public bool IsChestBlock(ushort blockId)
         {
+            return TryGetChestDefinition(
+                blockId,
+                out BlockDefinition _
+            );
+        }
 
-            if (
-                blockId == 0
-            )
-            {
+        public bool IsChestAt(int worldX, int worldY)
+        {
+            WorldManager manager = WorldManager.Instance;
 
+            if (manager == null || manager.GetWorld() == null)
                 return false;
 
-            }
+            ushort blockId =
+                manager.GetWorld().GetBlock(worldX, worldY);
 
+            return IsChestBlock(blockId);
+        }
+
+        public bool IsClosedChestAt(int worldX, int worldY)
+        {
+            WorldManager manager = WorldManager.Instance;
+
+            if (manager == null || manager.GetWorld() == null)
+                return false;
+
+            ushort blockId =
+                manager.GetWorld().GetBlock(worldX, worldY);
+
+            if (!TryGetChestDefinition(
+                blockId,
+                out BlockDefinition definition))
+                return false;
+
+            return definition.Closed;
+        }
+
+        public bool TryGetChestDefinition(
+            ushort blockId,
+            out BlockDefinition definition
+        )
+        {
+            definition = null;
+
+            if (blockId == 0)
+                return false;
 
             try
             {
-
                 ContentID contentId =
-                    BlockIDRegistry.GetContentID(
-                        blockId
-                    );
+                    BlockIDRegistry.GetContentID(blockId);
 
+                if (!BlockRegistry.Contains(contentId))
+                    return false;
 
-                return
-                    string.Equals(
-                        contentId.ToString(),
-                        chestBlockContentId,
-                        System.StringComparison.OrdinalIgnoreCase
-                    );
+                definition = BlockRegistry.Get(contentId);
 
+                if (definition == null || definition.Tags == null)
+                    return false;
+
+                for (int i = 0; i < definition.Tags.Count; i++)
+                {
+                    if (string.Equals(
+                        definition.Tags[i],
+                        chestTag,
+                        StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                definition = null;
+                return false;
             }
             catch
             {
-
+                definition = null;
                 return false;
-
             }
-
         }
-
-
-        public bool IsChestAt(
-            int worldX,
-            int worldY
-        )
-        {
-
-            WorldManager manager =
-                WorldManager.Instance;
-
-
-            if (
-                manager == null
-                ||
-                manager.GetWorld() == null
-            )
-            {
-
-                return false;
-
-            }
-
-
-            ushort blockId =
-                manager.GetWorld()
-                    .GetBlock(
-                        worldX,
-                        worldY
-                    );
-
-
-            return
-                IsChestBlock(
-                    blockId
-                );
-
-        }
-
-
-        // =====================================================
-        // GET RUNTIME CHEST
-        // =====================================================
 
         public ChestInventoryRuntime GetChest(
             int worldX,
             int worldY
         )
         {
+            long key = Pack(worldX, worldY);
 
-            long key =
-                Pack(
-                    worldX,
-                    worldY
-                );
-
-
-            if (
-                runtimeChests.TryGetValue(
-                    key,
-                    out ChestInventoryRuntime existing
-                )
-            )
-            {
-
+            if (runtimeChests.TryGetValue(
+                key,
+                out ChestInventoryRuntime existing))
                 return existing;
 
+            ChestSaveData saved = null;
+
+            bool hasSaved =
+                SaveGameRuntime.TryGetChestData(
+                    worldX,
+                    worldY,
+                    out saved
+                );
+
+            bool generated = false;
+
+            if (!hasSaved)
+            {
+                string dimensionName =
+                    DimensionTravelRuntime.Current != null
+                        ? DimensionTravelRuntime.Current.Name
+                        : string.Empty;
+
+                generated =
+                    GeneratedChestLootRuntime.TryBuildInitialData(
+                        dimensionName,
+                        worldX,
+                        worldY,
+                        out saved
+                    );
             }
-
-
-            ChestSaveData saved =
-                null;
-
-
-            SaveGameRuntime.TryGetChestData(
-                worldX,
-                worldY,
-                out saved
-            );
-
 
             ChestInventoryRuntime chest =
                 new ChestInventoryRuntime(
@@ -244,51 +180,28 @@ namespace Game.Chests
                     saved
                 );
 
+            chest.Changed += () => PersistChest(chest);
 
-            chest.Changed +=
-                () =>
-                {
-                    PersistChest(
-                        chest
-                    );
-                };
+            runtimeChests[key] = chest;
 
-
-            runtimeChests[
-                key
-            ] =
-                chest;
-
+            // Persist even an empty generated roll.
+            if (generated)
+                PersistChest(chest);
 
             return chest;
-
         }
-
-
-        // =====================================================
-        // PERSIST
-        // =====================================================
 
         public void PersistChest(
             ChestInventoryRuntime chest
         )
         {
-
-            if (
-                chest == null
-            )
-            {
-
+            if (chest == null)
                 return;
-
-            }
-
 
             chest.BuildSaveArrays(
                 out string[] itemIds,
                 out int[] counts
             );
-
 
             SaveGameRuntime.StoreChestData(
                 chest.WorldX,
@@ -296,192 +209,83 @@ namespace Game.Chests
                 itemIds,
                 counts
             );
-
         }
-
-
-        // =====================================================
-        // BREAK
-        // =====================================================
 
         private void HandleForegroundCleared(
             int worldX,
             int worldY
         )
         {
+            long key = Pack(worldX, worldY);
 
-            long key =
-                Pack(
-                    worldX,
-                    worldY
-                );
+            string dimensionName =
+                DimensionTravelRuntime.Current != null
+                    ? DimensionTravelRuntime.Current.Name
+                    : string.Empty;
 
-
-            bool hasRuntime =
-                runtimeChests.ContainsKey(
-                    key
-                );
-
-
+            bool hasRuntime = runtimeChests.ContainsKey(key);
             bool hasSaved =
-                SaveGameRuntime.HasChestData(
+                SaveGameRuntime.HasChestData(worldX, worldY);
+            bool hasGenerated =
+                GeneratedChestLootRuntime.Has(
+                    dimensionName,
                     worldX,
                     worldY
                 );
 
-
-            // No chest inventory at this coordinate.
-            if (
-                !hasRuntime
-                &&
-                !hasSaved
-            )
-            {
-
+            if (!hasRuntime && !hasSaved && !hasGenerated)
                 return;
 
-            }
-
-
             ChestInventoryRuntime chest =
-                GetChest(
-                    worldX,
-                    worldY
-                );
+                GetChest(worldX, worldY);
 
+            DropAllContents(chest);
 
-            DropAllContents(
-                chest
-            );
-
-
-            runtimeChests.Remove(
-                key
-            );
-
-
-            SaveGameRuntime.RemoveChestData(
-                worldX,
-                worldY
-            );
-
+            runtimeChests.Remove(key);
+            SaveGameRuntime.RemoveChestData(worldX, worldY);
         }
-
 
         private void DropAllContents(
             ChestInventoryRuntime chest
         )
         {
-
-            if (
-                chest == null
-            )
-            {
-
+            if (chest == null)
                 return;
-
-            }
-
 
             Vector2 dropPosition =
                 new Vector2(
-                    chest.WorldX +
-                    0.5f,
-                    chest.WorldY +
-                    0.75f
+                    chest.WorldX + 0.5f,
+                    chest.WorldY + 0.75f
                 );
 
-
-            for (
-                int i = 0;
-                i < ChestInventoryRuntime.SlotCount;
-                i++
-            )
+            for (int i = 0;
+                 i < ChestInventoryRuntime.SlotCount;
+                 i++)
             {
+                ItemStack stack = chest.GetSlot(i);
 
-                ItemStack stack =
-                    chest.GetSlot(
-                        i
-                    );
-
-
-                if (
-                    stack == null
-                    ||
-                    stack.IsEmpty
-                )
-                {
-
+                if (stack == null || stack.IsEmpty)
                     continue;
 
-                }
-
-
-                if (
-                    ItemDropSpawner.Instance ==
-                    null
-                )
+                if (ItemDropSpawner.Instance == null)
                 {
-
                     Debug.LogError(
-                        "CHEST: ItemDropSpawner.Instance is null. " +
-                        "Chest content cannot be dropped."
+                        "CHEST: ItemDropSpawner.Instance is null."
                     );
-
-
                     continue;
-
                 }
 
-
-                bool spawned =
-                    ItemDropSpawner.Instance
-                        .SpawnFromBlock(
-                            stack.ItemId,
-                            stack.Count,
-                            dropPosition
-                        );
-
-
-                if (
-                    !spawned
-                )
-                {
-
-                    Debug.LogWarning(
-                        "CHEST: Failed to drop " +
-                        stack.ItemId +
-                        " x" +
-                        stack.Count
-                    );
-
-                }
-
+                ItemDropSpawner.Instance.SpawnFromBlock(
+                    stack.ItemId,
+                    stack.Count,
+                    dropPosition
+                );
             }
-
         }
 
-
-        // =====================================================
-        // ID
-        // =====================================================
-
-        private static long Pack(
-            int x,
-            int y
-        )
+        private static long Pack(int x, int y)
         {
-
-            return
-                (
-                    (long)x <<
-                    32
-                )
-                ^
-                (uint)y;
-
+            return ((long)x << 32) ^ (uint)y;
         }
-
     }
-
 }

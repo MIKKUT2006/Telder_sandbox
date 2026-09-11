@@ -3,5 +3,6 @@
   "Name": "Chest",
   "Texture": "chest",
   "Type": "Block",
-  "MaxStack": 100
-}
+  "MaxStack": 100       
+}                       
+                        
