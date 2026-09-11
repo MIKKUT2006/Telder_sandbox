@@ -1,14 +1,14 @@
 {
-  "ID": "game:dirt",
+  "ID": "game:leaves",
 
-  "Name": "Dirt",
+  "Name": "Leaves",
 
-  "Texture": "dirt",
+  "Texture": "leaves",
 
   "Hardness": 1,
 
   "Solid": true,
-  "Drop": "game:dirt",
+  "Drop": "game:leaves",
   "DropCount": 1,
 
   "LightOpacity": 15,

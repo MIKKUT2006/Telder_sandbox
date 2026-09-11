@@ -1,0 +1,8 @@
+{
+  "ID": "game:small_clay_pot",
+  "Name": "Small clay pot",
+  "Texture": "small_clay_pot",
+  "Type": "Block",
+  "MaxStack": 100
+}                       
+                        

@@ -8985,7 +8985,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4d39f7ccec71ff4ab792c9797c23023, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chestBlockContentId: game:chest
+  chestTag: chest
   playerInventory: {fileID: 0}
 --- !u!114 &248244855
 MonoBehaviour:
@@ -78598,7 +78598,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa7155796051b734daa718462081dc5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_BindingMode: 1
+  m_BindingMode: 3
   m_FollowOffset: {x: 0, y: 0, z: -10}
   m_XDamping: 1
   m_YDamping: 1

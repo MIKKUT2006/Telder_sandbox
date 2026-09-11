@@ -1,13 +1,13 @@
 {
     "ID": "new_structure",
     "DisplayName": "New Structure",
-    "Width": 12,
-    "Height": 8,
+    "Width": 16,
+    "Height": 16,
     "OriginX": 0,
     "OriginY": 0,
     "SpawnType": 1,
     "SpawnChance": 1.0,
-    "RegionSize": 64,
+    "RegionSize": 18,
     "UseHeightRange": false,
     "MinY": 10,
     "MaxY": 90,
@@ -39,58 +39,177 @@
             "Loot": []
         },
         {
-            "X": 4,
-            "Y": 4,
-            "ForegroundId": "game:blue_stone",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 4,
+            "X": 5,
             "Y": 3,
-            "ForegroundId": "game:blue_stone",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 4,
-            "Y": 2,
-            "ForegroundId": "game:blue_stone",
+            "ForegroundId": "game:leaves",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 5,
             "Y": 4,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 1,
             "ForegroundId": "game:blue_stone",
             "BackgroundId": "",
             "Loot": []
         },
         {
-            "X": 5,
-            "Y": 3,
+            "X": 4,
+            "Y": 0,
             "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 0,
+            "ForegroundId": "game:blue_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 4,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 5,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 5,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 5,
+            "ForegroundId": "game:leaves",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 6,
             "Y": 4,
-            "ForegroundId": "game:blue_stone",
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 3,
+            "Y": 4,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 3,
+            "Y": 5,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 6,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 7,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 8,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 8,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 7,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 6,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 4,
+            "ForegroundId": "game:leaves",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 6,
             "Y": 3,
-            "ForegroundId": "game:blue_stone",
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "ForegroundId": "game:leaves",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 6,
-            "Y": 2,
-            "ForegroundId": "game:blue_stone",
+            "Y": 6,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 7,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 5,
+            "ForegroundId": "game:leaves",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 3,
+            "Y": 6,
+            "ForegroundId": "game:leaves",
             "BackgroundId": "",
             "Loot": []
         }

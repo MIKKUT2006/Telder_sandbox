@@ -1,0 +1,33 @@
+{
+  "ID": "game:small_clay_pot",
+  "Name": "Small clay pot",
+  "Texture": "small_clay_pot",
+
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+
+  "LightLevel": 0,
+  "Material": 0,
+
+  "Drop": "game:small_clay_pot",
+  "DropCount": 1,
+  "closed": true,
+
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+
+  "Tags": [
+    "chest",
+    "clay"
+  ],
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0
+}
