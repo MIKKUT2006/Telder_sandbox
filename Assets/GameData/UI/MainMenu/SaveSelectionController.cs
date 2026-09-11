@@ -1,6 +1,9 @@
+
+using System;
 using System.Collections.Generic;
 
 using TMPro;
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,9 +12,11 @@ using Game.Save;
 
 namespace Game.UI.MainMenu
 {
+
     public class SaveSelectionController :
         MonoBehaviour
     {
+
         [Header("Scene")]
 
         [SerializeField]
@@ -19,7 +24,7 @@ namespace Game.UI.MainMenu
             "Game";
 
 
-        [Header("Planet Layout")]
+        [Header("Planet References")]
 
         [SerializeField]
         private Transform planetRoot;
@@ -30,32 +35,46 @@ namespace Game.UI.MainMenu
 
 
         [SerializeField]
-        private Vector3 firstPlanetLocalPosition =
-            new Vector3(
-                -4f,
-                1f,
-                0f
+        private Camera menuCamera;
+
+
+        [Header("Chaotic Planet Layout")]
+
+        [Tooltip("Reserved left side keeps planets away from menu/back buttons.")]
+        [SerializeField]
+        private Vector2 viewportMin =
+            new Vector2(
+                0.34f,
+                0.25f
             );
 
 
         [SerializeField]
-        private float horizontalSpacing =
-            2.7f;
+        private Vector2 viewportMax =
+            new Vector2(
+                0.92f,
+                0.82f
+            );
 
 
         [SerializeField]
-        private float verticalSpacing =
-            2.6f;
-
-
-        [SerializeField]
-        private int planetsPerRow =
-            4;
+        private float planetDepth =
+            10f;
 
 
         [SerializeField]
         private float planetScale =
             1.15f;
+
+
+        [SerializeField]
+        private float latestSaveScaleMultiplier =
+            1.15f;
+
+
+        [SerializeField]
+        private float minimumPlanetDistance =
+            2.35f;
 
 
         [Header("New Telder World")]
@@ -74,8 +93,31 @@ namespace Game.UI.MainMenu
             new List<GameObject>();
 
 
+        private readonly List<Vector3>
+            occupiedPositions =
+            new List<Vector3>();
+
+
+        private void Awake()
+        {
+
+            if (
+                menuCamera ==
+                null
+            )
+            {
+
+                menuCamera =
+                    Camera.main;
+
+            }
+
+        }
+
+
         public void Refresh()
         {
+
             ClearPlanets();
 
 
@@ -90,18 +132,23 @@ namespace Game.UI.MainMenu
                 i++
             )
             {
+
                 CreatePlanet(
                     saves[i],
                     i
                 );
+
             }
+
         }
 
 
         public void CreateNewTelderWorld()
         {
+
             string name =
-                worldNameInput != null
+                worldNameInput !=
+                null
                     ? worldNameInput.text
                     : null;
 
@@ -112,8 +159,10 @@ namespace Game.UI.MainMenu
                 )
             )
             {
+
                 name =
                     defaultWorldName;
+
             }
 
 
@@ -124,7 +173,9 @@ namespace Game.UI.MainMenu
                     )
             )
             {
+
                 return;
+
             }
 
 
@@ -135,6 +186,7 @@ namespace Game.UI.MainMenu
             SceneManager.LoadScene(
                 gameSceneName
             );
+
         }
 
 
@@ -142,13 +194,16 @@ namespace Game.UI.MainMenu
             string saveId
         )
         {
+
             if (
                 !SaveGameRuntime.LoadSave(
                     saveId
                 )
             )
             {
+
                 return;
+
             }
 
 
@@ -159,6 +214,7 @@ namespace Game.UI.MainMenu
             SceneManager.LoadScene(
                 gameSceneName
             );
+
         }
 
 
@@ -167,8 +223,10 @@ namespace Game.UI.MainMenu
             int index
         )
         {
+
             Transform parent =
-                planetRoot != null
+                planetRoot !=
+                null
                     ? planetRoot
                     : transform;
 
@@ -182,37 +240,39 @@ namespace Game.UI.MainMenu
 
             root.transform.SetParent(
                 parent,
-                false
+                true
             );
 
 
-            int row =
-                index /
-                Mathf.Max(
-                    1,
-                    planetsPerRow
+            bool latest =
+                index ==
+                0;
+
+
+            float scale =
+                planetScale *
+                (
+                    latest
+                        ? latestSaveScaleMultiplier
+                        : 1f
                 );
 
 
-            int column =
-                index %
-                Mathf.Max(
-                    1,
-                    planetsPerRow
+            Vector3 worldPosition =
+                FindPlanetPosition(
+                    save.SaveId,
+                    scale,
+                    index
                 );
 
 
-            root.transform.localPosition =
-                firstPlanetLocalPosition +
-                new Vector3(
-                    column *
-                    horizontalSpacing,
+            root.transform.position =
+                worldPosition;
 
-                    -row *
-                    verticalSpacing,
 
-                    0f
-                );
+            occupiedPositions.Add(
+                worldPosition
+            );
 
 
             GameObject sphere =
@@ -222,7 +282,9 @@ namespace Game.UI.MainMenu
 
 
             sphere.name =
-                "Planet";
+                latest
+                    ? "Planet_Latest"
+                    : "Planet";
 
 
             sphere.transform.SetParent(
@@ -233,7 +295,7 @@ namespace Game.UI.MainMenu
 
             sphere.transform.localScale =
                 Vector3.one *
-                planetScale;
+                scale;
 
 
             GameObject labelObject =
@@ -251,8 +313,8 @@ namespace Game.UI.MainMenu
             labelObject.transform.localPosition =
                 new Vector3(
                     0f,
-                    -1.05f *
-                    planetScale,
+                    -1.15f *
+                    scale,
                     0f
                 );
 
@@ -268,7 +330,9 @@ namespace Game.UI.MainMenu
 
 
             label.fontSize =
-                3.5f;
+                latest
+                    ? 4f
+                    : 3.5f;
 
 
             label.text =
@@ -281,7 +345,7 @@ namespace Game.UI.MainMenu
 
             rect.sizeDelta =
                 new Vector2(
-                    4f,
+                    4.5f,
                     1f
                 );
 
@@ -304,29 +368,265 @@ namespace Game.UI.MainMenu
             createdPlanets.Add(
                 root
             );
+
+        }
+
+
+        private Vector3 FindPlanetPosition(
+            string saveId,
+            float scale,
+            int index
+        )
+        {
+
+            if (
+                menuCamera ==
+                null
+            )
+            {
+
+                menuCamera =
+                    Camera.main;
+
+            }
+
+
+            System.Random random =
+                new System.Random(
+                    StableHash(
+                        saveId
+                    )
+                );
+
+
+            float requiredDistance =
+                minimumPlanetDistance *
+                Mathf.Max(
+                    0.8f,
+                    scale /
+                    Mathf.Max(
+                        0.01f,
+                        planetScale
+                    )
+                );
+
+
+            Vector3 fallback =
+                Vector3.zero;
+
+
+            for (
+                int attempt = 0;
+                attempt < 80;
+                attempt++
+            )
+            {
+
+                float vx =
+                    Mathf.Lerp(
+                        viewportMin.x,
+                        viewportMax.x,
+                        (float)random.NextDouble()
+                    );
+
+
+                float vy =
+                    Mathf.Lerp(
+                        viewportMin.y,
+                        viewportMax.y,
+                        (float)random.NextDouble()
+                    );
+
+
+                Vector3 candidate;
+
+
+                if (
+                    menuCamera !=
+                    null
+                )
+                {
+
+                    candidate =
+                        menuCamera
+                            .ViewportToWorldPoint(
+                                new Vector3(
+                                    vx,
+                                    vy,
+                                    planetDepth
+                                )
+                            );
+
+                }
+                else
+                {
+
+                    candidate =
+                        new Vector3(
+                            Mathf.Lerp(
+                                -2f,
+                                6f,
+                                vx
+                            ),
+                            Mathf.Lerp(
+                                -3f,
+                                3f,
+                                vy
+                            ),
+                            0f
+                        );
+
+                }
+
+
+                // Planets should live around the same Z plane.
+                candidate.z =
+                    0f;
+
+
+                fallback =
+                    candidate;
+
+
+                bool overlaps =
+                    false;
+
+
+                for (
+                    int i = 0;
+                    i < occupiedPositions.Count;
+                    i++
+                )
+                {
+
+                    if (
+                        Vector2.Distance(
+                            occupiedPositions[i],
+                            candidate
+                        )
+                        <
+                        requiredDistance
+                    )
+                    {
+
+                        overlaps =
+                            true;
+
+
+                        break;
+
+                    }
+
+                }
+
+
+                if (
+                    !overlaps
+                )
+                {
+
+                    return candidate;
+
+                }
+
+            }
+
+
+            // When there are many saves we still keep the object
+            // inside the allowed viewport instead of pushing it
+            // behind the menu buttons.
+            return
+                fallback +
+                new Vector3(
+                    0f,
+                    (
+                        index %
+                        3
+                        -
+                        1
+                    )
+                    *
+                    0.15f,
+                    0f
+                );
+
+        }
+
+
+        private int StableHash(
+            string value
+        )
+        {
+
+            unchecked
+            {
+
+                int hash =
+                    17;
+
+
+                if (
+                    value !=
+                    null
+                )
+                {
+
+                    for (
+                        int i = 0;
+                        i < value.Length;
+                        i++
+                    )
+                    {
+
+                        hash =
+                            hash *
+                            31 +
+                            value[i];
+
+                    }
+
+                }
+
+
+                return hash;
+
+            }
+
         }
 
 
         private void ClearPlanets()
         {
+
             for (
                 int i = 0;
                 i < createdPlanets.Count;
                 i++
             )
             {
+
                 if (
-                    createdPlanets[i] != null
+                    createdPlanets[i] !=
+                    null
                 )
                 {
+
                     Destroy(
                         createdPlanets[i]
                     );
+
                 }
+
             }
 
 
             createdPlanets.Clear();
+
+
+            occupiedPositions.Clear();
+
         }
+
     }
+
 }

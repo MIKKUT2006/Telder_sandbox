@@ -92,27 +92,28 @@ namespace Game.Save
         {
             DimensionDatabase.Initialize();
 
-            DimensionDefinition startDimension =
-                DimensionDatabase.GetOrCreate(
-                    DimensionDatabase.StartDimension
-                );
-
-
-            if (
-                startDimension == null
-            )
-            {
-                Debug.LogError(
-                    "SAVE: Start dimension could not be created."
-                );
-
-                return false;
-            }
-
 
             currentSaveId =
                 Guid.NewGuid()
                     .ToString("N");
+
+
+            string startDimensionName =
+                DimensionDatabase.StartDimension;
+
+
+            int startDimensionSeed =
+                BuildSaveDimensionSeed(
+                    currentSaveId,
+                    startDimensionName
+                );
+
+
+            DimensionDefinition startDimension =
+                new DimensionDefinition(
+                    startDimensionName,
+                    startDimensionSeed
+                );
 
 
             string now =
@@ -238,6 +239,30 @@ namespace Game.Save
 
                 currentSave =
                     data;
+
+
+                if (
+                    currentSave.Dimensions ==
+                    null
+                )
+                {
+                    currentSave.Dimensions =
+                        new List<
+                            DimensionSummarySaveData
+                        >();
+                }
+
+
+                if (
+                    currentSave.Inventory ==
+                    null
+                )
+                {
+                    currentSave.Inventory =
+                        new List<
+                            InventorySlotSaveData
+                        >();
+                }
 
 
                 currentSaveId =
@@ -494,6 +519,113 @@ namespace Game.Save
 
 
             return false;
+        }
+
+
+        public static int GetOrCreateVisitedDimensionSeed(
+            string dimensionName
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(
+                    dimensionName
+                )
+            )
+            {
+                return 0;
+            }
+
+
+            if (
+                TryGetVisitedDimensionSeed(
+                    dimensionName,
+                    out int existing
+                )
+            )
+            {
+                return existing;
+            }
+
+
+            if (
+                !HasActiveSave
+            )
+            {
+                return 0;
+            }
+
+
+            int seed =
+                BuildSaveDimensionSeed(
+                    currentSaveId,
+                    dimensionName
+                );
+
+
+            EnsureDimension(
+                dimensionName,
+                seed
+            );
+
+
+            WriteMainFile();
+
+
+            return seed;
+        }
+
+
+        public static List<DimensionSummarySaveData>
+            GetVisitedDimensions()
+        {
+            List<DimensionSummarySaveData> result =
+                new List<DimensionSummarySaveData>();
+
+
+            if (
+                !HasActiveSave
+                ||
+                currentSave.Dimensions ==
+                null
+            )
+            {
+                return result;
+            }
+
+
+            for (
+                int i = 0;
+                i < currentSave.Dimensions.Count;
+                i++
+            )
+            {
+                DimensionSummarySaveData source =
+                    currentSave.Dimensions[i];
+
+
+                if (
+                    source ==
+                    null
+                )
+                {
+                    continue;
+                }
+
+
+                result.Add(
+                    new DimensionSummarySaveData
+                    {
+                        Name =
+                            source.Name,
+
+                        Seed =
+                            source.Seed
+                    }
+                );
+            }
+
+
+            return result;
         }
 
 
@@ -1697,6 +1829,58 @@ namespace Game.Save
 
 
             return change;
+        }
+
+
+        private static int BuildSaveDimensionSeed(
+            string saveId,
+            string dimensionName
+        )
+        {
+            unchecked
+            {
+                int hash =
+                    17;
+
+
+                string source =
+                    (
+                        saveId ??
+                        string.Empty
+                    )
+                    +
+                    "|" +
+                    (
+                        dimensionName ??
+                        string.Empty
+                    );
+
+
+                for (
+                    int i = 0;
+                    i < source.Length;
+                    i++
+                )
+                {
+                    hash =
+                        hash *
+                        31 +
+                        source[i];
+                }
+
+
+                if (
+                    hash ==
+                    0
+                )
+                {
+                    hash =
+                        1;
+                }
+
+
+                return hash;
+            }
         }
 
 

@@ -1256,6 +1256,290 @@ namespace Game.Inventory
 
 
         // =====================================================
+        // CRAFTING HELPERS
+        // =====================================================
+
+        public int CountItem(
+            string itemId
+        )
+        {
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    itemId
+                )
+            )
+            {
+
+                return 0;
+
+            }
+
+
+            int total =
+                0;
+
+
+            for (
+                int i = 0;
+                i < slots.Length;
+                i++
+            )
+            {
+
+                ItemStack slot =
+                    slots[i];
+
+
+                if (
+                    slot == null
+                    ||
+                    slot.IsEmpty
+                    ||
+                    slot.ItemId !=
+                    itemId
+                )
+                {
+
+                    continue;
+
+                }
+
+
+                total +=
+                    slot.Count;
+
+            }
+
+
+            return total;
+
+        }
+
+
+        public bool HasItem(
+            string itemId,
+            int amount
+        )
+        {
+
+            if (
+                amount <=
+                0
+            )
+            {
+
+                return true;
+
+            }
+
+
+            return
+                CountItem(
+                    itemId
+                )
+                >=
+                amount;
+
+        }
+
+
+        public bool CanAddItem(
+            string itemId,
+            int amount
+        )
+        {
+
+            if (
+                amount <=
+                0
+            )
+            {
+
+                return true;
+
+            }
+
+
+            if (
+                !TryGetItemDefinition(
+                    itemId,
+                    out ItemDefinition item
+                )
+            )
+            {
+
+                return false;
+
+            }
+
+
+            int maxStack =
+                GetMaxStack(
+                    item
+                );
+
+
+            int capacity =
+                0;
+
+
+            for (
+                int i = 0;
+                i < slots.Length;
+                i++
+            )
+            {
+
+                ItemStack slot =
+                    slots[i];
+
+
+                if (
+                    slot == null
+                )
+                {
+
+                    continue;
+
+                }
+
+
+                if (
+                    slot.IsEmpty
+                )
+                {
+
+                    capacity +=
+                        maxStack;
+
+                }
+                else if (
+                    slot.ItemId ==
+                    itemId
+                    &&
+                    slot.Count <
+                    maxStack
+                )
+                {
+
+                    capacity +=
+                        maxStack -
+                        slot.Count;
+
+                }
+
+
+                if (
+                    capacity >=
+                    amount
+                )
+                {
+
+                    return true;
+
+                }
+
+            }
+
+
+            return false;
+
+        }
+
+
+        public bool RemoveItem(
+            string itemId,
+            int amount
+        )
+        {
+
+            if (
+                amount <=
+                0
+            )
+            {
+
+                return true;
+
+            }
+
+
+            if (
+                CountItem(
+                    itemId
+                )
+                <
+                amount
+            )
+            {
+
+                return false;
+
+            }
+
+
+            int remaining =
+                amount;
+
+
+            for (
+                int i = 0;
+                i < slots.Length
+                &&
+                remaining >
+                0;
+                i++
+            )
+            {
+
+                ItemStack slot =
+                    slots[i];
+
+
+                if (
+                    slot == null
+                    ||
+                    slot.IsEmpty
+                    ||
+                    slot.ItemId !=
+                    itemId
+                )
+                {
+
+                    continue;
+
+                }
+
+
+                int moved =
+                    Mathf.Min(
+                        slot.Count,
+                        remaining
+                    );
+
+
+                slot.Count -=
+                    moved;
+
+
+                remaining -=
+                    moved;
+
+            }
+
+
+            NotifyChanged();
+
+
+            return
+                remaining ==
+                0;
+
+        }
+
+
+        // =====================================================
         // HELPERS
         // =====================================================
 

@@ -85,25 +85,30 @@ namespace Game.World.Dimensions
                 dimensionName.Trim();
 
 
-            // Если измерение уже посещали
-            // в этом Telder-мире, используем
-            // его сохранённый seed.
+            // IMPORTANT:
+            // Every Telder save owns its own visited-dimension list
+            // and its own seeds.
             if (
-                SaveGameRuntime
-                    .TryGetVisitedDimensionSeed(
-                        targetName,
-                        out int savedSeed
-                    )
+                SaveGameRuntime.HasActiveSave
             )
             {
+                int saveSeed =
+                    SaveGameRuntime
+                        .GetOrCreateVisitedDimensionSeed(
+                            targetName
+                        );
+
+
                 current =
                     new DimensionDefinition(
                         targetName,
-                        savedSeed
+                        saveSeed
                     );
             }
             else
             {
+                // Direct Game-scene testing without a save
+                // keeps the old DimensionDatabase behaviour.
                 current =
                     DimensionDatabase
                         .GetOrCreate(
@@ -203,6 +208,9 @@ namespace Game.World.Dimensions
 
 
         private bool running;
+
+
+        private GUIStyle teleportStyle;
 
 
         public static DimensionSceneTransition
@@ -444,6 +452,62 @@ namespace Game.World.Dimensions
                     Screen.height
                 ),
                 blackTexture
+            );
+
+
+            if (
+                teleportStyle ==
+                null
+            )
+            {
+                teleportStyle =
+                    new GUIStyle(
+                        GUI.skin.label
+                    );
+
+
+                teleportStyle.alignment =
+                    TextAnchor.MiddleCenter;
+
+
+                teleportStyle.fontSize =
+                    Mathf.RoundToInt(
+                        Mathf.Clamp(
+                            Screen.height *
+                            0.035f,
+                            22f,
+                            42f
+                        )
+                    );
+
+
+                teleportStyle.fontStyle =
+                    FontStyle.Bold;
+
+
+                teleportStyle.normal.textColor =
+                    Color.white;
+            }
+
+
+            GUI.color =
+                new Color(
+                    1f,
+                    1f,
+                    1f,
+                    alpha
+                );
+
+
+            GUI.Label(
+                new Rect(
+                    0f,
+                    0f,
+                    Screen.width,
+                    Screen.height
+                ),
+                "Телепортация...",
+                teleportStyle
             );
 
 

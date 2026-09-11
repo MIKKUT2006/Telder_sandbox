@@ -1,0 +1,7 @@
+{
+  "ID": "game:workbench",
+  "Name": "Workbench",
+  "Texture": "workbench",
+  "Type": "Block",
+  "MaxStack": 100
+}

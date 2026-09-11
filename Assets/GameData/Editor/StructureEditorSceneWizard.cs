@@ -76,10 +76,16 @@ namespace Game.EditorTools
                 );
 
             editor.AddComponent<
+                StructureEditorContentBootstrap
+            >();
+
+            editor.AddComponent<
                 StructureEditorController
             >();
 
-            TryAddGameBootstrap();
+            // Do not add the normal GameBootstrap here.
+            // StructureEditorContentBootstrap initializes only the
+            // content registries required to preview block textures.
 
             EditorSceneManager.SaveScene(
                 scene,

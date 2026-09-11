@@ -136,6 +136,31 @@ namespace Game.Debugging
             GUILayout.Space(10f);
 
             GUILayout.Label(
+                "БЫСТРАЯ ВЫДАЧА",
+                GUI.skin.box
+            );
+
+            GUILayout.BeginHorizontal();
+
+            if (GUILayout.Button(
+                "Факел",
+                GUILayout.Height(34f)))
+            {
+                GiveItem("game:torch");
+            }
+
+            if (GUILayout.Button(
+                "Верстак",
+                GUILayout.Height(34f)))
+            {
+                GiveItem("game:workbench");
+            }
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(10f);
+
+            GUILayout.Label(
                 "СТРУКТУРЫ",
                 GUI.skin.box
             );
@@ -205,7 +230,7 @@ namespace Game.Debugging
             if (!ItemRegistry.Contains(itemId))
             {
                 Debug.LogWarning(
-                    "DEBUG: No item registered for chest block " +
+                    "DEBUG: Item not registered: " +
                     itemId
                 );
                 return;

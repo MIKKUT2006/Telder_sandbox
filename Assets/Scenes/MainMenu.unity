@@ -420,7 +420,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 50}
-  m_LocalScale: {x: 130.49307, y: 62.353832, z: 1}
+  m_LocalScale: {x: 92.74417, y: 62.353832, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1255205067}
@@ -1110,52 +1110,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 593447654}
   m_CullTransparentMesh: 1
---- !u!28 &646011377
-Texture2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: MainMenuGradient
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 4
-  m_Width: 1
-  m_Height: 256
-  m_CompleteImageSize: 1024
-  m_MipsStripped: 0
-  m_TextureFormat: 4
-  m_MipCount: 1
-  m_IsReadable: 1
-  m_IsPreProcessed: 0
-  m_IgnoreMipmapLimit: 1
-  m_MipmapLimitGroupName: 
-  m_StreamingMipmaps: 0
-  m_StreamingMipmapsPriority: 0
-  m_VTOnly: 0
-  m_AlphaIsTransparency: 0
-  m_ImageCount: 1
-  m_TextureDimension: 2
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_LightmapFormat: 0
-  m_ColorSpace: 1
-  m_PlatformBlob: 
-  image data: 1024
-  _typelessdata: 000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000105ff000105ff000105ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010207ff010207ff010207ff010207ff010207ff010207ff010307ff010307ff010307ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010309ff010309ff010309ff010309ff010309ff010309ff010309ff010309ff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040bff01040bff01040bff01040bff01040bff01040bff01040bff01040cff01040cff02050cff02050cff02050cff02050cff02050cff02050dff02050dff02050dff02050dff02050dff02050dff02050dff02050eff02050eff02050eff02050eff02060eff02060eff02060eff02060fff02060fff02060fff02060fff02060fff02060fff02060fff020610ff020610ff020610ff020610ff020610ff020610ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020712ff020712ff020712ff020712ff020712ff020712ff020712ff020713ff020713ff030813ff030813ff030813ff030813ff030813ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030815ff030815ff030815ff030815ff030815ff030915ff030915ff030915ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030917ff030917ff030917ff030917ff030917ff030917ff030917ff030917ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a1aff030a1aff030a1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff
-  m_StreamData:
-    serializedVersion: 2
-    offset: 0
-    size: 0
-    path: 
 --- !u!1 &705240933
 GameObject:
   m_ObjectHideFlags: 0
@@ -1232,6 +1186,7 @@ GameObject:
   - component: {fileID: 817058850}
   - component: {fileID: 817058849}
   - component: {fileID: 817058852}
+  - component: {fileID: 817058853}
   m_Layer: 0
   m_Name: MainMenuSystem
   m_TagString: Untagged
@@ -1254,11 +1209,13 @@ MonoBehaviour:
   gameSceneName: Game
   planetRoot: {fileID: 866770971}
   planetMaterial: {fileID: 0}
-  firstPlanetLocalPosition: {x: -4, y: 1, z: 0}
-  horizontalSpacing: 2.7
-  verticalSpacing: 2.6
-  planetsPerRow: 4
+  menuCamera: {fileID: 1255205066}
+  viewportMin: {x: 0.34, y: 0.25}
+  viewportMax: {x: 0.92, y: 0.82}
+  planetDepth: 10
   planetScale: 1.15
+  latestSaveScaleMultiplier: 1.15
+  minimumPlanetDistance: 2.35
   worldNameInput: {fileID: 1713247420}
   defaultWorldName: "Telder \u043C\u0438\u0440"
 --- !u!114 &817058850
@@ -1308,6 +1265,31 @@ MonoBehaviour:
   destroyMatchingObject: 1
   disableMatchingComponents: 1
   logCleanup: 1
+--- !u!114 &817058853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 817058848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94b66c2b1f526054798b4af25da90341, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  menuCamera: {fileID: 1255205066}
+  starCount: 72
+  starDepth: 28
+  portalPrefab: {fileID: 0}
+  portalMinInterval: 7
+  portalMaxInterval: 15
+  portalViewportMin: {x: 0.3, y: 0.2}
+  portalViewportMax: {x: 0.92, y: 0.82}
+  portalDepth: 14
+  floatingBlockIds:
+  - game:stone
+  - game:dirt
+  - game:grass
 --- !u!1 &839225898
 GameObject:
   m_ObjectHideFlags: 0
@@ -1814,6 +1796,52 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!28 &1056617248
+Texture2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MainMenuGradient
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 4
+  m_Width: 1
+  m_Height: 256
+  m_CompleteImageSize: 1024
+  m_MipsStripped: 0
+  m_TextureFormat: 4
+  m_MipCount: 1
+  m_IsReadable: 1
+  m_IsPreProcessed: 0
+  m_IgnoreMipmapLimit: 1
+  m_MipmapLimitGroupName: 
+  m_StreamingMipmaps: 0
+  m_StreamingMipmapsPriority: 0
+  m_VTOnly: 0
+  m_AlphaIsTransparency: 0
+  m_ImageCount: 1
+  m_TextureDimension: 2
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_LightmapFormat: 0
+  m_ColorSpace: 1
+  m_PlatformBlob: 
+  image data: 1024
+  _typelessdata: 000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000105ff000105ff000105ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010207ff010207ff010207ff010207ff010207ff010207ff010307ff010307ff010307ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010309ff010309ff010309ff010309ff010309ff010309ff010309ff010309ff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040bff01040bff01040bff01040bff01040bff01040bff01040bff01040cff01040cff02050cff02050cff02050cff02050cff02050cff02050dff02050dff02050dff02050dff02050dff02050dff02050dff02050eff02050eff02050eff02050eff02060eff02060eff02060eff02060fff02060fff02060fff02060fff02060fff02060fff02060fff020610ff020610ff020610ff020610ff020610ff020610ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020712ff020712ff020712ff020712ff020712ff020712ff020712ff020713ff020713ff030813ff030813ff030813ff030813ff030813ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030815ff030815ff030815ff030815ff030815ff030915ff030915ff030915ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030917ff030917ff030917ff030917ff030917ff030917ff030917ff030917ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a1aff030a1aff030a1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
 --- !u!1 &1185761954
 GameObject:
   m_ObjectHideFlags: 0
@@ -3214,11 +3242,11 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 646011377}
+        m_Texture: {fileID: 1056617248}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 646011377}
+        m_Texture: {fileID: 1056617248}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []

@@ -14,5 +14,8 @@
   "LightOpacity": 15,
   "LightEmissionR": 0,
   "LightEmissionG": 0,
-  "LightEmissionB": 0
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1
 }

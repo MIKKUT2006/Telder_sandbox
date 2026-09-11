@@ -1,0 +1,42 @@
+{
+  "ID": "game:torch",
+  "Name": "Torch",
+  "Texture": "torch",
+
+  "Hardness": 0.25,
+  "ExplosionResistance": 0.25,
+
+  "Solid": false,
+  "Transparent": true,
+  "BlocksLight": false,
+
+  "Material": 0,
+
+  "Drop": "game:torch",
+  "DropCount": 1,
+
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+
+  "Tags": [
+    "torch",
+    "light"
+  ],
+
+  "closed": false,
+
+  "LightOpacity": 0,
+  "LightEmissionR": 15,
+  "LightEmissionG": 11,
+  "LightEmissionB": 6,
+
+  "CraftIngredients": [
+    {
+      "ItemId": "game:stone",
+      "Count": 1
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 4
+}

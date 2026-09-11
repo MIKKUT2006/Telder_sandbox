@@ -1,0 +1,7 @@
+{
+  "ID": "game:torch",
+  "Name": "Torch",
+  "Texture": "torch",
+  "Type": "Block",
+  "MaxStack": 100
+}

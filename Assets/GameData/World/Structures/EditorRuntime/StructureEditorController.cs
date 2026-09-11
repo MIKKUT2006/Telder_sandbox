@@ -18,6 +18,9 @@ namespace Game.World.Structures.EditorRuntime
 
         private string selectedBlockId;
 
+        // false = foreground, true = background
+        private bool editBackground;
+
         private int selectedCellX = -1;
         private int selectedCellY = -1;
 
@@ -35,6 +38,12 @@ namespace Game.World.Structures.EditorRuntime
             RefreshContent();
             NewStructure();
         }
+
+        private void OnDestroy()
+        {
+            StructureEditorIconCache.Clear();
+        }
+
 
         private void Update()
         {
@@ -88,7 +97,48 @@ namespace Game.World.Structures.EditorRuntime
                 GUILayout.Width(140f)))
             {
                 RefreshContent();
+                StructureEditorIconCache.Clear();
             }
+
+            GUILayout.Space(10f);
+
+            Color oldLayerColor =
+                GUI.backgroundColor;
+
+            GUI.backgroundColor =
+                !editBackground
+                    ? new Color(
+                        0.35f,
+                        0.65f,
+                        0.95f
+                    )
+                    : oldLayerColor;
+
+            if (GUILayout.Button(
+                "ПЕРЕДНИЙ",
+                GUILayout.Width(110f)))
+            {
+                editBackground = false;
+            }
+
+            GUI.backgroundColor =
+                editBackground
+                    ? new Color(
+                        0.30f,
+                        0.42f,
+                        0.65f
+                    )
+                    : oldLayerColor;
+
+            if (GUILayout.Button(
+                "ЗАДНИЙ",
+                GUILayout.Width(110f)))
+            {
+                editBackground = true;
+            }
+
+            GUI.backgroundColor =
+                oldLayerColor;
 
             GUILayout.Space(10f);
             GUILayout.Label(status);
@@ -155,12 +205,55 @@ namespace Game.World.Structures.EditorRuntime
                             );
                     }
 
-                    if (GUILayout.Button(
-                        label,
-                        GUILayout.Height(54f)))
+                    Rect buttonRect =
+                        GUILayoutUtility.GetRect(
+                            220f,
+                            58f,
+                            GUILayout.ExpandWidth(true)
+                        );
+
+                    if (GUI.Button(
+                        buttonRect,
+                        string.Empty))
                     {
                         selectedBlockId = block.ID;
                     }
+
+                    Texture2D icon =
+                        StructureEditorIconCache.Get(
+                            block.ID
+                        );
+
+                    if (icon != null)
+                    {
+                        Rect iconRect =
+                            new Rect(
+                                buttonRect.x + 5f,
+                                buttonRect.y + 5f,
+                                48f,
+                                48f
+                            );
+
+                        GUI.DrawTexture(
+                            iconRect,
+                            icon,
+                            ScaleMode.ScaleToFit,
+                            true
+                        );
+                    }
+
+                    Rect labelRect =
+                        new Rect(
+                            buttonRect.x + 60f,
+                            buttonRect.y + 3f,
+                            buttonRect.width - 64f,
+                            buttonRect.height - 6f
+                        );
+
+                    GUI.Label(
+                        labelRect,
+                        label
+                    );
 
                     GUI.backgroundColor = old;
                 }
@@ -259,16 +352,14 @@ namespace Game.World.Structures.EditorRuntime
                             );
                     }
 
-                    string text =
-                        cell != null &&
-                        !string.IsNullOrWhiteSpace(
-                            cell.ForegroundId)
-                            ? ShortId(cell.ForegroundId)
-                            : string.Empty;
-
                     GUI.Box(
                         cellRect,
-                        text
+                        string.Empty
+                    );
+
+                    DrawCellVisual(
+                        cellRect,
+                        cell
                     );
 
                     GUI.backgroundColor = old;
@@ -293,6 +384,110 @@ namespace Game.World.Structures.EditorRuntime
             GUILayout.EndScrollView();
             GUILayout.EndArea();
         }
+
+        private void DrawCellVisual(
+            Rect cellRect,
+            StructureCellDefinition cell
+        )
+        {
+            if (cell == null)
+                return;
+
+            // Background first, 7% darker.
+            if (!string.IsNullOrWhiteSpace(
+                cell.BackgroundId))
+            {
+                Texture2D background =
+                    StructureEditorIconCache.Get(
+                        cell.BackgroundId
+                    );
+
+                if (background != null)
+                {
+                    Color oldColor =
+                        GUI.color;
+
+                    GUI.color =
+                        new Color(
+                            0.93f,
+                            0.93f,
+                            0.93f,
+                            1f
+                        );
+
+                    GUI.DrawTexture(
+                        new Rect(
+                            cellRect.x + 2f,
+                            cellRect.y + 2f,
+                            cellRect.width - 4f,
+                            cellRect.height - 4f
+                        ),
+                        background,
+                        ScaleMode.ScaleToFit,
+                        true
+                    );
+
+                    GUI.color =
+                        oldColor;
+                }
+            }
+
+            // Foreground over background.
+            if (!string.IsNullOrWhiteSpace(
+                cell.ForegroundId))
+            {
+                Texture2D foreground =
+                    StructureEditorIconCache.Get(
+                        cell.ForegroundId
+                    );
+
+                if (foreground != null)
+                {
+                    GUI.DrawTexture(
+                        new Rect(
+                            cellRect.x + 2f,
+                            cellRect.y + 2f,
+                            cellRect.width - 4f,
+                            cellRect.height - 4f
+                        ),
+                        foreground,
+                        ScaleMode.ScaleToFit,
+                        true
+                    );
+                }
+            }
+
+            // Small BG marker remains visible even if foreground covers it.
+            if (!string.IsNullOrWhiteSpace(
+                cell.BackgroundId))
+            {
+                GUIStyle badge =
+                    new GUIStyle(
+                        GUI.skin.label
+                    );
+
+                badge.fontSize =
+                    8;
+
+                badge.alignment =
+                    TextAnchor.LowerRight;
+
+                badge.normal.textColor =
+                    new Color(
+                        0.55f,
+                        0.75f,
+                        1f,
+                        1f
+                    );
+
+                GUI.Label(
+                    cellRect,
+                    "BG",
+                    badge
+                );
+            }
+        }
+
 
         private void DrawSettings()
         {
@@ -578,7 +773,36 @@ namespace Game.World.Structures.EditorRuntime
                 return;
             }
 
-            GUILayout.Label(cell.ForegroundId);
+            GUILayout.Label(
+                "Foreground: " +
+                (
+                    string.IsNullOrWhiteSpace(
+                        cell.ForegroundId
+                    )
+                        ? "-"
+                        : cell.ForegroundId
+                )
+            );
+
+            GUILayout.Label(
+                "Background: " +
+                (
+                    string.IsNullOrWhiteSpace(
+                        cell.BackgroundId
+                    )
+                        ? "-"
+                        : cell.BackgroundId
+                )
+            );
+
+            GUILayout.Label(
+                "Активный слой: " +
+                (
+                    editBackground
+                        ? "ЗАДНИЙ"
+                        : "ПЕРЕДНИЙ"
+                )
+            );
 
             if (!IsChestId(cell.ForegroundId))
             {
@@ -733,8 +957,16 @@ namespace Game.World.Structures.EditorRuntime
                 current.Cells.Add(cell);
             }
 
-            cell.ForegroundId =
-                selectedBlockId;
+            if (editBackground)
+            {
+                cell.BackgroundId =
+                    selectedBlockId;
+            }
+            else
+            {
+                cell.ForegroundId =
+                    selectedBlockId;
+            }
 
             if (cell.Loot == null)
             {
@@ -754,8 +986,30 @@ namespace Game.World.Structures.EditorRuntime
                 StructureCellDefinition cell =
                     current.Cells[i];
 
-                if (cell.X == x &&
-                    cell.Y == y)
+                if (cell.X != x ||
+                    cell.Y != y)
+                {
+                    continue;
+                }
+
+                if (editBackground)
+                {
+                    cell.BackgroundId =
+                        string.Empty;
+                }
+                else
+                {
+                    cell.ForegroundId =
+                        string.Empty;
+
+                    if (cell.Loot != null)
+                        cell.Loot.Clear();
+                }
+
+                if (string.IsNullOrWhiteSpace(
+                        cell.ForegroundId) &&
+                    string.IsNullOrWhiteSpace(
+                        cell.BackgroundId))
                 {
                     current.Cells.RemoveAt(i);
                 }
