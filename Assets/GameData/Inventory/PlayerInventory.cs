@@ -1090,6 +1090,63 @@ namespace Game.Inventory
         }
 
 
+        // =====================================================
+        // REMOVE FROM SLOT
+        // =====================================================
+
+        public int RemoveFromSlot(
+            int index,
+            int amount
+        )
+        {
+
+            if (
+                amount <= 0
+            )
+            {
+
+                return 0;
+
+            }
+
+
+            ItemStack slot =
+                GetSlot(
+                    index
+                );
+
+
+            if (
+                slot == null
+                ||
+                slot.IsEmpty
+            )
+            {
+
+                return 0;
+
+            }
+
+
+            int removed =
+                Mathf.Min(
+                    amount,
+                    slot.Count
+                );
+
+
+            slot.Count -=
+                removed;
+
+
+            NotifyChanged();
+
+
+            return
+                removed;
+
+        }
+
 
         // =====================================================
         // RESTORE FROM SAVE

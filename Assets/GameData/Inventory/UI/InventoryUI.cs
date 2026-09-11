@@ -5,6 +5,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+using Game.Chests.UI;
+
 
 namespace Game.Inventory.UI
 {
@@ -133,6 +135,22 @@ namespace Game.Inventory.UI
         {
             get;
             private set;
+        }
+
+
+        public ItemStack CursorStack =>
+            cursorStack;
+
+
+        public PlayerInventory PlayerInventory =>
+            inventory;
+
+
+        public void RefreshCursorExternal()
+        {
+
+            RefreshCursor();
+
         }
 
 
@@ -619,6 +637,27 @@ namespace Game.Inventory.UI
                 cursorStack.IsEmpty
             )
             {
+
+                // Когда открыт сундук, Shift + ЛКМ по любому
+                // слоту игрока переносит предметы именно
+                // в сундук, а не между hotbar/storage.
+                if (
+                    ChestUIController.Instance != null
+                    &&
+                    ChestUIController.Instance.IsOpen
+                )
+                {
+
+                    ChestUIController.Instance
+                        .QuickMoveFromPlayer(
+                            slotIndex
+                        );
+
+
+                    return;
+
+                }
+
 
                 inventory.QuickMove(
                     slotIndex

@@ -1,0 +1,7 @@
+{
+  "ID": "game:chest",
+  "Name": "Chest",
+  "Texture": "chest",
+  "Type": "Block",
+  "MaxStack": 100
+}

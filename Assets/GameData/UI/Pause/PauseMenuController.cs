@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 using Game.Save;
+using Game.UI.MainMenu;
 
 
 namespace Game.UI.Pause
@@ -46,7 +47,6 @@ namespace Game.UI.Pause
             Time.timeScale =
                 1f;
 
-
             if (
                 pausePanel != null
             )
@@ -56,7 +56,6 @@ namespace Game.UI.Pause
                 );
             }
 
-
             if (
                 settingsPanel != null
             )
@@ -65,7 +64,6 @@ namespace Game.UI.Pause
                     false
                 );
             }
-
 
             ApplyPixelFont();
         }
@@ -82,9 +80,9 @@ namespace Game.UI.Pause
                 return;
             }
 
-
             if (
-                settingsPanel != null &&
+                settingsPanel != null
+                &&
                 settingsPanel.activeSelf
             )
             {
@@ -92,7 +90,6 @@ namespace Game.UI.Pause
 
                 return;
             }
-
 
             if (
                 IsPaused
@@ -112,7 +109,6 @@ namespace Game.UI.Pause
             IsPaused =
                 true;
 
-
             if (
                 pausePanel != null
             )
@@ -121,7 +117,6 @@ namespace Game.UI.Pause
                     true
                 );
             }
-
 
             Time.timeScale =
                 0f;
@@ -133,7 +128,6 @@ namespace Game.UI.Pause
             IsPaused =
                 false;
 
-
             if (
                 settingsPanel != null
             )
@@ -143,7 +137,6 @@ namespace Game.UI.Pause
                 );
             }
 
-
             if (
                 pausePanel != null
             )
@@ -152,7 +145,6 @@ namespace Game.UI.Pause
                     false
                 );
             }
-
 
             Time.timeScale =
                 1f;
@@ -194,7 +186,6 @@ namespace Game.UI.Pause
                 return;
             }
 
-
             StartCoroutine(
                 ExitRoutine()
             );
@@ -203,11 +194,9 @@ namespace Game.UI.Pause
 
         private IEnumerator ExitRoutine()
         {
-            SaveGameRuntime.SaveCurrentScene();
+            SaveGameRuntime
+                .SaveCurrentScene();
 
-
-            // Для preview убираем паузу с экрана,
-            // но Time.timeScale пока оставляем 0.
             if (
                 pausePanel != null
             )
@@ -216,7 +205,6 @@ namespace Game.UI.Pause
                     false
                 );
             }
-
 
             if (
                 settingsPanel != null
@@ -227,10 +215,8 @@ namespace Game.UI.Pause
                 );
             }
 
-
             yield return
                 new WaitForEndOfFrame();
-
 
             if (
                 SaveGameRuntime.HasActiveSave
@@ -243,14 +229,19 @@ namespace Game.UI.Pause
                     );
             }
 
+            // =================================================
+            // IMPORTANT:
+            // отключаем persistent-визуал мира ДО загрузки меню.
+            // =================================================
+
+            MainMenuVisualCleanup
+                .CleanupPersistentWorldVisuals();
 
             Time.timeScale =
                 1f;
 
-
             IsPaused =
                 false;
-
 
             SceneManager.LoadScene(
                 mainMenuSceneName
@@ -267,14 +258,12 @@ namespace Game.UI.Pause
                 return;
             }
 
-
             TMP_Text[] texts =
                 GetComponentsInChildren<
                     TMP_Text
                 >(
                     true
                 );
-
 
             for (
                 int i = 0;

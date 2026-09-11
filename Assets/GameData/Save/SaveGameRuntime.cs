@@ -26,6 +26,16 @@ namespace Game.Save
                     long,
                     BlockChangeSaveData
                 >();
+
+
+            public readonly Dictionary<
+                long,
+                ChestSaveData
+            > Chests =
+                new Dictionary<
+                    long,
+                    ChestSaveData
+                >();
         }
 
 
@@ -63,6 +73,13 @@ namespace Game.Save
             currentSave != null
                 ? currentSave.DisplayName
                 : null;
+
+
+        // Fired whenever foreground becomes air.
+        // ChestManager uses this so chest contents also drop
+        // when the normal BlockInteraction destroys the block.
+        public static event Action<int, int>
+            ForegroundCleared;
 
 
         // =====================================================
@@ -570,6 +587,39 @@ namespace Game.Save
             }
 
 
+            if (
+                data.Chests != null
+            )
+            {
+                for (
+                    int i = 0;
+                    i < data.Chests.Count;
+                    i++
+                )
+                {
+                    ChestSaveData chest =
+                        data.Chests[i];
+
+
+                    if (
+                        chest == null
+                    )
+                    {
+                        continue;
+                    }
+
+
+                    runtime.Chests[
+                        Pack(
+                            chest.X,
+                            chest.Y
+                        )
+                    ] =
+                        chest;
+                }
+            }
+
+
             loadedDimensions[name] =
                 runtime;
 
@@ -644,6 +694,22 @@ namespace Game.Save
             ushort blockId
         )
         {
+            // This event is intentionally independent from HasActiveSave.
+            // It lets chest contents drop even while testing the Game
+            // scene directly without selecting a Telder save.
+            if (
+                blockId == 0
+                &&
+                !applyingChanges
+            )
+            {
+                ForegroundCleared?.Invoke(
+                    worldX,
+                    worldY
+                );
+            }
+
+
             if (
                 !HasActiveSave ||
                 applyingChanges
@@ -842,6 +908,245 @@ namespace Game.Save
                 applyingChanges =
                     false;
             }
+        }
+
+
+        // =====================================================
+        // CHESTS
+        // =====================================================
+
+        public static bool TryGetChestData(
+            int worldX,
+            int worldY,
+            out ChestSaveData chest
+        )
+        {
+            chest =
+                null;
+
+
+            if (
+                !HasActiveSave
+            )
+            {
+                return false;
+            }
+
+
+            RuntimeDimension runtime =
+                GetCurrentDimensionRuntime();
+
+
+            if (
+                runtime == null
+            )
+            {
+                return false;
+            }
+
+
+            return
+                runtime.Chests.TryGetValue(
+                    Pack(
+                        worldX,
+                        worldY
+                    ),
+                    out chest
+                );
+        }
+
+
+        public static void StoreChestData(
+            int worldX,
+            int worldY,
+            string[] itemIds,
+            int[] counts
+        )
+        {
+            if (
+                !HasActiveSave
+            )
+            {
+                return;
+            }
+
+
+            RuntimeDimension runtime =
+                GetCurrentDimensionRuntime();
+
+
+            if (
+                runtime == null
+            )
+            {
+                return;
+            }
+
+
+            long key =
+                Pack(
+                    worldX,
+                    worldY
+                );
+
+
+            ChestSaveData chest =
+                new ChestSaveData
+                {
+                    X =
+                        worldX,
+
+                    Y =
+                        worldY
+                };
+
+
+            bool hasItems =
+                false;
+
+
+            if (
+                itemIds != null
+                &&
+                counts != null
+            )
+            {
+                int length =
+                    Mathf.Min(
+                        itemIds.Length,
+                        counts.Length
+                    );
+
+
+                for (
+                    int i = 0;
+                    i < length;
+                    i++
+                )
+                {
+                    if (
+                        string.IsNullOrWhiteSpace(
+                            itemIds[i]
+                        )
+                        ||
+                        counts[i] <= 0
+                    )
+                    {
+                        continue;
+                    }
+
+
+                    hasItems =
+                        true;
+
+
+                    chest.Slots.Add(
+                        new ChestSlotSaveData
+                        {
+                            Slot =
+                                i,
+
+                            ItemId =
+                                itemIds[i],
+
+                            Count =
+                                counts[i]
+                        }
+                    );
+                }
+            }
+
+
+            // An empty chest does not need its own data record.
+            // The chest block itself is already persisted by
+            // the regular block-change save system.
+            if (
+                !hasItems
+            )
+            {
+                runtime.Chests.Remove(
+                    key
+                );
+
+
+                return;
+            }
+
+
+            runtime.Chests[
+                key
+            ] =
+                chest;
+        }
+
+
+        public static bool RemoveChestData(
+            int worldX,
+            int worldY
+        )
+        {
+            if (
+                !HasActiveSave
+            )
+            {
+                return false;
+            }
+
+
+            RuntimeDimension runtime =
+                GetCurrentDimensionRuntime();
+
+
+            if (
+                runtime == null
+            )
+            {
+                return false;
+            }
+
+
+            return
+                runtime.Chests.Remove(
+                    Pack(
+                        worldX,
+                        worldY
+                    )
+                );
+        }
+
+
+        public static bool HasChestData(
+            int worldX,
+            int worldY
+        )
+        {
+            if (
+                !HasActiveSave
+            )
+            {
+                return false;
+            }
+
+
+            RuntimeDimension runtime =
+                GetCurrentDimensionRuntime();
+
+
+            if (
+                runtime == null
+            )
+            {
+                return false;
+            }
+
+
+            return
+                runtime.Chests.ContainsKey(
+                    Pack(
+                        worldX,
+                        worldY
+                    )
+                );
         }
 
 
@@ -1202,6 +1507,12 @@ namespace Game.Save
             runtime.Data.Changes =
                 new List<BlockChangeSaveData>(
                     runtime.Changes.Values
+                );
+
+
+            runtime.Data.Chests =
+                new List<ChestSaveData>(
+                    runtime.Chests.Values
                 );
 
 

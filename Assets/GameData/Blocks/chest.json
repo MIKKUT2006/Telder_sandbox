@@ -1,0 +1,32 @@
+{
+  "ID": "game:chest",
+  "Name": "Chest",
+  "Texture": "chest",
+
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+
+  "LightLevel": 0,
+  "Material": 0,
+
+  "Drop": "game:chest",
+  "DropCount": 1,
+
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+
+  "Tags": [
+    "chest",
+    "wood"
+  ],
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0
+}

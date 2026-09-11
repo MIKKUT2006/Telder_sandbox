@@ -58,6 +58,9 @@ namespace Game.Save
 
         public List<BlockChangeSaveData> Changes =
             new List<BlockChangeSaveData>();
+
+        public List<ChestSaveData> Chests =
+            new List<ChestSaveData>();
     }
 
 
@@ -72,6 +75,27 @@ namespace Game.Save
 
         public bool HasBackground;
         public string BackgroundId;
+    }
+
+
+
+    [Serializable]
+    public class ChestSaveData
+    {
+        public int X;
+        public int Y;
+
+        public List<ChestSlotSaveData> Slots =
+            new List<ChestSlotSaveData>();
+    }
+
+
+    [Serializable]
+    public class ChestSlotSaveData
+    {
+        public int Slot;
+        public string ItemId;
+        public int Count;
     }
 
 
