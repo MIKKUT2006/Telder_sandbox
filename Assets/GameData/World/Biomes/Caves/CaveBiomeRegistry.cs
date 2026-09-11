@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 using UnityEngine;
 
@@ -51,7 +52,7 @@ namespace Game.World.Biomes.Caves
             int worldX,
             int worldY,
             int worldSeed,
-            string dimensionName
+            string[] dimensionKeys
         )
         {
             EnsureLoaded();
@@ -96,7 +97,7 @@ namespace Game.World.Biomes.Caves
                 if (
                     !DimensionAllowed(
                         definition,
-                        dimensionName
+                        dimensionKeys
                     )
                 )
                 {
@@ -242,12 +243,18 @@ namespace Game.World.Biomes.Caves
             {
                 try
                 {
+                    string rawJson =
+                        File.ReadAllText(
+                            files[i]
+                        );
+
+
                     CaveBiomeDefinition definition =
                         JsonUtility.FromJson<
                             CaveBiomeDefinition
                         >(
-                            File.ReadAllText(
-                                files[i]
+                            NormalizeDimensionsJson(
+                                rawJson
                             )
                         );
 
@@ -291,6 +298,45 @@ namespace Game.World.Biomes.Caves
                                     definition.CeilingBlockId
                                 )
                         };
+
+
+                    WarnIfBlockMissing(
+                        definition.ID,
+                        "StoneBlockId",
+                        definition.StoneBlockId,
+                        runtime.StoneBlockId
+                    );
+
+
+                    WarnIfBlockMissing(
+                        definition.ID,
+                        "BackgroundBlockId",
+                        definition.BackgroundBlockId,
+                        runtime.BackgroundBlockId
+                    );
+
+
+                    Debug.Log(
+                        "CAVE BIOME LOADED: " +
+                        definition.ID +
+                        " | Y=" +
+                        definition.MinY +
+                        ".." +
+                        definition.MaxY +
+                        " | dimensions=[" +
+                        (
+                            definition.Dimensions != null
+                                ? string.Join(
+                                    ", ",
+                                    definition.Dimensions.ToArray()
+                                )
+                                : string.Empty
+                        ) +
+                        "] | stoneNumeric=" +
+                        runtime.StoneBlockId +
+                        " | backgroundNumeric=" +
+                        runtime.BackgroundBlockId
+                    );
 
 
                     biomes.Add(
@@ -346,9 +392,69 @@ namespace Game.World.Biomes.Caves
         }
 
 
+        private static string NormalizeDimensionsJson(
+            string json
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(
+                    json
+                )
+            )
+            {
+                return json;
+            }
+
+
+            // CaveBiomeDefinition.Dimensions is List<string>.
+            // Accept both:
+            //
+            // \"Dimensions\": [\"crystalline\"]
+            //
+            // and the convenient single-value form:
+            //
+            // \"Dimensions\": \"crystalline\"
+            //
+            // The latter must be normalized before JsonUtility.
+            Regex regex =
+                new Regex(
+                    "\"Dimensions\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"",
+                    RegexOptions.IgnoreCase
+                );
+
+
+            Match match =
+                regex.Match(
+                    json
+                );
+
+
+            if (
+                !match.Success
+            )
+            {
+                return json;
+            }
+
+
+            string replacement =
+                "\"Dimensions\": [\"" +
+                match.Groups[1].Value +
+                "\"]";
+
+
+            return
+                regex.Replace(
+                    json,
+                    replacement,
+                    1
+                );
+        }
+
+
         private static bool DimensionAllowed(
             CaveBiomeDefinition definition,
-            string dimensionName
+            string[] dimensionKeys
         )
         {
             if (
@@ -370,7 +476,9 @@ namespace Game.World.Biomes.Caves
             )
             {
                 string required =
-                    definition.Dimensions[i];
+                    NormalizeDimensionKey(
+                        definition.Dimensions[i]
+                    );
 
 
                 if (
@@ -387,19 +495,117 @@ namespace Game.World.Biomes.Caves
 
 
                 if (
-                    string.Equals(
-                        required,
-                        dimensionName,
-                        StringComparison.OrdinalIgnoreCase
-                    )
+                    dimensionKeys ==
+                    null
                 )
                 {
-                    return true;
+                    continue;
+                }
+
+
+                for (
+                    int keyIndex = 0;
+                    keyIndex < dimensionKeys.Length;
+                    keyIndex++
+                )
+                {
+                    string current =
+                        NormalizeDimensionKey(
+                            dimensionKeys[keyIndex]
+                        );
+
+
+                    if (
+                        string.Equals(
+                            required,
+                            current,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                    {
+                        return true;
+                    }
                 }
             }
 
 
             return false;
+        }
+
+
+        private static string NormalizeDimensionKey(
+            string value
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(
+                    value
+                )
+            )
+            {
+                return string.Empty;
+            }
+
+
+            string normalized =
+                value.Trim();
+
+
+            int separator =
+                normalized.LastIndexOf(
+                    ':'
+                );
+
+
+            if (
+                separator >=
+                0
+                &&
+                separator <
+                normalized.Length -
+                1
+            )
+            {
+                normalized =
+                    normalized.Substring(
+                        separator + 1
+                    );
+            }
+
+
+            return normalized;
+        }
+
+
+        private static void WarnIfBlockMissing(
+            string biomeId,
+            string fieldName,
+            string blockId,
+            ushort numericId
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(
+                    blockId
+                )
+                ||
+                numericId !=
+                0
+            )
+            {
+                return;
+            }
+
+
+            Debug.LogWarning(
+                "CAVE BIOME: block is not registered. " +
+                "Biome=" +
+                biomeId +
+                " | " +
+                fieldName +
+                "=" +
+                blockId
+            );
         }
 
 

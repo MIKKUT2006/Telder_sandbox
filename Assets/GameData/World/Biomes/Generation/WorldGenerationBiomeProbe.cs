@@ -20,6 +20,8 @@ namespace Game.World.Biomes.Generation
 
         private static MethodInfo biomeRuntimeGetMethod;
 
+        private static bool warned;
+
 
         public static bool TryGetTerrainIds(
             WorldGenerator generator,
@@ -68,6 +70,10 @@ namespace Game.World.Biomes.Generation
                     null
                 )
                 {
+                    WarnOnce(
+                        "WorldGenerator.biomeRuntime field not found."
+                    );
+
                     return false;
                 }
 
@@ -101,6 +107,7 @@ namespace Game.World.Biomes.Generation
                             .GetMethod(
                                 "Get",
                                 BindingFlags.Public |
+                                BindingFlags.NonPublic |
                                 BindingFlags.Instance
                             );
                 }
@@ -111,6 +118,10 @@ namespace Game.World.Biomes.Generation
                     null
                 )
                 {
+                    WarnOnce(
+                        "BiomeRuntimeTable.Get method not found."
+                    );
+
                     return false;
                 }
 
@@ -161,10 +172,41 @@ namespace Game.World.Biomes.Generation
                     backgroundBlockId !=
                     0;
             }
-            catch
+            catch (
+                Exception exception
+            )
             {
+                WarnOnce(
+                    exception.GetType().Name +
+                    ": " +
+                    exception.Message
+                );
+
                 return false;
             }
+        }
+
+
+        private static void WarnOnce(
+            string reason
+        )
+        {
+            if (
+                warned
+            )
+            {
+                return;
+            }
+
+
+            warned =
+                true;
+
+
+            UnityEngine.Debug.LogWarning(
+                "CAVE BIOME PROBE FAILED: " +
+                reason
+            );
         }
 
 

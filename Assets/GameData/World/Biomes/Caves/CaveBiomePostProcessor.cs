@@ -31,11 +31,9 @@ namespace Game.World.Biomes.Caves
             }
 
 
-            string dimensionName =
-                DimensionTravelRuntime.Current !=
-                null
-                    ? DimensionTravelRuntime.Current.Name
-                    : string.Empty;
+            string[] dimensionKeys =
+                CaveBiomeDimensionRuntime
+                    .GetCurrentKeys();
 
 
             int chunkMinX =
@@ -94,7 +92,7 @@ namespace Game.World.Biomes.Caves
                             worldX,
                             worldY,
                             settings.Seed,
-                            dimensionName
+                            dimensionKeys
                         );
 
 
@@ -215,7 +213,7 @@ namespace Game.World.Biomes.Caves
                             worldX,
                             worldY,
                             settings.Seed,
-                            dimensionName
+                            dimensionKeys
                         );
 
 

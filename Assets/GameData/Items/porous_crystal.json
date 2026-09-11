@@ -1,0 +1,7 @@
+{
+  "ID": "game:porous_crystal",
+  "Name": "Porous crystal",
+  "Texture": "porous_crystal",
+  "Type": "Block",
+  "MaxStack": 100
+}
