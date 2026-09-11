@@ -14,6 +14,7 @@ namespace Game.UI.MainMenu
         private SaveSelectionController owner;
 
         private string saveId;
+        private string displayName;
 
         private Vector3 normalScale;
 
@@ -57,8 +58,8 @@ namespace Game.UI.MainMenu
                 owner;
 
 
-            this.saveId =
-                saveId;
+            this.saveId = saveId;
+            this.displayName = displayName;
 
 
             this.label =
@@ -121,6 +122,13 @@ namespace Game.UI.MainMenu
                         Time.unscaledDeltaTime
                     )
                 );
+
+            if (hovered && Input.GetMouseButtonDown(1))
+            {
+                SaveContextMenuController
+                    .EnsureExists(owner)
+                    .Open(saveId, displayName);
+            }
         }
 
 
@@ -140,9 +148,8 @@ namespace Game.UI.MainMenu
 
         private void OnMouseDown()
         {
-            owner?.LoadSave(
-                saveId
-            );
+            if (Input.GetMouseButtonDown(0))
+                owner?.LoadSave(saveId);
         }
 
 

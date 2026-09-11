@@ -420,7 +420,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 50}
-  m_LocalScale: {x: 92.74417, y: 62.353832, z: 1}
+  m_LocalScale: {x: 111.26441, y: 62.353832, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1255205067}
@@ -704,7 +704,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u041D\u0410\u0421\u0422\u0420\u041E\u0419\u041A\u0418"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 95cd484787b7e4048b106e1ee56b0082, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -770,7 +770,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &252439042
@@ -1796,52 +1796,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!28 &1056617248
-Texture2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: MainMenuGradient
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 4
-  m_Width: 1
-  m_Height: 256
-  m_CompleteImageSize: 1024
-  m_MipsStripped: 0
-  m_TextureFormat: 4
-  m_MipCount: 1
-  m_IsReadable: 1
-  m_IsPreProcessed: 0
-  m_IgnoreMipmapLimit: 1
-  m_MipmapLimitGroupName: 
-  m_StreamingMipmaps: 0
-  m_StreamingMipmapsPriority: 0
-  m_VTOnly: 0
-  m_AlphaIsTransparency: 0
-  m_ImageCount: 1
-  m_TextureDimension: 2
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_LightmapFormat: 0
-  m_ColorSpace: 1
-  m_PlatformBlob: 
-  image data: 1024
-  _typelessdata: 000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000105ff000105ff000105ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010207ff010207ff010207ff010207ff010207ff010207ff010307ff010307ff010307ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010309ff010309ff010309ff010309ff010309ff010309ff010309ff010309ff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040bff01040bff01040bff01040bff01040bff01040bff01040bff01040cff01040cff02050cff02050cff02050cff02050cff02050cff02050dff02050dff02050dff02050dff02050dff02050dff02050dff02050eff02050eff02050eff02050eff02060eff02060eff02060eff02060fff02060fff02060fff02060fff02060fff02060fff02060fff020610ff020610ff020610ff020610ff020610ff020610ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020712ff020712ff020712ff020712ff020712ff020712ff020712ff020713ff020713ff030813ff030813ff030813ff030813ff030813ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030815ff030815ff030815ff030815ff030815ff030915ff030915ff030915ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030917ff030917ff030917ff030917ff030917ff030917ff030917ff030917ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a1aff030a1aff030a1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff
-  m_StreamData:
-    serializedVersion: 2
-    offset: 0
-    size: 0
-    path: 
 --- !u!1 &1185761954
 GameObject:
   m_ObjectHideFlags: 0
@@ -1901,7 +1855,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u041D\u0410\u0417\u0410\u0414"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 95cd484787b7e4048b106e1ee56b0082, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -1967,7 +1921,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1185761957
@@ -2638,6 +2592,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1811756544}
   - {fileID: 893625103}
   - {fileID: 1196712037}
   - {fileID: 235404456}
@@ -3242,11 +3197,11 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 1056617248}
+        m_Texture: {fileID: 1795776531}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 1056617248}
+        m_Texture: {fileID: 1795776531}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -3272,6 +3227,127 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
+--- !u!28 &1795776531
+Texture2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MainMenuGradient
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 4
+  m_Width: 1
+  m_Height: 256
+  m_CompleteImageSize: 1024
+  m_MipsStripped: 0
+  m_TextureFormat: 4
+  m_MipCount: 1
+  m_IsReadable: 1
+  m_IsPreProcessed: 0
+  m_IgnoreMipmapLimit: 1
+  m_MipmapLimitGroupName: 
+  m_StreamingMipmaps: 0
+  m_StreamingMipmapsPriority: 0
+  m_VTOnly: 0
+  m_AlphaIsTransparency: 0
+  m_ImageCount: 1
+  m_TextureDimension: 2
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_LightmapFormat: 0
+  m_ColorSpace: 1
+  m_PlatformBlob: 
+  image data: 1024
+  _typelessdata: 000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff000105ff000105ff000105ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010207ff010207ff010207ff010207ff010207ff010207ff010307ff010307ff010307ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010309ff010309ff010309ff010309ff010309ff010309ff010309ff010309ff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040bff01040bff01040bff01040bff01040bff01040bff01040bff01040cff01040cff02050cff02050cff02050cff02050cff02050cff02050dff02050dff02050dff02050dff02050dff02050dff02050dff02050eff02050eff02050eff02050eff02060eff02060eff02060eff02060fff02060fff02060fff02060fff02060fff02060fff02060fff020610ff020610ff020610ff020610ff020610ff020610ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020712ff020712ff020712ff020712ff020712ff020712ff020712ff020713ff020713ff030813ff030813ff030813ff030813ff030813ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030815ff030815ff030815ff030815ff030815ff030915ff030915ff030915ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030917ff030917ff030917ff030917ff030917ff030917ff030917ff030917ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a18ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a19ff030a1aff030a1aff030a1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1aff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1bff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff040b1cff
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
+--- !u!1 &1811756543
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1811756544}
+  - component: {fileID: 1811756546}
+  - component: {fileID: 1811756545}
+  m_Layer: 10
+  m_Name: Logo
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1811756544
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1811756543}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1451870987}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 320, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1811756545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1811756543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 5519d2b8526cd684aaa30f355dfeeb3f, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1811756546
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1811756543}
+  m_CullTransparentMesh: 1
 --- !u!1 &1813320707
 GameObject:
   m_ObjectHideFlags: 0
@@ -3499,7 +3575,7 @@ MonoBehaviour:
   m_text: "\u0417\u0434\u0435\u0441\u044C \u043F\u043E\u0437\u0436\u0435 \u0431\u0443\u0434\u0443\u0442
     \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u0438\u0433\u0440\u044B"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 95cd484787b7e4048b106e1ee56b0082, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -3565,7 +3641,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1932084644

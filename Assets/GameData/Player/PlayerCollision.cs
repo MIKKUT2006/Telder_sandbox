@@ -1,4 +1,6 @@
+
 using Game.World.Collision;
+
 using UnityEngine;
 
 
@@ -23,6 +25,15 @@ public class PlayerCollision :
     [SerializeField]
     private float skin =
         0.02f;
+
+
+    [Tooltip(
+        "Maximum height that horizontal movement may automatically step up. " +
+        "0.55 allows 1/2-block slabs/stair steps but not a full block."
+    )]
+    [SerializeField]
+    private float maxAutoStepHeight =
+        0.55f;
 
 
     [Header("World")]
@@ -79,11 +90,21 @@ public class PlayerCollision :
     {
 
         if (
-            worldCollision == null
+            worldCollision ==
+            null
         )
         {
+
             return;
+
         }
+
+
+        bool groundedBeforeMove =
+            CheckGroundAt(
+                transform.position.x,
+                transform.position.y
+            );
 
 
         IsGrounded =
@@ -97,13 +118,15 @@ public class PlayerCollision :
         if (
             Mathf.Abs(
                 movement.x
-            ) >
+            )
+            >
             0.0001f
         )
         {
 
             MoveHorizontal(
-                movement.x
+                movement.x,
+                groundedBeforeMove
             );
 
         }
@@ -116,7 +139,8 @@ public class PlayerCollision :
         if (
             Mathf.Abs(
                 movement.y
-            ) >
+            )
+            >
             0.0001f
         )
         {
@@ -142,7 +166,8 @@ public class PlayerCollision :
     // =====================================================
 
     private void MoveHorizontal(
-        float movement
+        float movement,
+        bool allowAutoStep
     )
     {
 
@@ -164,6 +189,10 @@ public class PlayerCollision :
 
         float moved =
             0f;
+
+
+        bool canStep =
+            allowAutoStep;
 
 
         while (
@@ -194,6 +223,40 @@ public class PlayerCollision :
             )
             {
 
+                if (
+                    canStep
+                    &&
+                    TryAutoStepUp(
+                        testX,
+                        out float steppedY
+                    )
+                )
+                {
+
+                    transform.position =
+                        new Vector3(
+                            testX,
+                            steppedY,
+                            transform.position.z
+                        );
+
+
+                    moved +=
+                        currentStep;
+
+
+                    canStep =
+                        CheckGroundAt(
+                            transform.position.x,
+                            transform.position.y
+                        );
+
+
+                    continue;
+
+                }
+
+
                 break;
 
             }
@@ -210,7 +273,95 @@ public class PlayerCollision :
             moved +=
                 currentStep;
 
+
+            canStep =
+                CheckGroundAt(
+                    transform.position.x,
+                    transform.position.y
+                );
+
         }
+
+    }
+
+
+    private bool TryAutoStepUp(
+        float testX,
+        out float steppedY
+    )
+    {
+
+        steppedY =
+            transform.position.y;
+
+
+        if (
+            maxAutoStepHeight <=
+            0f
+        )
+        {
+
+            return false;
+
+        }
+
+
+        const float step =
+            0.02f;
+
+
+        float raised =
+            step;
+
+
+        while (
+            raised <=
+            maxAutoStepHeight +
+            0.0001f
+        )
+        {
+
+            float testY =
+                transform.position.y +
+                raised;
+
+
+            if (
+                !CheckCollisionAt(
+                    testX,
+                    testY
+                )
+            )
+            {
+
+                // Do not "climb" into empty air.
+                // The new position must have a surface directly below it.
+                if (
+                    CheckGroundAt(
+                        testX,
+                        testY
+                    )
+                )
+                {
+
+                    steppedY =
+                        testY;
+
+
+                    return true;
+
+                }
+
+            }
+
+
+            raised +=
+                step;
+
+        }
+
+
+        return false;
 
     }
 
@@ -312,15 +463,28 @@ public class PlayerCollision :
     private void CheckGround()
     {
 
+        IsGrounded =
+            CheckGroundAt(
+                transform.position.x,
+                transform.position.y
+            );
+
+    }
+
+
+    private bool CheckGroundAt(
+        float centerX,
+        float centerY
+    )
+    {
+
         if (
-            worldCollision == null
+            worldCollision ==
+            null
         )
         {
 
-            IsGrounded =
-                false;
-
-            return;
+            return false;
 
         }
 
@@ -330,81 +494,53 @@ public class PlayerCollision :
             0.5f;
 
 
-        float bottom =
-            transform.position.y -
+        float halfHeight =
             colliderSize.y *
             0.5f;
 
 
-        float checkY =
-            bottom -
-            skin;
-
-
         float minX =
-            transform.position.x -
+            centerX -
             halfWidth +
             skin;
 
 
         float maxX =
-            transform.position.x +
+            centerX +
             halfWidth -
             skin;
 
 
-        int minBlockX =
-            Mathf.FloorToInt(
-                minX /
-                blockSize
+        float bottom =
+            centerY -
+            halfHeight;
+
+
+        // A thin AABB directly below the player's feet.
+        // It detects the real top of slabs and stair rectangles.
+        Rect groundProbe =
+            new Rect(
+                minX,
+                bottom -
+                skin *
+                2f,
+
+                Mathf.Max(
+                    0.001f,
+                    maxX -
+                    minX
+                ),
+
+                skin *
+                2f +
+                0.002f
             );
 
 
-        int maxBlockX =
-            Mathf.FloorToInt(
-                maxX /
-                blockSize
+        return
+            worldCollision.OverlapsAny(
+                groundProbe
             );
-
-
-        int blockY =
-            Mathf.FloorToInt(
-                checkY /
-                blockSize
-            );
-
-
-        IsGrounded =
-            false;
-
-
-        for (
-            int x =
-                minBlockX;
-
-            x <=
-                maxBlockX;
-
-            x++
-        )
-        {
-
-            if (
-                worldCollision.IsSolid(
-                    x,
-                    blockY
-                )
-            )
-            {
-
-                IsGrounded =
-                    true;
-
-                return;
-
-            }
-
-        }
 
     }
 
@@ -420,10 +556,13 @@ public class PlayerCollision :
     {
 
         if (
-            worldCollision == null
+            worldCollision ==
+            null
         )
         {
+
             return false;
+
         }
 
 
@@ -461,74 +600,29 @@ public class PlayerCollision :
             skin;
 
 
-        int minBlockX =
-            Mathf.FloorToInt(
-                minX /
-                blockSize
-            );
+        Rect playerBounds =
+            new Rect(
+                minX,
+                minY,
 
+                Mathf.Max(
+                    0.001f,
+                    maxX -
+                    minX
+                ),
 
-        int maxBlockX =
-            Mathf.FloorToInt(
-                maxX /
-                blockSize
-            );
-
-
-        int minBlockY =
-            Mathf.FloorToInt(
-                minY /
-                blockSize
-            );
-
-
-        int maxBlockY =
-            Mathf.FloorToInt(
-                maxY /
-                blockSize
-            );
-
-
-        for (
-            int x =
-                minBlockX;
-
-            x <=
-                maxBlockX;
-
-            x++
-        )
-        {
-
-            for (
-                int y =
-                    minBlockY;
-
-                y <=
-                    maxBlockY;
-
-                y++
-            )
-            {
-
-                if (
-                    worldCollision.IsSolid(
-                        x,
-                        y
-                    )
+                Mathf.Max(
+                    0.001f,
+                    maxY -
+                    minY
                 )
-                {
-
-                    return true;
-
-                }
-
-            }
-
-        }
+            );
 
 
-        return false;
+        return
+            worldCollision.OverlapsAny(
+                playerBounds
+            );
 
     }
 
@@ -541,16 +635,15 @@ public class PlayerCollision :
     {
 
         if (
-            worldCollision == null
+            worldCollision ==
+            null
         )
         {
+
             return;
+
         }
 
-
-        // =================================================
-        // ÑÐÀÇÓ ÎÁÍÎÂËßÅÌ ÑÎÑÒÎßÍÈÅ ÇÅÌËÈ
-        // =================================================
 
         CheckGround();
 
@@ -565,15 +658,18 @@ public class PlayerCollision :
     {
 
         if (
-            worldCollision == null
+            worldCollision ==
+            null
         )
         {
+
             return;
+
         }
 
 
         const int maxIterations =
-            100;
+            200;
 
 
         const float resolveStep =
@@ -582,9 +678,7 @@ public class PlayerCollision :
 
         for (
             int i = 0;
-            i <
-            maxIterations;
-
+            i < maxIterations;
             i++
         )
         {
@@ -596,7 +690,9 @@ public class PlayerCollision :
                 )
             )
             {
+
                 break;
+
             }
 
 

@@ -4,6 +4,12 @@ using System.Collections.Generic;
 
 namespace Game.World.Structures
 {
+    public enum StructureType
+    {
+        Normal = 0,
+        Tree = 1
+    }
+
     public enum StructureSpawnType
     {
         Underground = 0,
@@ -22,6 +28,15 @@ namespace Game.World.Structures
 
         public int OriginX = 0;
         public int OriginY = 0;
+
+        // Special runtime behaviour.
+        //
+        // Tree:
+        // - OriginX is treated as the trunk column;
+        // - breaking a trunk cell removes matching structure
+        //   cells at the cut height and above.
+        public StructureType Type =
+            StructureType.Normal;
 
         public StructureSpawnType SpawnType =
             StructureSpawnType.Underground;

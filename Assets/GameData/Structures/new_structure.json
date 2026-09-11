@@ -3,8 +3,9 @@
     "DisplayName": "New Structure",
     "Width": 16,
     "Height": 16,
-    "OriginX": 0,
+    "OriginX": 5,
     "OriginY": 0,
+    "Type": 1,
     "SpawnType": 1,
     "SpawnChance": 1.0,
     "RegionSize": 18,
@@ -20,197 +21,211 @@
         {
             "X": 5,
             "Y": 0,
-            "ForegroundId": "game:blue_stone",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
             "Loot": []
         },
         {
             "X": 5,
             "Y": 1,
-            "ForegroundId": "game:blue_stone",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
             "Loot": []
         },
         {
             "X": 5,
             "Y": 2,
-            "ForegroundId": "game:blue_stone",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
             "Loot": []
         },
         {
             "X": 5,
             "Y": 3,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 5,
-            "Y": 4,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
             "Loot": []
         },
         {
             "X": 4,
             "Y": 1,
-            "ForegroundId": "game:blue_stone",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
             "Loot": []
         },
         {
             "X": 4,
             "Y": 0,
-            "ForegroundId": "game:blue_stone",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
             "Loot": []
         },
         {
             "X": 6,
             "Y": 0,
-            "ForegroundId": "game:blue_stone",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 4,
-            "Y": 4,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
             "Loot": []
         },
         {
             "X": 4,
             "Y": 5,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 5,
-            "Y": 5,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 6,
-            "Y": 5,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 6,
-            "Y": 4,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 3,
             "Y": 4,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 3,
             "Y": 5,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 4,
             "Y": 6,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 5,
             "Y": 7,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 4,
             "Y": 8,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 5,
             "Y": 8,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 4,
             "Y": 7,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 5,
             "Y": 6,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 7,
-            "Y": 4,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 6,
-            "Y": 3,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 4,
-            "Y": 3,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 6,
             "Y": 6,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 6,
             "Y": 7,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
-            "Loot": []
-        },
-        {
-            "X": 7,
-            "Y": 5,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         },
         {
             "X": 3,
             "Y": 6,
-            "ForegroundId": "game:leaves",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_branch",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": []
+        },
+        {
+            "X": 8,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": []
+        },
+        {
+            "X": 8,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
             "Loot": []
         }
     ]

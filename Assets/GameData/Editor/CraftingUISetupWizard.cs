@@ -416,14 +416,24 @@ namespace Game.EditorTools
                 );
 
 
-            VerticalLayoutGroup contentLayout =
+            GridLayoutGroup contentLayout =
                 content.AddComponent<
-                    VerticalLayoutGroup
+                    GridLayoutGroup
                 >();
 
 
+            contentLayout.cellSize =
+                new Vector2(
+                    116f,
+                    132f
+                );
+
+
             contentLayout.spacing =
-                5f;
+                new Vector2(
+                    7f,
+                    7f
+                );
 
 
             contentLayout.padding =
@@ -435,20 +445,27 @@ namespace Game.EditorTools
                 );
 
 
-            contentLayout.childControlHeight =
-                false;
+            contentLayout.constraint =
+                GridLayoutGroup.Constraint
+                    .FixedColumnCount;
 
 
-            contentLayout.childControlWidth =
-                true;
+            contentLayout.constraintCount =
+                3;
 
 
-            contentLayout.childForceExpandHeight =
-                false;
+            contentLayout.startCorner =
+                GridLayoutGroup.Corner
+                    .UpperLeft;
 
 
-            contentLayout.childForceExpandWidth =
-                true;
+            contentLayout.startAxis =
+                GridLayoutGroup.Axis
+                    .Horizontal;
+
+
+            contentLayout.childAlignment =
+                TextAnchor.UpperLeft;
 
 
             ContentSizeFitter fitter =

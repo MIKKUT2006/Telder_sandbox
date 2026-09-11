@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 
 using UnityEngine;
 
@@ -124,9 +123,6 @@ namespace Game.UI.MainMenu
                     Camera.main;
 
             }
-
-
-            TryInitializeContent();
 
 
             CreateSharedVisuals();
@@ -1268,93 +1264,7 @@ namespace Game.UI.MainMenu
         }
 
 
-        private void TryInitializeContent()
-        {
 
-            string[] typeNames =
-            {
-                "Game.Content.ContentLoader",
-                "Game.Content.ContentManager"
-            };
-
-
-            Assembly[] assemblies =
-                AppDomain.CurrentDomain
-                    .GetAssemblies();
-
-
-            for (
-                int t = 0;
-                t < typeNames.Length;
-                t++
-            )
-            {
-
-                for (
-                    int a = 0;
-                    a < assemblies.Length;
-                    a++
-                )
-                {
-
-                    Type type =
-                        assemblies[a].GetType(
-                            typeNames[t],
-                            false
-                        );
-
-
-                    if (
-                        type ==
-                        null
-                    )
-                    {
-
-                        continue;
-
-                    }
-
-
-                    MethodInfo method =
-                        type.GetMethod(
-                            "Initialize",
-                            BindingFlags.Public |
-                            BindingFlags.Static
-                        );
-
-
-                    if (
-                        method ==
-                        null
-                    )
-                    {
-
-                        continue;
-
-                    }
-
-
-                    try
-                    {
-
-                        method.Invoke(
-                            null,
-                            null
-                        );
-
-
-                        return;
-
-                    }
-                    catch
-                    {
-                    }
-
-                }
-
-            }
-
-        }
 
     }
 

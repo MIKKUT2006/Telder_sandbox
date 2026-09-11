@@ -1,7 +1,6 @@
 
-using Game.Blocks;
-using Game.Content;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 
@@ -22,6 +21,13 @@ namespace Game.World.Collision
                 Vector2Int,
                 GameObject
             >();
+
+
+        private readonly List<Rect>
+            shapeRects =
+            new List<Rect>(
+                4
+            );
 
 
         public ChunkCollision(
@@ -45,10 +51,13 @@ namespace Game.World.Collision
         {
 
             if (
-                chunk == null
+                chunk ==
+                null
             )
             {
+
                 return;
+
             }
 
 
@@ -93,11 +102,14 @@ namespace Game.World.Collision
 
 
             if (
-                groundLayer != -1
+                groundLayer !=
+                -1
             )
             {
+
                 chunkObject.layer =
                     groundLayer;
+
             }
 
 
@@ -108,10 +120,15 @@ namespace Game.World.Collision
 
 
             // =================================================
-            // SOLID MAP
+            // FULL BLOCK MAP
+            // =================================================
+            //
+            // Only Full blocks participate in rectangle merging.
+            // Partial shapes are added separately below.
+            //
             // =================================================
 
-            bool[,] solid =
+            bool[,] full =
                 new bool[
                     Chunk.SizeX,
                     Chunk.SizeY
@@ -139,10 +156,16 @@ namespace Game.World.Collision
                         );
 
 
-                    solid[x, y] =
-                        IsSolidBlock(
-                            blockID
-                        );
+                    full[
+                        x,
+                        y
+                    ] =
+                        worldCollision
+                            .GetCollisionShape(
+                                blockID
+                            )
+                        ==
+                        BlockCollisionShape.Full;
 
                 }
 
@@ -150,7 +173,7 @@ namespace Game.World.Collision
 
 
             // =================================================
-            // FIND RECTANGLES
+            // MERGE FULL BLOCKS
             // =================================================
 
             bool[,] used =
@@ -175,40 +198,41 @@ namespace Game.World.Collision
                 {
 
                     if (
-                        !solid[x, y]
+                        !full[
+                            x,
+                            y
+                        ]
+                        ||
+                        used[
+                            x,
+                            y
+                        ]
                     )
                     {
+
                         continue;
+
                     }
 
-
-                    if (
-                        used[x, y]
-                    )
-                    {
-                        continue;
-                    }
-
-
-                    // =============================================
-                    // FIND WIDTH
-                    // =============================================
 
                     int width =
                         0;
 
 
                     while (
-                        x + width <
+                        x +
+                        width <
                         Chunk.SizeX
                         &&
-                        solid[
-                            x + width,
+                        full[
+                            x +
+                            width,
                             y
                         ]
                         &&
                         !used[
-                            x + width,
+                            x +
+                            width,
                             y
                         ]
                     )
@@ -219,10 +243,6 @@ namespace Game.World.Collision
                     }
 
 
-                    // =============================================
-                    // FIND HEIGHT
-                    // =============================================
-
                     int height =
                         1;
 
@@ -232,7 +252,8 @@ namespace Game.World.Collision
 
 
                     while (
-                        y + height <
+                        y +
+                        height <
                         Chunk.SizeY
                         &&
                         canExpand
@@ -247,20 +268,25 @@ namespace Game.World.Collision
                         {
 
                             if (
-                                !solid[
-                                    x + checkX,
-                                    y + height
+                                !full[
+                                    x +
+                                    checkX,
+                                    y +
+                                    height
                                 ]
                                 ||
                                 used[
-                                    x + checkX,
-                                    y + height
+                                    x +
+                                    checkX,
+                                    y +
+                                    height
                                 ]
                             )
                             {
 
                                 canExpand =
                                     false;
+
 
                                 break;
 
@@ -281,10 +307,6 @@ namespace Game.World.Collision
                     }
 
 
-                    // =============================================
-                    // MARK USED
-                    // =============================================
-
                     for (
                         int markX = 0;
                         markX < width;
@@ -300,20 +322,19 @@ namespace Game.World.Collision
                         {
 
                             used[
-                                x + markX,
-                                y + markY
-                            ] = true;
+                                x +
+                                markX,
+                                y +
+                                markY
+                            ] =
+                                true;
 
                         }
 
                     }
 
 
-                    // =============================================
-                    // CREATE COLLIDER
-                    // =============================================
-
-                    CreateCollider(
+                    AddBoxCollider(
                         chunkObject,
                         x,
                         y,
@@ -325,72 +346,142 @@ namespace Game.World.Collision
 
             }
 
+
+            // =================================================
+            // PARTIAL SHAPES
+            // =================================================
+            //
+            // All colliders live on the single chunk collision
+            // GameObject. No GameObject-per-slab/stair spam.
+            //
+            // =================================================
+
+            for (
+                int x = 0;
+                x < Chunk.SizeX;
+                x++
+            )
+            {
+
+                for (
+                    int y = 0;
+                    y < Chunk.SizeY;
+                    y++
+                )
+                {
+
+                    ushort blockID =
+                        chunk.GetBlock(
+                            x,
+                            y
+                        );
+
+
+                    BlockCollisionShape shape =
+                        worldCollision
+                            .GetCollisionShape(
+                                blockID
+                            );
+
+
+                    if (
+                        shape ==
+                        BlockCollisionShape.None
+                        ||
+                        shape ==
+                        BlockCollisionShape.Full
+                    )
+                    {
+
+                        continue;
+
+                    }
+
+
+                    worldCollision
+                        .GetLocalCollisionRects(
+                            blockID,
+                            shapeRects
+                        );
+
+
+                    for (
+                        int i = 0;
+                        i < shapeRects.Count;
+                        i++
+                    )
+                    {
+
+                        Rect rect =
+                            shapeRects[i];
+
+
+                        AddBoxCollider(
+                            chunkObject,
+
+                            x +
+                            rect.x,
+
+                            y +
+                            rect.y,
+
+                            rect.width,
+
+                            rect.height
+                        );
+
+                    }
+
+                }
+
+            }
+
         }
 
 
         // =====================================================
-        // CREATE COLLIDER
+        // ADD BOX COLLIDER
         // =====================================================
 
-        private void CreateCollider(
-    GameObject parent,
-    int x,
-    int y,
-    int width,
-    int height
-)
+        private void AddBoxCollider(
+            GameObject parent,
+            float x,
+            float y,
+            float width,
+            float height
+        )
         {
 
-            GameObject colliderObject =
-                new GameObject(
-                    "Collider_" +
-                    x +
-                    "_" +
-                    y
-                );
-
-
-            int groundLayer =
-                LayerMask.NameToLayer(
-                    "Ground"
-                );
-
-
             if (
-                groundLayer != -1
+                width <=
+                0f
+                ||
+                height <=
+                0f
             )
             {
 
-                colliderObject.layer =
-                    groundLayer;
+                return;
 
             }
 
 
-            colliderObject.transform.SetParent(
-                parent.transform,
-                false
-            );
+            BoxCollider2D collider =
+                parent.AddComponent<
+                    BoxCollider2D
+                >();
 
 
-            colliderObject.transform.localPosition =
-                new Vector3(
+            collider.offset =
+                new Vector2(
                     x +
                     width *
                     0.5f,
 
                     y +
                     height *
-                    0.5f,
-
-                    0f
+                    0.5f
                 );
-
-
-            BoxCollider2D collider =
-                colliderObject.AddComponent<
-                    BoxCollider2D
-                >();
 
 
             collider.size =
@@ -398,72 +489,6 @@ namespace Game.World.Collision
                     width,
                     height
                 );
-
-        }
-
-
-        // =====================================================
-        // CHECK SOLID
-        // =====================================================
-
-        private bool IsSolidBlock(
-            ushort blockID
-        )
-        {
-
-            if (
-                blockID == 0
-            )
-            {
-                return false;
-            }
-
-
-            ContentID contentID;
-
-
-            try
-            {
-
-                contentID =
-                    BlockIDRegistry.GetContentID(
-                        blockID
-                    );
-
-            }
-            catch
-            {
-
-                return false;
-
-            }
-
-
-            if (
-                !BlockRegistry.Contains(
-                    contentID
-                )
-            )
-            {
-                return false;
-            }
-
-
-            BlockDefinition block =
-                BlockRegistry.Get(
-                    contentID
-                );
-
-
-            if (
-                block == null
-            )
-            {
-                return false;
-            }
-
-
-            return block.Solid;
 
         }
 
@@ -492,7 +517,9 @@ namespace Game.World.Collision
                 )
             )
             {
+
                 return;
+
             }
 
 
@@ -510,4 +537,3 @@ namespace Game.World.Collision
     }
 
 }
-

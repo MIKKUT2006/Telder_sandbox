@@ -9,6 +9,7 @@ using Game.Crafting.UI;
 using Game.Inventory.UI;
 using Game.UI.Cursor;
 using Game.World;
+using Game.World.Furniture;
 
 
 namespace Game.Crafting
@@ -145,25 +146,25 @@ namespace Game.Crafting
             }
 
 
-            ushort blockId =
-                WorldManager.Instance
-                    .GetWorld()
-                    .GetBlock(
-                        x,
-                        y
-                    );
+            bool isWorkbench = false;
 
-
-            if (
-                !HasWorkbenchTag(
-                    blockId
-                )
-            )
+            if (FurnitureLayerManager.Instance != null &&
+                FurnitureLayerManager.Instance.TryGetDefinition(x, y, out BlockDefinition furnitureDefinition))
             {
-
-                return;
-
+                isWorkbench = HasWorkbenchTag(furnitureDefinition);
             }
+
+            if (!isWorkbench)
+            {
+                ushort blockId =
+                    WorldManager.Instance
+                        .GetWorld()
+                        .GetBlock(x, y);
+                isWorkbench = HasWorkbenchTag(blockId);
+            }
+
+            if (!isWorkbench)
+                return;
 
 
             PixelCursorController
@@ -192,6 +193,14 @@ namespace Game.Crafting
 
         }
 
+
+        private bool HasWorkbenchTag(BlockDefinition block)
+        {
+            if (block == null || block.Tags == null) return false;
+            for (int i=0;i<block.Tags.Count;i++)
+                if (string.Equals(block.Tags[i], workbenchTag, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
 
         private bool HasWorkbenchTag(
             ushort blockId

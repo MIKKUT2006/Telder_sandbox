@@ -7,6 +7,7 @@ using Game.World.Collision;
 using Game.World.Generation;
 using Game.World.Rendering;
 using Game.World.Structures;
+using Game.World.Biomes.Generation;
 
 
 namespace Game.World.Loading
@@ -503,11 +504,69 @@ namespace Game.World.Loading
 
 
                 // =================================================
+                // CAVE BIOMES + SURFACE FLORA
+                // =================================================
+                //
+                // This is still BASE GENERATION. It runs before the
+                // save overlay, therefore blocks broken/placed by
+                // the player in an existing save remain authoritative.
+                //
+                // =================================================
+
+                BiomeGenerationPostProcessor.ApplyToChunk(
+                    generator,
+                    settings,
+                    chunk
+                );
+
+
+                // =================================================
                 // APPLY SAVED DIMENSION CHANGES
                 // =================================================
 
                 SaveGameRuntime.ApplyChangesToChunk(
                     chunk
+                );
+
+
+                // =================================================
+                // MARK LOADED
+                // =================================================
+                //
+                // The World already contains this chunk after
+                // CreateChunk(), but ChunkLoader also tracks it
+                // explicitly for streaming/unloading.
+                //
+                // =================================================
+
+                loadedChunks.Add(
+                    position
+                );
+
+
+                // =================================================
+                // GENERATE LIGHT FOR THE NEW CHUNK
+                // =================================================
+                //
+                // IMPORTANT:
+                //
+                // Previously newly streamed chunks were rendered
+                // immediately with an empty ChunkLightData.
+                //
+                // Initial world lighting was built only once in
+                // WorldManager.Start(), therefore after walking far
+                // enough the player eventually reached newly loaded
+                // chunks that had never received sunlight/RGB light.
+                //
+                // Rebuild lighting AFTER terrain/structures/save
+                // changes are applied and BEFORE the chunk is first
+                // rendered.
+                //
+                // =================================================
+
+                world.NotifyChunkGenerated(
+                    position.x,
+                    position.y
                 );
 
 
@@ -526,15 +585,6 @@ namespace Game.World.Loading
 
                 collision.BuildChunkCollision(
                     chunk
-                );
-
-
-                // =================================================
-                // MARK LOADED
-                // =================================================
-
-                loadedChunks.Add(
-                    position
                 );
 
 

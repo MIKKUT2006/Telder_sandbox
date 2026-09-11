@@ -158,6 +158,31 @@ namespace Game.Debugging
 
             GUILayout.EndHorizontal();
 
+            GUILayout.BeginHorizontal();
+
+            if (GUILayout.Button(
+                "Кирка I",
+                GUILayout.Height(34f)))
+            {
+                GiveItem("game:wood_pickaxe");
+            }
+
+            if (GUILayout.Button(
+                "Кирка II",
+                GUILayout.Height(34f)))
+            {
+                GiveItem("game:iron_pickaxe");
+            }
+
+            if (GUILayout.Button(
+                "Кирка III",
+                GUILayout.Height(34f)))
+            {
+                GiveItem("game:teleportium_pickaxe");
+            }
+
+            GUILayout.EndHorizontal();
+
             GUILayout.Space(10f);
 
             GUILayout.Label(

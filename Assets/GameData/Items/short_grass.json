@@ -1,0 +1,7 @@
+{
+  "ID": "game:short_grass",
+  "Name": "Short grass",
+  "Texture": "short_grass",
+  "Type": "Block",
+  "MaxStack": 100
+}

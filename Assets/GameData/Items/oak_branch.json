@@ -1,0 +1,7 @@
+{
+  "ID": "game:oak_branch",
+  "Name": "Oak branch",
+  "Texture": "oak_branch",
+  "Type": "Block",
+  "MaxStack": 100
+}

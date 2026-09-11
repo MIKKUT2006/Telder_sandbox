@@ -546,6 +546,19 @@ namespace Game.World.Structures
                     regionX
                 );
 
+            // Register the full deterministic instance even though
+            // this method stamps only the cells that belong to the
+            // current chunk. The runtime index deduplicates the same
+            // candidate when neighbouring chunks are generated.
+            StructureInstanceRuntimeIndex.Register(
+                settings.Seed,
+                dimensionName,
+                structure,
+                regionX,
+                anchorX,
+                anchorY
+            );
+
             for (int i = 0;
                  i < structure.Cells.Count;
                  i++)

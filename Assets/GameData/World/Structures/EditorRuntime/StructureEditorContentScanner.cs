@@ -13,6 +13,7 @@ namespace Game.World.Structures.EditorRuntime
         {
             public string ID;
             public string Name;
+            public string Texture;
             public List<string> Tags;
             public bool closed;
             public bool Closed;
@@ -31,6 +32,7 @@ namespace Game.World.Structures.EditorRuntime
         {
             public string ID;
             public string Name;
+            public string Texture;
             public bool IsChest;
             public bool closed;
             public bool Closed;
@@ -98,6 +100,7 @@ namespace Game.World.Structures.EditorRuntime
                                 string.IsNullOrWhiteSpace(block.Name)
                                     ? block.ID
                                     : block.Name,
+                            Texture = block.Texture,
                             IsChest = isChest,
                             Closed = block.closed || block.Closed
                         }

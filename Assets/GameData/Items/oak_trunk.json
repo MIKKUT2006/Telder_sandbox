@@ -1,0 +1,7 @@
+{
+  "ID": "game:oak_trunk",
+  "Name": "Oak Trunk",
+  "Texture": "oak_trunk",
+  "Type": "Block",
+  "MaxStack": 100
+}

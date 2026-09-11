@@ -1,0 +1,15 @@
+{
+  "ID": "game:wood_pickaxe",
+  "Name": "Wood Pickaxe",
+  "Texture": "wood_pickaxe",
+  "MaxStack": 1,
+
+  "ToolType": "pickaxe",
+  "ToolLevel": 1,
+  "MiningSpeed": 1.0,
+
+  "HeldScale": 1.85,
+  "HeldRotation": 2,
+  "HeldOffsetX": 0.35,
+  "HeldOffsetY": -0.35
+}

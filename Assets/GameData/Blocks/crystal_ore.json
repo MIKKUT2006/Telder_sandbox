@@ -13,7 +13,7 @@
   "DropCount": 1,
   "PlaceSound": "",
   "BreakSound": "",
-  "RequiredTool": "",
+  "RequiredTool": "pickaxe",
   "Tags": [
     "crystal_ore",
     "ore"
@@ -25,5 +25,8 @@
   "LightEmissionB": 0,
   "CraftIngredients": [],
   "CraftWithoutWorkbench": false,
-  "CraftResultCount": 1
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": [],
+  "RequiredToolLevel": 1
 }

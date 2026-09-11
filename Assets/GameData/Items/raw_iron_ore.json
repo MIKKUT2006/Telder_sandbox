@@ -1,0 +1,7 @@
+{
+  "ID": "game:raw_iron_ore",
+  "Name": "Raw Iron ore",
+  "Texture": "raw_iron_ore",
+  "Type": "items",
+  "MaxStack": 100
+}

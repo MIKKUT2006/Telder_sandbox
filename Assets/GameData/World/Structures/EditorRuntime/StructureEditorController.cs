@@ -221,7 +221,7 @@ namespace Game.World.Structures.EditorRuntime
 
                     Texture2D icon =
                         StructureEditorIconCache.Get(
-                            block.ID
+                            block
                         );
 
                     if (icon != null)
@@ -361,6 +361,19 @@ namespace Game.World.Structures.EditorRuntime
                         cellRect,
                         cell
                     );
+
+                    if (cell != null)
+                    {
+                        string activeId = editBackground ? cell.BackgroundId : cell.ForegroundId;
+                        if (!string.IsNullOrWhiteSpace(activeId))
+                        {
+                            GUIStyle idStyle = new GUIStyle(GUI.skin.label);
+                            idStyle.fontSize = 8;
+                            idStyle.alignment = TextAnchor.LowerLeft;
+                            idStyle.normal.textColor = Color.white;
+                            GUI.Label(cellRect, ShortId(activeId), idStyle);
+                        }
+                    }
 
                     GUI.backgroundColor = old;
 
@@ -563,6 +576,33 @@ namespace Game.World.Structures.EditorRuntime
                     0,
                     current.Height - 1
                 );
+
+            GUILayout.Space(8f);
+            GUILayout.Label("Тип структуры");
+
+            current.Type =
+                (StructureType)
+                GUILayout.SelectionGrid(
+                    (int)current.Type,
+                    new[]
+                    {
+                        "ОБЫЧНАЯ",
+                        "ДЕРЕВО"
+                    },
+                    1
+                );
+
+            if (
+                current.Type ==
+                StructureType.Tree
+            )
+            {
+                GUILayout.Label(
+                    "Для ДЕРЕВА Origin X = колонна ствола. " +
+                    "При разрушении ствола всё выше среза " +
+                    "разрушается и выпадает."
+                );
+            }
 
             GUILayout.Space(8f);
             GUILayout.Label("Тип появления");

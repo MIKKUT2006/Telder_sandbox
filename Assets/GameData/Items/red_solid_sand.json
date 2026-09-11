@@ -1,0 +1,7 @@
+{
+  "ID": "game:red_solid_sand",
+  "Name": "Red solid sand",
+  "Texture": "red_solid_sand",
+  "Type": "Block",
+  "MaxStack": 100
+}

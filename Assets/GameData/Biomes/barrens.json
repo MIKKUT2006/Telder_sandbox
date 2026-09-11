@@ -2,15 +2,15 @@
   "ID": "game:barrens",
   "DisplayName": "BARRENS",
   "AllowedDimensionTypes": [
-    "*"
+    "barren"
   ],
   "Weight": 1.0,
   "Rare": false,
   "Terrain": {
-    "TopBlock": "game:dirt",
-    "SoilBlock": "game:dirt",
-    "StoneBlock": "game:stone",
-    "BackgroundBlock": "game:stone",
+    "TopBlock": "game:red_solid_sand",
+    "SoilBlock": "game:red_solid_sand",
+    "StoneBlock": "game:red_solid_sand",
+    "BackgroundBlock": "game:red_solid_sand",
     "SoilDepth": 5,
     "HeightOffset": -5.0,
     "HillHeightMultiplier": 0.35,

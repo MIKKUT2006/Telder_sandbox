@@ -57,6 +57,11 @@ namespace Game.World.Dimensions
                 ),
 
                 new DimensionTypeDefinition(
+                    "drawn",
+                    "DRAWN",
+                    "Нарисованное измерение"
+                ),
+                new DimensionTypeDefinition(
                     "abyssal",
                     "ABYSSAL",
                     "Глубокое тёмное измерение."

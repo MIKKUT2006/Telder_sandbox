@@ -31,5 +31,7 @@
   "LightEmissionB": 0,
   "CraftIngredients": [],
   "CraftWithoutWorkbench": false,
-  "CraftResultCount": 1
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
 }

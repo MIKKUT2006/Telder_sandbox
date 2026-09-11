@@ -81,6 +81,15 @@ namespace Game.World.Structures
                     ? manager.GetSettings().Seed
                     : 0;
 
+            StructureInstanceRuntimeIndex.Register(
+                seed,
+                dimensionName,
+                structure,
+                0,
+                anchorX,
+                anchorY
+            );
+
             bool changed = false;
 
             for (int i = 0;

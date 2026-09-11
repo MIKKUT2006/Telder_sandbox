@@ -10,6 +10,7 @@ using Game.Save;
 using Game.World;
 using Game.World.Dimensions;
 using Game.World.Items;
+using Game.World.Furniture;
 
 namespace Game.Chests
 {
@@ -40,11 +41,13 @@ namespace Game.Chests
         private void OnEnable()
         {
             SaveGameRuntime.ForegroundCleared += HandleForegroundCleared;
+            FurnitureLayerManager.FurnitureRemoved += HandleFurnitureRemoved;
         }
 
         private void OnDisable()
         {
             SaveGameRuntime.ForegroundCleared -= HandleForegroundCleared;
+            FurnitureLayerManager.FurnitureRemoved -= HandleFurnitureRemoved;
         }
 
         private void OnDestroy()
@@ -68,6 +71,11 @@ namespace Game.Chests
             if (manager == null || manager.GetWorld() == null)
                 return false;
 
+            if (FurnitureLayerManager.Instance != null &&
+                FurnitureLayerManager.Instance.TryGetDefinition(worldX, worldY, out BlockDefinition furnitureDef) &&
+                HasChestTag(furnitureDef))
+                return true;
+
             ushort blockId =
                 manager.GetWorld().GetBlock(worldX, worldY);
 
@@ -80,6 +88,11 @@ namespace Game.Chests
 
             if (manager == null || manager.GetWorld() == null)
                 return false;
+
+            if (FurnitureLayerManager.Instance != null &&
+                FurnitureLayerManager.Instance.TryGetDefinition(worldX, worldY, out BlockDefinition furnitureDef) &&
+                HasChestTag(furnitureDef))
+                return furnitureDef.Closed;
 
             ushort blockId =
                 manager.GetWorld().GetBlock(worldX, worldY);
@@ -132,6 +145,26 @@ namespace Game.Chests
                 definition = null;
                 return false;
             }
+        }
+
+        private bool HasChestTag(BlockDefinition definition)
+        {
+            if (definition == null || definition.Tags == null) return false;
+            for (int i=0;i<definition.Tags.Count;i++)
+                if (string.Equals(definition.Tags[i], chestTag, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
+        private void HandleFurnitureRemoved(int worldX, int worldY, string blockId)
+        {
+            try
+            {
+                ContentID id = ContentID.Parse(blockId);
+                if (!BlockRegistry.Contains(id)) return;
+                if (!HasChestTag(BlockRegistry.Get(id))) return;
+            }
+            catch { return; }
+            HandleForegroundCleared(worldX, worldY);
         }
 
         public ChestInventoryRuntime GetChest(

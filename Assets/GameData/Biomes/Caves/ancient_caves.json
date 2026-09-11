@@ -1,0 +1,18 @@
+{
+  "ID": "game:ancient_caves",
+  "DisplayName": "Древние пещеры",
+  "Enabled": true,
+  "MinY": -100000,
+  "MaxY": -80,
+  "TransitionHeight": 18,
+  "Priority": 100,
+  "Dimensions": [],
+  "StoneBlockId": "game:ancient_stone",
+  "BackgroundBlockId": "game:ancient_stone",
+  "FloorBlockId": "",
+  "CeilingBlockId": "",
+  "ExtraCaves": true,
+  "ExtraCaveScale": 0.018,
+  "ExtraCaveDetailScale": 0.055,
+  "ExtraCaveThreshold": 0.79
+}

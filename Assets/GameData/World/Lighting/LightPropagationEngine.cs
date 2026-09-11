@@ -1,20 +1,36 @@
+
 using Game.Blocks;
-using System;
+using Game.World.Furniture;
+
 using System.Collections.Generic;
+
 using UnityEngine;
+
 
 namespace Game.World.Lighting
 {
+
     public class LightPropagationEngine
     {
-        public const byte MaxLight = 15;
 
-        private const int LightSpreadRadius = MaxLight + 2;
+        public const byte MaxLight =
+            15;
+
+
+        private const int LightSpreadRadius =
+            MaxLight +
+            2;
+
 
         private readonly ILightWorld world;
 
-        private readonly Queue<LightPoint> propagationQueue =
-            new Queue<LightPoint>(4096);
+
+        private readonly Queue<LightPoint>
+            propagationQueue =
+            new Queue<LightPoint>(
+                4096
+            );
+
 
         private static readonly int[] DirectionX =
         {
@@ -23,6 +39,7 @@ namespace Game.World.Lighting
             0,
             0
         };
+
 
         private static readonly int[] DirectionY =
         {
@@ -33,15 +50,14 @@ namespace Game.World.Lighting
         };
 
 
-        // =========================================================
-        // CONSTRUCTOR
-        // =========================================================
-
         public LightPropagationEngine(
             ILightWorld world
         )
         {
-            this.world = world;
+
+            this.world =
+                world;
+
         }
 
 
@@ -53,35 +69,24 @@ namespace Game.World.Lighting
             int worldHeight
         )
         {
-            if (!TryGetLoadedBounds(
-                    out LightBounds loadedBounds))
+
+            if (
+                !TryGetLoadedBounds(
+                    out LightBounds loadedBounds
+                )
+            )
             {
+
                 return;
+
             }
 
-            int minY =
-                loadedBounds.MinY;
 
-            int maxY =
-                Mathf.Min(
-                    loadedBounds.MaxY,
-                    worldHeight - 1
-                );
-
-            if (minY > maxY)
-                return;
-
-            // ВАЖНО:
-            // RebuildRegion принимает:
-            //
-            // minX, maxX, minY, maxY
-            //
             RebuildRegion(
-                loadedBounds.MinX,
-                loadedBounds.MaxX,
-                minY,
-                maxY
+                loadedBounds,
+                worldHeight
             );
+
         }
 
 
@@ -91,49 +96,55 @@ namespace Game.World.Lighting
             int worldHeight
         )
         {
-            if (!TryGetLoadedBounds(
-                    out LightBounds loadedBounds))
+
+            if (
+                !TryGetLoadedBounds(
+                    out LightBounds loadedBounds
+                )
+            )
             {
+
                 return;
+
             }
 
+
             int chunkMinX =
-                chunkX * Chunk.SizeX;
+                chunkX *
+                Chunk.SizeX;
+
 
             int chunkMaxX =
                 chunkMinX +
-                Chunk.SizeX - 1;
+                Chunk.SizeX -
+                1;
 
 
-            int minX =
-                chunkMinX -
-                LightSpreadRadius;
+            LightBounds bounds =
+                new LightBounds(
+                    Mathf.Max(
+                        loadedBounds.MinX,
+                        chunkMinX -
+                        LightSpreadRadius
+                    ),
 
-            int maxX =
-                chunkMaxX +
-                LightSpreadRadius;
+                    loadedBounds.MinY,
 
+                    Mathf.Min(
+                        loadedBounds.MaxX,
+                        chunkMaxX +
+                        LightSpreadRadius
+                    ),
 
-            int minY =
-                loadedBounds.MinY;
-
-            int maxY =
-                Mathf.Min(
-                    loadedBounds.MaxY,
-                    worldHeight - 1
+                    loadedBounds.MaxY
                 );
 
 
-            if (minY > maxY)
-                return;
-
-
             RebuildRegion(
-                minX,
-                maxX,
-                minY,
-                maxY
+                bounds,
+                worldHeight
             );
+
         }
 
 
@@ -143,27 +154,67 @@ namespace Game.World.Lighting
             int worldHeight
         )
         {
+
+            if (
+                !TryGetLoadedBounds(
+                    out LightBounds loadedBounds
+                )
+            )
+            {
+
+                return;
+
+            }
+
+
             int minX =
-                worldX -
-                LightSpreadRadius;
+                Mathf.Max(
+                    loadedBounds.MinX,
+                    worldX -
+                    LightSpreadRadius
+                );
+
 
             int maxX =
-                worldX +
-                LightSpreadRadius;
+                Mathf.Min(
+                    loadedBounds.MaxX,
+                    worldX +
+                    LightSpreadRadius
+                );
 
 
-            int minY = 0;
+            if (
+                minX >
+                maxX
+            )
+            {
 
-            int maxY =
-                worldHeight - 1;
+                return;
+
+            }
+
+
+            // IMPORTANT:
+            //
+            // Do NOT clamp MinY to 0.
+            //
+            // Negative chunk/world Y is valid in this world,
+            // therefore a torch at Y=-20 must participate in
+            // exactly the same rebuild as a torch at Y=20.
+            LightBounds bounds =
+                new LightBounds(
+                    minX,
+                    loadedBounds.MinY,
+                    maxX,
+                    loadedBounds.MaxY
+                );
 
 
             RebuildRegion(
-                minX,
-                maxX,
-                minY,
-                maxY
+                bounds,
+                worldHeight
             );
+
         }
 
 
@@ -172,16 +223,117 @@ namespace Game.World.Lighting
             int chunkY
         )
         {
+
             RebuildAfterChunkGenerated(
                 chunkX,
                 chunkY,
                 256
             );
+
         }
 
 
         // =========================================================
-        // REGION REBUILD
+        // REGION REBUILD вЂ” MAIN IMPLEMENTATION
+        // =========================================================
+        //
+        // The project previously contained TWO incomplete lighting
+        // implementations in this class:
+        //
+        // RebuildRegion(int,int,int,int)
+        //
+        // and a newer bounds-based pipeline whose public methods
+        // called:
+        //
+        // RebuildRegion(LightBounds,int)
+        //
+        // but that overload did not exist.
+        //
+        // This is the missing canonical overload.
+        //
+        // =========================================================
+
+        private void RebuildRegion(
+            LightBounds bounds,
+            int worldHeight
+        )
+        {
+
+            if (
+                world ==
+                null
+            )
+            {
+
+                return;
+
+            }
+
+
+            if (
+                bounds.MinX >
+                bounds.MaxX
+                ||
+                bounds.MinY >
+                bounds.MaxY
+            )
+            {
+
+                return;
+
+            }
+
+
+            propagationQueue.Clear();
+
+
+            // 1. Remove stale light from the rebuild region.
+            ClearRegion(
+                bounds
+            );
+
+
+            // 2. Re-seed sunlight.
+            SeedSunlight(
+                bounds,
+                worldHeight
+            );
+
+
+            // 3. Re-seed foreground + Furniture RGB emitters.
+            SeedEmissiveBlocks(
+                bounds
+            );
+
+
+            // 4. Keep light coming from immediately outside the
+            // rebuilt X region.
+            SeedExistingBoundaryLight(
+                bounds
+            );
+
+
+            // 5. Propagate all channels.
+            Propagate(
+                bounds
+            );
+
+
+            // 6. Renderer light textures must know their data changed.
+            MarkRegionDirty(
+                bounds
+            );
+
+        }
+
+
+        // =========================================================
+        // COMPATIBILITY OVERLOAD
+        // =========================================================
+        //
+        // Keep this signature because older project code and old
+        // patchers may still call it.
+        //
         // =========================================================
 
         private void RebuildRegion(
@@ -191,140 +343,22 @@ namespace Game.World.Lighting
             int maxY
         )
         {
-            if (world == null)
-                return;
 
-
-            if (minX > maxX ||
-                minY > maxY)
-            {
-                return;
-            }
-
-
-            // -----------------------------------------------------
-            // Не пересчитываем область за пределами загруженного
-            // мира по вертикали/горизонтали.
-            // -----------------------------------------------------
-
-            if (!TryGetLoadedBounds(
-                    out LightBounds loadedBounds))
-            {
-                return;
-            }
-
-
-            minX =
-                Mathf.Max(
-                    minX,
-                    loadedBounds.MinX
-                );
-
-            maxX =
-                Mathf.Min(
-                    maxX,
-                    loadedBounds.MaxX
-                );
-
-            minY =
-                Mathf.Max(
-                    minY,
-                    loadedBounds.MinY
-                );
-
-            maxY =
-                Mathf.Min(
-                    maxY,
-                    loadedBounds.MaxY
-                );
-
-
-            if (minX > maxX ||
-                minY > maxY)
-            {
-                return;
-            }
-
-
-            // -----------------------------------------------------
-            // Очищаем очередь от предыдущего пересчёта.
-            // -----------------------------------------------------
-
-            propagationQueue.Clear();
-
-
-            // -----------------------------------------------------
-            // 1. ОЧИЩАЕМ СТАРОЕ ОСВЕЩЕНИЕ
-            // -----------------------------------------------------
-
-            ClearRegion(
-                new LightBounds(
-                    minX,
-                    minY,
-                    maxX,
-                    maxY
-                )
-            );
-
-
-            // -----------------------------------------------------
-            // 2. СОЛНЕЧНЫЙ СВЕТ
-            // -----------------------------------------------------
-
-            SeedSunlight(
+            RebuildRegion(
                 new LightBounds(
                     minX,
                     minY,
                     maxX,
                     maxY
                 ),
-                maxY + 1
-            );
 
-
-            // -----------------------------------------------------
-            // 3. RGB ИСТОЧНИКИ
-            // -----------------------------------------------------
-
-            SeedEmissiveBlocks(
-                new LightBounds(
-                    minX,
-                    minY,
-                    maxX,
-                    maxY
+                Mathf.Max(
+                    1,
+                    maxY +
+                    1
                 )
             );
 
-
-            // -----------------------------------------------------
-            // 4. ГРАНИЧНЫЙ СВЕТ
-            //
-            // Нужен, чтобы локальный пересчёт не создавал
-            // резкую тёмную границу.
-            // -----------------------------------------------------
-
-            SeedExistingBoundaryLight(
-                new LightBounds(
-                    minX,
-                    minY,
-                    maxX,
-                    maxY
-                )
-            );
-
-
-            // -----------------------------------------------------
-            // 5. РАСПРОСТРАНЯЕМ СВЕТ
-            // -----------------------------------------------------
-
-            Propagate(
-                new LightBounds(
-                    minX,
-                    minY,
-                    maxX,
-                    maxY
-                )
-            );
         }
 
 
@@ -336,23 +370,31 @@ namespace Game.World.Lighting
             LightBounds bounds
         )
         {
+
             for (
                 int x = bounds.MinX;
                 x <= bounds.MaxX;
                 x++
             )
             {
+
                 for (
                     int y = bounds.MinY;
                     y <= bounds.MaxY;
                     y++
                 )
                 {
-                    if (!world.IsLoaded(
+
+                    if (
+                        !world.IsLoaded(
                             x,
-                            y))
+                            y
+                        )
+                    )
                     {
+
                         continue;
+
                     }
 
 
@@ -364,8 +406,11 @@ namespace Game.World.Lighting
                         0,
                         0
                     );
+
                 }
+
             }
+
         }
 
 
@@ -378,8 +423,13 @@ namespace Game.World.Lighting
             int worldHeight
         )
         {
+
             int skyTop =
-                worldHeight - 1;
+                Mathf.Max(
+                    worldHeight -
+                    1,
+                    bounds.MaxY
+                );
 
 
             for (
@@ -388,6 +438,7 @@ namespace Game.World.Lighting
                 x++
             )
             {
+
                 byte directSun =
                     MaxLight;
 
@@ -398,15 +449,15 @@ namespace Game.World.Lighting
                     y--
                 )
                 {
-                    if (directSun == 0)
+
+                    if (
+                        directSun ==
+                        0
+                    )
+                    {
+
                         break;
 
-
-                    if (!world.IsLoaded(
-                            x,
-                            y))
-                    {
-                        continue;
                     }
 
 
@@ -424,41 +475,64 @@ namespace Game.World.Lighting
 
 
                     bool insideRegion =
-                        y <= bounds.MaxY;
+                        y <=
+                        bounds.MaxY;
 
 
-                    // -------------------------------------------------
-                    // AIR
-                    // -------------------------------------------------
-
-                    if (blockID == 0)
+                    if (
+                        blockID ==
+                        0
+                    )
                     {
-                        if (insideRegion)
+
+                        if (
+                            insideRegion
+                            &&
+                            world.IsLoaded(
+                                x,
+                                y
+                            )
+                        )
                         {
+
                             SetSunlightSource(
                                 x,
                                 y,
                                 directSun,
                                 true
                             );
+
                         }
 
+
                         continue;
+
                     }
 
 
-                    // -------------------------------------------------
-                    // ПОЛНОСТЬЮ НЕПРОЗРАЧНЫЙ БЛОК
-                    // -------------------------------------------------
-
-                    if (opacity >= MaxLight)
+                    if (
+                        opacity >=
+                        MaxLight
+                    )
                     {
-                        if (insideRegion)
+
+                        if (
+                            insideRegion
+                            &&
+                            world.IsLoaded(
+                                x,
+                                y
+                            )
+                        )
                         {
+
                             byte faceLight =
-                                directSun > 0
+                                directSun >
+                                0
                                     ? (byte)(
-                                        directSun - 1)
+                                        directSun -
+                                        1
+                                    )
                                     : (byte)0;
 
 
@@ -468,18 +542,14 @@ namespace Game.World.Lighting
                                 faceLight,
                                 false
                             );
+
                         }
 
 
-                        // Солнечный свет дальше
-                        // через блок не проходит.
                         break;
+
                     }
 
-
-                    // -------------------------------------------------
-                    // ЧАСТИЧНО ПРОЗРАЧНЫЙ БЛОК
-                    // -------------------------------------------------
 
                     directSun =
                         SubtractLight(
@@ -488,21 +558,29 @@ namespace Game.World.Lighting
                         );
 
 
-                    if (directSun == 0)
-                        continue;
-
-
-                    if (insideRegion)
+                    if (
+                        insideRegion
+                        &&
+                        world.IsLoaded(
+                            x,
+                            y
+                        )
+                    )
                     {
+
                         SetSunlightSource(
                             x,
                             y,
                             directSun,
                             true
                         );
+
                     }
+
                 }
+
             }
+
         }
 
 
@@ -513,8 +591,16 @@ namespace Game.World.Lighting
             bool propagate
         )
         {
-            if (sunlight == 0)
+
+            if (
+                sunlight ==
+                0
+            )
+            {
+
                 return;
+
+            }
 
 
             LightNode current =
@@ -524,8 +610,15 @@ namespace Game.World.Lighting
                 );
 
 
-            if (sunlight <= current.Sun)
+            if (
+                sunlight <=
+                current.Sun
+            )
+            {
+
                 return;
+
+            }
 
 
             current.Sun =
@@ -542,15 +635,20 @@ namespace Game.World.Lighting
             );
 
 
-            if (propagate)
+            if (
+                propagate
+            )
             {
+
                 propagationQueue.Enqueue(
                     new LightPoint(
                         x,
                         y
                     )
                 );
+
             }
+
         }
 
 
@@ -562,25 +660,49 @@ namespace Game.World.Lighting
             LightBounds bounds
         )
         {
+
             for (
                 int x = bounds.MinX;
                 x <= bounds.MaxX;
                 x++
             )
             {
+
                 for (
                     int y = bounds.MinY;
                     y <= bounds.MaxY;
                     y++
                 )
                 {
-                    if (!world.IsLoaded(
+
+                    if (
+                        !world.IsLoaded(
                             x,
-                            y))
+                            y
+                        )
+                    )
                     {
+
                         continue;
+
                     }
 
+
+                    byte r =
+                        0;
+
+
+                    byte g =
+                        0;
+
+
+                    byte b =
+                        0;
+
+
+                    // =============================================
+                    // FOREGROUND
+                    // =============================================
 
                     ushort blockID =
                         world.GetBlock(
@@ -589,41 +711,116 @@ namespace Game.World.Lighting
                         );
 
 
-                    if (blockID == 0)
-                        continue;
-
-
-                    BlockDefinition definition =
-                        world.GetBlockDefinition(
-                            blockID
-                        );
-
-
-                    if (definition == null)
-                        continue;
-
-
-                    byte r =
-                        ClampLight(
-                            definition.LightEmissionR
-                        );
-
-                    byte g =
-                        ClampLight(
-                            definition.LightEmissionG
-                        );
-
-                    byte b =
-                        ClampLight(
-                            definition.LightEmissionB
-                        );
-
-
-                    if (r == 0 &&
-                        g == 0 &&
-                        b == 0)
+                    if (
+                        blockID !=
+                        0
+                    )
                     {
+
+                        BlockDefinition definition =
+                            world.GetBlockDefinition(
+                                blockID
+                            );
+
+
+                        if (
+                            definition !=
+                            null
+                        )
+                        {
+
+                            r =
+                                ClampLight(
+                                    definition
+                                        .LightEmissionR
+                                );
+
+
+                            g =
+                                ClampLight(
+                                    definition
+                                        .LightEmissionG
+                                );
+
+
+                            b =
+                                ClampLight(
+                                    definition
+                                        .LightEmissionB
+                                );
+
+                        }
+
+                    }
+
+
+                    // =============================================
+                    // FURNITURE
+                    // =============================================
+
+                    if (
+                        FurnitureLayerManager.Instance !=
+                        null
+                        &&
+                        FurnitureLayerManager.Instance
+                            .TryGetDefinition(
+                                x,
+                                y,
+                                out BlockDefinition
+                                    furniture
+                            )
+                        &&
+                        furniture !=
+                        null
+                    )
+                    {
+
+                        r =
+                            Max(
+                                r,
+                                ClampLight(
+                                    furniture
+                                        .LightEmissionR
+                                )
+                            );
+
+
+                        g =
+                            Max(
+                                g,
+                                ClampLight(
+                                    furniture
+                                        .LightEmissionG
+                                )
+                            );
+
+
+                        b =
+                            Max(
+                                b,
+                                ClampLight(
+                                    furniture
+                                        .LightEmissionB
+                                )
+                            );
+
+                    }
+
+
+                    if (
+                        r ==
+                        0
+                        &&
+                        g ==
+                        0
+                        &&
+                        b ==
+                        0
+                    )
+                    {
+
                         continue;
+
                     }
 
 
@@ -671,8 +868,11 @@ namespace Game.World.Lighting
                             y
                         )
                     );
+
                 }
+
             }
+
         }
 
 
@@ -684,11 +884,15 @@ namespace Game.World.Lighting
             LightBounds bounds
         )
         {
+
             int left =
-                bounds.MinX - 1;
+                bounds.MinX -
+                1;
+
 
             int right =
-                bounds.MaxX + 1;
+                bounds.MaxX +
+                1;
 
 
             for (
@@ -697,6 +901,7 @@ namespace Game.World.Lighting
                 y++
             )
             {
+
                 AddBoundarySource(
                     left,
                     y
@@ -707,14 +912,18 @@ namespace Game.World.Lighting
                     right,
                     y
                 );
+
             }
 
 
             int bottom =
-                bounds.MinY - 1;
+                bounds.MinY -
+                1;
+
 
             int top =
-                bounds.MaxY + 1;
+                bounds.MaxY +
+                1;
 
 
             for (
@@ -723,6 +932,7 @@ namespace Game.World.Lighting
                 x++
             )
             {
+
                 AddBoundarySource(
                     x,
                     bottom
@@ -733,7 +943,9 @@ namespace Game.World.Lighting
                     x,
                     top
                 );
+
             }
+
         }
 
 
@@ -742,11 +954,17 @@ namespace Game.World.Lighting
             int y
         )
         {
-            if (!world.IsLoaded(
+
+            if (
+                !world.IsLoaded(
                     x,
-                    y))
+                    y
+                )
+            )
             {
+
                 return;
+
             }
 
 
@@ -757,8 +975,14 @@ namespace Game.World.Lighting
                 );
 
 
-            if (light.IsEmpty)
+            if (
+                light.IsEmpty
+            )
+            {
+
                 return;
+
+            }
 
 
             propagationQueue.Enqueue(
@@ -767,6 +991,7 @@ namespace Game.World.Lighting
                     y
                 )
             );
+
         }
 
 
@@ -778,10 +1003,13 @@ namespace Game.World.Lighting
             LightBounds bounds
         )
         {
+
             while (
-                propagationQueue.Count > 0
+                propagationQueue.Count >
+                0
             )
             {
+
                 LightPoint sourcePoint =
                     propagationQueue.Dequeue();
 
@@ -793,8 +1021,14 @@ namespace Game.World.Lighting
                     );
 
 
-                if (source.IsEmpty)
+                if (
+                    source.IsEmpty
+                )
+                {
+
                     continue;
+
+                }
 
 
                 for (
@@ -803,6 +1037,7 @@ namespace Game.World.Lighting
                     direction++
                 )
                 {
+
                     int targetX =
                         sourcePoint.X +
                         DirectionX[
@@ -817,19 +1052,29 @@ namespace Game.World.Lighting
                         ];
 
 
-                    if (!bounds.Contains(
+                    if (
+                        !bounds.Contains(
                             targetX,
-                            targetY))
+                            targetY
+                        )
+                    )
                     {
+
                         continue;
+
                     }
 
 
-                    if (!world.IsLoaded(
+                    if (
+                        !world.IsLoaded(
                             targetX,
-                            targetY))
+                            targetY
+                        )
+                    )
                     {
+
                         continue;
+
                     }
 
 
@@ -838,8 +1083,11 @@ namespace Game.World.Lighting
                         targetX,
                         targetY
                     );
+
                 }
+
             }
+
         }
 
 
@@ -849,6 +1097,7 @@ namespace Game.World.Lighting
             int targetY
         )
         {
+
             ushort targetBlock =
                 world.GetBlock(
                     targetX,
@@ -863,60 +1112,51 @@ namespace Game.World.Lighting
 
 
             bool fullyOpaque =
-                targetBlock != 0 &&
-                opacity >= MaxLight;
+                targetBlock !=
+                0
+                &&
+                opacity >=
+                MaxLight;
 
 
-            int attenuation;
+            int attenuation =
+                fullyOpaque
+                    ? 1
+                    : 1 +
+                      opacity;
 
 
-            if (fullyOpaque)
+            LightNode candidate =
+                new LightNode(
+                    SubtractLight(
+                        source.Sun,
+                        attenuation
+                    ),
+
+                    SubtractLight(
+                        source.R,
+                        attenuation
+                    ),
+
+                    SubtractLight(
+                        source.G,
+                        attenuation
+                    ),
+
+                    SubtractLight(
+                        source.B,
+                        attenuation
+                    )
+                );
+
+
+            if (
+                candidate.IsEmpty
+            )
             {
-                // Блок получает свет на своей
-                // поверхности.
-                attenuation = 1;
-            }
-            else
-            {
-                attenuation =
-                    1 + opacity;
-            }
 
-
-            byte newSun =
-                SubtractLight(
-                    source.Sun,
-                    attenuation
-                );
-
-
-            byte newR =
-                SubtractLight(
-                    source.R,
-                    attenuation
-                );
-
-
-            byte newG =
-                SubtractLight(
-                    source.G,
-                    attenuation
-                );
-
-
-            byte newB =
-                SubtractLight(
-                    source.B,
-                    attenuation
-                );
-
-
-            if (newSun == 0 &&
-                newR == 0 &&
-                newG == 0 &&
-                newB == 0)
-            {
                 return;
+
             }
 
 
@@ -931,34 +1171,43 @@ namespace Game.World.Lighting
                 new LightNode(
                     Max(
                         existing.Sun,
-                        newSun
+                        candidate.Sun
                     ),
 
                     Max(
                         existing.R,
-                        newR
+                        candidate.R
                     ),
 
                     Max(
                         existing.G,
-                        newG
+                        candidate.G
                     ),
 
                     Max(
                         existing.B,
-                        newB
+                        candidate.B
                     )
                 );
 
 
             if (
-                merged.Sun == existing.Sun &&
-                merged.R == existing.R &&
-                merged.G == existing.G &&
-                merged.B == existing.B
+                merged.Sun ==
+                existing.Sun
+                &&
+                merged.R ==
+                existing.R
+                &&
+                merged.G ==
+                existing.G
+                &&
+                merged.B ==
+                existing.B
             )
             {
+
                 return;
+
             }
 
 
@@ -972,11 +1221,14 @@ namespace Game.World.Lighting
             );
 
 
-            // Полностью непрозрачный блок
-            // получает свет, но дальше его
-            // не пропускает.
-            if (fullyOpaque)
+            if (
+                fullyOpaque
+            )
+            {
+
                 return;
+
+            }
 
 
             propagationQueue.Enqueue(
@@ -985,6 +1237,84 @@ namespace Game.World.Lighting
                     targetY
                 )
             );
+
+        }
+
+
+        // =========================================================
+        // DIRTY
+        // =========================================================
+
+        private void MarkRegionDirty(
+            LightBounds bounds
+        )
+        {
+
+            HashSet<ChunkLightData> dirty =
+                new HashSet<ChunkLightData>();
+
+
+            for (
+                int x = bounds.MinX;
+                x <= bounds.MaxX;
+                x++
+            )
+            {
+
+                for (
+                    int y = bounds.MinY;
+                    y <= bounds.MaxY;
+                    y++
+                )
+                {
+
+                    if (
+                        !world.IsLoaded(
+                            x,
+                            y
+                        )
+                    )
+                    {
+
+                        continue;
+
+                    }
+
+
+                    ChunkLightData data =
+                        world.GetLightData(
+                            x,
+                            y
+                        );
+
+
+                    if (
+                        data !=
+                        null
+                    )
+                    {
+
+                        dirty.Add(
+                            data
+                        );
+
+                    }
+
+                }
+
+            }
+
+
+            foreach (
+                ChunkLightData data
+                in dirty
+            )
+            {
+
+                data.MarkDirty();
+
+            }
+
         }
 
 
@@ -996,9 +1326,16 @@ namespace Game.World.Lighting
             ushort blockID
         )
         {
-            // ID 0 = AIR.
-            if (blockID == 0)
+
+            if (
+                blockID ==
+                0
+            )
+            {
+
                 return 0;
+
+            }
 
 
             BlockDefinition definition =
@@ -1007,27 +1344,25 @@ namespace Game.World.Lighting
                 );
 
 
-            if (definition == null)
+            if (
+                definition ==
+                null
+            )
             {
-                // Неизвестный блок считаем
-                // полностью непрозрачным.
-                return MaxLight;
+
+                return
+                    MaxLight;
+
             }
 
 
-            int opacity =
-                definition.LightOpacity;
+            return
+                Mathf.Clamp(
+                    definition.LightOpacity,
+                    0,
+                    MaxLight
+                );
 
-
-            if (opacity < 0)
-                return 0;
-
-
-            if (opacity > MaxLight)
-                return MaxLight;
-
-
-            return opacity;
         }
 
 
@@ -1039,25 +1374,46 @@ namespace Game.World.Lighting
             out LightBounds bounds
         )
         {
-            bounds = default;
+
+            bounds =
+                default;
 
 
             Game.World.World concreteWorld =
-                world as Game.World.World;
+                world
+                as
+                Game.World.World;
 
 
-            if (concreteWorld == null)
+            if (
+                concreteWorld ==
+                null
+            )
+            {
+
                 return false;
 
+            }
 
-            bool found = false;
+
+            bool found =
+                false;
 
 
-            int minX = 0;
-            int minY = 0;
+            int minX =
+                0;
 
-            int maxX = 0;
-            int maxY = 0;
+
+            int minY =
+                0;
+
+
+            int maxX =
+                0;
+
+
+            int maxY =
+                0;
 
 
             foreach (
@@ -1065,12 +1421,20 @@ namespace Game.World.Lighting
                 in concreteWorld.GetLoadedChunks()
             )
             {
+
                 Chunk chunk =
                     pair.Value;
 
 
-                if (chunk == null)
+                if (
+                    chunk ==
+                    null
+                )
+                {
+
                     continue;
+
+                }
 
 
                 int chunkMinX =
@@ -1085,54 +1449,104 @@ namespace Game.World.Lighting
 
                 int chunkMaxX =
                     chunkMinX +
-                    Chunk.SizeX - 1;
+                    Chunk.SizeX -
+                    1;
 
 
                 int chunkMaxY =
                     chunkMinY +
-                    Chunk.SizeY - 1;
+                    Chunk.SizeY -
+                    1;
 
 
-                if (!found)
+                if (
+                    !found
+                )
                 {
+
                     minX =
                         chunkMinX;
+
 
                     minY =
                         chunkMinY;
 
+
                     maxX =
                         chunkMaxX;
+
 
                     maxY =
                         chunkMaxY;
 
 
-                    found = true;
+                    found =
+                        true;
+
 
                     continue;
+
                 }
 
 
-                if (chunkMinX < minX)
-                    minX = chunkMinX;
+                if (
+                    chunkMinX <
+                    minX
+                )
+                {
+
+                    minX =
+                        chunkMinX;
+
+                }
 
 
-                if (chunkMinY < minY)
-                    minY = chunkMinY;
+                if (
+                    chunkMinY <
+                    minY
+                )
+                {
+
+                    minY =
+                        chunkMinY;
+
+                }
 
 
-                if (chunkMaxX > maxX)
-                    maxX = chunkMaxX;
+                if (
+                    chunkMaxX >
+                    maxX
+                )
+                {
+
+                    maxX =
+                        chunkMaxX;
+
+                }
 
 
-                if (chunkMaxY > maxY)
-                    maxY = chunkMaxY;
+                if (
+                    chunkMaxY >
+                    maxY
+                )
+                {
+
+                    maxY =
+                        chunkMaxY;
+
+                }
+
             }
 
 
-            if (!found)
+            if (
+                !found
+            )
+            {
+
                 return false;
+
+            }
 
 
             bounds =
@@ -1145,6 +1559,7 @@ namespace Game.World.Lighting
 
 
             return true;
+
         }
 
 
@@ -1157,19 +1572,37 @@ namespace Game.World.Lighting
             int amount
         )
         {
+
             int result =
-                value - amount;
+                value -
+                amount;
 
 
-            if (result <= 0)
+            if (
+                result <=
+                0
+            )
+            {
+
                 return 0;
 
+            }
 
-            if (result >= MaxLight)
+
+            if (
+                result >=
+                MaxLight
+            )
+            {
+
                 return MaxLight;
 
+            }
 
-            return (byte)result;
+
+            return
+                (byte)result;
+
         }
 
 
@@ -1177,15 +1610,32 @@ namespace Game.World.Lighting
             int value
         )
         {
-            if (value <= 0)
+
+            if (
+                value <=
+                0
+            )
+            {
+
                 return 0;
 
+            }
 
-            if (value >= MaxLight)
+
+            if (
+                value >=
+                MaxLight
+            )
+            {
+
                 return MaxLight;
 
+            }
 
-            return (byte)value;
+
+            return
+                (byte)value;
+
         }
 
 
@@ -1194,19 +1644,21 @@ namespace Game.World.Lighting
             byte b
         )
         {
-            return a > b
-                ? a
-                : b;
+
+            return
+                a >
+                b
+                    ? a
+                    : b;
+
         }
 
 
-        // =========================================================
-        // LIGHT POINT
-        // =========================================================
-
         private struct LightPoint
         {
+
             public readonly int X;
+
             public readonly int Y;
 
 
@@ -1215,22 +1667,29 @@ namespace Game.World.Lighting
                 int y
             )
             {
-                X = x;
-                Y = y;
+
+                X =
+                    x;
+
+
+                Y =
+                    y;
+
             }
+
         }
 
 
-        // =========================================================
-        // LIGHT BOUNDS
-        // =========================================================
-
         private struct LightBounds
         {
+
             public readonly int MinX;
+
             public readonly int MinY;
 
+
             public readonly int MaxX;
+
             public readonly int MaxY;
 
 
@@ -1241,11 +1700,22 @@ namespace Game.World.Lighting
                 int maxY
             )
             {
-                MinX = minX;
-                MinY = minY;
 
-                MaxX = maxX;
-                MaxY = maxY;
+                MinX =
+                    minX;
+
+
+                MinY =
+                    minY;
+
+
+                MaxX =
+                    maxX;
+
+
+                MaxY =
+                    maxY;
+
             }
 
 
@@ -1254,12 +1724,24 @@ namespace Game.World.Lighting
                 int y
             )
             {
+
                 return
-                    x >= MinX &&
-                    x <= MaxX &&
-                    y >= MinY &&
-                    y <= MaxY;
+                    x >=
+                    MinX
+                    &&
+                    x <=
+                    MaxX
+                    &&
+                    y >=
+                    MinY
+                    &&
+                    y <=
+                    MaxY;
+
             }
+
         }
+
     }
+
 }

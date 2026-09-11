@@ -100,18 +100,10 @@ namespace Game.UI.MainMenu
 
         private void Awake()
         {
+            if (menuCamera == null)
+                menuCamera = Camera.main;
 
-            if (
-                menuCamera ==
-                null
-            )
-            {
-
-                menuCamera =
-                    Camera.main;
-
-            }
-
+            SaveContextMenuController.EnsureExists(this);
         }
 
 
@@ -179,9 +171,8 @@ namespace Game.UI.MainMenu
             }
 
 
-            Time.timeScale =
-                1f;
-
+            Time.timeScale = 1f;
+            WorldLoadingOverlay.Show("Загрузка мира...");
 
             SceneManager.LoadScene(
                 gameSceneName
@@ -207,9 +198,8 @@ namespace Game.UI.MainMenu
             }
 
 
-            Time.timeScale =
-                1f;
-
+            Time.timeScale = 1f;
+            WorldLoadingOverlay.Show("Загрузка мира...");
 
             SceneManager.LoadScene(
                 gameSceneName

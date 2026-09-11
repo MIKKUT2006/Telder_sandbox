@@ -1,0 +1,23 @@
+{
+  "ID": "game:red_solid_sand",
+
+  "Name": "Red solid sand",
+
+  "Texture": "red_solid_sand",
+
+  "Hardness": 1,
+
+  "Solid": true,
+  "Drop": "game:red_solid_sand",
+  "DropCount": 1,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

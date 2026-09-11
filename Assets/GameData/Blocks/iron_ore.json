@@ -9,7 +9,7 @@
   "BlocksLight": true,
   "LightLevel": 0,
   "DropCount": 1,
-  "Drop": "game:iron_ore",
+  "Drop": "game:raw_iron_ore",
   "Tags": [],
 
   "LightOpacity": 15,
@@ -18,5 +18,9 @@
   "LightEmissionB": 0,
   "CraftIngredients": [],
   "CraftWithoutWorkbench": false,
-  "CraftResultCount": 1
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": [],
+  "RequiredTool": "pickaxe",
+  "RequiredToolLevel": 1
 }

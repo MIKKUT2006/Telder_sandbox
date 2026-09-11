@@ -93,27 +93,28 @@ namespace Game.Save
             DimensionDatabase.Initialize();
 
 
+            DimensionDefinition startDimension =
+                DimensionDatabase.GetOrCreate(
+                    DimensionDatabase.StartDimension
+                );
+
+
+            if (
+                startDimension ==
+                null
+            )
+            {
+                Debug.LogError(
+                    "SAVE: Start dimension could not be created."
+                );
+
+                return false;
+            }
+
+
             currentSaveId =
                 Guid.NewGuid()
                     .ToString("N");
-
-
-            string startDimensionName =
-                DimensionDatabase.StartDimension;
-
-
-            int startDimensionSeed =
-                BuildSaveDimensionSeed(
-                    currentSaveId,
-                    startDimensionName
-                );
-
-
-            DimensionDefinition startDimension =
-                new DimensionDefinition(
-                    startDimensionName,
-                    startDimensionSeed
-                );
 
 
             string now =
@@ -269,6 +270,38 @@ namespace Game.Save
                     saveId;
 
 
+                // V21 briefly generated dimension seeds from SaveId+Name.
+                // That can produce a dimension seed/type combination for which
+                // the biome profile is invalid, leaving generated chunks empty.
+                // Normalize old saves back to the seed owned by DimensionDatabase.
+                DimensionDatabase.Initialize();
+                DimensionDefinition canonicalDimension =
+                    DimensionDatabase.GetOrCreate(
+                        currentSave.CurrentDimensionName
+                    );
+
+                if (canonicalDimension != null &&
+                    currentSave.CurrentDimensionSeed != canonicalDimension.Seed)
+                {
+                    currentSave.CurrentDimensionSeed = canonicalDimension.Seed;
+
+                    if (currentSave.Dimensions != null)
+                    {
+                        for (int d = 0; d < currentSave.Dimensions.Count; d++)
+                        {
+                            DimensionSummarySaveData summary = currentSave.Dimensions[d];
+                            if (summary != null && string.Equals(summary.Name, canonicalDimension.Name, StringComparison.OrdinalIgnoreCase))
+                                summary.Seed = canonicalDimension.Seed;
+                        }
+                    }
+
+                    File.WriteAllText(
+                        SavePaths.GetMainFile(currentSaveId),
+                        JsonUtility.ToJson(currentSave, true)
+                    );
+                }
+
+
                 loadedDimensions.Clear();
 
 
@@ -318,6 +351,120 @@ namespace Game.Save
         // =====================================================
         // SAVE LIST
         // =====================================================
+
+        public static bool RenameSave(
+            string saveId,
+            string newDisplayName
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(saveId)
+                ||
+                string.IsNullOrWhiteSpace(newDisplayName)
+            )
+            {
+                return false;
+            }
+
+            string file =
+                SavePaths.GetMainFile(saveId);
+
+            if (!File.Exists(file))
+                return false;
+
+            try
+            {
+                TelderSaveData data =
+                    JsonUtility.FromJson<TelderSaveData>(
+                        File.ReadAllText(file)
+                    );
+
+                if (data == null)
+                    return false;
+
+                data.DisplayName =
+                    newDisplayName.Trim();
+
+                File.WriteAllText(
+                    file,
+                    JsonUtility.ToJson(
+                        data,
+                        true
+                    )
+                );
+
+                if (
+                    HasActiveSave
+                    &&
+                    currentSaveId ==
+                    saveId
+                )
+                {
+                    currentSave.DisplayName =
+                        data.DisplayName;
+                }
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(
+                    "SAVE: Rename failed: " +
+                    exception
+                );
+
+                return false;
+            }
+        }
+
+
+        public static bool DeleteSave(
+            string saveId
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(saveId)
+            )
+            {
+                return false;
+            }
+
+            string folder =
+                SavePaths.GetSaveFolder(saveId);
+
+            if (!Directory.Exists(folder))
+                return false;
+
+            try
+            {
+                if (
+                    HasActiveSave
+                    &&
+                    currentSaveId ==
+                    saveId
+                )
+                {
+                    ClearActiveSave();
+                }
+
+                Directory.Delete(
+                    folder,
+                    true
+                );
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(
+                    "SAVE: Delete failed: " +
+                    exception
+                );
+
+                return false;
+            }
+        }
+
 
         public static List<TelderSaveSummary>
             GetSaveSummaries()
@@ -555,15 +702,27 @@ namespace Game.Save
             }
 
 
-            int seed =
-                BuildSaveDimensionSeed(
-                    currentSaveId,
+            DimensionDefinition definition =
+                DimensionDatabase.GetOrCreate(
                     dimensionName
                 );
 
 
+            if (
+                definition ==
+                null
+            )
+            {
+                return 0;
+            }
+
+
+            int seed =
+                definition.Seed;
+
+
             EnsureDimension(
-                dimensionName,
+                definition.Name,
                 seed
             );
 

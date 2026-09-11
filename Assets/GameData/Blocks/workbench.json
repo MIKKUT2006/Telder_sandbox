@@ -10,6 +10,9 @@
   "Transparent": false,
   "BlocksLight": true,
 
+  "CollisionShape": "HalfBottom",
+  "CollisionRects": [],
+
   "Material": 0,
 
   "Drop": "game:workbench",

@@ -1,200 +1,52 @@
-
 using System.Collections.Generic;
-
 using UnityEngine;
-
-using Game.Content;
-using Game.World.Rendering;
-
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Game.World.Structures.EditorRuntime
 {
-
     public static class StructureEditorIconCache
     {
+        private static readonly Dictionary<string, Texture2D> cache = new Dictionary<string, Texture2D>();
 
-        private static readonly Dictionary<
-            string,
-            Texture2D
-        > cache =
-            new Dictionary<
-                string,
-                Texture2D
-            >();
-
-
-        public static Texture2D Get(
-            string blockId
-        )
+        public static Texture2D Get(string blockId)
         {
-
-            if (
-                string.IsNullOrWhiteSpace(
-                    blockId
-                )
-            )
-            {
-
-                return null;
-
-            }
-
-
-            if (
-                cache.TryGetValue(
-                    blockId,
-                    out Texture2D existing
-                )
-            )
-            {
-
-                return existing;
-
-            }
-
-
-            try
-            {
-
-                ContentID contentId =
-                    ContentID.Parse(
-                        blockId
-                    );
-
-
-                if (
-                    !BlockIDRegistry.Contains(
-                        contentId
-                    )
-                )
-                {
-
-                    return null;
-
-                }
-
-
-                ushort id =
-                    BlockIDRegistry.GetID(
-                        contentId
-                    );
-
-
-                int size =
-                    Mathf.Max(
-                        1,
-                        BlockRenderer.BlockPixelSize
-                    );
-
-
-                Texture2D texture =
-                    new Texture2D(
-                        size,
-                        size,
-                        TextureFormat.RGBA32,
-                        false
-                    );
-
-
-                texture.name =
-                    "StructureEditor_" +
-                    blockId;
-
-
-                texture.filterMode =
-                    FilterMode.Point;
-
-
-                texture.wrapMode =
-                    TextureWrapMode.Clamp;
-
-
-                Color[] clear =
-                    new Color[
-                        size *
-                        size
-                    ];
-
-
-                for (
-                    int i = 0;
-                    i < clear.Length;
-                    i++
-                )
-                {
-
-                    clear[i] =
-                        Color.clear;
-
-                }
-
-
-                texture.SetPixels(
-                    clear
-                );
-
-
-                BlockRenderer.DrawBlock(
-                    texture,
-                    0,
-                    0,
-                    id
-                );
-
-
-                texture.Apply(
-                    false,
-                    false
-                );
-
-
-                cache[
-                    blockId
-                ] =
-                    texture;
-
-
-                return texture;
-
-            }
-            catch
-            {
-
-                return null;
-
-            }
-
+            StructureEditorContentScanner.BlockInfo info = null;
+            List<StructureEditorContentScanner.BlockInfo> blocks = StructureEditorContentScanner.LoadBlocks();
+            for (int i=0;i<blocks.Count;i++) if (blocks[i].ID==blockId) { info=blocks[i]; break; }
+            return Get(info);
         }
 
-
-        public static void Clear()
+        public static Texture2D Get(StructureEditorContentScanner.BlockInfo info)
         {
-
-            foreach (
-                Texture2D texture
-                in cache.Values
-            )
+            if (info == null || string.IsNullOrWhiteSpace(info.ID)) return null;
+            if (cache.TryGetValue(info.ID,out Texture2D cached)) return cached;
+#if UNITY_EDITOR
+            string key = string.IsNullOrWhiteSpace(info.Texture) ? ShortId(info.ID) : info.Texture;
+            string[] guids = AssetDatabase.FindAssets(key + " t:Texture2D");
+            Texture2D best = null;
+            for (int i=0;i<guids.Length;i++)
             {
-
-                if (
-                    texture !=
-                    null
-                )
-                {
-
-                    Object.Destroy(
-                        texture
-                    );
-
-                }
-
+                string path=AssetDatabase.GUIDToAssetPath(guids[i]);
+                Texture2D candidate=AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                if(candidate==null) continue;
+                string file=System.IO.Path.GetFileNameWithoutExtension(path);
+                if(string.Equals(file,key,System.StringComparison.OrdinalIgnoreCase)) { best=candidate; break; }
+                if(best==null) best=candidate;
             }
-
-
-            cache.Clear();
-
+            cache[info.ID]=best;
+            return best;
+#else
+            return null;
+#endif
         }
 
+        private static string ShortId(string id)
+        {
+            int colon=id.IndexOf(':'); return colon>=0 && colon<id.Length-1?id.Substring(colon+1):id;
+        }
+
+        public static void Clear() { cache.Clear(); }
     }
-
 }

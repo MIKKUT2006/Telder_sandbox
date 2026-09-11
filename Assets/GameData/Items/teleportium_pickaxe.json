@@ -1,0 +1,15 @@
+{
+  "ID": "game:teleportium_pickaxe",
+  "Name": "Teleportium Pickaxe",
+  "Texture": "teleportium_pickaxe",
+  "MaxStack": 1,
+
+  "ToolType": "pickaxe",
+  "ToolLevel": 3,
+  "MiningSpeed": 1.75,
+
+  "HeldScale": 1.0,
+  "HeldRotation": 0.0,
+  "HeldOffsetX": 0.0,
+  "HeldOffsetY": 0.0
+}

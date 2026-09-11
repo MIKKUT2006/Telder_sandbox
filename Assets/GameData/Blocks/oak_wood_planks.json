@@ -1,0 +1,29 @@
+{
+  "ID": "game:oak_wood_planks",
+
+  "Name": "Oak wood planks",
+
+  "Texture": "oak_wood_planks",
+
+  "Hardness": 1,
+
+  "Solid": true,
+  "Drop": "game:oak_wood_planks",
+  "DropCount": 1,
+
+  "CraftIngredients": [
+    {
+      "ItemId": "game:oak_trunk",
+      "Count": 1
+    }
+  ],
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

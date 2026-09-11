@@ -1,0 +1,8 @@
+{
+  "ID": "game:silver_ore",
+  "MinDepth": 200,
+  "MaxDepth": 500,
+  "Rarity": 0.04,
+  "VeinSize": 2,
+  "MinVeinSize": 1
+}

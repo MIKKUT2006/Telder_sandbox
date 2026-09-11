@@ -11,11 +11,17 @@
   "Drop": "game:leaves",
   "DropCount": 1,
 
+  "VisualOffsetX": 0.0,
+  "VisualOffsetY": 0.0,
+  "VisualScale": 1.0,
+
   "LightOpacity": 15,
   "LightEmissionR": 0,
   "LightEmissionG": 0,
   "LightEmissionB": 0,
   "CraftIngredients": [],
   "CraftWithoutWorkbench": false,
-  "CraftResultCount": 1
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
 }

@@ -1,0 +1,7 @@
+{
+  "ID": "game:ancient_stone",
+  "Name": "Ancient stone",
+  "Texture": "ancient_stone",
+  "Type": "Block",
+  "MaxStack": 100
+}

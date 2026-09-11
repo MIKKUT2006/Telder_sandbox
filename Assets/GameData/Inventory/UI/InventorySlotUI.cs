@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Game.UI.Tooltips;
 
 
 namespace Game.Inventory.UI
@@ -329,6 +330,13 @@ namespace Game.Inventory.UI
                 this
             );
 
+            if (owner != null && owner.PlayerInventory != null)
+            {
+                ItemStack stack = owner.PlayerInventory.GetSlot(slotIndex);
+                if (stack != null && !stack.IsEmpty)
+                    ItemTooltipUI.ShowItem(stack.ItemId, eventData.position, 38f);
+            }
+
         }
 
 
@@ -340,6 +348,7 @@ namespace Game.Inventory.UI
             owner?.ClearHoveredSlot(
                 this
             );
+            ItemTooltipUI.Hide();
 
         }
 

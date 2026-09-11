@@ -1,0 +1,7 @@
+{
+  "ID": "game:oak_wood_planks",
+  "Name": "Oak wood planks",
+  "Texture": "oak_wood_planks",
+  "Type": "Block",
+  "MaxStack": 100
+}
