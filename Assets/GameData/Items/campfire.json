@@ -1,0 +1,7 @@
+{
+  "ID": "game:campfire",
+  "Name": "Campfire",
+  "Texture": "campfire",
+  "Type": "Block",
+  "MaxStack": 100
+}

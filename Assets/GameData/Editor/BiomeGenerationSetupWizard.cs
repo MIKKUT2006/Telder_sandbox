@@ -15,19 +15,19 @@ public static class BiomeGenerationSetupWizard
     public static void OpenGenerationFolders()
     {
         string caveFolder =
-            "Assets/GameData/Biomes/Caves";
+            "Assets/GameData/CaveBiomes";
 
 
         string floraFolder =
-            "Assets/GameData/Biomes/SurfaceFlora";
+            "Assets/GameData/SurfaceFlora";
 
 
-        Directory.CreateDirectory(
+        EnsureFolder(
             caveFolder
         );
 
 
-        Directory.CreateDirectory(
+        EnsureFolder(
             floraFolder
         );
 
@@ -59,11 +59,68 @@ public static class BiomeGenerationSetupWizard
 
 
         Debug.Log(
-            "BIOME GENERATION: " +
+            "BIOME GENERATION FOLDERS: " +
             caveFolder +
             " | " +
             floraFolder
         );
+    }
+
+
+    private static void EnsureFolder(
+        string assetPath
+    )
+    {
+        if (
+            AssetDatabase.IsValidFolder(
+                assetPath
+            )
+        )
+        {
+            return;
+        }
+
+
+        string[] parts =
+            assetPath.Split(
+                '/'
+            );
+
+
+        string current =
+            parts[
+                0
+            ];
+
+
+        for (
+            int i = 1;
+            i < parts.Length;
+            i++
+        )
+        {
+            string next =
+                current +
+                "/" +
+                parts[i];
+
+
+            if (
+                !AssetDatabase.IsValidFolder(
+                    next
+                )
+            )
+            {
+                AssetDatabase.CreateFolder(
+                    current,
+                    parts[i]
+                );
+            }
+
+
+            current =
+                next;
+        }
     }
 }
 

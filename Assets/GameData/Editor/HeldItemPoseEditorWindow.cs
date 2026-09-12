@@ -1566,11 +1566,12 @@ public class HeldItemPoseEditorWindow :
             Quaternion.identity;
 
 
-        // Preserve the visual scale of the real scene Player.
-        // The preview clone has no original parent, so use the source
-        // world scale instead of forcing (1,1,1).
+        // Instantiate(player) already copies the Player's exact local
+        // transform values. Do NOT replace localScale with lossyScale:
+        // lossyScale contains parent scaling and can distort the whole
+        // rig in the detached preview copy.
         previewPlayer.transform.localScale =
-            player.transform.lossyScale;
+            player.transform.localScale;
 
 
         StripRuntimeScripts(
@@ -2611,41 +2612,73 @@ public class HeldItemPoseEditorWindow :
             }
 
 
-            Bounds localBounds =
-                renderer.sprite.bounds;
+            Sprite sprite =
+                renderer.sprite;
 
 
-            Vector3 min =
-                localBounds.min;
+            float pixelsPerUnit =
+                Mathf.Max(
+                    0.0001f,
+                    sprite.pixelsPerUnit
+                );
 
 
-            Vector3 max =
-                localBounds.max;
+            // Use the full sprite RECT and pivot, not sprite.bounds.
+            //
+            // sprite.bounds may be based on a tight mesh. Drawing the full
+            // textureRect into those mesh bounds changes the apparent aspect
+            // ratio and shifts body parts in the preview.
+            float left =
+                -sprite.pivot.x /
+                pixelsPerUnit;
+
+
+            float right =
+                (
+                    sprite.rect.width -
+                    sprite.pivot.x
+                )
+                /
+                pixelsPerUnit;
+
+
+            float bottom =
+                -sprite.pivot.y /
+                pixelsPerUnit;
+
+
+            float top =
+                (
+                    sprite.rect.height -
+                    sprite.pivot.y
+                )
+                /
+                pixelsPerUnit;
 
 
             Vector3[] corners =
             {
                 new Vector3(
-                    min.x,
-                    min.y,
+                    left,
+                    bottom,
                     0f
                 ),
 
                 new Vector3(
-                    min.x,
-                    max.y,
+                    left,
+                    top,
                     0f
                 ),
 
                 new Vector3(
-                    max.x,
-                    min.y,
+                    right,
+                    bottom,
                     0f
                 ),
 
                 new Vector3(
-                    max.x,
-                    max.y,
+                    right,
+                    top,
                     0f
                 )
             };
@@ -2857,81 +2890,43 @@ public class HeldItemPoseEditorWindow :
         }
 
 
-        // IMPORTANT:
-        // SpriteRenderer.bounds is an axis-aligned world AABB.
-        // When an arm/leg rotates, that AABB changes width/height.
-        // Using it as the texture size visibly stretches the sprite.
+        float spritePixelsPerUnit =
+            Mathf.Max(
+                0.0001f,
+                sprite.pixelsPerUnit
+            );
+
+
+        // Local rectangle of the actual sprite texture relative to its pivot.
         //
-        // Instead use the sprite's real local dimensions multiplied
-        // by the transform world scale, then rotate the GUI image.
-        Vector3 worldCenter3 =
-            renderer.transform.TransformPoint(
-                sprite.bounds.center
-            );
+        // This is the important difference from the old preview:
+        // we do NOT stretch textureRect to Sprite.bounds/AABB.
+        float left =
+            -sprite.pivot.x /
+            spritePixelsPerUnit;
 
 
-        Vector2 spriteCenter =
-            new Vector2(
-                screenCenter.x +
-                (
-                    worldCenter3.x -
-                    worldCenter.x
-                )
-                *
-                pixelsPerWorldUnit,
-
-                screenCenter.y -
-                (
-                    worldCenter3.y -
-                    worldCenter.y
-                )
-                *
-                pixelsPerWorldUnit
-            );
+        float bottom =
+            -sprite.pivot.y /
+            spritePixelsPerUnit;
 
 
-        Vector3 lossyScale =
-            renderer.transform.lossyScale;
+        float width =
+            sprite.rect.width /
+            spritePixelsPerUnit;
 
 
-        Vector2 size =
-            new Vector2(
-                Mathf.Max(
-                    1f,
-
-                    sprite.bounds.size.x *
-                    Mathf.Abs(
-                        lossyScale.x
-                    )
-                    *
-                    pixelsPerWorldUnit
-                ),
-
-                Mathf.Max(
-                    1f,
-
-                    sprite.bounds.size.y *
-                    Mathf.Abs(
-                        lossyScale.y
-                    )
-                    *
-                    pixelsPerWorldUnit
-                )
-            );
+        float height =
+            sprite.rect.height /
+            spritePixelsPerUnit;
 
 
-        Rect drawRect =
+        Rect localRect =
             new Rect(
-                spriteCenter.x -
-                size.x *
-                0.5f,
-
-                spriteCenter.y -
-                size.y *
-                0.5f,
-
-                size.x,
-                size.y
+                left,
+                bottom,
+                width,
+                height
             );
 
 
@@ -2961,31 +2956,6 @@ public class HeldItemPoseEditorWindow :
 
         bool flipY =
             renderer.flipY;
-
-
-        // Negative world scale is also a visual mirror.
-        if (
-            lossyScale.x <
-            0f
-        )
-        {
-
-            flipX =
-                !flipX;
-
-        }
-
-
-        if (
-            lossyScale.y <
-            0f
-        )
-        {
-
-            flipY =
-                !flipY;
-
-        }
 
 
         if (
@@ -3018,8 +2988,90 @@ public class HeldItemPoseEditorWindow :
         }
 
 
-        float angle =
-            -renderer.transform.eulerAngles.z;
+        // Build an exact local -> preview-screen affine transform from the
+        // SpriteRenderer Transform. This preserves nested rotations,
+        // non-uniform scales and even shear produced by scaled parents.
+        Vector3 worldOrigin =
+            renderer.transform.TransformPoint(
+                Vector3.zero
+            );
+
+
+        Vector3 worldX =
+            renderer.transform.TransformPoint(
+                Vector3.right
+            );
+
+
+        Vector3 worldY =
+            renderer.transform.TransformPoint(
+                Vector3.up
+            );
+
+
+        Vector2 screenOrigin =
+            WorldToPreviewPoint(
+                worldOrigin,
+                worldCenter,
+                screenCenter,
+                pixelsPerWorldUnit
+            );
+
+
+        Vector2 screenX =
+            WorldToPreviewPoint(
+                worldX,
+                worldCenter,
+                screenCenter,
+                pixelsPerWorldUnit
+            );
+
+
+        Vector2 screenY =
+            WorldToPreviewPoint(
+                worldY,
+                worldCenter,
+                screenCenter,
+                pixelsPerWorldUnit
+            );
+
+
+        Vector2 basisX =
+            screenX -
+            screenOrigin;
+
+
+        Vector2 basisY =
+            screenY -
+            screenOrigin;
+
+
+        Matrix4x4 localToScreen =
+            Matrix4x4.identity;
+
+
+        localToScreen.m00 =
+            basisX.x;
+
+
+        localToScreen.m01 =
+            basisY.x;
+
+
+        localToScreen.m03 =
+            screenOrigin.x;
+
+
+        localToScreen.m10 =
+            basisX.y;
+
+
+        localToScreen.m11 =
+            basisY.y;
+
+
+        localToScreen.m13 =
+            screenOrigin.y;
 
 
         Matrix4x4 oldMatrix =
@@ -3034,14 +3086,13 @@ public class HeldItemPoseEditorWindow :
             renderer.color;
 
 
-        GUIUtility.RotateAroundPivot(
-            angle,
-            spriteCenter
-        );
+        GUI.matrix =
+            oldMatrix *
+            localToScreen;
 
 
         GUI.DrawTextureWithTexCoords(
-            drawRect,
+            localRect,
             sprite.texture,
             uv,
             true
@@ -3054,6 +3105,36 @@ public class HeldItemPoseEditorWindow :
 
         GUI.color =
             oldColor;
+
+    }
+
+
+    private static Vector2 WorldToPreviewPoint(
+        Vector3 world,
+        Vector2 worldCenter,
+        Vector2 screenCenter,
+        float pixelsPerWorldUnit
+    )
+    {
+
+        return
+            new Vector2(
+                screenCenter.x +
+                (
+                    world.x -
+                    worldCenter.x
+                )
+                *
+                pixelsPerWorldUnit,
+
+                screenCenter.y -
+                (
+                    world.y -
+                    worldCenter.y
+                )
+                *
+                pixelsPerWorldUnit
+            );
 
     }
 

@@ -85,7 +85,6 @@ namespace Game.World.Biomes.Surface
                 Path.Combine(
                     Application.dataPath,
                     "GameData",
-                    "Biomes",
                     "SurfaceFlora"
                 );
 

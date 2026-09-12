@@ -1,231 +1,491 @@
 {
     "ID": "new_structure",
     "DisplayName": "New Structure",
-    "Width": 16,
-    "Height": 16,
-    "OriginX": 5,
+    "Width": 12,
+    "Height": 8,
+    "OriginX": 0,
     "OriginY": 0,
-    "Type": 1,
-    "SpawnType": 1,
+    "Type": 0,
+    "SpawnType": 0,
     "SpawnChance": 1.0,
-    "RegionSize": 18,
+    "RegionSize": 64,
     "UseHeightRange": false,
-    "MinY": 10,
-    "MaxY": 90,
-    "RequireFreeSpace": true,
+    "MinY": 1010,
+    "MaxY": 200,
+    "RequireFreeSpace": false,
     "FreeSpacePadding": 1,
+    "BiomeSource": 1,
     "Biomes": [
-        "game:plains"
+        "game:ancient_caves"
     ],
     "Cells": [
         {
-            "X": 5,
-            "Y": 0,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
+            "X": 2,
+            "Y": 3,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 2,
+            "Y": 2,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 2,
+            "Y": 4,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 8,
+            "Y": 3,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 8,
+            "Y": 2,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 8,
+            "Y": 4,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 3,
+            "Y": 3,
+            "ForegroundId": "game:big_clay_pot",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "ForegroundId": "game:big_clay_pot",
+            "BackgroundId": "game:oak_wood_planks",
             "Loot": []
         },
         {
             "X": 5,
-            "Y": 1,
+            "Y": 3,
             "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 2,
+            "Y": 6,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 8,
+            "Y": 6,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 8,
+            "Y": 5,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 2,
+            "Y": 5,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 3,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 3,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 3,
+            "Y": 2,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 2,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 5,
             "Y": 2,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 2,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 2,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 1,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 9,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 1,
+            "Y": 0,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 9,
+            "Y": 0,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 9,
+            "Y": 2,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 1,
+            "Y": 2,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 2,
+            "Y": 7,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 3,
+            "Y": 7,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 7,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 7,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 8,
+            "Y": 7,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 7,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 5,
+            "Y": 7,
+            "ForegroundId": "game:oak_wood_planks",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 7,
             "Y": 3,
+            "ForegroundId": "game:small_clay_pot",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 3,
+            "Y": 6,
             "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 6,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 6,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 6,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 6,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_wood_planks",
+            "Loot": []
+        },
+        {
+            "X": 0,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 2,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 3,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 4,
             "Y": 1,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 8,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 10,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 8,
+            "Y": 0,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 7,
+            "Y": 0,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 0,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 0,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 4,
             "Y": 0,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
             "Loot": []
         },
         {
-            "X": 6,
+            "X": 3,
             "Y": 0,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
             "Loot": []
         },
         {
-            "X": 4,
-            "Y": 5,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "X": 2,
+            "Y": 0,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
             "Loot": []
         },
         {
-            "X": 3,
-            "Y": 4,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "X": 0,
+            "Y": 0,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
             "Loot": []
         },
         {
-            "X": 3,
-            "Y": 5,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "X": 11,
+            "Y": 1,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
             "Loot": []
         },
         {
-            "X": 4,
-            "Y": 6,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 5,
-            "Y": 7,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 4,
-            "Y": 8,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 5,
-            "Y": 8,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 4,
-            "Y": 7,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 5,
-            "Y": 6,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 6,
-            "Y": 6,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 6,
-            "Y": 7,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 3,
-            "Y": 6,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 6,
-            "Y": 3,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
-            "Loot": []
-        },
-        {
-            "X": 7,
-            "Y": 3,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_branch",
-            "Loot": []
-        },
-        {
-            "X": 7,
-            "Y": 4,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 7,
-            "Y": 5,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 8,
-            "Y": 5,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 8,
-            "Y": 4,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 5,
-            "Y": 4,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
-            "Loot": []
-        },
-        {
-            "X": 5,
-            "Y": 5,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
-            "Loot": []
-        },
-        {
-            "X": 6,
-            "Y": 5,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 4,
-            "Y": 4,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 4,
-            "Y": 3,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "X": 10,
+            "Y": 0,
+            "ForegroundId": "game:ancient_stone",
+            "BackgroundId": "",
             "Loot": []
         }
     ]

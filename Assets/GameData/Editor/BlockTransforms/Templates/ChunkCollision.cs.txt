@@ -1,0 +1,220 @@
+using Game.Blocks;
+using Game.Content;
+using Game.BlockTransforms;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Game.World.Collision
+{
+    // [BT-AUTO-CHUNK-COLLISION]
+    public class ChunkCollision
+    {
+        private readonly WorldCollision worldCollision;
+
+        private readonly Dictionary<Vector2Int, GameObject> collisionObjects =
+            new Dictionary<Vector2Int, GameObject>();
+
+        public ChunkCollision(WorldCollision worldCollision)
+        {
+            this.worldCollision = worldCollision;
+        }
+
+        public void BuildChunkCollision(Chunk chunk)
+        {
+            if (chunk == null)
+                return;
+
+            Vector2Int chunkPosition = new Vector2Int(chunk.X, chunk.Y);
+            RemoveChunkCollision(chunk.X, chunk.Y);
+
+            GameObject chunkObject = new GameObject(
+                "ChunkCollision_" + chunk.X + "_" + chunk.Y);
+
+            chunkObject.transform.position = new Vector3(
+                chunk.X * Chunk.SizeX,
+                chunk.Y * Chunk.SizeY,
+                0f);
+
+            int groundLayer = LayerMask.NameToLayer("Ground");
+            if (groundLayer != -1)
+                chunkObject.layer = groundLayer;
+
+            collisionObjects.Add(chunkPosition, chunkObject);
+
+            // Full 1x1 cells still use the old rectangle-merging optimization.
+            bool[,] fullSolid = new bool[Chunk.SizeX, Chunk.SizeY];
+
+            for (int x = 0; x < Chunk.SizeX; x++)
+            {
+                for (int y = 0; y < Chunk.SizeY; y++)
+                {
+                    ushort blockID = chunk.GetBlock(x, y);
+                    if (!IsSolidBlock(blockID))
+                        continue;
+
+                    int worldX = chunk.X * Chunk.SizeX + x;
+                    int worldY = chunk.Y * Chunk.SizeY + y;
+
+                    bool custom = BlockShapeCollision.IsCustomCell(
+                        worldCollision, worldX, worldY);
+
+                    fullSolid[x, y] = !custom;
+
+                    if (custom)
+                    {
+                        CreateCustomCollider(
+                            chunkObject,
+                            chunk,
+                            x,
+                            y,
+                            worldX,
+                            worldY);
+                    }
+                }
+            }
+
+            bool[,] used = new bool[Chunk.SizeX, Chunk.SizeY];
+
+            for (int y = 0; y < Chunk.SizeY; y++)
+            {
+                for (int x = 0; x < Chunk.SizeX; x++)
+                {
+                    if (!fullSolid[x, y] || used[x, y])
+                        continue;
+
+                    int width = 0;
+                    while (
+                        x + width < Chunk.SizeX &&
+                        fullSolid[x + width, y] &&
+                        !used[x + width, y])
+                    {
+                        width++;
+                    }
+
+                    int height = 1;
+                    bool canExpand = true;
+
+                    while (y + height < Chunk.SizeY && canExpand)
+                    {
+                        for (int checkX = 0; checkX < width; checkX++)
+                        {
+                            if (!fullSolid[x + checkX, y + height] ||
+                                used[x + checkX, y + height])
+                            {
+                                canExpand = false;
+                                break;
+                            }
+                        }
+
+                        if (canExpand)
+                            height++;
+                    }
+
+                    for (int markX = 0; markX < width; markX++)
+                    {
+                        for (int markY = 0; markY < height; markY++)
+                            used[x + markX, y + markY] = true;
+                    }
+
+                    CreateCollider(chunkObject, x, y, width, height);
+                }
+            }
+        }
+
+        private void CreateCustomCollider(
+            GameObject parent,
+            Chunk chunk,
+            int localX,
+            int localY,
+            int worldX,
+            int worldY)
+        {
+            Vector2 center;
+            Vector2 size;
+
+            if (!BlockShapeCollision.TryGetWorldRect(
+                worldCollision,
+                worldX,
+                worldY,
+                out center,
+                out size))
+            {
+                return;
+            }
+
+            GameObject colliderObject = new GameObject(
+                "CustomCollider_" + localX + "_" + localY);
+
+            int groundLayer = LayerMask.NameToLayer("Ground");
+            if (groundLayer != -1)
+                colliderObject.layer = groundLayer;
+
+            colliderObject.transform.SetParent(parent.transform, false);
+            colliderObject.transform.localPosition = new Vector3(
+                center.x - chunk.X * Chunk.SizeX,
+                center.y - chunk.Y * Chunk.SizeY,
+                0f);
+
+            BoxCollider2D collider = colliderObject.AddComponent<BoxCollider2D>();
+            collider.size = size;
+        }
+
+        private void CreateCollider(
+            GameObject parent,
+            int x,
+            int y,
+            int width,
+            int height)
+        {
+            GameObject colliderObject = new GameObject(
+                "Collider_" + x + "_" + y);
+
+            int groundLayer = LayerMask.NameToLayer("Ground");
+            if (groundLayer != -1)
+                colliderObject.layer = groundLayer;
+
+            colliderObject.transform.SetParent(parent.transform, false);
+            colliderObject.transform.localPosition = new Vector3(
+                x + width * 0.5f,
+                y + height * 0.5f,
+                0f);
+
+            BoxCollider2D collider = colliderObject.AddComponent<BoxCollider2D>();
+            collider.size = new Vector2(width, height);
+        }
+
+        private bool IsSolidBlock(ushort blockID)
+        {
+            if (blockID == 0)
+                return false;
+
+            ContentID contentID;
+            try
+            {
+                contentID = BlockIDRegistry.GetContentID(blockID);
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (!BlockRegistry.Contains(contentID))
+                return false;
+
+            BlockDefinition block = BlockRegistry.Get(contentID);
+            return block != null && block.Solid;
+        }
+
+        public void RemoveChunkCollision(int chunkX, int chunkY)
+        {
+            Vector2Int position = new Vector2Int(chunkX, chunkY);
+            GameObject chunkObject;
+
+            if (!collisionObjects.TryGetValue(position, out chunkObject))
+                return;
+
+            Object.Destroy(chunkObject);
+            collisionObjects.Remove(position);
+        }
+    }
+}

@@ -5,6 +5,7 @@
     "Height": 8,
     "OriginX": 0,
     "OriginY": 0,
+    "Type": 0,
     "SpawnType": 0,
     "SpawnChance": 1.0,
     "RegionSize": 64,
@@ -13,6 +14,7 @@
     "MaxY": 90,
     "RequireFreeSpace": true,
     "FreeSpacePadding": 1,
+    "BiomeSource": 0,
     "Biomes": [
         "game:crystal_plains"
     ],
@@ -20,112 +22,112 @@
         {
             "X": 3,
             "Y": 4,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 3,
             "Y": 3,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 3,
             "Y": 2,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 3,
             "Y": 1,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 3,
             "Y": 0,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 4,
             "Y": 0,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 5,
             "Y": 0,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 6,
             "Y": 0,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 7,
             "Y": 0,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 7,
             "Y": 1,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 7,
             "Y": 2,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 7,
             "Y": 3,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 7,
             "Y": 4,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 5,
             "Y": 4,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 4,
             "Y": 4,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
         {
             "X": 6,
             "Y": 4,
-            "ForegroundId": "game:stone",
+            "ForegroundId": "game:crystal_brick",
             "BackgroundId": "",
             "Loot": []
         },
@@ -133,15 +135,77 @@
             "X": 5,
             "Y": 1,
             "ForegroundId": "game:chest",
-            "BackgroundId": "",
+            "BackgroundId": "game:crystal_brick",
             "Loot": [
                 {
-                    "ItemId": "game:iron_ore",
+                    "ItemId": "game:raw_iron_ore",
                     "Chance": 1.0,
-                    "MinCount": 3,
-                    "MaxCount": 7
+                    "MinCount": 1,
+                    "MaxCount": 1
+                },
+                {
+                    "ItemId": "game:torch",
+                    "Chance": 1.0,
+                    "MinCount": 1,
+                    "MaxCount": 1
                 }
             ]
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:crystal_brick",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:crystal_brick",
+            "Loot": []
+        },
+        {
+            "X": 4,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:crystal_brick",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:crystal_brick",
+            "Loot": []
+        },
+        {
+            "X": 5,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:crystal_brick",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:crystal_brick",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:crystal_brick",
+            "Loot": []
+        },
+        {
+            "X": 6,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:crystal_brick",
+            "Loot": []
         }
     ]
 }

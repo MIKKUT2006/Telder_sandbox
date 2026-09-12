@@ -9,6 +9,7 @@ using Game.Blocks;
 using Game.Chests;
 using Game.Content;
 using Game.World.Biomes;
+using Game.World.Biomes.Caves;
 using Game.World.Dimensions;
 using Game.World.Generation;
 
@@ -181,11 +182,18 @@ namespace Game.World.Structures
                     return false;
             }
 
-            if (!BiomeAllowed(
-                generator,
-                structure,
-                anchorX))
+            if (
+                !BiomeAllowed(
+                    generator,
+                    settings,
+                    structure,
+                    anchorX,
+                    anchorY
+                )
+            )
+            {
                 return false;
+            }
 
             if (structure.RequireFreeSpace &&
                 !HasRequiredFreeSpace(
@@ -258,45 +266,316 @@ namespace Game.World.Structures
 
         private static bool BiomeAllowed(
             WorldGenerator generator,
+            WorldSettings settings,
+            StructureDefinition structure,
+            int worldX,
+            int worldY
+        )
+        {
+            if (
+                structure.Biomes ==
+                null
+                ||
+                structure.Biomes.Count ==
+                0
+            )
+            {
+                return true;
+            }
+
+
+            switch (
+                structure.BiomeSource
+            )
+            {
+                case StructureBiomeSource.Cave:
+                    return
+                        CaveBiomeAllowed(
+                            settings,
+                            structure,
+                            worldX,
+                            worldY
+                        );
+
+
+                case StructureBiomeSource.Either:
+                    return
+                        SurfaceBiomeAllowed(
+                            generator,
+                            structure,
+                            worldX
+                        )
+                        ||
+                        CaveBiomeAllowed(
+                            settings,
+                            structure,
+                            worldX,
+                            worldY
+                        );
+
+
+                default:
+                    return
+                        SurfaceBiomeAllowed(
+                            generator,
+                            structure,
+                            worldX
+                        );
+            }
+        }
+
+
+        private static bool SurfaceBiomeAllowed(
+            WorldGenerator generator,
             StructureDefinition structure,
             int worldX
         )
         {
-            if (structure.Biomes == null ||
-                structure.Biomes.Count == 0)
-                return true;
-
             BiomeDefinition biome =
-                generator.GetDominantBiome(worldX);
+                generator.GetDominantBiome(
+                    worldX
+                );
 
-            if (biome == null)
+
+            if (
+                biome ==
+                null
+            )
+            {
                 return false;
+            }
+
 
             List<string> names =
-                GetBiomeNames(biome);
+                GetBiomeNames(
+                    biome
+                );
 
-            for (int i = 0;
-                 i < structure.Biomes.Count;
-                 i++)
+
+            return
+                MatchesRequiredBiome(
+                    structure.Biomes,
+                    names
+                );
+        }
+
+
+        private static bool CaveBiomeAllowed(
+            WorldSettings settings,
+            StructureDefinition structure,
+            int worldX,
+            int worldY
+        )
+        {
+            if (
+                settings ==
+                null
+            )
+            {
+                return false;
+            }
+
+
+            string caveBiomeId =
+                CaveBiomeRegistry
+                    .GetBiomeIdAt(
+                        worldX,
+                        worldY,
+                        settings.Seed
+                    );
+
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    caveBiomeId
+                )
+            )
+            {
+                return false;
+            }
+
+
+            List<string> names =
+                new List<string>
+                {
+                    caveBiomeId,
+                    ShortContentId(
+                        caveBiomeId
+                    )
+                };
+
+
+            return
+                MatchesRequiredBiome(
+                    structure.Biomes,
+                    names
+                );
+        }
+
+
+        private static bool MatchesRequiredBiome(
+            List<string> requiredBiomes,
+            List<string> currentNames
+        )
+        {
+            if (
+                requiredBiomes ==
+                null
+                ||
+                requiredBiomes.Count ==
+                0
+            )
+            {
+                return true;
+            }
+
+
+            if (
+                currentNames ==
+                null
+                ||
+                currentNames.Count ==
+                0
+            )
+            {
+                return false;
+            }
+
+
+            for (
+                int i = 0;
+                i < requiredBiomes.Count;
+                i++
+            )
             {
                 string required =
-                    structure.Biomes[i];
+                    requiredBiomes[i];
 
-                if (string.IsNullOrWhiteSpace(required))
-                    continue;
 
-                for (int n = 0; n < names.Count; n++)
+                if (
+                    string.IsNullOrWhiteSpace(
+                        required
+                    )
+                )
                 {
-                    if (string.Equals(
-                        names[n],
-                        required,
-                        StringComparison.OrdinalIgnoreCase))
+                    continue;
+                }
+
+
+                if (
+                    required ==
+                    "*"
+                )
+                {
+                    return true;
+                }
+
+
+                string normalizedRequired =
+                    NormalizeBiomeKey(
+                        required
+                    );
+
+
+                for (
+                    int n = 0;
+                    n < currentNames.Count;
+                    n++
+                )
+                {
+                    string current =
+                        currentNames[n];
+
+
+                    if (
+                        string.IsNullOrWhiteSpace(
+                            current
+                        )
+                    )
+                    {
+                        continue;
+                    }
+
+
+                    if (
+                        string.Equals(
+                            normalizedRequired,
+                            NormalizeBiomeKey(
+                                current
+                            ),
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                    {
                         return true;
+                    }
                 }
             }
 
+
             return false;
         }
+
+
+        private static string NormalizeBiomeKey(
+            string value
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(
+                    value
+                )
+            )
+            {
+                return string.Empty;
+            }
+
+
+            return
+                value.Trim();
+        }
+
+
+        private static string ShortContentId(
+            string value
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(
+                    value
+                )
+            )
+            {
+                return string.Empty;
+            }
+
+
+            int separator =
+                value.LastIndexOf(
+                    ':'
+                );
+
+
+            if (
+                separator >=
+                0
+                &&
+                separator <
+                value.Length -
+                1
+            )
+            {
+                return
+                    value.Substring(
+                        separator +
+                        1
+                    );
+            }
+
+
+            return value;
+        }
+
 
         private static List<string> GetBiomeNames(
             BiomeDefinition biome
@@ -546,6 +825,23 @@ namespace Game.World.Structures
                     regionX
                 );
 
+            // Debug/runtime registry for ALL structures.
+            //
+            // This is called only after the candidate passed spawn chance,
+            // height, biome and free-space checks and reached the stamping
+            // stage for a loaded chunk. Therefore the debug menu can tell
+            // us which structures were actually generated during this
+            // session.
+            StructureDebugRuntimeRegistry.Register(
+                settings.Seed,
+                dimensionName,
+                structure,
+                regionX,
+                anchorX,
+                anchorY
+            );
+
+
             // Register the full deterministic instance even though
             // this method stamps only the cells that belong to the
             // current chunk. The runtime index deduplicates the same
@@ -672,6 +968,159 @@ namespace Game.World.Structures
             return result;
         }
 
+        // =====================================================
+        // DEBUG SEARCH
+        // =====================================================
+
+        /// <summary>
+        /// Searches deterministic structure regions around centerX and
+        /// returns the nearest candidate that passes the SAME checks used
+        /// by real world generation:
+        ///
+        /// spawn chance
+        /// height range
+        /// surface/cave biome filter
+        /// required free space
+        ///
+        /// This does not force-spawn anything.
+        /// </summary>
+        public static bool TryFindNearestCandidate(
+            WorldGenerator generator,
+            WorldSettings settings,
+            StructureDefinition structure,
+            int centerX,
+            int searchRegionRadius,
+            out int anchorX,
+            out int anchorY,
+            out int regionX
+        )
+        {
+            anchorX =
+                0;
+
+
+            anchorY =
+                0;
+
+
+            regionX =
+                0;
+
+
+            if (
+                generator ==
+                null
+                ||
+                settings ==
+                null
+                ||
+                structure ==
+                null
+            )
+            {
+                return false;
+            }
+
+
+            int regionSize =
+                Mathf.Max(
+                    8,
+                    structure.RegionSize
+                );
+
+
+            int centerRegion =
+                FloorDiv(
+                    centerX,
+                    regionSize
+                );
+
+
+            int radius =
+                Mathf.Clamp(
+                    searchRegionRadius,
+                    0,
+                    256
+                );
+
+
+            bool found =
+                false;
+
+
+            int bestDistance =
+                int.MaxValue;
+
+
+            for (
+                int offset = -radius;
+                offset <= radius;
+                offset++
+            )
+            {
+                int candidateRegion =
+                    centerRegion +
+                    offset;
+
+
+                if (
+                    !TryGetCandidate(
+                        generator,
+                        settings,
+                        structure,
+                        candidateRegion,
+                        out int candidateX,
+                        out int candidateY
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                int distance =
+                    Mathf.Abs(
+                        candidateX -
+                        centerX
+                    );
+
+
+                if (
+                    found
+                    &&
+                    distance >=
+                    bestDistance
+                )
+                {
+                    continue;
+                }
+
+
+                found =
+                    true;
+
+
+                bestDistance =
+                    distance;
+
+
+                anchorX =
+                    candidateX;
+
+
+                anchorY =
+                    candidateY;
+
+
+                regionX =
+                    candidateRegion;
+            }
+
+
+            return found;
+        }
+
+
         public static bool IsChestBlock(ushort blockId)
         {
             if (blockId == 0)
@@ -759,5 +1208,8 @@ namespace Game.World.Structures
                 return hash;
             }
         }
-    }
+    
+    // [BT-AUTO-STRUCTURE-DATA]
+    public byte Transform;
+}
 }

@@ -1,6 +1,5 @@
 
 using Game.World.Biomes.Caves;
-using Game.World.Biomes.Surface;
 using Game.World.Generation;
 
 
@@ -20,12 +19,6 @@ namespace Game.World.Biomes.Generation
                 chunk
             );
 
-
-            SurfaceFloraPostProcessor.ApplyToChunk(
-                generator,
-                settings,
-                chunk
-            );
         }
     }
 }

@@ -1,0 +1,7 @@
+{
+  "ID": "game:moss",
+  "Name": "Moss",
+  "Texture": "moss",
+  "Type": "Block",
+  "MaxStack": 100
+}

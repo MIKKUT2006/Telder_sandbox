@@ -1,0 +1,18 @@
+{
+  "ID": "game:mossy_caves",
+  "DisplayName": "мшистые пещеры",
+  "Enabled": true,
+  "MinY": -200,
+  "MaxY": 15,
+  "TransitionHeight": 18,
+  "Priority": 50,
+  "Dimensions": [ "volcanic", "toxic", "oceanic" ],
+  "StoneBlockId": "game:moss",
+  "BackgroundBlockId": "game:moss",
+  "FloorBlockId": "",
+  "CeilingBlockId": "",
+  "ExtraCaves": true,
+  "ExtraCaveScale": 0.018,
+  "ExtraCaveDetailScale": 0.055,
+  "ExtraCaveThreshold": 0.79
+}

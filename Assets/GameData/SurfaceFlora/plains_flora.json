@@ -1,15 +1,16 @@
 {
   "ID": "game:short_grass",
-  "Enabled": false,
+  "Enabled": true,
   "Biomes": [
-    "game:plains"
+    "game:plains",
+    "game:mountains"
   ],
   "Plants": [
     {
       "BlockId": "game:short_grass",
       "Chance": 1,
       "NoiseScale": 0.08,
-      "NoiseThreshold": 0.34
+      "NoiseThreshold": 0
     }
   ]
 }

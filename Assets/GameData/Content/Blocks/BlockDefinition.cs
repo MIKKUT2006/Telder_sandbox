@@ -214,7 +214,15 @@ namespace Game.Blocks
 
         }
 
-    }
+    
+        // [BT-AUTO-COLLISION-FIELDS]
+        // Normalized rectangle inside one tile (0..1).
+        public bool UseCustomCollision = false;
+        public float CollisionOffsetX = 0.5f;
+        public float CollisionOffsetY = 0.5f;
+        public float CollisionWidth = 1f;
+        public float CollisionHeight = 1f;
+}
 
 
     [Serializable]

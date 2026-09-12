@@ -186,6 +186,39 @@ namespace Game.World.Biomes.Caves
         }
 
 
+        public static string GetBiomeIdAt(
+            int worldX,
+            int worldY,
+            int worldSeed
+        )
+        {
+            CaveBiomeRuntimeData biome =
+                FindAt(
+                    worldX,
+                    worldY,
+                    worldSeed,
+                    CaveBiomeDimensionRuntime
+                        .GetCurrentKeys()
+                );
+
+
+            if (
+                biome ==
+                null
+                ||
+                biome.Definition ==
+                null
+            )
+            {
+                return null;
+            }
+
+
+            return
+                biome.Definition.ID;
+        }
+
+
         private static void EnsureLoaded()
         {
             if (
@@ -207,8 +240,7 @@ namespace Game.World.Biomes.Caves
                 Path.Combine(
                     Application.dataPath,
                     "GameData",
-                    "Biomes",
-                    "Caves"
+                    "CaveBiomes"
                 );
 
 

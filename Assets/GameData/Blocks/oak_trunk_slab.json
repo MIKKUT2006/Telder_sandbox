@@ -1,0 +1,44 @@
+{
+  "ID": "game:oak_trunk_slab",
+  "Name": "Oak trunk slab",
+  "Texture": "oak_trunk_slab",
+
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+
+  "CollisionShape": "HalfBottom",
+  "CollisionRects": [],
+
+  "Material": 0,
+
+  "Drop": "game:oak_trunk_slab",
+  "DropCount": 1,
+
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+
+  "Tags": [
+    "wood"
+  ],
+
+  "closed": false,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+
+  "CraftIngredients": [
+    {
+      "ItemId": "game:oak_trunk",
+      "Count": 1
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 2
+}

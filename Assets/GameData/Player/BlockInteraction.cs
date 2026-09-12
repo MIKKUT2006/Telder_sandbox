@@ -218,6 +218,19 @@ public class BlockInteraction :
         //
         // =================================================
 
+        // [BT-AUTO-GAMEPLAY]
+        if (Game.BlockTransforms.BlockTransformGameplayController.UpdateAndConsume(
+                worldManager,
+                world,
+                playerCamera,
+                transform,
+                interactionDistance))
+        {
+            nextBreakTime = 0f;
+            nextPlaceTime = 0f;
+            return;
+        }
+
         if (
             Input.GetMouseButton(
                 0

@@ -462,13 +462,23 @@ public class PlayerCollision :
 
     private void CheckGround()
     {
+        if (worldCollision == null)
+        {
+            IsGrounded = false;
+            return;
+        }
 
-        IsGrounded =
-            CheckGroundAt(
-                transform.position.x,
-                transform.position.y
-            );
+        float halfWidth = colliderSize.x * 0.5f;
+        float bottom = transform.position.y - colliderSize.y * 0.5f;
+        float minX = transform.position.x - halfWidth + skin;
+        float maxX = transform.position.x + halfWidth - skin;
 
+        IsGrounded = Game.BlockTransforms.BlockShapeCollision.Intersects(
+            worldCollision,
+            minX,
+            bottom - skin - 0.03f,
+            maxX,
+            bottom + 0.01f);
     }
 
 
@@ -549,81 +559,28 @@ public class PlayerCollision :
     // COLLISION CHECK
     // =====================================================
 
+    // [BT-AUTO-PLAYER-COLLISION]
     private bool CheckCollisionAt(
         float centerX,
-        float centerY
-    )
+        float centerY)
     {
-
-        if (
-            worldCollision ==
-            null
-        )
-        {
-
+        if (worldCollision == null)
             return false;
 
-        }
+        float halfWidth = colliderSize.x * 0.5f;
+        float halfHeight = colliderSize.y * 0.5f;
 
+        float minX = centerX - halfWidth + skin;
+        float maxX = centerX + halfWidth - skin;
+        float minY = centerY - halfHeight + skin;
+        float maxY = centerY + halfHeight - skin;
 
-        float halfWidth =
-            colliderSize.x *
-            0.5f;
-
-
-        float halfHeight =
-            colliderSize.y *
-            0.5f;
-
-
-        float minX =
-            centerX -
-            halfWidth +
-            skin;
-
-
-        float maxX =
-            centerX +
-            halfWidth -
-            skin;
-
-
-        float minY =
-            centerY -
-            halfHeight +
-            skin;
-
-
-        float maxY =
-            centerY +
-            halfHeight -
-            skin;
-
-
-        Rect playerBounds =
-            new Rect(
-                minX,
-                minY,
-
-                Mathf.Max(
-                    0.001f,
-                    maxX -
-                    minX
-                ),
-
-                Mathf.Max(
-                    0.001f,
-                    maxY -
-                    minY
-                )
-            );
-
-
-        return
-            worldCollision.OverlapsAny(
-                playerBounds
-            );
-
+        return Game.BlockTransforms.BlockShapeCollision.Intersects(
+            worldCollision,
+            minX,
+            minY,
+            maxX,
+            maxY);
     }
 
 

@@ -24,23 +24,38 @@ namespace Game.World.Rendering
 
 
         // =========================================================
-        // LIGHT TEXTURE
+        // VISUAL LAYERS
         // =========================================================
+        //
+        // Background is ALWAYS 30% darker than foreground.
+        //
+        // IMPORTANT:
+        // This is SpriteRenderer tint, not light level.
+        // Therefore a torch can brighten the background, but even
+        // under maximum light its albedo remains visibly darker.
+        //
+        // 1.00 = normal foreground
+        // 0.70 = 30% darker background
+        //
+        private const float BackgroundSpriteBrightness =
+            0.70f;
 
-        private const int LightBorder = 1;
+
+        private const int LightBorder =
+            1;
+
 
         private const int LightTextureWidth =
             Chunk.SizeX +
-            LightBorder * 2;
+            LightBorder *
+            2;
+
 
         private const int LightTextureHeight =
             Chunk.SizeY +
-            LightBorder * 2;
+            LightBorder *
+            2;
 
-
-        // =========================================================
-        // CONSTRUCTOR
-        // =========================================================
 
         public ChunkRenderer()
         {
@@ -54,6 +69,7 @@ namespace Game.World.Rendering
         {
             this.world =
                 world;
+
 
             CreateMaterial();
         }
@@ -80,12 +96,16 @@ namespace Game.World.Rendering
                 );
 
 
-            if (shader == null)
+            if (
+                shader ==
+                null
+            )
             {
                 Debug.LogError(
                     "Shader Game/ChunkLitSprite " +
                     "not found."
                 );
+
 
                 return;
             }
@@ -110,7 +130,10 @@ namespace Game.World.Rendering
             Chunk chunk
         )
         {
-            if (chunk == null)
+            if (
+                chunk ==
+                null
+            )
             {
                 return;
             }
@@ -160,18 +183,13 @@ namespace Game.World.Rendering
         // CREATE CHUNK OBJECT
         // =========================================================
 
-        private ChunkRenderData
-            CreateChunkRenderData(
-                Chunk chunk
-            )
+        private ChunkRenderData CreateChunkRenderData(
+            Chunk chunk
+        )
         {
             ChunkRenderData data =
                 new ChunkRenderData();
 
-
-            // =====================================================
-            // ROOT
-            // =====================================================
 
             GameObject root =
                 new GameObject(
@@ -198,9 +216,9 @@ namespace Game.World.Rendering
                 root;
 
 
-            // =====================================================
-            // BACKGROUND OBJECT
-            // =====================================================
+            // -------------------------
+            // BACKGROUND
+            // -------------------------
 
             GameObject backgroundObject =
                 new GameObject(
@@ -224,13 +242,31 @@ namespace Game.World.Rendering
                 0;
 
 
+            // -----------------------------------------------------
+            // PERMANENT BACKGROUND TINT
+            // -----------------------------------------------------
+            //
+            // The layer is darkened at SpriteRenderer level.
+            // Lighting remains exactly the same for both terrain
+            // layers, so torch/sun light cannot erase the visual
+            // distinction between foreground and background.
+            //
+            backgroundRenderer.color =
+                new Color(
+                    BackgroundSpriteBrightness,
+                    BackgroundSpriteBrightness,
+                    BackgroundSpriteBrightness,
+                    1f
+                );
+
+
             data.BackgroundRenderer =
                 backgroundRenderer;
 
 
-            // =====================================================
-            // FOREGROUND OBJECT
-            // =====================================================
+            // -------------------------
+            // FOREGROUND
+            // -------------------------
 
             GameObject foregroundObject =
                 new GameObject(
@@ -254,13 +290,17 @@ namespace Game.World.Rendering
                 1;
 
 
+            foregroundRenderer.color =
+                Color.white;
+
+
             data.ForegroundRenderer =
                 foregroundRenderer;
 
 
-            // =====================================================
+            // -------------------------
             // TILE TEXTURES
-            // =====================================================
+            // -------------------------
 
             int textureWidth =
                 Chunk.SizeX *
@@ -298,9 +338,9 @@ namespace Game.World.Rendering
                 );
 
 
-            // =====================================================
+            // -------------------------
             // LIGHT TEXTURE
-            // =====================================================
+            // -------------------------
 
             data.LightTexture =
                 new Texture2D(
@@ -333,11 +373,10 @@ namespace Game.World.Rendering
                 ];
 
 
-            // =====================================================
-            // MATERIAL
-            // =====================================================
-
-            if (lightingMaterial != null)
+            if (
+                lightingMaterial !=
+                null
+            )
             {
                 data.BackgroundRenderer.sharedMaterial =
                     lightingMaterial;
@@ -347,10 +386,6 @@ namespace Game.World.Rendering
                     lightingMaterial;
             }
 
-
-            // =====================================================
-            // PROPERTY BLOCKS
-            // =====================================================
 
             data.BackgroundProperties =
                 new MaterialPropertyBlock();
@@ -368,10 +403,6 @@ namespace Game.World.Rendering
             return data;
         }
 
-
-        // =========================================================
-        // CREATE BLOCK TEXTURE
-        // =========================================================
 
         private Texture2D CreateBlockTexture(
             int width,
@@ -399,33 +430,30 @@ namespace Game.World.Rendering
         }
 
 
-        // =========================================================
-        // CREATE SPRITE
-        // =========================================================
-
         private Sprite CreateSprite(
             Texture2D texture
         )
         {
-            return Sprite.Create(
-                texture,
+            return
+                Sprite.Create(
+                    texture,
 
-                new Rect(
-                    0,
-                    0,
-                    texture.width,
-                    texture.height
-                ),
+                    new Rect(
+                        0,
+                        0,
+                        texture.width,
+                        texture.height
+                    ),
 
-                Vector2.zero,
+                    Vector2.zero,
 
-                BlockRenderer.BlockPixelSize
-            );
+                    BlockRenderer.BlockPixelSize
+                );
         }
 
 
         // =========================================================
-        // DRAW ALL BLOCKS
+        // DRAW BLOCKS
         // =========================================================
 
         private void DrawBlocks(
@@ -445,11 +473,7 @@ namespace Game.World.Rendering
                     x++
                 )
                 {
-                    // =================================================
-                    // BACKGROUND
-                    // =================================================
-
-                    DrawSingleBlock(
+                    BlockRenderer.DrawBlock(
                         data.BackgroundTexture,
                         x,
                         y,
@@ -460,11 +484,7 @@ namespace Game.World.Rendering
                     );
 
 
-                    // =================================================
-                    // FOREGROUND
-                    // =================================================
-
-                    DrawSingleBlock(
+                    BlockRenderer.DrawBlock(
                         data.ForegroundTexture,
                         x,
                         y,
@@ -491,105 +511,7 @@ namespace Game.World.Rendering
 
 
         // =========================================================
-        // DRAW SINGLE BLOCK
-        // =========================================================
-        //
-        // ������� ������� ������.
-        //
-        // ��� �������� ��� �������� ����� ID 0:
-        //
-        // ������ ������� �� ����� �������� � Texture2D.
-        //
-
-        private void DrawSingleBlock(
-            Texture2D texture,
-            int localX,
-            int localY,
-            ushort blockID
-        )
-        {
-            ClearBlockArea(
-                texture,
-                localX,
-                localY
-            );
-
-
-            // =====================================================
-            // AIR
-            // =====================================================
-
-            if (blockID == 0)
-            {
-                return;
-            }
-
-
-            // =====================================================
-            // DRAW BLOCK
-            // =====================================================
-
-            BlockRenderer.DrawBlock(
-                texture,
-                localX,
-                localY,
-                blockID
-            );
-        }
-
-
-        // =========================================================
-        // CLEAR ONE BLOCK AREA
-        // =========================================================
-
-        private void ClearBlockArea(
-            Texture2D texture,
-            int localX,
-            int localY
-        )
-        {
-            int pixelSize =
-                BlockRenderer.BlockPixelSize;
-
-
-            int pixelX =
-                localX *
-                pixelSize;
-
-
-            int pixelY =
-                localY *
-                pixelSize;
-
-
-            Color32[] clearPixels =
-                new Color32[
-                    pixelSize *
-                    pixelSize
-                ];
-
-
-            // ��� �������� �� ���������:
-            //
-            // R = 0
-            // G = 0
-            // B = 0
-            // A = 0
-            //
-            // �� ���� ��������� ���������� �������.
-
-            texture.SetPixels32(
-                pixelX,
-                pixelY,
-                pixelSize,
-                pixelSize,
-                clearPixels
-            );
-        }
-
-
-        // =========================================================
-        // UPDATE FOREGROUND BLOCK
+        // UPDATE ONE BLOCK
         // =========================================================
 
         public void UpdateBlock(
@@ -598,17 +520,9 @@ namespace Game.World.Rendering
             int localY
         )
         {
-            if (chunk == null)
-            {
-                return;
-            }
-
-
             if (
-                localX < 0 ||
-                localX >= Chunk.SizeX ||
-                localY < 0 ||
-                localY >= Chunk.SizeY
+                chunk ==
+                null
             )
             {
                 return;
@@ -629,16 +543,16 @@ namespace Game.World.Rendering
                 )
             )
             {
-                Render(chunk);
+                Render(
+                    chunk
+                );
+
+
                 return;
             }
 
 
-            // =====================================================
-            // DRAW ONLY THIS CELL
-            // =====================================================
-
-            DrawSingleBlock(
+            BlockRenderer.DrawBlock(
                 data.ForegroundTexture,
                 localX,
                 localY,
@@ -649,10 +563,6 @@ namespace Game.World.Rendering
             );
 
 
-            // =====================================================
-            // APPLY IMMEDIATELY
-            // =====================================================
-
             data.ForegroundTexture.Apply(
                 false,
                 false
@@ -660,27 +570,15 @@ namespace Game.World.Rendering
         }
 
 
-        // =========================================================
-        // UPDATE BACKGROUND BLOCK
-        // =========================================================
-
         public void UpdateBackgroundBlock(
             Chunk chunk,
             int localX,
             int localY
         )
         {
-            if (chunk == null)
-            {
-                return;
-            }
-
-
             if (
-                localX < 0 ||
-                localX >= Chunk.SizeX ||
-                localY < 0 ||
-                localY >= Chunk.SizeY
+                chunk ==
+                null
             )
             {
                 return;
@@ -701,16 +599,16 @@ namespace Game.World.Rendering
                 )
             )
             {
-                Render(chunk);
+                Render(
+                    chunk
+                );
+
+
                 return;
             }
 
 
-            // =====================================================
-            // DRAW ONLY THIS BACKGROUND CELL
-            // =====================================================
-
-            DrawSingleBlock(
+            BlockRenderer.DrawBlock(
                 data.BackgroundTexture,
                 localX,
                 localY,
@@ -720,10 +618,6 @@ namespace Game.World.Rendering
                 )
             );
 
-
-            // =====================================================
-            // APPLY IMMEDIATELY
-            // =====================================================
 
             data.BackgroundTexture.Apply(
                 false,
@@ -737,16 +631,21 @@ namespace Game.World.Rendering
         // =========================================================
 
         public void UpdateDirtyLighting(
-            int maxChunksPerFrame = 6
+            int maxChunksPerFrame =
+                6
         )
         {
-            if (world == null)
+            if (
+                world ==
+                null
+            )
             {
                 return;
             }
 
 
-            int updated = 0;
+            int updated =
+                0;
 
 
             foreach (
@@ -767,7 +666,10 @@ namespace Game.World.Rendering
                     pair.Value;
 
 
-                if (chunk == null)
+                if (
+                    chunk ==
+                    null
+                )
                 {
                     continue;
                 }
@@ -778,7 +680,9 @@ namespace Game.World.Rendering
 
 
                 if (
-                    lightData == null ||
+                    lightData ==
+                    null
+                    ||
                     !lightData.IsDirty
                 )
                 {
@@ -815,10 +719,6 @@ namespace Game.World.Rendering
         }
 
 
-        // =========================================================
-        // UPDATE LIGHT TEXTURE
-        // =========================================================
-
         private void UpdateLightTexture(
             Chunk chunk,
             ChunkRenderData data
@@ -834,20 +734,19 @@ namespace Game.World.Rendering
                 Chunk.SizeY;
 
 
-            int index = 0;
+            int index =
+                0;
 
 
             for (
                 int lightY = -LightBorder;
-                lightY <
-                Chunk.SizeY + LightBorder;
+                lightY < Chunk.SizeY + LightBorder;
                 lightY++
             )
             {
                 for (
                     int lightX = -LightBorder;
-                    lightX <
-                    Chunk.SizeX + LightBorder;
+                    lightX < Chunk.SizeX + LightBorder;
                     lightX++
                 )
                 {
@@ -879,25 +778,30 @@ namespace Game.World.Rendering
                     float red =
                         Mathf.Max(
                             sunlight,
-                            node.R / 15f
+                            node.R /
+                            15f
                         );
 
 
                     float green =
                         Mathf.Max(
                             sunlight,
-                            node.G / 15f
+                            node.G /
+                            15f
                         );
 
 
                     float blue =
                         Mathf.Max(
                             sunlight,
-                            node.B / 15f
+                            node.B /
+                            15f
                         );
 
 
-                    data.LightPixels[index++] =
+                    data.LightPixels[
+                        index++
+                    ] =
                         new Color(
                             red,
                             green,
@@ -925,10 +829,6 @@ namespace Game.World.Rendering
         }
 
 
-        // =========================================================
-        // GET WORLD LIGHT
-        // =========================================================
-
         private LightNode GetWorldLight(
             Chunk chunk,
             int localX,
@@ -937,32 +837,45 @@ namespace Game.World.Rendering
             int worldY
         )
         {
-            if (world != null)
-            {
-                return world.GetLight(
-                    worldX,
-                    worldY
-                );
-            }
-
-
             if (
-                localX >= 0 &&
-                localX < Chunk.SizeX &&
-                localY >= 0 &&
-                localY < Chunk.SizeY
+                world !=
+                null
             )
             {
-                return chunk
-                    .GetLightData()
-                    .Get(
-                        localX,
-                        localY
+                return
+                    world.GetLight(
+                        worldX,
+                        worldY
                     );
             }
 
 
-            return LightNode.None;
+            if (
+                localX >=
+                0
+                &&
+                localX <
+                Chunk.SizeX
+                &&
+                localY >=
+                0
+                &&
+                localY <
+                Chunk.SizeY
+            )
+            {
+                return
+                    chunk
+                        .GetLightData()
+                        .Get(
+                            localX,
+                            localY
+                        );
+            }
+
+
+            return
+                LightNode.None;
         }
 
 
@@ -975,22 +888,26 @@ namespace Game.World.Rendering
         )
         {
             float scaleX =
-                (float)Chunk.SizeX /
+                (float)
+                Chunk.SizeX /
                 LightTextureWidth;
 
 
             float scaleY =
-                (float)Chunk.SizeY /
+                (float)
+                Chunk.SizeY /
                 LightTextureHeight;
 
 
             float offsetX =
-                (float)LightBorder /
+                (float)
+                LightBorder /
                 LightTextureWidth;
 
 
             float offsetY =
-                (float)LightBorder /
+                (float)
+                LightBorder /
                 LightTextureHeight;
 
 
@@ -1003,9 +920,9 @@ namespace Game.World.Rendering
                 );
 
 
-            // =====================================================
+            // -------------------------
             // FOREGROUND
-            // =====================================================
+            // -------------------------
 
             data.ForegroundProperties.SetTexture(
                 "_LightTex",
@@ -1042,10 +959,17 @@ namespace Game.World.Rendering
             );
 
 
-            // =====================================================
+            // -------------------------
             // BACKGROUND
-            // =====================================================
-
+            // -------------------------
+            //
+            // DO NOT darken the background through lighting.
+            //
+            // The old renderer used 0.68 here. That couples visual
+            // separation to the lighting shader. We now keep the
+            // same light response as foreground and darken the actual
+            // SpriteRenderer by exactly 30% instead.
+            //
             data.BackgroundProperties.SetTexture(
                 "_LightTex",
                 data.LightTexture
@@ -1060,13 +984,13 @@ namespace Game.World.Rendering
 
             data.BackgroundProperties.SetFloat(
                 "_LayerBrightness",
-                0.93f
+                1f
             );
 
 
             data.BackgroundProperties.SetFloat(
                 "_Ambient",
-                0.045f
+                0.055f
             );
 
 
@@ -1083,41 +1007,7 @@ namespace Game.World.Rendering
 
 
         // =========================================================
-        // RENDER ALL LOADED
-        // =========================================================
-
-        public void RenderAllLoaded(
-            Game.World.World world
-        )
-        {
-            if (world == null)
-            {
-                return;
-            }
-
-
-            foreach (
-                var pair
-                in world.GetLoadedChunks()
-            )
-            {
-                Chunk chunk =
-                    pair.Value;
-
-
-                if (chunk == null)
-                {
-                    continue;
-                }
-
-
-                Render(chunk);
-            }
-        }
-
-
-        // =========================================================
-        // REMOVE CHUNK
+        // REMOVE
         // =========================================================
 
         public void RemoveChunk(
@@ -1148,7 +1038,10 @@ namespace Game.World.Rendering
             );
 
 
-            if (data.Root != null)
+            if (
+                data.Root !=
+                null
+            )
             {
                 Object.Destroy(
                     data.Root
@@ -1156,7 +1049,10 @@ namespace Game.World.Rendering
             }
 
 
-            if (data.ForegroundTexture != null)
+            if (
+                data.ForegroundTexture !=
+                null
+            )
             {
                 Object.Destroy(
                     data.ForegroundTexture
@@ -1164,7 +1060,10 @@ namespace Game.World.Rendering
             }
 
 
-            if (data.BackgroundTexture != null)
+            if (
+                data.BackgroundTexture !=
+                null
+            )
             {
                 Object.Destroy(
                     data.BackgroundTexture
@@ -1172,7 +1071,10 @@ namespace Game.World.Rendering
             }
 
 
-            if (data.LightTexture != null)
+            if (
+                data.LightTexture !=
+                null
+            )
             {
                 Object.Destroy(
                     data.LightTexture
@@ -1180,10 +1082,6 @@ namespace Game.World.Rendering
             }
         }
 
-
-        // =========================================================
-        // CLEAR
-        // =========================================================
 
         public void Clear()
         {
@@ -1196,7 +1094,10 @@ namespace Game.World.Rendering
                     pair.Value;
 
 
-                if (data.Root != null)
+                if (
+                    data.Root !=
+                    null
+                )
                 {
                     Object.Destroy(
                         data.Root
@@ -1204,7 +1105,10 @@ namespace Game.World.Rendering
                 }
 
 
-                if (data.ForegroundTexture != null)
+                if (
+                    data.ForegroundTexture !=
+                    null
+                )
                 {
                     Object.Destroy(
                         data.ForegroundTexture
@@ -1212,7 +1116,10 @@ namespace Game.World.Rendering
                 }
 
 
-                if (data.BackgroundTexture != null)
+                if (
+                    data.BackgroundTexture !=
+                    null
+                )
                 {
                     Object.Destroy(
                         data.BackgroundTexture
@@ -1220,7 +1127,10 @@ namespace Game.World.Rendering
                 }
 
 
-                if (data.LightTexture != null)
+                if (
+                    data.LightTexture !=
+                    null
+                )
                 {
                     Object.Destroy(
                         data.LightTexture
@@ -1272,6 +1182,48 @@ namespace Game.World.Rendering
 
             public MaterialPropertyBlock
                 BackgroundProperties;
+        }
+
+
+        // =========================================================
+        // RENDER ALL
+        // =========================================================
+
+        public void RenderAllLoaded(
+            Game.World.World world
+        )
+        {
+            if (
+                world ==
+                null
+            )
+            {
+                return;
+            }
+
+
+            foreach (
+                var pair
+                in world.GetLoadedChunks()
+            )
+            {
+                Chunk chunk =
+                    pair.Value;
+
+
+                if (
+                    chunk ==
+                    null
+                )
+                {
+                    continue;
+                }
+
+
+                Render(
+                    chunk
+                );
+            }
         }
     }
 }

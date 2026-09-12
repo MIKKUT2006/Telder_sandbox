@@ -8,6 +8,8 @@ using Game.World.Generation;
 using Game.World.Rendering;
 using Game.World.Structures;
 using Game.World.Biomes.Generation;
+using Game.World.Biomes.Surface;
+using Game.World.Furniture;
 
 
 namespace Game.World.Loading
@@ -545,6 +547,24 @@ namespace Game.World.Loading
 
 
                 // =================================================
+                // SURFACE FLORA -> FURNITURE LAYER
+                // =================================================
+                //
+                // This runs AFTER the save overlay, therefore saved/player
+                // foreground changes win over procedural grass/flowers.
+                // It still runs BEFORE lighting so emissive procedural
+                // furniture can be included in the initial light rebuild.
+                //
+                // =================================================
+
+                SurfaceFloraFurnitureGenerator.ApplyToLoadedChunk(
+                    generator,
+                    settings,
+                    chunk
+                );
+
+
+                // =================================================
                 // GENERATE LIGHT FOR THE NEW CHUNK
                 // =================================================
                 //
@@ -649,6 +669,21 @@ namespace Game.World.Loading
                 in toUnload
             )
             {
+
+                if (
+                    FurnitureLayerManager.Instance !=
+                    null
+                )
+                {
+
+                    FurnitureLayerManager.Instance
+                        .UnloadGeneratedFurnitureChunk(
+                            position.x,
+                            position.y
+                        );
+
+                }
+
 
                 renderer.RemoveChunk(
                     position.x,

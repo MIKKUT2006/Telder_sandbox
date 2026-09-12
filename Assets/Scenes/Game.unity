@@ -9081,8 +9081,8 @@ MonoBehaviour:
   handPoint: {fileID: 866734852}
   playerCamera: {fileID: 0}
   swingSpeed: 5.5
-  frontArmBackAngle: 52
-  frontArmForwardAngle: -58
+  frontArmBackAngle: 100
+  frontArmForwardAngle: -100
   backArmBackAngle: -12
   backArmForwardAngle: 18
   blendInSpeed: 14

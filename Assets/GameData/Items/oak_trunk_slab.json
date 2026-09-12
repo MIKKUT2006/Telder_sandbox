@@ -1,0 +1,7 @@
+{
+  "ID": "game:oak_trunk_slab",
+  "Name": "Oak trunk slab",
+  "Texture": "oak_trunk_slab",
+  "Type": "Block",
+  "MaxStack": 100
+}

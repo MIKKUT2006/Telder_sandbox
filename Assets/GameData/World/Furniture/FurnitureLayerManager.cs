@@ -30,11 +30,31 @@ namespace Game.World.Furniture
 
 
     [Serializable]
+    public class GeneratedFurnitureRemovalEntry
+    {
+
+        public int X;
+
+        public int Y;
+
+        public string BlockId;
+
+    }
+
+
+    [Serializable]
     public class FurnitureSaveFile
     {
 
         public List<FurnitureSaveEntry> Entries =
             new List<FurnitureSaveEntry>();
+
+
+        // Only tombstones for procedurally generated furniture are saved.
+        // The generated grass/flowers themselves are regenerated from the seed
+        // every time their chunk is loaded.
+        public List<GeneratedFurnitureRemovalEntry> RemovedGenerated =
+            new List<GeneratedFurnitureRemovalEntry>();
 
     }
 
@@ -78,6 +98,18 @@ namespace Game.World.Furniture
             >();
 
 
+        // Active procedural furniture exists only while its chunk is loaded.
+        // It is deliberately NOT written to the furniture save file.
+        private readonly HashSet<long> generatedKeys =
+            new HashSet<long>();
+
+
+        // A removed generated plant must not respawn when the chunk reloads.
+        // Only these small tombstones are persisted.
+        private readonly Dictionary<long, string> removedGenerated =
+            new Dictionary<long, string>();
+
+
         // RGB block light has a maximum level of 15.
         // +2 matches the lighting propagation safety radius.
         private const int LightVisualRefreshRadius =
@@ -90,13 +122,21 @@ namespace Game.World.Furniture
         private static void EnsureCreated()
         {
 
+            EnsureInstance();
+
+        }
+
+
+        public static FurnitureLayerManager EnsureInstance()
+        {
+
             if (
                 Instance !=
                 null
             )
             {
 
-                return;
+                return Instance;
 
             }
 
@@ -107,7 +147,7 @@ namespace Game.World.Furniture
             )
             {
 
-                return;
+                return null;
 
             }
 
@@ -124,9 +164,10 @@ namespace Game.World.Furniture
             );
 
 
-            gameObject.AddComponent<
-                FurnitureLayerManager
-            >();
+            return
+                gameObject.AddComponent<
+                    FurnitureLayerManager
+                >();
 
         }
 
@@ -368,6 +409,240 @@ namespace Game.World.Furniture
 
 
         // =====================================================
+        // PROCEDURAL FURNITURE
+        // =====================================================
+
+        public bool SetGeneratedFurniture(
+            int x,
+            int y,
+            string blockId
+        )
+        {
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    blockId
+                )
+                ||
+                HasFurniture(
+                    x,
+                    y
+                )
+                ||
+                WasGeneratedFurnitureRemoved(
+                    x,
+                    y,
+                    blockId
+                )
+            )
+            {
+
+                return false;
+
+            }
+
+
+            long key =
+                Pack(
+                    x,
+                    y
+                );
+
+
+            FurnitureSaveEntry entry =
+                new FurnitureSaveEntry
+                {
+                    X =
+                        x,
+
+                    Y =
+                        y,
+
+                    BlockId =
+                        blockId
+                };
+
+
+            data[
+                key
+            ] =
+                entry;
+
+
+            generatedKeys.Add(
+                key
+            );
+
+
+            CreateVisual(
+                entry
+            );
+
+
+            // No Save() here. Procedural flora is regenerated from
+            // world seed and biome config. Only removals are persisted.
+            return true;
+
+        }
+
+
+        public bool WasGeneratedFurnitureRemoved(
+            int x,
+            int y,
+            string blockId
+        )
+        {
+
+            long key =
+                Pack(
+                    x,
+                    y
+                );
+
+
+            if (
+                !removedGenerated.TryGetValue(
+                    key,
+                    out string removedBlockId
+                )
+            )
+            {
+
+                return false;
+
+            }
+
+
+            return
+                string.Equals(
+                    removedBlockId,
+                    blockId,
+                    StringComparison.OrdinalIgnoreCase
+                );
+
+        }
+
+
+        public void UnloadGeneratedFurnitureChunk(
+            int chunkX,
+            int chunkY
+        )
+        {
+
+            if (
+                generatedKeys.Count ==
+                0
+            )
+            {
+
+                return;
+
+            }
+
+
+            List<long> remove =
+                new List<long>();
+
+
+            foreach (
+                long key
+                in generatedKeys
+            )
+            {
+
+                int x =
+                    UnpackX(
+                        key
+                    );
+
+
+                int y =
+                    UnpackY(
+                        key
+                    );
+
+
+                int entryChunkX =
+                    Mathf.FloorToInt(
+                        x /
+                        (float)Chunk.SizeX
+                    );
+
+
+                int entryChunkY =
+                    Mathf.FloorToInt(
+                        y /
+                        (float)Chunk.SizeY
+                    );
+
+
+                if (
+                    entryChunkX ==
+                    chunkX
+                    &&
+                    entryChunkY ==
+                    chunkY
+                )
+                {
+
+                    remove.Add(
+                        key
+                    );
+
+                }
+
+            }
+
+
+            for (
+                int i = 0;
+                i < remove.Count;
+                i++
+            )
+            {
+
+                long key =
+                    remove[i];
+
+
+                generatedKeys.Remove(
+                    key
+                );
+
+
+                data.Remove(
+                    key
+                );
+
+
+                if (
+                    visuals.TryGetValue(
+                        key,
+                        out GameObject visual
+                    )
+                    &&
+                    visual !=
+                    null
+                )
+                {
+
+                    Destroy(
+                        visual
+                    );
+
+                }
+
+
+                visuals.Remove(
+                    key
+                );
+
+            }
+
+        }
+
+
+        // =====================================================
         // REMOVE
         // =====================================================
 
@@ -393,6 +668,25 @@ namespace Game.World.Furniture
             {
 
                 return false;
+
+            }
+
+
+            bool wasGenerated =
+                generatedKeys.Remove(
+                    key
+                );
+
+
+            if (
+                wasGenerated
+            )
+            {
+
+                removedGenerated[
+                    key
+                ] =
+                    entry.BlockId;
 
             }
 
@@ -499,7 +793,7 @@ namespace Game.World.Furniture
 
                 dropCount =
                     Mathf.Max(
-                        1,
+                        0,
                         definition.DropCount
                     );
 
@@ -541,6 +835,17 @@ namespace Game.World.Furniture
             {
 
                 return false;
+
+            }
+
+
+            if (
+                dropCount <=
+                0
+            )
+            {
+
+                return true;
 
             }
 
@@ -1177,6 +1482,10 @@ namespace Game.World.Furniture
 
             data.Clear();
 
+            generatedKeys.Clear();
+
+            removedGenerated.Clear();
+
 
             foreach (
                 KeyValuePair<long, GameObject> pair
@@ -1245,6 +1554,51 @@ namespace Game.World.Furniture
                 {
 
                     return;
+
+                }
+
+
+                if (
+                    save.RemovedGenerated !=
+                    null
+                )
+                {
+
+                    for (
+                        int i = 0;
+                        i < save.RemovedGenerated.Count;
+                        i++
+                    )
+                    {
+
+                        GeneratedFurnitureRemovalEntry removed =
+                            save.RemovedGenerated[i];
+
+
+                        if (
+                            removed ==
+                            null
+                            ||
+                            string.IsNullOrWhiteSpace(
+                                removed.BlockId
+                            )
+                        )
+                        {
+
+                            continue;
+
+                        }
+
+
+                        removedGenerated[
+                            Pack(
+                                removed.X,
+                                removed.Y
+                            )
+                        ] =
+                            removed.BlockId;
+
+                    }
 
                 }
 
@@ -1332,9 +1686,56 @@ namespace Game.World.Furniture
                     new FurnitureSaveFile();
 
 
-                save.Entries.AddRange(
-                    data.Values
-                );
+                foreach (
+                    KeyValuePair<long, FurnitureSaveEntry> pair
+                    in data
+                )
+                {
+
+                    if (
+                        generatedKeys.Contains(
+                            pair.Key
+                        )
+                    )
+                    {
+
+                        continue;
+
+                    }
+
+
+                    save.Entries.Add(
+                        pair.Value
+                    );
+
+                }
+
+
+                foreach (
+                    KeyValuePair<long, string> pair
+                    in removedGenerated
+                )
+                {
+
+                    save.RemovedGenerated.Add(
+                        new GeneratedFurnitureRemovalEntry
+                        {
+                            X =
+                                UnpackX(
+                                    pair.Key
+                                ),
+
+                            Y =
+                                UnpackY(
+                                    pair.Key
+                                ),
+
+                            BlockId =
+                                pair.Value
+                        }
+                    );
+
+                }
 
 
                 File.WriteAllText(
@@ -1374,6 +1775,33 @@ namespace Game.World.Furniture
                 )
                 ^
                 (uint)y;
+
+        }
+
+
+        private static int UnpackX(
+            long key
+        )
+        {
+
+            return
+                (int)(
+                    key >>
+                    32
+                );
+
+        }
+
+
+        private static int UnpackY(
+            long key
+        )
+        {
+
+            return
+                unchecked(
+                    (int)(uint)key
+                );
 
         }
 

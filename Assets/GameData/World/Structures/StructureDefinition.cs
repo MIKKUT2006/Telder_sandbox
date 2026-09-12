@@ -17,6 +17,14 @@ namespace Game.World.Structures
         Any = 2
     }
 
+
+    public enum StructureBiomeSource
+    {
+        Surface = 0,
+        Cave = 1,
+        Either = 2
+    }
+
     [Serializable]
     public class StructureDefinition
     {
@@ -51,7 +59,23 @@ namespace Game.World.Structures
         public bool RequireFreeSpace = true;
         public int FreeSpacePadding = 1;
 
-        // Empty = any biome.
+        // Which biome system is used for the Biomes filter.
+        //
+        // Surface:
+        //   WorldGenerator.GetDominantBiome(worldX)
+        //
+        // Cave:
+        //   CaveBiomeRegistry at the candidate X/Y
+        //
+        // Either:
+        //   candidate is accepted when either system matches.
+        //
+        // Default Surface preserves all existing structure JSON.
+        public StructureBiomeSource BiomeSource =
+            StructureBiomeSource.Surface;
+
+
+        // Empty = any biome in the selected source.
         public List<string> Biomes =
             new List<string>();
 

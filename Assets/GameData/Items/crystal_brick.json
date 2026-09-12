@@ -1,0 +1,7 @@
+{
+  "ID": "game:crystal_brick",
+  "Name": "Stone",
+  "Texture": "crystal_brick",
+  "Type": "Block",
+  "MaxStack": 100
+}
