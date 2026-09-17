@@ -1,0 +1,11 @@
+{
+  "Weather": {
+    "Precipitation": "Rain",
+    "Chance": 0.55,
+    "Intensity": 0.8,
+    "MinDuration": 35.0,
+    "MaxDuration": 100.0,
+    "MinClearDuration": 40.0,
+    "MaxClearDuration": 130.0
+  }
+}

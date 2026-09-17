@@ -1,0 +1,55 @@
+
+TELDER EDITOR CYRILLIC REPAIR v2
+Project: D:\Telder_sandbox
+
+SCAN: D:\Telder_sandbox\Assets\GameData\Editor
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\ArmMiningRigSetupWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\BiomeConfigFolderMigration.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\BiomeGenerationSetupWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\BlockCollisionShapeMigrationWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\ChestDebugWindow.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\ChestSystemSetupWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\CloudHeightFixWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\CraftingUISetupWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\GameplayContentV21Wizard.cs
+REPAIRED: D:\Telder_sandbox\Assets\GameData\Editor\HeldItemPoseEditorWindow.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\InventoryUISetupWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\MainMenuBackgroundFixWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\MainMenuBiomeSkyFixWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\MainMenuGradientSetupWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\MainMenuIsolationFixWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\MainMenuSceneSetupWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\MainMenuV21UpgradeWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\MiningToolsSetupWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\PauseUISetupWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\PixelCursorSetupWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\StructureEditorSceneWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\V22CoreSourcePatcher.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\V22_2CriticalFixWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\V24LightingFixWizard.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\WorldVisualUpgradeWizard.cs
+REPAIRED: D:\Telder_sandbox\Assets\GameData\Editor\BlockTransforms\BlockTransformAutoInstaller.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\Editor\HeldItemPosePreviewFix\Templates\HeldItemPoseEditorWindow.cs.txt
+SCAN: D:\Telder_sandbox\Assets\GameData\World\Structures
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\StructureCascadeBreakRuntime.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\StructureDebugRuntimeRegistry.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\StructureDefinition.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\StructureGenerationRuntime.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\StructureInstanceRuntimeIndex.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\StructurePaths.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\StructureRegistry.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\StructureRuntimeSpawner.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\EditorRuntime\StructureEditorContentBootstrap.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\EditorRuntime\StructureEditorContentScanner.cs
+REPAIRED: D:\Telder_sandbox\Assets\GameData\World\Structures\EditorRuntime\StructureEditorController.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\EditorRuntime\StructureEditorIconCache.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\EditorRuntime\StructureEditorLootIconCache.cs
+UTF8-BOM: D:\Telder_sandbox\Assets\GameData\World\Structures\EditorRuntime\Fixes\StructureEditorDefaultFontEnforcer.cs
+
+SUCCESS
+Files checked: 41
+Saved UTF-8 BOM: 41
+Mojibake repaired: 3
+Backup: D:\Telder_sandbox\EditorEncoding_Backups\20260914_202939
+
+Return to Unity and wait for recompilation.

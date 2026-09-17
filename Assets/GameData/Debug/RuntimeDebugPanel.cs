@@ -14,7 +14,7 @@ using Game.World.Biomes.Caves;
 using Game.World.Dimensions;
 using Game.World.Generation;
 using Game.World.Structures;
-
+using Game.World.Weather;
 
 namespace Game.Debugging
 {
@@ -235,6 +235,11 @@ namespace Game.Debugging
                 10f
             );
 
+            DrawWeatherSection();
+
+            GUILayout.Space(
+                10f
+            );
 
             DrawGeneratedStructures();
 
@@ -456,6 +461,114 @@ namespace Game.Debugging
             }
         }
 
+        // Погодные условия
+        private void DrawWeatherSection()
+        {
+            WeatherManager weather =
+                WeatherManager.Instance;
+
+            GUILayout.Space(10f);
+
+            GUILayout.Label("WEATHER");
+
+            if (weather == null)
+            {
+                GUILayout.Label(
+                    "WeatherManager: not found"
+                );
+
+                return;
+            }
+
+            GUILayout.Label(
+                "Biome: " +
+                weather.CurrentBiomeId
+            );
+
+            GUILayout.Label(
+                "Mode: " +
+                weather.ControlMode
+            );
+
+            GUILayout.Label(
+                "Current: " +
+                weather.CurrentWeather
+            );
+
+            if (
+                weather.CurrentWeather ==
+                WeatherType.Rain
+            )
+            {
+                GUILayout.Label(
+                    "Rain angle: " +
+                    weather.RainTiltDegrees
+                        .ToString("0.0") +
+                    " deg"
+                );
+            }
+
+            GUILayout.Space(4f);
+
+            GUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("AUTO"))
+            {
+                weather.SetControlMode(
+                    WeatherControlMode.Auto
+                );
+            }
+
+            if (GUILayout.Button("CLEAR"))
+            {
+                weather.SetControlMode(
+                    WeatherControlMode.Clear
+                );
+            }
+
+            if (GUILayout.Button("RAIN"))
+            {
+                weather.SetControlMode(
+                    WeatherControlMode.Rain
+                );
+            }
+
+            if (GUILayout.Button("SNOW"))
+            {
+                weather.SetControlMode(
+                    WeatherControlMode.Snow
+                );
+            }
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(4f);
+
+            GUILayout.Label(
+                "Debug intensity: " +
+                weather.DebugIntensity
+                    .ToString("0.00")
+            );
+
+            float intensity =
+                GUILayout.HorizontalSlider(
+                    weather.DebugIntensity,
+                    0.1f,
+                    1.5f
+                );
+
+            if (
+                !Mathf.Approximately(
+                    intensity,
+                    weather.DebugIntensity
+                )
+            )
+            {
+                weather.SetDebugIntensity(
+                    intensity
+                );
+            }
+        }
 
         // =====================================================
         // GENERATED STRUCTURES

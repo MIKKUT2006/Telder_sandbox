@@ -1,0 +1,27 @@
+{
+  "ID": "game:leaves_layer",
+
+  "Name": "Leaves layer",
+
+  "Texture": "leaves_layer",
+
+  "Hardness": 1,
+
+  "Solid": true,
+  "Drop": "game:leaves",
+  "DropCount": 1,
+
+  "VisualOffsetX": 0.0,
+  "VisualOffsetY": 0.0,
+  "VisualScale": 1.0,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

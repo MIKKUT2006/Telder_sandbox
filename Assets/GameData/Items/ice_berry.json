@@ -1,0 +1,14 @@
+{
+  "ID": "game:ice_berry",
+  "Name": "Ice berry",
+  "Texture": "ice_berry",
+  "Type": "Item",
+  "MaxStack": 100,
+
+  "Tags": [
+    "eat"
+  ],
+  "EatTime": 1.0,
+  "HungerRestore": 15.0,
+  "HealthRestore": 5.0
+}

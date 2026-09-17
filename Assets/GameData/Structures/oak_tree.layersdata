@@ -1,0 +1,126 @@
+{
+    "Version": 2,
+    "StructureId": "oak_tree",
+    "Cells": [
+        {
+            "X": 4,
+            "Y": 4,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 3,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 0,
+            "Y": 11,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 1,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 0,
+            "Y": 10,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 1,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 1,
+            "Y": 9,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 1,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 1,
+            "Y": 8,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 1,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 7,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 2,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 5,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 2,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 7,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 3,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 6,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 3,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 9,
+            "Y": 8,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 3,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 10,
+            "Y": 9,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 3,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 10,
+            "Y": 10,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 3,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 10,
+            "Y": 11,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 3,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 10,
+            "Y": 12,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 3,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 6,
+            "FurnitureId": "",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 3,
+            "FurnitureTransform": 0
+        }
+    ]
+}

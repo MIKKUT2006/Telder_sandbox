@@ -1,0 +1,7 @@
+{
+  "ID": "game:snow_leaves",
+  "Name": "Snow leaves",
+  "Texture": "snow_leaves",
+  "Type": "Block",
+  "MaxStack": 100
+}

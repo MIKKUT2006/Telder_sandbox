@@ -1,0 +1,1211 @@
+using Game.Blocks;
+using Game.Content;
+using Game.World.Collision;
+using Game.World.Dimensions;
+using Game.World.Generation;
+using Game.World.Lighting;
+using Game.World.Loading;
+using Game.World.Rendering;
+using System.Collections;
+using Game.World.Effects;
+using Game.Save;
+using UnityEngine;
+
+namespace Game.World
+{
+    public class WorldManager : MonoBehaviour
+    {
+        public static WorldManager Instance;
+
+
+        // =====================================================
+        // PLAYER
+        // =====================================================
+
+        [SerializeField]
+        private Transform player;
+
+
+        // =====================================================
+        // SYSTEMS
+        // =====================================================
+
+        private World world;
+
+        private WorldSettings settings;
+
+        private WorldCollision worldCollision;
+
+        private ChunkCollision chunkCollision;
+
+        private WorldGenerator generator;
+
+        private ChunkLoader loader;
+
+        private ChunkRenderer renderer;
+
+        private LightPropagationEngine lighting;
+
+
+        // =====================================================
+        // STATE
+        // =====================================================
+
+        private bool worldGenerated;
+
+
+        public bool IsReady
+        {
+            get
+            {
+                return
+                    worldGenerated &&
+                    loader != null &&
+                    world != null;
+            }
+        }
+
+
+        // =====================================================
+        // AWAKE
+        // =====================================================
+
+        private void Awake()
+        {
+            Instance = this;
+
+
+            // =====================================================
+            // CONTENT
+            // =====================================================
+
+            ContentManager.Initialize();
+
+
+            settings = new WorldSettings();
+
+            settings.Seed = DimensionTravelRuntime.Current.Seed;
+            
+            // =====================================================
+            // WORLD
+            // =====================================================
+
+            world = new World();
+
+            world.SetWorldHeight(
+                settings.WorldHeight
+            );
+
+
+            // ���������� ������������ lighting engine,
+            // ������� ����������� World.
+
+            lighting =
+                world.GetLightEngine();
+
+
+            // =====================================================
+            // COLLISION
+            // =====================================================
+
+            worldCollision =
+                new WorldCollision(
+                    world
+                );
+
+
+            chunkCollision =
+                new ChunkCollision(
+                    worldCollision
+                );
+
+
+            // =====================================================
+            // GENERATOR
+            // =====================================================
+
+            generator =
+                new WorldGenerator(
+                    settings
+                );
+
+
+            generator.ReloadOres();
+
+
+            // =====================================================
+            // RENDERER
+            // =====================================================
+
+            renderer =
+                new ChunkRenderer(
+                    world
+                );
+
+
+            // =====================================================
+            // CHUNK LOADER
+            // =====================================================
+
+            loader =
+                new ChunkLoader(
+                    world,
+                    generator,
+                    settings,
+                    renderer,
+                    chunkCollision
+                );
+
+
+            worldGenerated = true;
+
+
+            Debug.Log(
+                "WORLD MANAGER: SYSTEMS INITIALIZED."
+            );
+        }
+
+
+        // =====================================================
+        // START
+        // =====================================================
+
+        private IEnumerator Start()
+        {
+            // =====================================================
+            // WAIT FOR LOADER
+            // =====================================================
+
+            while (loader == null)
+            {
+                yield return null;
+            }
+
+
+            // =====================================================
+            // START INITIAL CHUNK LOADING
+            // =====================================================
+
+            loader.SetPlayerChunk(
+                0,
+                0
+            );
+
+
+            // =====================================================
+            // WAIT FOR START CHUNK
+            // =====================================================
+
+            while (
+                !loader.IsChunkLoaded(
+                    0,
+                    0
+                )
+            )
+            {
+                loader.Process();
+
+                yield return null;
+            }
+
+
+            // =====================================================
+            // WAIT FOR INITIAL AREA
+            // =====================================================
+
+            while (
+                loader.GetLoadQueueSize() > 0
+            )
+            {
+                loader.Process();
+
+                yield return null;
+            }
+
+
+            // =====================================================
+            // INITIAL LIGHTING
+            // =====================================================
+
+            GenerateInitialLighting();
+
+
+            // =====================================================
+            // WORLD READY
+            // =====================================================
+
+            worldGenerated = true;
+
+
+            Debug.Log(
+                "WORLD: Initial chunks generated."
+            );
+
+
+            // =====================================================
+            // SPAWN PLAYER
+            // =====================================================
+
+            SpawnPlayer();
+        }
+
+
+        // =====================================================
+        // UPDATE
+        // =====================================================
+
+        private void Update()
+        {
+            if (renderer != null)
+            {
+                renderer.UpdateDirtyLighting(6);
+            }
+        }
+
+
+        // =====================================================
+        // PLAYER SPAWN
+        // =====================================================
+
+        private void SpawnPlayer()
+        {
+            if (player == null)
+            {
+                Debug.LogError(
+                    "WORLD: Player reference is null."
+                );
+
+                return;
+            }
+
+
+            PlayerCollision playerCollision =
+                player.GetComponent<PlayerCollision>();
+
+
+            if (playerCollision == null)
+            {
+                Debug.LogError(
+                    "WORLD: PlayerCollision component not found."
+                );
+
+                return;
+            }
+
+
+            Vector2 playerSize =
+                playerCollision.GetColliderSize();
+
+
+            int spawnX = 0;
+
+            int surfaceY;
+
+
+            if (
+                !TryFindSurface(
+                    spawnX,
+                    out surfaceY
+                )
+            )
+            {
+                Debug.LogError(
+                    "WORLD: Failed to find surface at X = " +
+                    spawnX
+                );
+
+                return;
+            }
+
+
+            // =====================================================
+            // PLAYER POSITION
+            // =====================================================
+
+            float playerHalfHeight =
+                playerSize.y * 0.5f;
+
+
+            float playerCenterY =
+                surfaceY +
+                1f +
+                playerHalfHeight +
+                0.05f;
+
+
+            Vector3 spawnPosition =
+                new Vector3(
+                    spawnX + 0.5f,
+                    playerCenterY,
+                    0f
+                );
+
+
+            // =====================================================
+            // RESET PHYSICS
+            // =====================================================
+
+            Rigidbody2D rb =
+                player.GetComponent<Rigidbody2D>();
+
+
+            if (rb != null)
+            {
+                rb.linearVelocity =
+                    Vector2.zero;
+
+                rb.angularVelocity =
+                    0f;
+            }
+
+
+            // =====================================================
+            // SET POSITION
+            // =====================================================
+
+            player.position =
+                spawnPosition;
+
+
+            Debug.Log(
+                "WORLD: PLAYER SPAWNED ABOVE SURFACE. " +
+                "X = " +
+                spawnX +
+                " SURFACE Y = " +
+                surfaceY +
+                " PLAYER Y = " +
+                playerCenterY
+            );
+        }
+
+
+        // =====================================================
+        // FIND PLAYER SPAWN POSITION
+        // =====================================================
+
+        private bool FindPlayerSpawnPosition(
+            Vector2 playerSize,
+            out Vector3 spawnPosition
+        )
+        {
+            spawnPosition =
+                Vector3.zero;
+
+
+            int searchRadius = 128;
+
+
+            for (
+                int offset = 0;
+                offset <= searchRadius;
+                offset++
+            )
+            {
+                // =================================================
+                // CENTER
+                // =================================================
+
+                if (offset == 0)
+                {
+                    if (
+                        TryFindSpawnAtX(
+                            0,
+                            playerSize,
+                            out spawnPosition
+                        )
+                    )
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    // =================================================
+                    // LEFT
+                    // =================================================
+
+                    if (
+                        TryFindSpawnAtX(
+                            -offset,
+                            playerSize,
+                            out spawnPosition
+                        )
+                    )
+                    {
+                        return true;
+                    }
+
+
+                    // =================================================
+                    // RIGHT
+                    // =================================================
+
+                    if (
+                        TryFindSpawnAtX(
+                            offset,
+                            playerSize,
+                            out spawnPosition
+                        )
+                    )
+                    {
+                        return true;
+                    }
+                }
+            }
+
+
+            return false;
+        }
+
+
+        // =====================================================
+        // FIND SPAWN AT X
+        // =====================================================
+
+        private bool TryFindSpawnAtX(
+            int worldX,
+            Vector2 playerSize,
+            out Vector3 spawnPosition
+        )
+        {
+            spawnPosition =
+                Vector3.zero;
+
+
+            float halfWidth =
+                playerSize.x * 0.5f;
+
+
+            float halfHeight =
+                playerSize.y * 0.5f;
+
+
+            float skin = 0.02f;
+
+
+            // =================================================
+            // CHECK COLUMN
+            // =================================================
+
+            for (
+                int groundY = settings.WorldHeight - 1;
+                groundY >= 0;
+                groundY--
+            )
+            {
+                // =================================================
+                // SOLID GROUND
+                // =================================================
+
+                if (
+                    !worldCollision.IsSolid(
+                        worldX,
+                        groundY
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                // =================================================
+                // PLAYER WIDTH
+                // =================================================
+
+                int leftX =
+                    Mathf.FloorToInt(
+                        worldX -
+                        halfWidth +
+                        skin
+                    );
+
+
+                int rightX =
+                    Mathf.FloorToInt(
+                        worldX +
+                        halfWidth -
+                        skin
+                    );
+
+
+                bool blocked = false;
+
+
+                // =================================================
+                // CHECK PLAYER HEIGHT
+                // =================================================
+
+                for (
+                    int x = leftX;
+                    x <= rightX;
+                    x++
+                )
+                {
+                    if (
+                        worldCollision.IsSolid(
+                            x,
+                            groundY + 1
+                        )
+                    )
+                    {
+                        blocked = true;
+                        break;
+                    }
+
+
+                    if (
+                        worldCollision.IsSolid(
+                            x,
+                            groundY + 2
+                        )
+                    )
+                    {
+                        blocked = true;
+                        break;
+                    }
+
+
+                    if (
+                        worldCollision.IsSolid(
+                            x,
+                            groundY + 3
+                        )
+                    )
+                    {
+                        blocked = true;
+                        break;
+                    }
+                }
+
+
+                if (blocked)
+                {
+                    continue;
+                }
+
+
+                // =================================================
+                // SPAWN POSITION
+                // =================================================
+
+                float playerCenterY =
+                    groundY +
+                    1f +
+                    halfHeight;
+
+
+                float playerCenterX =
+                    worldX +
+                    0.5f;
+
+
+                spawnPosition =
+                    new Vector3(
+                        playerCenterX,
+                        playerCenterY + skin,
+                        0f
+                    );
+
+
+                return true;
+            }
+
+
+            return false;
+        }
+
+
+        // =====================================================
+        // GETTERS
+        // =====================================================
+
+        public ChunkLoader GetLoader()
+        {
+            return loader;
+        }
+
+
+        public World GetWorld()
+        {
+            return world;
+        }
+
+
+        public LightPropagationEngine GetLighting()
+        {
+            return lighting;
+        }
+
+
+        public WorldSettings GetSettings()
+        {
+            return settings;
+        }
+
+
+        public WorldGenerator GetGenerator()
+        {
+            return generator;
+        }
+
+
+        public WorldCollision GetWorldCollision()
+        {
+            return worldCollision;
+        }
+
+
+        public ChunkCollision GetChunkCollision()
+        {
+            return chunkCollision;
+        }
+
+
+        public ChunkRenderer GetChunkRenderer()
+        {
+            return renderer;
+        }
+
+
+        // =====================================================
+        // FIND SURFACE
+        // =====================================================
+
+        private bool TryFindSurface(
+            int worldX,
+            out int surfaceY
+        )
+        {
+            surfaceY = 0;
+
+
+            World currentWorld =
+                world;
+
+
+            if (currentWorld == null)
+            {
+                return false;
+            }
+
+
+            for (
+                int y = settings.WorldHeight - 1;
+                y >= 0;
+                y--
+            )
+            {
+                ushort blockID =
+                    currentWorld.GetBlock(
+                        worldX,
+                        y
+                    );
+
+
+                if (blockID == 0)
+                {
+                    continue;
+                }
+
+
+                ContentID contentID =
+                    BlockIDRegistry.GetContentID(
+                        blockID
+                    );
+
+
+                if (
+                    !BlockRegistry.Contains(
+                        contentID
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                BlockDefinition block =
+                    BlockRegistry.Get(
+                        contentID
+                    );
+
+
+                if (
+                    block == null ||
+                    !block.Solid
+                )
+                {
+                    continue;
+                }
+
+
+                surfaceY = y;
+
+
+                return true;
+            }
+
+
+            return false;
+        }
+
+
+        // =====================================================
+        // SET FOREGROUND BLOCK
+        // =====================================================
+
+        public bool SetBlock(
+            int worldX,
+            int worldY,
+            ushort blockID
+        )
+        {
+            if (world == null)
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // FIND CHUNK
+            // =====================================================
+
+            int chunkX =
+                FloorDiv(
+                    worldX,
+                    Chunk.SizeX
+                );
+
+
+            int chunkY =
+                FloorDiv(
+                    worldY,
+                    Chunk.SizeY
+                );
+
+
+            Chunk chunk =
+                world.GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (chunk == null)
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // LOCAL COORDINATES
+            // =====================================================
+
+            int localX =
+                worldX -
+                chunkX * Chunk.SizeX;
+
+
+            int localY =
+                worldY -
+                chunkY * Chunk.SizeY;
+
+
+            // =====================================================
+            // GET OLD BLOCK
+            // =====================================================
+
+            ushort oldBlockID =
+                chunk.GetBlock(
+                    localX,
+                    localY
+                );
+
+
+            if (oldBlockID == blockID)
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // WORLD CHANGE
+            // =====================================================
+
+            if (
+                !world.SetBlock(
+                    worldX,
+                    worldY,
+                    blockID
+                )
+            )
+            {
+                return false;
+            }
+
+            // =============================================
+            // BREAK DEBRIS
+            // =============================================
+
+            if (
+                oldBlockID != 0 &&
+                blockID == 0
+            )
+            {
+                BlockBreakDebrisSystem.Emit(
+                    world,
+                    worldX,
+                    worldY,
+                    oldBlockID,
+                    false
+                );
+            }
+            // =====================================================
+            // IMMEDIATE VISUAL UPDATE
+            // =====================================================
+
+            // [BT-AUTO-WORLD]
+            Game.BlockTransforms.BlockTransformRegistry.Clear(worldX, worldY);
+
+            if (renderer != null)
+            {
+                renderer.UpdateBlock(
+                    chunk,
+                    localX,
+                    localY
+                );
+            }
+
+
+            // =====================================================
+            // COLLISION
+            // =====================================================
+
+            if (chunkCollision != null)
+            {
+                chunkCollision.BuildChunkCollision(
+                    chunk
+                );
+            }
+
+            SaveGameRuntime.RecordForegroundChange(worldX,worldY,blockID);
+            return true;
+        }
+
+
+        // =====================================================
+        // SET BACKGROUND BLOCK
+        // =====================================================
+
+        public bool SetBackground(
+    int worldX,
+    int worldY,
+    ushort blockID
+)
+        {
+            if (world == null)
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // FIND CHUNK
+            // =====================================================
+
+            int chunkX =
+                FloorDiv(
+                    worldX,
+                    Chunk.SizeX
+                );
+
+
+            int chunkY =
+                FloorDiv(
+                    worldY,
+                    Chunk.SizeY
+                );
+
+
+            Chunk chunk =
+                world.GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            // ���� chunk �� ��������,
+            // �� ����� ����� ����������� �������� world data.
+            if (chunk == null)
+            {
+                return world.SetBackground(
+                    worldX,
+                    worldY,
+                    blockID
+                );
+            }
+
+
+            // =====================================================
+            // LOCAL COORDINATES
+            // =====================================================
+
+            int localX =
+                worldX -
+                chunkX *
+                Chunk.SizeX;
+
+
+            int localY =
+                worldY -
+                chunkY *
+                Chunk.SizeY;
+
+
+            // =====================================================
+            // SAVE OLD BLOCK
+            // =====================================================
+
+            ushort oldBlockID =
+                chunk.GetBackground(
+                    localX,
+                    localY
+                );
+
+
+            // =====================================================
+            // NO CHANGE
+            // =====================================================
+
+            if (
+                oldBlockID ==
+                blockID
+            )
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // CHANGE WORLD DATA
+            // =====================================================
+
+            bool changed =
+                world.SetBackground(
+                    worldX,
+                    worldY,
+                    blockID
+                );
+
+
+            if (!changed)
+            {
+                return false;
+            }
+
+
+            // =====================================================
+            // BREAK DEBRIS
+            // =====================================================
+
+            if (
+                oldBlockID != 0 &&
+                blockID == 0
+            )
+            {
+                BlockBreakDebrisSystem.Emit(
+                    world,
+                    worldX,
+                    worldY,
+                    oldBlockID,
+                    true
+                );
+            }
+
+
+            // =====================================================
+            // UPDATE RENDER
+            // =====================================================
+
+            if (renderer != null)
+            {
+                renderer.UpdateBackgroundBlock(
+                    chunk,
+                    localX,
+                    localY
+                );
+            }
+
+            SaveGameRuntime.RecordBackgroundChange(worldX,worldY,blockID);
+
+            return true;
+        }
+
+
+        // =====================================================
+        // CHUNK COLLISION
+        // =====================================================
+
+        private void RebuildChunkCollision(
+            int chunkX,
+            int chunkY
+        )
+        {
+            if (
+                world == null ||
+                chunkCollision == null
+            )
+            {
+                return;
+            }
+
+
+            Chunk chunk =
+                world.GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (chunk == null)
+            {
+                return;
+            }
+
+
+            chunkCollision.BuildChunkCollision(
+                chunk
+            );
+        }
+
+
+        // =====================================================
+        // CHUNK BORDER UPDATE
+        // =====================================================
+
+        private void UpdateChunkBorder(
+            int chunkX,
+            int chunkY
+        )
+        {
+            if (world == null)
+            {
+                return;
+            }
+
+
+            Chunk neighbourChunk =
+                world.GetChunk(
+                    chunkX,
+                    chunkY
+                );
+
+
+            if (neighbourChunk == null)
+            {
+                return;
+            }
+
+
+            // =====================================================
+            // RENDER
+            // =====================================================
+
+            if (renderer != null)
+            {
+                renderer.Render(
+                    neighbourChunk
+                );
+            }
+
+
+            // =====================================================
+            // COLLISION
+            // =====================================================
+
+            if (chunkCollision != null)
+            {
+                chunkCollision.BuildChunkCollision(
+                    neighbourChunk
+                );
+            }
+        }
+
+
+        // =====================================================
+        // INITIAL LIGHTING
+        // =====================================================
+
+        private void GenerateInitialLighting()
+        {
+            if (
+                lighting == null ||
+                world == null
+            )
+            {
+                return;
+            }
+
+
+            lighting.RebuildLoadedWorld(
+                settings.WorldHeight
+            );
+
+
+            Debug.Log(
+                "WORLD LIGHTING: Initial lighting generated."
+            );
+
+
+            if (renderer != null)
+            {
+                renderer.RenderAllLoaded(
+                    world
+                );
+            }
+        }
+
+
+        // =====================================================
+        // FLOOR DIVISION
+        // =====================================================
+        //
+        // ����� ������ ����� �������, ������ ��� �������
+        // ������������� ������� C# ����������� ��������
+        // � �������������� ������������.
+        //
+        // ��������:
+        //
+        // -1 / 32 = 0   <- ����������� ��� chunk
+        //
+        // ��� �����:
+        //
+        // -1 -> chunk -1, local 31
+        //
+
+        private int FloorDiv(
+            int value,
+            int divisor
+        )
+        {
+            int result =
+                value / divisor;
+
+
+            int remainder =
+                value % divisor;
+
+
+            if (
+                remainder != 0 &&
+                value < 0
+            )
+            {
+                result--;
+            }
+
+
+            return result;
+        }
+    }
+}

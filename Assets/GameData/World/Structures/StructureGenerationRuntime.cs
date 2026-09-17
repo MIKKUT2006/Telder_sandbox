@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -6,6 +6,7 @@ using System.Reflection;
 using UnityEngine;
 
 using Game.Blocks;
+using Game.BlockTransforms;
 using Game.Chests;
 using Game.Content;
 using Game.World.Biomes;
@@ -887,6 +888,15 @@ namespace Game.World.Structures
                     localY >= Chunk.SizeY)
                     continue;
 
+
+                StructureLayerCellMetadata cellLayerMetadata =
+                    StructureLayerMetadataStore.GetCell(
+                        structure.ID,
+                        cell.X,
+                        cell.Y
+                    );
+
+
                 if (!string.IsNullOrWhiteSpace(
                     cell.ForegroundId))
                 {
@@ -902,6 +912,28 @@ namespace Game.World.Structures
                             localY,
                             id
                         );
+
+
+                        /*
+                         * IMPORTANT:
+                         * Structure generation may run on a worker thread,
+                         * but the transform MUST exist before the chunk's
+                         * first Render() / collision build.
+                         *
+                         * BlockTransformRegistry is thread-safe in v2,
+                         * so write the transform directly here.
+                         */
+                        BlockTransformRegistry.SetRaw(
+                            worldX,
+                            worldY,
+                            ConvertEditorTransformToRuntime(
+                                cellLayerMetadata != null
+                                    ? cellLayerMetadata.ForegroundTransform
+                                    : (byte)0
+                            ),
+                            false
+                        );
+
 
                         if (IsChestBlock(id))
                         {
@@ -932,10 +964,100 @@ namespace Game.World.Structures
                             localY,
                             id
                         );
+
+
+                        /*
+                         * Background transform also has to be present before
+                         * the first chunk render.
+                         */
+                        BackgroundBlockTransformRegistry.SetRaw(
+                            worldX,
+                            worldY,
+                            ConvertEditorTransformToRuntime(
+                                cellLayerMetadata != null
+                                    ? cellLayerMetadata.BackgroundTransform
+                                    : (byte)0
+                            )
+                        );
                     }
+                }
+
+
+                if (
+                    cellLayerMetadata !=
+                    null
+                    &&
+                    !string.IsNullOrWhiteSpace(
+                        cellLayerMetadata.FurnitureId
+                    )
+                )
+                {
+                    StructurePlacementRuntimeBridge.QueueFurniture(
+                        worldX,
+                        worldY,
+                        cellLayerMetadata.FurnitureId,
+                        ConvertEditorTransformToRuntime(
+                            cellLayerMetadata.FurnitureTransform
+                        )
+                    );
                 }
             }
         }
+
+        // =====================================================
+        // STRUCTURE EDITOR -> RUNTIME TRANSFORM
+        // =====================================================
+
+        private static byte ConvertEditorTransformToRuntime(
+            byte editorTransform
+        )
+        {
+            /*
+             * Structure Editor preview uses GUIUtility.RotateAroundPivot(
+             *     -rotation * 90f
+             * )
+             *
+             * Runtime block texture/collision transform uses the opposite
+             * rotation convention.
+             *
+             * Keep the editor appearance authoritative:
+             *
+             * editor 0   -> runtime 0
+             * editor 90  -> runtime 270
+             * editor 180 -> runtime 180
+             * editor 270 -> runtime 90
+             *
+             * Mirror bit is preserved.
+             */
+
+            int editorRotation =
+                editorTransform &
+                0x03;
+
+
+            int runtimeRotation =
+                (
+                    4 -
+                    editorRotation
+                )
+                &
+                0x03;
+
+
+            byte mirror =
+                (byte)(
+                    editorTransform &
+                    0x04
+                );
+
+
+            return
+                (byte)(
+                    runtimeRotation |
+                    mirror
+                );
+        }
+
 
         private static List<StructureLootEntryRuntime> ConvertLoot(
             List<StructureLootEntryDefinition> source
@@ -1208,8 +1330,8 @@ namespace Game.World.Structures
                 return hash;
             }
         }
-    
-    // [BT-AUTO-STRUCTURE-DATA]
-    public byte Transform;
-}
+
+
+
+    }
 }

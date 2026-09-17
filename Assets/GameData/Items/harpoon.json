@@ -1,0 +1,15 @@
+{
+  "ID": "game:harpoon",
+  "Name": "Harpoon",
+  "Texture": "harpoon",
+  "MaxStack": 1,
+
+  "ToolType": "",
+  "ToolLevel": 2,
+ 
+
+  "HeldScale": 1.52,
+  "HeldRotation": 0,
+  "HeldOffsetX": 0.37,
+  "HeldOffsetY": -0.01
+}

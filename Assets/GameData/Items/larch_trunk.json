@@ -1,0 +1,7 @@
+{
+  "ID": "game:larch_trunk",
+  "Name": "Larch trunk",
+  "Texture": "larch_trunk",
+  "Type": "Block",
+  "MaxStack": 100
+}

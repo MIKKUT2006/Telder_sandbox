@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -482,6 +482,15 @@ namespace Game.World.Rendering
                             y
                         )
                     );
+                    // [STRUCTURE-LAYERS-BACKGROUND-TRANSFORM-V1]
+                    Game.BlockTransforms.BackgroundBlockTransformRegistry.ApplyToCell(
+                        data.BackgroundTexture,
+                        x,
+                        y,
+                        BlockRenderer.BlockPixelSize,
+                        chunk.X * Chunk.SizeX + x,
+                        chunk.Y * Chunk.SizeY + y);
+
 
 
                     BlockRenderer.DrawBlock(
@@ -493,6 +502,14 @@ namespace Game.World.Rendering
                             y
                         )
                     );
+                    // [BT-AUTO-RENDER] EXACT_V14
+                    Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(
+                        data.ForegroundTexture,
+                        x,
+                        y,
+                        BlockRenderer.BlockPixelSize,
+                        chunk.X * Chunk.SizeX + x,
+                        chunk.Y * Chunk.SizeY + y);
                 }
             }
 
@@ -561,6 +578,14 @@ namespace Game.World.Rendering
                     localY
                 )
             );
+            // [BT-AUTO-RENDER] EXACT_V14
+            Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(
+                data.ForegroundTexture,
+                localX,
+                localY,
+                BlockRenderer.BlockPixelSize,
+                chunk.X * Chunk.SizeX + localX,
+                chunk.Y * Chunk.SizeY + localY);
 
 
             data.ForegroundTexture.Apply(
@@ -617,6 +642,15 @@ namespace Game.World.Rendering
                     localY
                 )
             );
+            // [STRUCTURE-LAYERS-BACKGROUND-TRANSFORM-V1]
+            Game.BlockTransforms.BackgroundBlockTransformRegistry.ApplyToCell(
+                data.BackgroundTexture,
+                localX,
+                localY,
+                BlockRenderer.BlockPixelSize,
+                chunk.X * Chunk.SizeX + localX,
+                chunk.Y * Chunk.SizeY + localY);
+
 
 
             data.BackgroundTexture.Apply(

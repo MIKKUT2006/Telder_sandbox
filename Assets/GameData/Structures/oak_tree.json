@@ -14,6 +14,7 @@
     "MaxY": 90,
     "RequireFreeSpace": true,
     "FreeSpacePadding": 1,
+    "BiomeSource": 0,
     "Biomes": [
         "game:plains"
     ],
@@ -23,483 +24,744 @@
             "Y": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
             "Y": 1,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
             "Y": 2,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
             "Y": 3,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
             "Y": 7,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 4,
             "Y": 8,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
             "Y": 8,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 4,
             "Y": 7,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
             "Y": 6,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 6,
             "Y": 6,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 6,
             "Y": 7,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
             "Y": 4,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
             "Y": 5,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 6,
             "Y": 5,
             "ForegroundId": "",
             "BackgroundId": "game:oak_branch",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 7,
             "Y": 6,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 7,
             "Y": 7,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 3,
             "Y": 13,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 2,
             "Y": 12,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 3,
             "Y": 11,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 4,
             "Y": 13,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
             "Y": 13,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 7,
             "Y": 14,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
             "Y": 14,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 6,
             "Y": 14,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 7,
             "Y": 13,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 8,
             "Y": 13,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 9,
             "Y": 12,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 9,
             "Y": 11,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 9,
             "Y": 10,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 8,
             "Y": 10,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 3,
             "Y": 9,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 9,
             "Y": 9,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 8,
             "Y": 8,
             "ForegroundId": "",
             "BackgroundId": "game:leaves",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 4,
             "Y": 6,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 3,
             "Y": 8,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 3,
             "Y": 7,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 12,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 4,
-            "Y": 0,
+            "Y": 12,
             "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 9,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 9,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 9,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 9,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 9,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 8,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 8,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 12,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 13,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 12,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 12,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 12,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 8,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 9,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 1,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 1,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_branch",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 6,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_branch",
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 6,
             "Y": 1,
             "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
-            "Loot": []
+            "BackgroundId": "game:oak_trunk_slab",
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 6,
             "Y": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
-            "Loot": []
-        },
-        {
-            "X": 3,
-            "Y": 12,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:oak_trunk_slab",
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 4,
-            "Y": 12,
+            "Y": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 4,
-            "Y": 11,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 4,
-            "Y": 9,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:oak_trunk_slab",
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 5,
-            "Y": 10,
+            "Y": 15,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 5,
-            "Y": 9,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 6,
-            "Y": 10,
+            "Y": 15,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 6,
-            "Y": 9,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 7,
-            "Y": 10,
+            "Y": 15,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 7,
-            "Y": 9,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 8,
-            "Y": 9,
+            "Y": 14,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
-            "X": 7,
-            "Y": 8,
+            "X": 4,
+            "Y": 14,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
-            "X": 6,
-            "Y": 8,
+            "X": 3,
+            "Y": 14,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
-            "X": 5,
-            "Y": 12,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 5,
-            "Y": 11,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 6,
+            "X": 2,
             "Y": 13,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
-            "X": 6,
+            "X": 1,
             "Y": 12,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
-            "X": 6,
+            "X": 0,
             "Y": 11,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
-            "X": 7,
-            "Y": 12,
+            "X": 0,
+            "Y": 10,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
-            "X": 7,
-            "Y": 11,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 8,
-            "Y": 12,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 8,
-            "Y": 11,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 2,
-            "Y": 8,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 2,
+            "X": 1,
             "Y": 9,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 4,
-            "Y": 10,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 2,
-            "Y": 11,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 3,
-            "Y": 10,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 1,
-            "Y": 11,
+            "Y": 8,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
-        },
-        {
-            "X": 1,
-            "Y": 10,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         },
         {
             "X": 2,
+            "Y": 7,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 7,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 6,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 9,
+            "Y": 8,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 10,
+            "Y": 9,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 10,
             "Y": 10,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": []
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 10,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 10,
+            "Y": 12,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 9,
+            "Y": 13,
+            "ForegroundId": "",
+            "BackgroundId": "game:leaves_layer",
+            "Loot": [],
+            "Transform": 0
         }
     ]
 }

@@ -1,0 +1,8 @@
+{
+  "ID": "game:tool_bench",
+  "Name": "Tool bench",
+  "Texture": "tool_bench",
+  "Type": "Block",
+  "Tags": [ "furniture", "tool_bench" ],
+  "MaxStack": 100
+}

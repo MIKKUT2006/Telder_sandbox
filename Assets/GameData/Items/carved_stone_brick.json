@@ -1,0 +1,7 @@
+{
+  "ID": "game:carved_stone_brick",
+  "Name": "Сarved stone brick",
+  "Texture": "carved_stone_brick",
+  "Type": "Block",
+  "MaxStack": 100
+}

@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,6 +32,8 @@ namespace Game.BlockTransforms.Editor
             Directory.CreateDirectory(backupRoot);
 
             List<string> report = new List<string>();
+
+            RepairInvalidStructurePatches(report);
 
             PatchClass("BlockInteraction", PatchBlockInteraction, report);
             PatchClass("ChunkRenderer", PatchChunkRenderer, report);
@@ -91,7 +93,7 @@ namespace Game.BlockTransforms.Editor
 
             if (string.IsNullOrEmpty(path))
             {
-                report.Add("⚠ " + className + ": source not found");
+                report.Add("вљ  " + className + ": source not found");
                 return;
             }
 
@@ -100,14 +102,14 @@ namespace Game.BlockTransforms.Editor
 
             if (!result.Changed)
             {
-                report.Add((result.Success ? "✓ " : "⚠ ") +
+                report.Add((result.Success ? "вњ“ " : "вљ  ") +
                     className + ": " + result.Message);
                 return;
             }
 
             Backup(path);
             File.WriteAllText(path, result.Source, new UTF8Encoding(false));
-            report.Add("✓ " + className + ": " + result.Message);
+            report.Add("вњ“ " + className + ": " + result.Message);
         }
 
         private static PatchResult PatchBlockInteraction(string path, string source)
@@ -176,103 +178,100 @@ namespace Game.BlockTransforms.Editor
             if (source.Contains(RenderMarker))
                 return PatchResult.Ok(source, false, "already installed");
 
-            int patched = 0;
+            // v1.4:
+            // Match the actual Telder DrawBlock calls independent of whitespace/newlines.
+            Regex foregroundDraw = new Regex(
+                @"BlockRenderer\s*\.\s*DrawBlock\s*\(\s*" +
+                @"data\s*\.\s*ForegroundTexture\s*,\s*" +
+                @"(?<x>[A-Za-z_][A-Za-z0-9_]*)\s*,\s*" +
+                @"(?<y>[A-Za-z_][A-Za-z0-9_]*)\s*,\s*" +
+                @"chunk\s*\.\s*GetBlock\s*\(\s*" +
+                @"\k<x>\s*,\s*\k<y>\s*\)\s*\)\s*;",
+                RegexOptions.Multiline);
 
-            MethodSpan drawBlocks = FindMethod(source, "private void DrawBlocks");
-            if (drawBlocks.Valid)
+            MatchCollection matches = foregroundDraw.Matches(source);
+
+            if (matches.Count == 0)
             {
-                int fg = source.IndexOf(
-                    "data.ForegroundTexture",
-                    drawBlocks.BodyStart,
-                    drawBlocks.BodyEnd - drawBlocks.BodyStart,
-                    StringComparison.Ordinal);
-
-                if (fg >= 0)
-                {
-                    int call = source.LastIndexOf(
-                        "BlockRenderer.DrawBlock",
-                        fg,
-                        fg - drawBlocks.BodyStart + 1,
-                        StringComparison.Ordinal);
-
-                    if (call >= drawBlocks.BodyStart)
-                    {
-                        int semicolon = FindStatementSemicolon(source, call, drawBlocks.BodyEnd);
-
-                        if (semicolon >= 0)
-                        {
-                            string indent = GetIndent(source, call);
-
-                            string code =
-                                Environment.NewLine +
-                                indent + RenderMarker + " WHOLE_CHUNK" + Environment.NewLine +
-                                indent + "Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(" + Environment.NewLine +
-                                indent + "    data.ForegroundTexture," + Environment.NewLine +
-                                indent + "    x," + Environment.NewLine +
-                                indent + "    y," + Environment.NewLine +
-                                indent + "    BlockRenderer.BlockPixelSize," + Environment.NewLine +
-                                indent + "    chunk.X * Chunk.SizeX + x," + Environment.NewLine +
-                                indent + "    chunk.Y * Chunk.SizeY + y);" + Environment.NewLine;
-
-                            source = source.Insert(semicolon + 1, code);
-                            patched++;
-                        }
-                    }
-                }
-            }
-
-            MethodSpan updateBlock = FindMethod(source, "public void UpdateBlock");
-            if (updateBlock.Valid)
-            {
-                int fg = source.IndexOf(
-                    "data.ForegroundTexture",
-                    updateBlock.BodyStart,
-                    updateBlock.BodyEnd - updateBlock.BodyStart,
-                    StringComparison.Ordinal);
-
-                if (fg >= 0)
-                {
-                    int call = source.LastIndexOf(
-                        "BlockRenderer.DrawBlock",
-                        fg,
-                        fg - updateBlock.BodyStart + 1,
-                        StringComparison.Ordinal);
-
-                    if (call >= updateBlock.BodyStart)
-                    {
-                        int semicolon = FindStatementSemicolon(source, call, updateBlock.BodyEnd);
-
-                        if (semicolon >= 0)
-                        {
-                            string indent = GetIndent(source, call);
-
-                            string code =
-                                Environment.NewLine +
-                                indent + RenderMarker + " SINGLE_BLOCK" + Environment.NewLine +
-                                indent + "Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(" + Environment.NewLine +
-                                indent + "    data.ForegroundTexture," + Environment.NewLine +
-                                indent + "    localX," + Environment.NewLine +
-                                indent + "    localY," + Environment.NewLine +
-                                indent + "    BlockRenderer.BlockPixelSize," + Environment.NewLine +
-                                indent + "    chunk.X * Chunk.SizeX + localX," + Environment.NewLine +
-                                indent + "    chunk.Y * Chunk.SizeY + localY);" + Environment.NewLine;
-
-                            source = source.Insert(semicolon + 1, code);
-                            patched++;
-                        }
-                    }
-                }
-            }
-
-            if (patched == 0)
                 return PatchResult.Fail(
                     source,
-                    "foreground texture anchors not found in DrawBlocks()/UpdateBlock()");
+                    "actual foreground BlockRenderer.DrawBlock(...) call not found");
+            }
+
+            StringBuilder result = new StringBuilder();
+            int cursor = 0;
+            int patched = 0;
+
+            for (int i = 0; i < matches.Count; i++)
+            {
+                Match match = matches[i];
+
+                result.Append(
+                    source,
+                    cursor,
+                    match.Index - cursor);
+
+                result.Append(match.Value);
+
+                string x = match.Groups["x"].Value;
+                string y = match.Groups["y"].Value;
+                string indent = GetIndent(source, match.Index);
+
+                result.Append(Environment.NewLine);
+                result.Append(indent);
+                result.Append(RenderMarker);
+                result.Append(" EXACT_V14");
+                result.Append(Environment.NewLine);
+
+                result.Append(indent);
+                result.Append(
+                    "Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(");
+                result.Append(Environment.NewLine);
+
+                result.Append(indent);
+                result.Append("    data.ForegroundTexture,");
+                result.Append(Environment.NewLine);
+
+                result.Append(indent);
+                result.Append("    ");
+                result.Append(x);
+                result.Append(",");
+                result.Append(Environment.NewLine);
+
+                result.Append(indent);
+                result.Append("    ");
+                result.Append(y);
+                result.Append(",");
+                result.Append(Environment.NewLine);
+
+                result.Append(indent);
+                result.Append("    BlockRenderer.BlockPixelSize,");
+                result.Append(Environment.NewLine);
+
+                result.Append(indent);
+                result.Append("    chunk.X * Chunk.SizeX + ");
+                result.Append(x);
+                result.Append(",");
+                result.Append(Environment.NewLine);
+
+                result.Append(indent);
+                result.Append("    chunk.Y * Chunk.SizeY + ");
+                result.Append(y);
+                result.Append(");");
+
+                cursor = match.Index + match.Length;
+                patched++;
+            }
+
+            result.Append(
+                source,
+                cursor,
+                source.Length - cursor);
 
             return PatchResult.Ok(
-                source,
+                result.ToString(),
                 true,
-                patched + " current Telder renderer path(s) patched");
+                patched + " exact Telder foreground draw call(s) patched");
         }
 
         private static PatchResult PatchWorldManager(string path, string source)
@@ -435,60 +434,69 @@ namespace Game.BlockTransforms.Editor
             if (source.Contains(ChunkMarker))
                 return PatchResult.Ok(source, false, "already installed");
 
-            MethodSpan build = FindMethod(source, "public void BuildChunkCollision");
-            if (!build.Valid)
-                return PatchResult.Fail(source, "BuildChunkCollision() not found");
+            // v1.4:
+            // Match the actual Telder solid map assignment independent of formatting.
+            Regex solidAssignment = new Regex(
+                @"solid\s*\[\s*(?<x>[A-Za-z_][A-Za-z0-9_]*)\s*,\s*" +
+                @"(?<y>[A-Za-z_][A-Za-z0-9_]*)\s*\]\s*=\s*" +
+                @"IsSolidBlock\s*\(\s*(?<id>[A-Za-z_][A-Za-z0-9_]*)\s*\)\s*;",
+                RegexOptions.Multiline);
 
-            int solidAssign = source.IndexOf(
-                "solid[x, y]",
-                build.BodyStart,
-                build.BodyEnd - build.BodyStart,
-                StringComparison.Ordinal);
+            Match match = solidAssignment.Match(source);
 
-            if (solidAssign < 0)
-                return PatchResult.Fail(source, "solid[x, y] assignment not found");
+            if (!match.Success)
+            {
+                return PatchResult.Fail(
+                    source,
+                    "actual solid[x,y] = IsSolidBlock(...) assignment not found");
+            }
 
-            int assignSemicolon = FindStatementSemicolon(
-                source,
-                solidAssign,
-                build.BodyEnd);
-
-            if (assignSemicolon < 0)
-                return PatchResult.Fail(source, "solid assignment semicolon not found");
-
-            string indent = GetIndent(source, solidAssign);
+            string x = match.Groups["x"].Value;
+            string y = match.Groups["y"].Value;
+            string indent = GetIndent(source, match.Index);
 
             string customCheck =
                 Environment.NewLine +
-                indent + ChunkMarker + Environment.NewLine +
-                indent + "if (solid[x, y])" + Environment.NewLine +
+                indent + ChunkMarker + " EXACT_V14" + Environment.NewLine +
+                indent + "if (solid[" + x + ", " + y + "])" + Environment.NewLine +
                 indent + "{" + Environment.NewLine +
-                indent + "    int worldX = chunk.X * Chunk.SizeX + x;" + Environment.NewLine +
-                indent + "    int worldY = chunk.Y * Chunk.SizeY + y;" + Environment.NewLine +
+                indent + "    int worldX = chunk.X * Chunk.SizeX + " + x + ";" + Environment.NewLine +
+                indent + "    int worldY = chunk.Y * Chunk.SizeY + " + y + ";" + Environment.NewLine +
                 Environment.NewLine +
                 indent + "    if (Game.BlockTransforms.BlockShapeCollision.IsCustomCell(" + Environment.NewLine +
                 indent + "            worldCollision," + Environment.NewLine +
                 indent + "            worldX," + Environment.NewLine +
                 indent + "            worldY))" + Environment.NewLine +
                 indent + "    {" + Environment.NewLine +
-                indent + "        solid[x, y] = false;" + Environment.NewLine +
+                indent + "        solid[" + x + ", " + y + "] = false;" + Environment.NewLine +
                 indent + "        CreateTransformedCustomCollider(" + Environment.NewLine +
                 indent + "            chunkObject," + Environment.NewLine +
                 indent + "            chunk," + Environment.NewLine +
-                indent + "            x," + Environment.NewLine +
-                indent + "            y," + Environment.NewLine +
+                indent + "            " + x + "," + Environment.NewLine +
+                indent + "            " + y + "," + Environment.NewLine +
                 indent + "            worldX," + Environment.NewLine +
                 indent + "            worldY);" + Environment.NewLine +
                 indent + "    }" + Environment.NewLine +
-                indent + "}" + Environment.NewLine;
+                indent + "}";
 
-            source = source.Insert(assignSemicolon + 1, customCheck);
+            source =
+                source.Insert(
+                    match.Index + match.Length,
+                    customCheck);
 
-            ClassSpan classSpan = FindClass(source, "ChunkCollision");
+            ClassSpan classSpan =
+                FindClass(
+                    source,
+                    "ChunkCollision");
+
             if (!classSpan.Valid)
-                return PatchResult.Fail(source, "ChunkCollision class body not found after patch");
+            {
+                return PatchResult.Fail(
+                    source,
+                    "ChunkCollision class end not found");
+            }
 
-            string method =
+            string helper =
 @"
         private void CreateTransformedCustomCollider(
             GameObject parent,
@@ -540,12 +548,15 @@ namespace Game.BlockTransforms.Editor
 
 ";
 
-            source = source.Insert(classSpan.CloseBrace, method);
+            source =
+                source.Insert(
+                    classSpan.CloseBrace,
+                    helper);
 
             return PatchResult.Ok(
                 source,
                 true,
-                "patched in-place; no external template is required");
+                "exact Telder solid-map collision path patched");
         }
 
         private static void PatchStructureData(List<string> report)
@@ -573,10 +584,10 @@ namespace Game.BlockTransforms.Editor
                         preferredTypes[i],
                         out string message))
                     {
-                        report.Add("✓ Structure data: " + message);
+                        report.Add("вњ“ Structure data: " + message);
                         report.Add(string.IsNullOrEmpty(controller)
-                            ? "⚠ StructureEditorController: source not found"
-                            : "✓ StructureEditorController found: " + controller);
+                            ? "вљ  StructureEditorController: source not found"
+                            : "вњ“ StructureEditorController found: " + controller);
                         return;
                     }
                 }
@@ -624,10 +635,10 @@ namespace Game.BlockTransforms.Editor
                     elementType,
                     out string message))
                 {
-                    report.Add("✓ Structure data: " + message);
+                    report.Add("вњ“ Structure data: " + message);
                     report.Add(string.IsNullOrEmpty(controller)
-                        ? "⚠ StructureEditorController: source not found"
-                        : "✓ StructureEditorController found: " + controller);
+                        ? "вљ  StructureEditorController: source not found"
+                        : "вњ“ StructureEditorController found: " + controller);
                     return;
                 }
             }
@@ -660,6 +671,10 @@ namespace Game.BlockTransforms.Editor
                 for (int c = 0; c < classes.Count; c++)
                 {
                     string className = classes[c].Groups["name"].Value;
+
+                    if (IsUnsafeStructureDataClassName(className))
+                        continue;
+
                     int score = 0;
 
                     if (className.IndexOf("Block", StringComparison.OrdinalIgnoreCase) >= 0) score += 4;
@@ -688,19 +703,19 @@ namespace Game.BlockTransforms.Editor
                     bestClass,
                     out string fallbackMessage))
             {
-                report.Add("✓ Structure data: " + fallbackMessage +
+                report.Add("вњ“ Structure data: " + fallbackMessage +
                     " (heuristic score " + bestScore + ")");
             }
             else
             {
                 report.Add(
-                    "⚠ Structure data: model not safely identifiable. " +
+                    "вљ  Structure data: model not safely identifiable. " +
                     "Controller was found, but no data class was modified.");
             }
 
             report.Add(string.IsNullOrEmpty(controller)
-                ? "⚠ StructureEditorController: source not found"
-                : "ℹ StructureEditorController found: " + controller);
+                ? "вљ  StructureEditorController: source not found"
+                : "в„№ StructureEditorController found: " + controller);
         }
 
         private static bool TryAddTransformFieldToClass(
@@ -725,15 +740,72 @@ namespace Game.BlockTransforms.Editor
             if (!span.Valid)
                 return false;
 
-            string classBody = source.Substring(
-                source.IndexOf('{', source.IndexOf("class " + className, StringComparison.Ordinal)),
-                span.CloseBrace - source.IndexOf('{', source.IndexOf("class " + className, StringComparison.Ordinal)));
+            int classIndex =
+                source.IndexOf(
+                    "class " + className,
+                    StringComparison.Ordinal);
+
+            int declarationStart =
+                source.LastIndexOf(
+                    '\n',
+                    classIndex);
+
+            declarationStart =
+                declarationStart < 0
+                    ? 0
+                    : declarationStart + 1;
+
+            int openBrace =
+                source.IndexOf(
+                    '{',
+                    classIndex);
+
+            if (openBrace < 0 ||
+                openBrace >= span.CloseBrace)
+            {
+                return false;
+            }
+
+            string declaration =
+                source.Substring(
+                    declarationStart,
+                    openBrace - declarationStart);
+
+            // Never inject per-instance block data into a static/service/runtime class.
+            if (Regex.IsMatch(
+                    declaration,
+                    @"\bstatic\s+class\b",
+                    RegexOptions.IgnoreCase) ||
+                IsUnsafeStructureDataClassName(className))
+            {
+                message =
+                    className +
+                    " skipped: runtime/static/service class";
+                return false;
+            }
+
+            string classBody =
+                source.Substring(
+                    openBrace,
+                    span.CloseBrace - openBrace);
 
             if (classBody.Contains("public byte Transform") ||
                 classBody.Contains("byte Transform;"))
             {
                 message = className + " already has Transform";
                 return true;
+            }
+
+            if (!LooksLikeSerializableStructureRecord(
+                    source,
+                    declarationStart,
+                    classIndex,
+                    classBody))
+            {
+                message =
+                    className +
+                    " skipped: not a structure block/cell record";
+                return false;
             }
 
             Backup(path);
@@ -754,6 +826,174 @@ namespace Game.BlockTransforms.Editor
                 ")";
 
             return true;
+        }
+
+        private static bool IsUnsafeStructureDataClassName(
+            string className)
+        {
+            if (string.IsNullOrEmpty(className))
+                return true;
+
+            string[] forbidden =
+            {
+                "Runtime",
+                "Generation",
+                "Generator",
+                "Controller",
+                "Manager",
+                "Scanner",
+                "Cache",
+                "Registry",
+                "Loader",
+                "Service",
+                "Utility",
+                "Helper",
+                "EditorWindow",
+                "Database"
+            };
+
+            for (int i = 0; i < forbidden.Length; i++)
+            {
+                if (className.IndexOf(
+                        forbidden[i],
+                        StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool LooksLikeSerializableStructureRecord(
+            string source,
+            int declarationStart,
+            int classIndex,
+            string classBody)
+        {
+            int attributeSearchStart =
+                Math.Max(
+                    0,
+                    declarationStart - 300);
+
+            string prefix =
+                source.Substring(
+                    attributeSearchStart,
+                    classIndex - attributeSearchStart);
+
+            bool serializable =
+                prefix.IndexOf(
+                    "[Serializable",
+                    StringComparison.OrdinalIgnoreCase) >= 0 ||
+                prefix.IndexOf(
+                    "[System.Serializable",
+                    StringComparison.OrdinalIgnoreCase) >= 0;
+
+            bool hasBlockId =
+                Regex.IsMatch(
+                    classBody,
+                    @"\b(BlockId|BlockID|blockId|blockID|ContentID|BlockContentID)\b",
+                    RegexOptions.IgnoreCase);
+
+            bool hasPosition =
+                Regex.IsMatch(
+                    classBody,
+                    @"\b(Vector2Int|Position|LocalPosition|LocalX|LocalY|CellX|CellY|OffsetX|OffsetY)\b",
+                    RegexOptions.IgnoreCase) ||
+                (
+                    Regex.IsMatch(
+                        classBody,
+                        @"\b(int|short|byte)\s+[Xx]\b") &&
+                    Regex.IsMatch(
+                        classBody,
+                        @"\b(int|short|byte)\s+[Yy]\b")
+                );
+
+            return
+                serializable &&
+                hasBlockId &&
+                hasPosition;
+        }
+
+        private static void RepairInvalidStructurePatches(
+            List<string> report)
+        {
+            string[] files =
+                Directory.GetFiles(
+                    Application.dataPath,
+                    "*.cs",
+                    SearchOption.AllDirectories);
+
+            int repaired = 0;
+
+            for (int i = 0; i < files.Length; i++)
+            {
+                string path = files[i];
+
+                if (IsOurFile(path))
+                    continue;
+
+                string source;
+
+                try
+                {
+                    source =
+                        File.ReadAllText(path);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                if (!source.Contains(StructureMarker))
+                    continue;
+
+                bool unsafeFile =
+                    source.IndexOf(
+                        "static class",
+                        StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    Path.GetFileNameWithoutExtension(path)
+                        .IndexOf(
+                            "Runtime",
+                            StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    Path.GetFileNameWithoutExtension(path)
+                        .IndexOf(
+                            "Generation",
+                            StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    Path.GetFileNameWithoutExtension(path)
+                        .IndexOf(
+                            "Generator",
+                            StringComparison.OrdinalIgnoreCase) >= 0;
+
+                if (!unsafeFile)
+                    continue;
+
+                string cleaned =
+                    Regex.Replace(
+                        source,
+                        @"[ \t]*// \[BT-AUTO-STRUCTURE-DATA\][ \t]*\r?\n[ \t]*public byte Transform;[ \t]*\r?\n?",
+                        string.Empty);
+
+                if (cleaned == source)
+                    continue;
+
+                Backup(path);
+
+                File.WriteAllText(
+                    path,
+                    cleaned,
+                    new UTF8Encoding(false));
+
+                repaired++;
+            }
+
+            if (repaired > 0)
+            {
+                report.Add(
+                    "вњ“ Structure repair: removed invalid Transform field from " +
+                    repaired +
+                    " runtime/static class(es).");
+            }
         }
 
         private static int FindStatementSemicolon(
@@ -1012,26 +1252,115 @@ namespace Game.BlockTransforms.Editor
         private static string FindSourceByClass(string className)
         {
             string[] files = Directory.GetFiles(
-                Application.dataPath, "*.cs", SearchOption.AllDirectories);
+                Application.dataPath,
+                "*.cs",
+                SearchOption.AllDirectories);
+
             string token = "class " + className;
+
+            string bestPath = null;
+            int bestScore = int.MinValue;
 
             for (int i = 0; i < files.Length; i++)
             {
-                string normalized = files[i].Replace('\\', '/');
+                string normalized =
+                    files[i].Replace('\\', '/');
+
                 if (normalized.Contains("/Assets/GameData/BlockTransforms/") ||
-                    normalized.Contains("/Assets/Editor/BlockTransforms/"))
+                    normalized.Contains("/Assets/Editor/BlockTransforms/") ||
+                    normalized.Contains("/BlockTransform_Backups/"))
+                {
                     continue;
+                }
+
+                string fileName =
+                    Path.GetFileNameWithoutExtension(
+                        files[i]);
+
+                string candidate;
 
                 try
                 {
-                    string source = File.ReadAllText(files[i]);
-                    if (source.Contains(token))
-                        return files[i];
+                    candidate =
+                        File.ReadAllText(
+                            files[i]);
                 }
-                catch { }
+                catch
+                {
+                    continue;
+                }
+
+                if (!candidate.Contains(token))
+                    continue;
+
+                int score = 0;
+
+                if (string.Equals(
+                        fileName,
+                        className,
+                        StringComparison.Ordinal))
+                {
+                    score += 100;
+                }
+
+                if (className == "ChunkRenderer")
+                {
+                    if (normalized.Contains("/GameData/World/Rendering/"))
+                        score += 100;
+
+                    if (candidate.Contains("data.ForegroundTexture"))
+                        score += 30;
+
+                    if (candidate.Contains("BlockRenderer.DrawBlock"))
+                        score += 30;
+
+                    if (candidate.Contains("public void UpdateBlock"))
+                        score += 20;
+                }
+                else if (className == "ChunkCollision")
+                {
+                    if (normalized.Contains("/GameData/World/Collision/"))
+                        score += 100;
+
+                    if (candidate.Contains("BuildChunkCollision"))
+                        score += 30;
+
+                    if (candidate.Contains("IsSolidBlock"))
+                        score += 30;
+
+                    if (candidate.Contains("bool[,]"))
+                        score += 20;
+                }
+                else if (className == "StructureEditorController")
+                {
+                    if (normalized.Contains("/Structures/EditorRuntime/"))
+                        score += 100;
+                }
+                else if (className == "BlockInteraction")
+                {
+                    if (normalized.Contains("/GameData/"))
+                        score += 20;
+                }
+
+                // Avoid generated/backup/sample sources if they somehow live under Assets.
+                if (normalized.IndexOf(
+                        "/Backup",
+                        StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    normalized.IndexOf(
+                        "/Samples/",
+                        StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    score -= 200;
+                }
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestPath = files[i];
+                }
             }
 
-            return null;
+            return bestPath;
         }
 
         private static void AppendStatus(StringBuilder text, string className, string marker)
@@ -1082,6 +1411,21 @@ namespace Game.BlockTransforms.Editor
             return text.Substring(start, end - start);
         }
 
+        private static bool IsOurFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return false;
+
+            string normalized =
+                path.Replace('\\', '/');
+
+            return
+                normalized.Contains("/Assets/GameData/BlockTransforms/")
+                ||
+                normalized.Contains("/Assets/Editor/BlockTransforms/")
+                ||
+                normalized.Contains("/Assets/GameData/Editor/BlockTransforms/");
+        }
         private struct PatchResult
         {
             public bool Success;

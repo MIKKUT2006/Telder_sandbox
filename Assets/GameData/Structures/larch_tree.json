@@ -1,0 +1,223 @@
+{
+    "ID": "larch_tree",
+    "DisplayName": "Larch tree",
+    "Width": 12,
+    "Height": 8,
+    "OriginX": 5,
+    "OriginY": 0,
+    "Type": 1,
+    "SpawnType": 1,
+    "SpawnChance": 1,
+    "RegionSize": 18,
+    "UseHeightRange": false,
+    "MinY": 10,
+    "MaxY": 90,
+    "RequireFreeSpace": true,
+    "FreeSpacePadding": 1,
+    "BiomeSource": 0,
+    "Biomes": [
+        "game:snow_plains"
+    ],
+    "Cells": [
+        {
+            "X": 5,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 0,
+            "ForegroundId": "",
+            "BackgroundId": "game:larch_trunk",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 6,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 6,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 7,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 6,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:snow_leaves",
+            "Loot": [],
+            "Transform": 0
+        }
+    ]
+}

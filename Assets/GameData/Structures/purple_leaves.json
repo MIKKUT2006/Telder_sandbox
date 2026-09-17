@@ -1,0 +1,199 @@
+{
+    "ID": "purple_leaves",
+    "DisplayName": "purple_leaves",
+    "Width": 12,
+    "Height": 8,
+    "OriginX": 0,
+    "OriginY": 0,
+    "Type": 1,
+    "SpawnType": 1,
+    "SpawnChance": 0.10000000149011612,
+    "RegionSize": 64,
+    "UseHeightRange": false,
+    "MinY": 10,
+    "MaxY": 90,
+    "RequireFreeSpace": true,
+    "FreeSpacePadding": 1,
+    "BiomeSource": 0,
+    "Biomes": [
+        "game:plains"
+    ],
+    "Cells": [
+        {
+            "X": 5,
+            "Y": 0,
+            "ForegroundId": "game:larch_trunk",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 6,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 6,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 7,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 6,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 4,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 4,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 4,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 5,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 5,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 5,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 1,
+            "ForegroundId": "game:larch_trunk",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 7,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 6,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 5,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 5,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 4,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 3,
+            "ForegroundId": "game:larch_trunk",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 2,
+            "ForegroundId": "game:larch_trunk",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 4,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "ForegroundId": "game:purple_leaves",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        }
+    ]
+}

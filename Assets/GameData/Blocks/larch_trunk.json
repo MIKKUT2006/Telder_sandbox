@@ -1,0 +1,23 @@
+{
+  "ID": "game:larch_trunk",
+
+  "Name": "Larch trunk",
+
+  "Texture": "larch_trunk",
+
+  "Hardness": 1,
+
+  "Solid": true,
+  "Drop": "game:larch_trunk",
+  "DropCount": 1,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

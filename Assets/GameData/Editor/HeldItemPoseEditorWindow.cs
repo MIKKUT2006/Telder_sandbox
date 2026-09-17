@@ -1,4 +1,4 @@
-
+﻿
 #if UNITY_EDITOR
 
 using System;
@@ -133,7 +133,8 @@ public class HeldItemPoseEditorWindow :
     // PREVIEW
     // =====================================================
 
-    // V29.2:
+    // [HELD-POSE-PREVIEW-V32]
+    // V30:
     // We intentionally do NOT use PreviewRenderUtility for the 2D rig.
     // SpriteRenderer + custom/pixel materials can render as a blank preview
     // in PreviewRenderUtility depending on the project's render pipeline.
@@ -145,8 +146,11 @@ public class HeldItemPoseEditorWindow :
 
 
     private GameObject previewPlayer;
-
-    private Animator previewAnimator;
+    // V30:
+    // Visual-only preview does not need a live Animator component.
+    // This transform mirrors the real Animator root and is used as
+    // AnimationClip.SampleAnimation root.
+    private Transform previewAnimationRoot;
 
     private Transform previewFrontArmPivot;
 
@@ -213,6 +217,43 @@ public class HeldItemPoseEditorWindow :
 
         TryUseSelection();
 
+
+        EditorApplication.delayCall +=
+            DelayedPreviewBootstrap;
+
+    }
+
+
+    private void DelayedPreviewBootstrap()
+    {
+
+        if (
+            this ==
+            null
+        )
+        {
+
+            return;
+
+        }
+
+
+        TryUseSelection();
+
+
+        if (
+            player !=
+            null
+        )
+        {
+
+            RebuildPreview();
+
+        }
+
+
+        Repaint();
+
     }
 
 
@@ -221,6 +262,10 @@ public class HeldItemPoseEditorWindow :
 
         EditorApplication.update -=
             EditorUpdate;
+
+
+        EditorApplication.delayCall -=
+            DelayedPreviewBootstrap;
 
 
         CleanupPreview();
@@ -350,58 +395,470 @@ public class HeldItemPoseEditorWindow :
 
 
         if (
-            selected ==
+            selected !=
             null
         )
         {
 
-            return;
+            GameObject resolved =
+                ResolvePlayerRoot(
+                    selected
+                );
+
+
+            if (
+                resolved !=
+                null
+            )
+            {
+
+                if (
+                    player !=
+                    resolved
+                )
+                {
+
+                    SetPlayer(
+                        resolved
+                    );
+
+                }
+
+
+                return;
+
+            }
 
         }
 
 
-        PlayerInventory inventory =
-            selected.GetComponent<
-                PlayerInventory
+        if (
+            player ==
+            null
+        )
+        {
+
+            GameObject found =
+                FindScenePlayerObject();
+
+
+            if (
+                found !=
+                null
+            )
+            {
+
+                SetPlayer(
+                    found
+                );
+
+            }
+
+        }
+
+    }
+
+
+    private static GameObject FindScenePlayerObject()
+    {
+
+        GameObject[] objects =
+            Resources.FindObjectsOfTypeAll<
+                GameObject
             >();
 
 
-        if (
-            inventory ==
-            null
+        GameObject best =
+            null;
+
+
+        int bestScore =
+            int.MinValue;
+
+
+        for (
+            int i = 0;
+            i < objects.Length;
+            i++
         )
         {
 
-            inventory =
-                selected.GetComponentInParent<
-                    PlayerInventory
-                >();
+            GameObject candidate =
+                objects[i];
+
+
+            if (
+                candidate ==
+                null
+                ||
+                !candidate.scene.IsValid()
+                ||
+                EditorUtility.IsPersistent(
+                    candidate
+                )
+            )
+            {
+
+                continue;
+
+            }
+
+
+            GameObject resolved =
+                ResolvePlayerRoot(
+                    candidate
+                );
+
+
+            if (
+                resolved ==
+                null
+            )
+            {
+
+                continue;
+
+            }
+
+
+            int score =
+                ScorePlayerRoot(
+                    resolved
+                );
+
+
+            if (
+                score >
+                bestScore
+            )
+            {
+
+                bestScore =
+                    score;
+
+
+                best =
+                    resolved;
+
+            }
 
         }
 
 
-        if (
-            inventory ==
-            null
-        )
-        {
-
-            return;
-
-        }
-
-
-        SetPlayer(
-            inventory.gameObject
-        );
+        return best;
 
     }
+
+
+    private static GameObject ResolvePlayerRoot(
+        GameObject candidate
+    )
+    {
+
+        if (
+            candidate ==
+            null
+        )
+        {
+
+            return null;
+
+        }
+
+
+        Transform current =
+            candidate.transform;
+
+
+        GameObject best =
+            null;
+
+
+        int bestScore =
+            int.MinValue;
+
+
+        while (
+            current !=
+            null
+        )
+        {
+
+            GameObject currentObject =
+                current.gameObject;
+
+
+            int score =
+                ScorePlayerRoot(
+                    currentObject
+                );
+
+
+            if (
+                score >
+                bestScore
+            )
+            {
+
+                bestScore =
+                    score;
+
+
+                best =
+                    currentObject;
+
+            }
+
+
+            current =
+                current.parent;
+
+        }
+
+
+        // Require at least one strong Player signal.
+        if (
+            best == null
+            ||
+            bestScore <
+            45
+        )
+        {
+
+            return null;
+
+        }
+
+
+        return best;
+
+    }
+
+
+    private static int ScorePlayerRoot(
+        GameObject candidate
+    )
+    {
+
+        if (
+            candidate ==
+            null
+        )
+        {
+
+            return
+                int.MinValue;
+
+        }
+
+
+        int score =
+            0;
+
+
+        if (
+            string.Equals(
+                candidate.name,
+                "Player",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+        {
+
+            score +=
+                70;
+
+        }
+
+
+        if (
+            HasComponentNamed(
+                candidate,
+                "PlayerController"
+            )
+        )
+        {
+
+            score +=
+                130;
+
+        }
+
+
+        if (
+            candidate.GetComponent<
+                PlayerInventory
+            >() !=
+            null
+        )
+        {
+
+            score +=
+                80;
+
+        }
+
+
+        Transform frontArm =
+            FindDeepChild(
+                candidate.transform,
+                "FrontArmPivot"
+            );
+
+
+        if (
+            frontArm !=
+            null
+        )
+        {
+
+            score +=
+                90;
+
+        }
+
+
+        Transform body =
+            FindDeepChild(
+                candidate.transform,
+                "Body"
+            );
+
+
+        if (
+            body !=
+            null
+        )
+        {
+
+            score +=
+                40;
+
+        }
+
+
+        Animator animator =
+            candidate.GetComponentInChildren<
+                Animator
+            >(
+                true
+            );
+
+
+        if (
+            animator !=
+            null
+        )
+        {
+
+            score +=
+                35;
+
+        }
+
+
+        SpriteRenderer[] sprites =
+            candidate.GetComponentsInChildren<
+                SpriteRenderer
+            >(
+                true
+            );
+
+
+        if (
+            sprites !=
+            null
+            &&
+            sprites.Length >
+            0
+        )
+        {
+
+            score +=
+                Mathf.Min(
+                    40,
+                    sprites.Length *
+                    5
+                );
+
+        }
+
+
+        return score;
+
+    }
+
+
+    private static bool HasComponentNamed(
+        GameObject gameObject,
+        string componentName
+    )
+    {
+
+        if (
+            gameObject ==
+            null
+        )
+        {
+
+            return false;
+
+        }
+
+
+        Component[] components =
+            gameObject.GetComponents<
+                Component
+            >();
+
+
+        for (
+            int i = 0;
+            i < components.Length;
+            i++
+        )
+        {
+
+            Component component =
+                components[i];
+
+
+            if (
+                component !=
+                null
+                &&
+                component.GetType().Name ==
+                componentName
+            )
+            {
+
+                return true;
+
+            }
+
+        }
+
+
+        return false;
+
+    }
+
+
+    
 
 
     private void SetPlayer(
         GameObject value
     )
     {
+
+        value =
+            ResolvePlayerRoot(
+                value
+            )
+            ??
+            value;
+
 
         player =
             value;
@@ -1503,9 +1960,7 @@ public class HeldItemPoseEditorWindow :
 
         previewPlayer =
             null;
-
-
-        previewAnimator =
+        previewAnimationRoot =
             null;
 
 
@@ -1539,19 +1994,65 @@ public class HeldItemPoseEditorWindow :
         )
         {
 
+            player =
+                FindScenePlayerObject();
+
+        }
+
+
+        if (
+            player ==
+            null
+        )
+        {
+
             return;
 
         }
 
 
-        previewPlayer =
-            Instantiate(
-                player
+        sourceAnimator =
+            player.GetComponentInChildren<
+                Animator
+            >(
+                true
             );
 
 
+        /*
+         * V32:
+         * Clone only the visual rig.
+         *
+         * The Player root can contain lighting helpers, interaction sprites,
+         * debug graphics and other SpriteRenderer objects. Including those in
+         * preview bounds can make the actual character microscopic/invisible.
+         */
+        GameObject visualSource =
+            sourceAnimator !=
+            null
+                ? sourceAnimator.gameObject
+                : player;
+
+
+        previewPlayer =
+            CloneVisualPlayerHierarchy(
+                visualSource
+            );
+
+
+        if (
+            previewPlayer ==
+            null
+        )
+        {
+
+            return;
+
+        }
+
+
         previewPlayer.name =
-            "HeldItemPosePreview_Player";
+            "HeldItemPosePreview_Rig";
 
 
         previewPlayer.hideFlags =
@@ -1566,25 +2067,49 @@ public class HeldItemPoseEditorWindow :
             Quaternion.identity;
 
 
-        // Instantiate(player) already copies the Player's exact local
-        // transform values. Do NOT replace localScale with lossyScale:
-        // lossyScale contains parent scaling and can distort the whole
-        // rig in the detached preview copy.
+        Vector3 sourceScale =
+            visualSource.transform.localScale;
+
+
+        if (
+            Mathf.Abs(
+                sourceScale.x
+            ) <
+            0.0001f
+        )
+        {
+
+            sourceScale.x =
+                1f;
+
+        }
+
+
+        if (
+            Mathf.Abs(
+                sourceScale.y
+            ) <
+            0.0001f
+        )
+        {
+
+            sourceScale.y =
+                1f;
+
+        }
+
+
         previewPlayer.transform.localScale =
-            player.transform.localScale;
+            sourceScale;
 
 
-        StripRuntimeScripts(
-            previewPlayer
+        previewPlayer.SetActive(
+            true
         );
 
 
-        previewAnimator =
-            previewPlayer.GetComponentInChildren<
-                Animator
-            >(
-                true
-            );
+        previewAnimationRoot =
+            previewPlayer.transform;
 
 
         previewFrontArmPivot =
@@ -1660,97 +2185,319 @@ public class HeldItemPoseEditorWindow :
     }
 
 
-    private static void StripRuntimeScripts(
-        GameObject root
+    private static GameObject CloneVisualPlayerHierarchy(
+        GameObject source
     )
     {
 
-        MonoBehaviour[] behaviours =
-            root.GetComponentsInChildren<
-                MonoBehaviour
-            >(
-                true
-            );
-
-
-        for (
-            int i = behaviours.Length - 1;
-            i >= 0;
-            i--
+        if (
+            source ==
+            null
         )
         {
 
-            if (
-                behaviours[i] !=
-                null
-            )
-            {
-
-                DestroyImmediate(
-                    behaviours[i]
-                );
-
-            }
+            return null;
 
         }
 
 
-        Rigidbody2D[] bodies =
-            root.GetComponentsInChildren<
-                Rigidbody2D
-            >(
+        GameObject root =
+            CloneVisualNode(
+                source.transform,
+                null,
                 true
             );
 
 
-        for (
-            int i = bodies.Length - 1;
-            i >= 0;
-            i--
+        if (
+            root !=
+            null
         )
         {
 
-            if (
-                bodies[i] !=
-                null
-            )
-            {
-
-                DestroyImmediate(
-                    bodies[i]
-                );
-
-            }
+            ApplyPreviewHideFlags(
+                root.transform
+            );
 
         }
 
 
-        Collider2D[] colliders =
+        return root;
+
+    }
+
+
+    private static GameObject CloneVisualNode(
+        Transform source,
+        Transform parent,
+        bool isRoot
+    )
+    {
+
+        if (
+            source ==
+            null
+        )
+        {
+
+            return null;
+
+        }
+
+
+        GameObject clone =
+            new GameObject(
+                source.name
+            );
+
+
+        clone.hideFlags =
+            HideFlags.HideAndDontSave;
+
+
+        clone.layer =
+            source.gameObject.layer;
+
+
+        if (
+            parent !=
+            null
+        )
+        {
+
+            clone.transform.SetParent(
+                parent,
+                false
+            );
+
+        }
+
+
+        if (
+            isRoot
+        )
+        {
+
+            clone.transform.localPosition =
+                Vector3.zero;
+
+
+            clone.transform.localRotation =
+                Quaternion.identity;
+
+
+            clone.transform.localScale =
+                source.localScale;
+
+        }
+        else
+        {
+
+            clone.transform.localPosition =
+                source.localPosition;
+
+
+            clone.transform.localRotation =
+                source.localRotation;
+
+
+            clone.transform.localScale =
+                source.localScale;
+
+        }
+
+
+        SpriteRenderer[] sourceRenderers =
+            source.GetComponents<
+                SpriteRenderer
+            >();
+
+
+        for (
+            int i = 0;
+            i < sourceRenderers.Length;
+            i++
+        )
+        {
+
+            SpriteRenderer sourceRenderer =
+                sourceRenderers[i];
+
+
+            if (
+                sourceRenderer ==
+                null
+            )
+            {
+
+                continue;
+
+            }
+
+
+            SpriteRenderer renderer =
+                clone.AddComponent<
+                    SpriteRenderer
+                >();
+
+
+            CopySpriteRenderer(
+                sourceRenderer,
+                renderer
+            );
+
+        }
+
+
+        for (
+            int childIndex = 0;
+            childIndex < source.childCount;
+            childIndex++
+        )
+        {
+
+            CloneVisualNode(
+                source.GetChild(
+                    childIndex
+                ),
+                clone.transform,
+                false
+            );
+
+        }
+
+
+        // Preview-only hierarchy: keep all nodes available.
+        // Normal visibility is still preferred during DrawAnimatedPreview,
+        // with a fallback if runtime scripts normally enable the body.
+        clone.SetActive(
+            true
+        );
+
+
+        return clone;
+
+    }
+
+
+    private static void CopySpriteRenderer(
+        SpriteRenderer source,
+        SpriteRenderer destination
+    )
+    {
+
+        if (
+            source ==
+            null
+            ||
+            destination ==
+            null
+        )
+        {
+
+            return;
+
+        }
+
+
+        destination.sprite =
+            source.sprite;
+
+
+        destination.color =
+            source.color;
+
+
+        destination.flipX =
+            source.flipX;
+
+
+        destination.flipY =
+            source.flipY;
+
+
+        destination.sortingLayerID =
+            source.sortingLayerID;
+
+
+        destination.sortingOrder =
+            source.sortingOrder;
+
+
+        destination.maskInteraction =
+            source.maskInteraction;
+
+
+        destination.drawMode =
+            source.drawMode;
+
+
+        if (
+            source.drawMode !=
+            SpriteDrawMode.Simple
+        )
+        {
+
+            destination.size =
+                source.size;
+
+        }
+
+
+        destination.enabled =
+            true;
+
+    }
+
+
+    private static void ApplyPreviewHideFlags(
+        Transform root
+    )
+    {
+
+        if (
+            root ==
+            null
+        )
+        {
+
+            return;
+
+        }
+
+
+        Transform[] all =
             root.GetComponentsInChildren<
-                Collider2D
+                Transform
             >(
                 true
             );
 
 
         for (
-            int i = colliders.Length - 1;
-            i >= 0;
-            i--
+            int i = 0;
+            i < all.Length;
+            i++
         )
         {
 
+            Transform current =
+                all[i];
+
+
             if (
-                colliders[i] !=
+                current ==
                 null
             )
             {
 
-                DestroyImmediate(
-                    colliders[i]
-                );
+                continue;
 
             }
+
+
+            current.gameObject.hideFlags =
+                HideFlags.HideAndDontSave;
 
         }
 
@@ -2132,9 +2879,9 @@ public class HeldItemPoseEditorWindow :
         {
 
             GameObject sampleRoot =
-                previewAnimator !=
+                previewAnimationRoot !=
                 null
-                    ? previewAnimator.gameObject
+                    ? previewAnimationRoot.gameObject
                     : previewPlayer;
 
 
@@ -2303,6 +3050,340 @@ public class HeldItemPoseEditorWindow :
     }
 
 
+    private void RestoreMissingPreviewSprites()
+    {
+
+        if (
+            previewPlayer ==
+            null
+        )
+        {
+
+            return;
+
+        }
+
+
+        SpriteRenderer[] previewRenderers =
+            previewPlayer.GetComponentsInChildren<
+                SpriteRenderer
+            >(
+                true
+            );
+
+
+        for (
+            int rendererIndex = 0;
+            rendererIndex < previewRenderers.Length;
+            rendererIndex++
+        )
+        {
+
+            SpriteRenderer previewRenderer =
+                previewRenderers[
+                    rendererIndex
+                ];
+
+
+            if (
+                previewRenderer ==
+                null
+                ||
+                previewRenderer.sprite !=
+                null
+            )
+            {
+
+                continue;
+
+            }
+
+
+            string path =
+                AnimationUtility.CalculateTransformPath(
+                    previewRenderer.transform,
+                    previewAnimationRoot !=
+                    null
+                        ? previewAnimationRoot
+                        : previewPlayer.transform
+                );
+
+
+            Sprite fallback =
+                FindSpriteInAnimationClips(
+                    path
+                );
+
+
+            if (
+                fallback ==
+                null
+                &&
+                player !=
+                null
+            )
+            {
+
+                Transform sourceTransform =
+                    FindByPathRelativeToAnimationRoot(
+                        path
+                    );
+
+
+                if (
+                    sourceTransform !=
+                    null
+                )
+                {
+
+                    SpriteRenderer sourceRenderer =
+                        sourceTransform.GetComponent<
+                            SpriteRenderer
+                        >();
+
+
+                    if (
+                        sourceRenderer !=
+                        null
+                    )
+                    {
+
+                        fallback =
+                            sourceRenderer.sprite;
+
+
+                        if (
+                            fallback ==
+                            null
+                        )
+                        {
+
+                            SpriteRenderer prefabRenderer =
+                                PrefabUtility.GetCorrespondingObjectFromSource(
+                                    sourceRenderer
+                                );
+
+
+                            if (
+                                prefabRenderer !=
+                                null
+                            )
+                            {
+
+                                fallback =
+                                    prefabRenderer.sprite;
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+
+            if (
+                fallback !=
+                null
+            )
+            {
+
+                previewRenderer.sprite =
+                    fallback;
+
+            }
+
+        }
+
+    }
+
+
+    private Transform FindByPathRelativeToAnimationRoot(
+        string path
+    )
+    {
+
+        if (
+            player ==
+            null
+        )
+        {
+
+            return null;
+
+        }
+
+
+        Transform sourceRoot =
+            sourceAnimator !=
+            null
+                ? sourceAnimator.transform
+                : player.transform;
+
+
+        if (
+            string.IsNullOrEmpty(
+                path
+            )
+        )
+        {
+
+            return sourceRoot;
+
+        }
+
+
+        return
+            sourceRoot.Find(
+                path
+            );
+
+    }
+
+
+    private Sprite FindSpriteInAnimationClips(
+        string transformPath
+    )
+    {
+
+        if (
+            clips ==
+            null
+        )
+        {
+
+            return null;
+
+        }
+
+
+        for (
+            int clipIndex = 0;
+            clipIndex < clips.Length;
+            clipIndex++
+        )
+        {
+
+            AnimationClip clip =
+                clips[
+                    clipIndex
+                ];
+
+
+            if (
+                clip ==
+                null
+            )
+            {
+
+                continue;
+
+            }
+
+
+            EditorCurveBinding[] bindings =
+                AnimationUtility
+                    .GetObjectReferenceCurveBindings(
+                        clip
+                    );
+
+
+            for (
+                int bindingIndex = 0;
+                bindingIndex < bindings.Length;
+                bindingIndex++
+            )
+            {
+
+                EditorCurveBinding binding =
+                    bindings[
+                        bindingIndex
+                    ];
+
+
+                if (
+                    binding.type !=
+                    typeof(
+                        SpriteRenderer
+                    )
+                    ||
+                    !string.Equals(
+                        binding.path,
+                        transformPath,
+                        StringComparison.Ordinal
+                    )
+                    ||
+                    binding.propertyName.IndexOf(
+                        "Sprite",
+                        StringComparison.OrdinalIgnoreCase
+                    ) <
+                    0
+                )
+                {
+
+                    continue;
+
+                }
+
+
+                ObjectReferenceKeyframe[] keys =
+                    AnimationUtility
+                        .GetObjectReferenceCurve(
+                            clip,
+                            binding
+                        );
+
+
+                if (
+                    keys ==
+                    null
+                )
+                {
+
+                    continue;
+
+                }
+
+
+                for (
+                    int keyIndex = 0;
+                    keyIndex < keys.Length;
+                    keyIndex++
+                )
+                {
+
+                    Sprite sprite =
+                        keys[
+                            keyIndex
+                        ].value
+                        as
+                        Sprite;
+
+
+                    if (
+                        sprite !=
+                        null
+                    )
+                    {
+
+                        return sprite;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        return null;
+
+    }
+
+
     private void DrawAnimatedPreview(
         Rect rect
     )
@@ -2388,9 +3469,18 @@ public class HeldItemPoseEditorWindow :
 
         SamplePreviewAnimation();
 
+        RestoreMissingPreviewSprites();
+
+
+        Transform rendererRoot =
+            previewAnimationRoot !=
+            null
+                ? previewAnimationRoot
+                : previewPlayer.transform;
+
 
         SpriteRenderer[] renderers =
-            previewPlayer.GetComponentsInChildren<
+            rendererRoot.GetComponentsInChildren<
                 SpriteRenderer
             >(
                 true
@@ -2403,6 +3493,7 @@ public class HeldItemPoseEditorWindow :
             >();
 
 
+        // First use the renderers that would normally be visible.
         for (
             int i = 0;
             i < renderers.Length;
@@ -2418,12 +3509,8 @@ public class HeldItemPoseEditorWindow :
                 renderer ==
                 null
                 ||
-                !renderer.enabled
-                ||
                 renderer.sprite ==
                 null
-                ||
-                !renderer.gameObject.activeInHierarchy
             )
             {
 
@@ -2432,9 +3519,62 @@ public class HeldItemPoseEditorWindow :
             }
 
 
-            visible.Add(
-                renderer
-            );
+            if (
+                renderer.enabled
+                &&
+                renderer.gameObject.activeInHierarchy
+            )
+            {
+
+                visible.Add(
+                    renderer
+                );
+
+            }
+
+        }
+
+
+        // Some Player rigs enable body parts from runtime scripts.
+        // This preview intentionally contains no gameplay scripts.
+        // If normal visibility produced nothing, draw every visual node
+        // that has a real sprite instead of showing an empty preview.
+        if (
+            visible.Count ==
+            0
+        )
+        {
+
+            for (
+                int i = 0;
+                i < renderers.Length;
+                i++
+            )
+            {
+
+                SpriteRenderer renderer =
+                    renderers[i];
+
+
+                if (
+                    renderer ==
+                    null
+                    ||
+                    renderer.sprite ==
+                    null
+                )
+                {
+
+                    continue;
+
+                }
+
+
+                visible.Add(
+                    renderer
+                );
+
+            }
 
         }
 
@@ -2445,15 +3585,48 @@ public class HeldItemPoseEditorWindow :
         )
         {
 
+            int sourceRendererCount =
+                player !=
+                null
+                    ? player.GetComponentsInChildren<
+                        SpriteRenderer
+                    >(
+                        true
+                    ).Length
+                    : 0;
+
+
+            string diagnostic =
+                "Player найден, но Sprite для предпросмотра не найдены.\n" +
+                "Player: " +
+                (
+                    player !=
+                    null
+                        ? player.name
+                        : "<null>"
+                ) +
+                "\nSource SpriteRenderer: " +
+                sourceRendererCount +
+                "\nAnimationClip: " +
+                (
+                    clips !=
+                    null
+                        ? clips.Length
+                        : 0
+                );
+
+
             GUI.Label(
                 inner,
-                "В preview-копии Player не найдено активных SpriteRenderer.",
+                diagnostic,
                 new GUIStyle(
                     EditorStyles.centeredGreyMiniLabel
                 )
                 {
                     alignment =
-                        TextAnchor.MiddleCenter
+                        TextAnchor.MiddleCenter,
+                    wordWrap =
+                        true
                 }
             );
 
@@ -2623,106 +3796,114 @@ public class HeldItemPoseEditorWindow :
                 );
 
 
-            // Use the full sprite RECT and pivot, not sprite.bounds.
-            //
-            // sprite.bounds may be based on a tight mesh. Drawing the full
-            // textureRect into those mesh bounds changes the apparent aspect
-            // ratio and shifts body parts in the preview.
-            float left =
-                -sprite.pivot.x /
-                pixelsPerUnit;
+            Vector3 axisX =
+                renderer.transform.TransformVector(
+                    Vector3.right
+                );
 
 
-            float right =
+            Vector3 axisY =
+                renderer.transform.TransformVector(
+                    Vector3.up
+                );
+
+
+            float width =
+                sprite.rect.width /
+                pixelsPerUnit *
+                axisX.magnitude;
+
+
+            float height =
+                sprite.rect.height /
+                pixelsPerUnit *
+                axisY.magnitude;
+
+
+            /*
+             * A Player hierarchy can contain helper sprites that are many
+             * world units wide. They must never control character auto-fit.
+             */
+            if (
+                width >
+                8f
+                ||
+                height >
+                8f
+            )
+            {
+
+                continue;
+
+            }
+
+
+            float centerLocalX =
                 (
-                    sprite.rect.width -
+                    sprite.rect.width *
+                    0.5f -
                     sprite.pivot.x
                 )
                 /
                 pixelsPerUnit;
 
 
-            float bottom =
-                -sprite.pivot.y /
-                pixelsPerUnit;
-
-
-            float top =
+            float centerLocalY =
                 (
-                    sprite.rect.height -
+                    sprite.rect.height *
+                    0.5f -
                     sprite.pivot.y
                 )
                 /
                 pixelsPerUnit;
 
 
-            Vector3[] corners =
-            {
-                new Vector3(
-                    left,
-                    bottom,
-                    0f
-                ),
-
-                new Vector3(
-                    left,
-                    top,
-                    0f
-                ),
-
-                new Vector3(
-                    right,
-                    bottom,
-                    0f
-                ),
-
-                new Vector3(
-                    right,
-                    top,
-                    0f
-                )
-            };
+            Vector3 center =
+                renderer.transform.TransformPoint(
+                    new Vector3(
+                        centerLocalX,
+                        centerLocalY,
+                        0f
+                    )
+                );
 
 
-            for (
-                int cornerIndex = 0;
-                cornerIndex < corners.Length;
-                cornerIndex++
+            Bounds rendererBounds =
+                new Bounds(
+                    center,
+                    new Vector3(
+                        Mathf.Max(
+                            0.001f,
+                            width
+                        ),
+                        Mathf.Max(
+                            0.001f,
+                            height
+                        ),
+                        0.01f
+                    )
+                );
+
+
+            if (
+                !initialized
             )
             {
 
-                Vector3 world =
-                    renderer.transform.TransformPoint(
-                        corners[
-                            cornerIndex
-                        ]
-                    );
+                result =
+                    rendererBounds;
 
 
-                if (
-                    !initialized
-                )
-                {
+                initialized =
+                    true;
 
-                    result =
-                        new Bounds(
-                            world,
-                            Vector3.zero
-                        );
+            }
+            else
+            {
 
-
-                    initialized =
-                        true;
-
-                }
-                else
-                {
-
-                    result.Encapsulate(
-                        world
-                    );
-
-                }
+                result.Encapsulate(
+                    rendererBounds
+                );
 
             }
 
@@ -2739,7 +3920,7 @@ public class HeldItemPoseEditorWindow :
                     Vector3.zero,
                     new Vector3(
                         2f,
-                        2.5f,
+                        3f,
                         1f
                     )
                 );
@@ -2747,38 +3928,13 @@ public class HeldItemPoseEditorWindow :
         }
 
 
-        if (
-            result.size.x <
-            0.01f
-        )
-        {
-
-            result.Expand(
-                new Vector3(
-                    1f,
-                    0f,
-                    0f
-                )
-            );
-
-        }
-
-
-        if (
-            result.size.y <
-            0.01f
-        )
-        {
-
-            result.Expand(
-                new Vector3(
-                    0f,
-                    1f,
-                    0f
-                )
-            );
-
-        }
+        result.Expand(
+            new Vector3(
+                0.25f,
+                0.25f,
+                0f
+            )
+        );
 
 
         return result;
@@ -2872,15 +4028,14 @@ public class HeldItemPoseEditorWindow :
     )
     {
 
-        Sprite sprite =
-            renderer.sprite;
-
-
         if (
-            sprite ==
+            renderer ==
             null
             ||
-            sprite.texture ==
+            renderer.sprite ==
+            null
+            ||
+            renderer.sprite.texture ==
             null
         )
         {
@@ -2890,41 +4045,130 @@ public class HeldItemPoseEditorWindow :
         }
 
 
-        float spritePixelsPerUnit =
+        Sprite sprite =
+            renderer.sprite;
+
+
+        float ppu =
             Mathf.Max(
                 0.0001f,
                 sprite.pixelsPerUnit
             );
 
 
-        // Local rectangle of the actual sprite texture relative to its pivot.
-        //
-        // This is the important difference from the old preview:
-        // we do NOT stretch textureRect to Sprite.bounds/AABB.
-        float left =
-            -sprite.pivot.x /
-            spritePixelsPerUnit;
+        float centerLocalX =
+            (
+                sprite.rect.width *
+                0.5f -
+                sprite.pivot.x
+            )
+            /
+            ppu;
 
 
-        float bottom =
-            -sprite.pivot.y /
-            spritePixelsPerUnit;
+        float centerLocalY =
+            (
+                sprite.rect.height *
+                0.5f -
+                sprite.pivot.y
+            )
+            /
+            ppu;
+
+
+        Vector3 centerWorld =
+            renderer.transform.TransformPoint(
+                new Vector3(
+                    centerLocalX,
+                    centerLocalY,
+                    0f
+                )
+            );
+
+
+        Vector3 worldAxisX =
+            renderer.transform.TransformVector(
+                Vector3.right
+            );
+
+
+        Vector3 worldAxisY =
+            renderer.transform.TransformVector(
+                Vector3.up
+            );
 
 
         float width =
             sprite.rect.width /
-            spritePixelsPerUnit;
+            ppu *
+            worldAxisX.magnitude *
+            pixelsPerWorldUnit;
 
 
         float height =
             sprite.rect.height /
-            spritePixelsPerUnit;
+            ppu *
+            worldAxisY.magnitude *
+            pixelsPerWorldUnit;
 
 
-        Rect localRect =
+        if (
+            width <
+            0.01f
+            ||
+            height <
+            0.01f
+            ||
+            width >
+            10000f
+            ||
+            height >
+            10000f
+        )
+        {
+
+            return;
+
+        }
+
+
+        Vector2 centerScreen =
+            WorldToPreviewPoint(
+                centerWorld,
+                worldCenter,
+                screenCenter,
+                pixelsPerWorldUnit
+            );
+
+
+        /*
+         * Convert the transform's world X axis to GUI coordinates.
+         * GUI Y grows down, so world Y must be inverted.
+         */
+        Vector2 screenAxisX =
+            new Vector2(
+                worldAxisX.x,
+                -worldAxisX.y
+            );
+
+
+        float rotation =
+            Mathf.Atan2(
+                screenAxisX.y,
+                screenAxisX.x
+            )
+            *
+            Mathf.Rad2Deg;
+
+
+        Rect drawRect =
             new Rect(
-                left,
-                bottom,
+                centerScreen.x -
+                width *
+                0.5f,
+                centerScreen.y -
+                height *
+                0.5f,
                 width,
                 height
             );
@@ -2938,13 +4182,10 @@ public class HeldItemPoseEditorWindow :
             new Rect(
                 textureRect.x /
                 sprite.texture.width,
-
                 textureRect.y /
                 sprite.texture.height,
-
                 textureRect.width /
                 sprite.texture.width,
-
                 textureRect.height /
                 sprite.texture.height
             );
@@ -2956,6 +4197,28 @@ public class HeldItemPoseEditorWindow :
 
         bool flipY =
             renderer.flipY;
+
+
+        /*
+         * Negative hierarchy scale mirrors the sprite.
+         */
+        float determinant =
+            worldAxisX.x *
+            worldAxisY.y -
+            worldAxisX.y *
+            worldAxisY.x;
+
+
+        if (
+            determinant <
+            0f
+        )
+        {
+
+            flipX =
+                !flipX;
+
+        }
 
 
         if (
@@ -2988,92 +4251,6 @@ public class HeldItemPoseEditorWindow :
         }
 
 
-        // Build an exact local -> preview-screen affine transform from the
-        // SpriteRenderer Transform. This preserves nested rotations,
-        // non-uniform scales and even shear produced by scaled parents.
-        Vector3 worldOrigin =
-            renderer.transform.TransformPoint(
-                Vector3.zero
-            );
-
-
-        Vector3 worldX =
-            renderer.transform.TransformPoint(
-                Vector3.right
-            );
-
-
-        Vector3 worldY =
-            renderer.transform.TransformPoint(
-                Vector3.up
-            );
-
-
-        Vector2 screenOrigin =
-            WorldToPreviewPoint(
-                worldOrigin,
-                worldCenter,
-                screenCenter,
-                pixelsPerWorldUnit
-            );
-
-
-        Vector2 screenX =
-            WorldToPreviewPoint(
-                worldX,
-                worldCenter,
-                screenCenter,
-                pixelsPerWorldUnit
-            );
-
-
-        Vector2 screenY =
-            WorldToPreviewPoint(
-                worldY,
-                worldCenter,
-                screenCenter,
-                pixelsPerWorldUnit
-            );
-
-
-        Vector2 basisX =
-            screenX -
-            screenOrigin;
-
-
-        Vector2 basisY =
-            screenY -
-            screenOrigin;
-
-
-        Matrix4x4 localToScreen =
-            Matrix4x4.identity;
-
-
-        localToScreen.m00 =
-            basisX.x;
-
-
-        localToScreen.m01 =
-            basisY.x;
-
-
-        localToScreen.m03 =
-            screenOrigin.x;
-
-
-        localToScreen.m10 =
-            basisX.y;
-
-
-        localToScreen.m11 =
-            basisY.y;
-
-
-        localToScreen.m13 =
-            screenOrigin.y;
-
-
         Matrix4x4 oldMatrix =
             GUI.matrix;
 
@@ -3083,16 +4260,25 @@ public class HeldItemPoseEditorWindow :
 
 
         GUI.color =
-            renderer.color;
+            new Color(
+                renderer.color.r,
+                renderer.color.g,
+                renderer.color.b,
+                Mathf.Max(
+                    0.15f,
+                    renderer.color.a
+                )
+            );
 
 
-        GUI.matrix =
-            oldMatrix *
-            localToScreen;
+        GUIUtility.RotateAroundPivot(
+            rotation,
+            centerScreen
+        );
 
 
         GUI.DrawTextureWithTexCoords(
-            localRect,
+            drawRect,
             sprite.texture,
             uv,
             true
@@ -3146,6 +4332,66 @@ public class HeldItemPoseEditorWindow :
             GetSelectedClip();
 
 
+        int rendererCount =
+            0;
+
+
+        int spriteCount =
+            0;
+
+
+        if (
+            previewAnimationRoot !=
+            null
+        )
+        {
+
+            SpriteRenderer[] previewRenderers =
+                previewAnimationRoot
+                    .GetComponentsInChildren<
+                        SpriteRenderer
+                    >(
+                        true
+                    );
+
+
+            rendererCount =
+                previewRenderers.Length;
+
+
+            for (
+                int i = 0;
+                i < previewRenderers.Length;
+                i++
+            )
+            {
+
+                if (
+                    previewRenderers[i] !=
+                    null
+                    &&
+                    previewRenderers[i].sprite !=
+                    null
+                )
+                {
+
+                    spriteCount++;
+
+                }
+
+            }
+
+        }
+
+
+        string prefix =
+            "Rig sprites " +
+            spriteCount +
+            "/" +
+            rendererCount +
+            "   ";
+
+
         if (
             clip ==
             null
@@ -3153,12 +4399,14 @@ public class HeldItemPoseEditorWindow :
         {
 
             return
-                "Реальный Player rig — без выбранного clip";
+                prefix +
+                "без выбранного clip";
 
         }
 
 
         return
+            prefix +
             clip.name +
             "  " +
             animationTime.ToString(

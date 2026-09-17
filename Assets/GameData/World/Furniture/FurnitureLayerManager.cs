@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,6 +25,8 @@ namespace Game.World.Furniture
         public int Y;
 
         public string BlockId;
+
+        public byte Transform;
 
     }
 
@@ -241,6 +243,24 @@ namespace Game.World.Furniture
 
         }
 
+        public byte GetFurnitureTransform(
+            int x,
+            int y
+        )
+        {
+            return
+                data.TryGetValue(
+                    Pack(
+                        x,
+                        y
+                    ),
+                    out FurnitureSaveEntry entry
+                )
+                    ? entry.Transform
+                    : (byte)0;
+        }
+
+
 
         public bool HasFurniture(
             int x,
@@ -341,6 +361,23 @@ namespace Game.World.Furniture
             string blockId
         )
         {
+            return
+                SetFurniture(
+                    x,
+                    y,
+                    blockId,
+                    0
+                );
+        }
+
+
+        public bool SetFurniture(
+            int x,
+            int y,
+            string blockId,
+            byte transform
+        )
+        {
 
             if (
                 string.IsNullOrWhiteSpace(
@@ -369,7 +406,10 @@ namespace Game.World.Furniture
                         y,
 
                     BlockId =
-                        blockId
+                        blockId,
+
+                    Transform =
+                        transform
                 };
 
 
@@ -418,6 +458,23 @@ namespace Game.World.Furniture
             string blockId
         )
         {
+            return
+                SetGeneratedFurniture(
+                    x,
+                    y,
+                    blockId,
+                    0
+                );
+        }
+
+
+        public bool SetGeneratedFurniture(
+            int x,
+            int y,
+            string blockId,
+            byte transform
+        )
+        {
 
             if (
                 string.IsNullOrWhiteSpace(
@@ -459,7 +516,10 @@ namespace Game.World.Furniture
                         y,
 
                     BlockId =
-                        blockId
+                        blockId,
+
+                    Transform =
+                        transform
                 };
 
 
@@ -479,8 +539,6 @@ namespace Game.World.Furniture
             );
 
 
-            // No Save() here. Procedural flora is regenerated from
-            // world seed and biome config. Only removals are persisted.
             return true;
 
         }
@@ -1039,11 +1097,75 @@ namespace Game.World.Furniture
             }
 
 
+            ApplyFurnitureTransform(
+                gameObject.transform,
+                entry.Transform
+            );
+
+
             visuals[
                 key
             ] =
                 gameObject;
 
+        }
+
+
+        private static void ApplyFurnitureTransform(
+            Transform target,
+            byte transform
+        )
+        {
+            if (
+                target ==
+                null
+            )
+            {
+                return;
+            }
+
+
+            int rotation =
+                transform &
+                0x03;
+
+
+            bool mirror =
+                (
+                    transform &
+                    0x04
+                )
+                !=
+                0;
+
+
+            target.localRotation =
+                Quaternion.Euler(
+                    0f,
+                    0f,
+                    -rotation *
+                    90f
+                );
+
+
+            Vector3 scale =
+                target.localScale;
+
+
+            scale.x =
+                Mathf.Abs(
+                    scale.x
+                )
+                *
+                (
+                    mirror
+                        ? -1f
+                        : 1f
+                );
+
+
+            target.localScale =
+                scale;
         }
 
 

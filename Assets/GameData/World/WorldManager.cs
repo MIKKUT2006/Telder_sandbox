@@ -1,4 +1,4 @@
-using Game.Blocks;
+﻿using Game.Blocks;
 using Game.Content;
 using Game.World.Collision;
 using Game.World.Dimensions;
@@ -9,6 +9,7 @@ using Game.World.Rendering;
 using System.Collections;
 using Game.World.Effects;
 using Game.Save;
+using Game.World.Weather;
 using UnityEngine;
 
 namespace Game.World
@@ -247,6 +248,20 @@ namespace Game.World
             // =====================================================
 
             SpawnPlayer();
+
+            WeatherManager weatherManager = GetComponent<WeatherManager>();
+
+            if (weatherManager == null)
+            {
+                weatherManager =
+                    gameObject.AddComponent<WeatherManager>();
+            }
+
+            weatherManager.Initialize(
+                player,
+                generator,
+                worldCollision
+            );
         }
 
 
@@ -1001,6 +1016,10 @@ namespace Game.World
             if (!changed)
             {
                 return false;
+
+            // [STRUCTURE-LAYERS-CLEAR-BACKGROUND-TRANSFORM-V1]
+            Game.BlockTransforms.BackgroundBlockTransformRegistry.Clear(worldX, worldY);
+
             }
 
 

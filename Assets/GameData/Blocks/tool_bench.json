@@ -1,0 +1,45 @@
+{
+  "ID": "game:tool_bench",
+  "Name": "Tool bench",
+  "Texture": "tool_bench",
+
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+
+  "CollisionShape": "HalfBottom",
+  "CollisionRects": [],
+
+  "Material": 0,
+
+  "Drop": "game:tool_bench",
+  "DropCount": 1,
+
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+
+  "Tags": [
+    "furniture",
+    "tool_bench"
+  ],
+
+  "closed": false,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+
+  "CraftIngredients": [
+    {
+      "ItemId": "game:stone",
+      "Count": 8
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 1
+}

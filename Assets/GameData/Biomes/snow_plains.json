@@ -1,0 +1,40 @@
+{
+  "ID": "game:snow_plains",
+  "DisplayName": "SNOW PLAINS",
+  "AllowedDimensionTypes": [
+    "*"
+  ],
+  "Weight": 1.0,
+  "Rare": false,
+  "Terrain": {
+    "TopBlock": "game:snow",
+    "SoilBlock": "game:snow",
+    "StoneBlock": "game:snow_cobblestone",
+    "BackgroundBlock": "game:snow_cobblestone",
+    "SoilDepth": 8,
+    "HeightOffset": 0.0,
+    "HillHeightMultiplier": 0.84,
+    "HillScaleMultiplier": 0.6,
+    "TerrainVariationMultiplier": 0.75,
+    "TerrainScaleMultiplier": 1.0,
+    "DetailMultiplier": 0.65,
+    "DetailScaleMultiplier": 1.0,
+    "DistortionStrength": 0.0,
+    "DistortionScale": 0.0035,
+    "RidgeStrength": 0.0,
+    "RidgeScale": 0.01,
+    "WaveStrength": 0.0,
+    "WaveScale": 0.024
+  },
+  "Caves": {
+    "FrequencyMultiplier": 0.1,
+    "SizeMultiplier": 0.1,
+    "ChamberMultiplier": 0.1,
+    "EntranceMultiplier": 0.1
+  },
+  "Climate": {
+    "Temperature": 0.11,
+    "Humidity": 0.55,
+    "Weirdness": 0.3
+  }
+}

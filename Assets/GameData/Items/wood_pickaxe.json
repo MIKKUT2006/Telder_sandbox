@@ -3,11 +3,11 @@
   "Name": "Wood Pickaxe",
   "Texture": "wood_pickaxe",
   "MaxStack": 1,
-
+  "Type": "Tool",
   "ToolType": "pickaxe",
   "ToolLevel": 1,
   "MiningSpeed": 1.0,
-
+  "Durability": 350,
   "HeldScale": 1.85,
   "HeldRotation": 2,
   "HeldOffsetX": 0.35,

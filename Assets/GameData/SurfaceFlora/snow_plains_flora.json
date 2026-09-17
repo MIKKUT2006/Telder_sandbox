@@ -1,0 +1,15 @@
+{
+  "ID": "game:short_grass",
+  "Enabled": true,
+  "Biomes": [
+    "game:snow_plains"
+  ],
+  "Plants": [
+    {
+      "BlockId": "game:ice_berry_block",
+      "Chance": 0.2,
+      "NoiseScale": 0.08,
+      "NoiseThreshold": 0
+    }
+  ]
+}

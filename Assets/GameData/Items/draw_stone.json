@@ -1,0 +1,7 @@
+{
+  "ID": "game:draw_stone",
+  "Name": "Draw stone",
+  "Texture": "draw_stone",
+  "Type": "Block",
+  "MaxStack": 100
+}

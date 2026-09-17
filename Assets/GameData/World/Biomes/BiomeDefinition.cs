@@ -1,5 +1,5 @@
 using System;
-
+using Game.World.Biomes;
 namespace Game.World.Biomes
 {
     [Serializable]
@@ -23,6 +23,8 @@ namespace Game.World.Biomes
         public BiomeClimateSettings Climate =
             new BiomeClimateSettings();
 
+        public BiomeWeatherSettings Weather =
+            new BiomeWeatherSettings();
 
         public bool SupportsDimensionType(
             string dimensionTypeID

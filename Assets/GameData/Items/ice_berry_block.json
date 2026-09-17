@@ -1,0 +1,7 @@
+{
+  "ID": "game:ice_berry_block",
+  "Name": "Ice berry block",
+  "Texture": "ice_berry_block",
+  "Type": "Block",
+  "MaxStack": 100
+}

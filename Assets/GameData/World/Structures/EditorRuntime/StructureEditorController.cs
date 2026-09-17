@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -124,8 +124,37 @@ namespace Game.World.Structures.EditorRuntime
         private string selectedBlockId;
 
 
-        // false = foreground, true = background
-        private bool editBackground;
+        private enum StructureEditLayer
+        {
+            Foreground,
+            Background,
+            Furniture
+        }
+
+
+        private enum StructureTransformEditMode
+        {
+            None,
+            Rotate,
+            Mirror
+        }
+
+
+        private StructureEditLayer editLayer =
+            StructureEditLayer.Foreground;
+
+
+        private StructureTransformEditMode transformEditMode =
+            StructureTransformEditMode.None;
+
+
+        private StructureLayerMetadata layerMetadata =
+            new StructureLayerMetadata();
+
+
+        private bool editBackground =>
+            editLayer ==
+            StructureEditLayer.Background;
 
 
         private int selectedCellX =
@@ -156,6 +185,8 @@ namespace Game.World.Structures.EditorRuntime
         private GUIStyle cellIdStyle;
 
         private GUIStyle backgroundBadgeStyle;
+
+        private GUIStyle furnitureBadgeStyle;
 
 
         private const float CellSize =
@@ -200,6 +231,86 @@ namespace Game.World.Structures.EditorRuntime
             {
                 Save();
             }
+
+
+            if (
+                Input.GetKeyDown(
+                    KeyCode.Z
+                )
+            )
+            {
+                CycleTransformEditMode();
+            }
+
+
+            if (
+                Input.GetKeyDown(
+                    KeyCode.X
+                )
+            )
+            {
+                CycleEditLayer();
+            }
+        }
+
+
+        private void CycleTransformEditMode()
+        {
+            switch (
+                transformEditMode
+            )
+            {
+                case StructureTransformEditMode.None:
+                    transformEditMode =
+                        StructureTransformEditMode.Rotate;
+                    break;
+
+                case StructureTransformEditMode.Rotate:
+                    transformEditMode =
+                        StructureTransformEditMode.Mirror;
+                    break;
+
+                default:
+                    transformEditMode =
+                        StructureTransformEditMode.None;
+                    break;
+            }
+
+
+            status =
+                "Режим: " +
+                GetTransformModeLabel();
+        }
+
+
+        private void CycleEditLayer()
+        {
+            switch (
+                editLayer
+            )
+            {
+                case StructureEditLayer.Foreground:
+                    editLayer =
+                        StructureEditLayer.Background;
+                    break;
+
+                case StructureEditLayer.Background:
+                    editLayer =
+                        StructureEditLayer.Furniture;
+                    break;
+
+                default:
+                    editLayer =
+                        StructureEditLayer.Foreground;
+                    break;
+            }
+
+
+            status =
+                "Слой: " +
+                GetLayerLabel(
+                    editLayer
+                );
         }
 
 
@@ -274,6 +385,34 @@ namespace Game.World.Structures.EditorRuntime
                         1f
                     );
             }
+        
+            if (
+                furnitureBadgeStyle ==
+                null
+            )
+            {
+                furnitureBadgeStyle =
+                    new GUIStyle(
+                        GUI.skin.label
+                    );
+
+
+                furnitureBadgeStyle.fontSize =
+                    8;
+
+
+                furnitureBadgeStyle.alignment =
+                    TextAnchor.UpperRight;
+
+
+                furnitureBadgeStyle.normal.textColor =
+                    new Color(
+                        1f,
+                        0.72f,
+                        0.25f,
+                        1f
+                    );
+            }
         }
 
 
@@ -300,7 +439,7 @@ namespace Game.World.Structures.EditorRuntime
             GUILayout.Label(
                 "TELDER STRUCTURE EDITOR",
                 GUILayout.Width(
-                    220f
+                    205f
                 )
             );
 
@@ -309,7 +448,7 @@ namespace Game.World.Structures.EditorRuntime
                 GUILayout.Button(
                     "Новая",
                     GUILayout.Width(
-                        90f
+                        72f
                     )
                 )
             )
@@ -322,7 +461,7 @@ namespace Game.World.Structures.EditorRuntime
                 GUILayout.Button(
                     "Сохранить [F5]",
                     GUILayout.Width(
-                        130f
+                        115f
                     )
                 )
             )
@@ -333,9 +472,9 @@ namespace Game.World.Structures.EditorRuntime
 
             if (
                 GUILayout.Button(
-                    "Обновить контент",
+                    "Обновить",
                     GUILayout.Width(
-                        140f
+                        90f
                     )
                 )
             )
@@ -349,68 +488,96 @@ namespace Game.World.Structures.EditorRuntime
 
 
             GUILayout.Space(
-                10f
+                8f
             );
 
 
-            Color oldLayerColor =
-                GUI.backgroundColor;
-
-
-            GUI.backgroundColor =
-                !editBackground
-                    ? new Color(
-                        0.35f,
-                        0.65f,
-                        0.95f
-                    )
-                    : oldLayerColor;
-
-
-            if (
-                GUILayout.Button(
-                    "ПЕРЕДНИЙ",
-                    GUILayout.Width(
-                        110f
-                    )
+            DrawLayerButton(
+                StructureEditLayer.Foreground,
+                "ПЕРЕДНИЙ",
+                new Color(
+                    0.35f,
+                    0.65f,
+                    0.95f
                 )
-            )
-            {
-                editBackground =
-                    false;
-            }
+            );
 
 
-            GUI.backgroundColor =
-                editBackground
-                    ? new Color(
-                        0.30f,
-                        0.42f,
-                        0.65f
-                    )
-                    : oldLayerColor;
-
-
-            if (
-                GUILayout.Button(
-                    "ЗАДНИЙ",
-                    GUILayout.Width(
-                        110f
-                    )
+            DrawLayerButton(
+                StructureEditLayer.Background,
+                "ЗАДНИЙ",
+                new Color(
+                    0.30f,
+                    0.42f,
+                    0.65f
                 )
-            )
-            {
-                editBackground =
-                    true;
-            }
+            );
 
 
-            GUI.backgroundColor =
-                oldLayerColor;
+            DrawLayerButton(
+                StructureEditLayer.Furniture,
+                "ФУРНИТУРА",
+                new Color(
+                    0.74f,
+                    0.48f,
+                    0.20f
+                )
+            );
 
 
             GUILayout.Space(
-                10f
+                8f
+            );
+
+
+            Color old =
+                GUI.backgroundColor;
+
+
+            if (
+                transformEditMode !=
+                StructureTransformEditMode.None
+            )
+            {
+                GUI.backgroundColor =
+                    new Color(
+                        0.62f,
+                        0.48f,
+                        0.82f
+                    );
+            }
+
+
+            if (
+                GUILayout.Button(
+                    GetTransformModeLabel() +
+                    " [Z]",
+                    GUILayout.Width(
+                        145f
+                    )
+                )
+            )
+            {
+                CycleTransformEditMode();
+            }
+
+
+            GUI.backgroundColor =
+                old;
+
+
+            GUILayout.Space(
+                8f
+            );
+
+
+            GUILayout.Label(
+                "X — слой"
+            );
+
+
+            GUILayout.Space(
+                8f
             );
 
 
@@ -425,6 +592,55 @@ namespace Game.World.Structures.EditorRuntime
             GUILayout.EndHorizontal();
 
             GUILayout.EndArea();
+        }
+
+
+        private void DrawLayerButton(
+            StructureEditLayer layer,
+            string text,
+            Color selectedColor
+        )
+        {
+            Color old =
+                GUI.backgroundColor;
+
+
+            if (
+                editLayer ==
+                layer
+            )
+            {
+                GUI.backgroundColor =
+                    selectedColor;
+            }
+
+
+            if (
+                GUILayout.Button(
+                    text,
+                    GUILayout.Width(
+                        layer ==
+                        StructureEditLayer.Furniture
+                            ? 105f
+                            : 92f
+                    )
+                )
+            )
+            {
+                editLayer =
+                    layer;
+
+
+                status =
+                    "Слой: " +
+                    GetLayerLabel(
+                        layer
+                    );
+            }
+
+
+            GUI.backgroundColor =
+                old;
         }
 
 
@@ -477,7 +693,7 @@ namespace Game.World.Structures.EditorRuntime
                     16f,
                     38f
                 ),
-                "ЛКМ — поставить | ПКМ — удалить"
+                "ЛКМ — поставить/изменить | ПКМ — удалить | Z — поворот/зеркало"
             );
 
 
@@ -755,7 +971,12 @@ namespace Game.World.Structures.EditorRuntime
                     16f,
                     22f
                 ),
-                "СТРУКТУРА"
+                "СТРУКТУРА   |   " +
+                GetLayerLabel(
+                    editLayer
+                ) +
+                "   |   " +
+                GetTransformModeLabel()
             );
 
 
@@ -825,14 +1046,21 @@ namespace Game.World.Structures.EditorRuntime
             GUI.EndScrollView();
 
 
-            if (
-                (
-                    evt.type ==
+            bool mouseEvent =
+                evt.type ==
                     EventType.MouseDown
-                    ||
+                ||
+                (
+                    transformEditMode ==
+                        StructureTransformEditMode.None
+                    &&
                     evt.type ==
-                    EventType.MouseDrag
-                )
+                        EventType.MouseDrag
+                );
+
+
+            if (
+                mouseEvent
                 &&
                 (
                     evt.button ==
@@ -903,7 +1131,17 @@ namespace Game.World.Structures.EditorRuntime
 
                     if (
                         evt.button ==
-                        0
+                        1
+                    )
+                    {
+                        Remove(
+                            x,
+                            y
+                        );
+                    }
+                    else if (
+                        transformEditMode ==
+                        StructureTransformEditMode.None
                     )
                     {
                         Place(
@@ -913,7 +1151,7 @@ namespace Game.World.Structures.EditorRuntime
                     }
                     else
                     {
-                        Remove(
+                        TransformCell(
                             x,
                             y
                         );
@@ -1110,10 +1348,19 @@ namespace Game.World.Structures.EditorRuntime
                         null
                     )
                     {
+                        StructureLayerCellMetadata metadata =
+                            layerMetadata.Get(
+                                x,
+                                y
+                            );
+
+
                         string activeId =
-                            editBackground
-                                ? cell.BackgroundId
-                                : cell.ForegroundId;
+                            GetLayerId(
+                                cell,
+                                metadata,
+                                editLayer
+                            );
 
 
                         if (
@@ -1150,6 +1397,26 @@ namespace Game.World.Structures.EditorRuntime
             }
 
 
+            StructureLayerCellMetadata metadata =
+                layerMetadata.Get(
+                    cell.X,
+                    cell.Y
+                );
+
+
+            Rect iconRect =
+                new Rect(
+                    cellRect.x +
+                    2f,
+                    cellRect.y +
+                    2f,
+                    cellRect.width -
+                    4f,
+                    cellRect.height -
+                    4f
+                );
+
+
             if (
                 !string.IsNullOrWhiteSpace(
                     cell.BackgroundId
@@ -1162,44 +1429,44 @@ namespace Game.World.Structures.EditorRuntime
                     );
 
 
-                if (
-                    background !=
-                    null
+                DrawTransformedIcon(
+                    iconRect,
+                    background,
+                    metadata !=
+                        null
+                            ? metadata.BackgroundTransform
+                            : (byte)0,
+                    new Color(
+                        0.68f,
+                        0.68f,
+                        0.68f,
+                        1f
+                    )
+                );
+            }
+
+
+            if (
+                metadata !=
+                null
+                &&
+                !string.IsNullOrWhiteSpace(
+                    metadata.FurnitureId
                 )
-                {
-                    Color oldColor =
-                        GUI.color;
-
-
-                    GUI.color =
-                        new Color(
-                            0.82f,
-                            0.82f,
-                            0.82f,
-                            1f
-                        );
-
-
-                    GUI.DrawTexture(
-                        new Rect(
-                            cellRect.x +
-                            2f,
-                            cellRect.y +
-                            2f,
-                            cellRect.width -
-                            4f,
-                            cellRect.height -
-                            4f
-                        ),
-                        background,
-                        ScaleMode.ScaleToFit,
-                        true
+            )
+            {
+                Texture2D furniture =
+                    StructureEditorIconCache.Get(
+                        metadata.FurnitureId
                     );
 
 
-                    GUI.color =
-                        oldColor;
-                }
+                DrawTransformedIcon(
+                    iconRect,
+                    furniture,
+                    metadata.FurnitureTransform,
+                    Color.white
+                );
             }
 
 
@@ -1215,27 +1482,15 @@ namespace Game.World.Structures.EditorRuntime
                     );
 
 
-                if (
-                    foreground !=
-                    null
-                )
-                {
-                    GUI.DrawTexture(
-                        new Rect(
-                            cellRect.x +
-                            2f,
-                            cellRect.y +
-                            2f,
-                            cellRect.width -
-                            4f,
-                            cellRect.height -
-                            4f
-                        ),
-                        foreground,
-                        ScaleMode.ScaleToFit,
-                        true
-                    );
-                }
+                DrawTransformedIcon(
+                    iconRect,
+                    foreground,
+                    metadata !=
+                        null
+                            ? metadata.ForegroundTransform
+                            : (byte)0,
+                    Color.white
+                );
             }
 
 
@@ -1251,6 +1506,109 @@ namespace Game.World.Structures.EditorRuntime
                     backgroundBadgeStyle
                 );
             }
+
+
+            if (
+                metadata !=
+                null
+                &&
+                !string.IsNullOrWhiteSpace(
+                    metadata.FurnitureId
+                )
+            )
+            {
+                GUI.Label(
+                    cellRect,
+                    "F",
+                    furnitureBadgeStyle
+                );
+            }
+        }
+
+
+        private static void DrawTransformedIcon(
+            Rect rect,
+            Texture2D texture,
+            byte transform,
+            Color color
+        )
+        {
+            if (
+                texture ==
+                null
+            )
+            {
+                return;
+            }
+
+
+            Matrix4x4 oldMatrix =
+                GUI.matrix;
+
+
+            Color oldColor =
+                GUI.color;
+
+
+            int rotation =
+                transform &
+                0x03;
+
+
+            bool mirrored =
+                (
+                    transform &
+                    0x04
+                )
+                !=
+                0;
+
+
+            GUI.color =
+                color;
+
+
+            GUIUtility.RotateAroundPivot(
+                -rotation *
+                90f,
+                rect.center
+            );
+
+
+            Rect uv =
+                new Rect(
+                    0f,
+                    0f,
+                    1f,
+                    1f
+                );
+
+
+            if (mirrored)
+            {
+                uv.x =
+                    1f;
+
+
+                uv.width =
+                    -1f;
+            }
+
+
+            GUI.DrawTextureWithTexCoords(
+                rect,
+                texture,
+                uv,
+                true
+            );
+
+
+            GUI.matrix =
+                oldMatrix;
+
+
+            GUI.color =
+                oldColor;
         }
 
 
@@ -1704,6 +2062,12 @@ namespace Game.World.Structures.EditorRuntime
                 loaded;
 
 
+            layerMetadata =
+                StructureLayerMetadataStore.Load(
+                    current.ID
+                );
+
+
             numericFieldBuffers.Clear();
 
 
@@ -1961,12 +2325,43 @@ namespace Game.World.Structures.EditorRuntime
             );
 
 
+            StructureLayerCellMetadata metadata =
+                layerMetadata.Get(
+                    selectedCellX,
+                    selectedCellY
+                );
+
+
+            GUILayout.Label(
+                "Furniture: " +
+                (
+                    metadata ==
+                        null
+                    ||
+                    string.IsNullOrWhiteSpace(
+                        metadata.FurnitureId
+                    )
+                        ? "-"
+                        : metadata.FurnitureId
+                )
+            );
+
+
             GUILayout.Label(
                 "Активный слой: " +
-                (
-                    editBackground
-                        ? "ЗАДНИЙ"
-                        : "ПЕРЕДНИЙ"
+                GetLayerLabel(
+                    editLayer
+                )
+            );
+
+
+            GUILayout.Label(
+                "Transform: " +
+                TransformLabel(
+                    GetLayerTransform(
+                        metadata,
+                        editLayer
+                    )
                 )
             );
 
@@ -2561,6 +2956,10 @@ namespace Game.World.Structures.EditorRuntime
                 new StructureDefinition();
 
 
+            layerMetadata =
+                new StructureLayerMetadata();
+
+
             numericFieldBuffers.Clear();
 
 
@@ -2920,59 +3319,52 @@ namespace Game.World.Structures.EditorRuntime
             }
 
 
-            int key =
-                CellKey(
+            StructureCellDefinition cell =
+                GetOrCreateCell(
                     x,
                     y
                 );
 
 
-            if (
-                !cellIndex.TryGetValue(
-                    key,
-                    out StructureCellDefinition cell
-                )
-            )
-            {
-                cell =
-                    new StructureCellDefinition
-                    {
-                        X =
-                            x,
-
-                        Y =
-                            y,
-
-                        Loot =
-                            new List<
-                                StructureLootEntryDefinition
-                            >()
-                    };
-
-
-                current.Cells.Add(
-                    cell
+            StructureLayerCellMetadata metadata =
+                layerMetadata.GetOrCreate(
+                    x,
+                    y
                 );
 
 
-                cellIndex.Add(
-                    key,
-                    cell
-                );
-            }
-
-
-            if (
-                editBackground
+            switch (
+                editLayer
             )
             {
-                cell.BackgroundId =
-                    selectedBlockId;
-            }
-            else
-            {
-                cell.ForegroundId =
-                    selectedBlockId;
+                case StructureEditLayer.Background:
+                    cell.BackgroundId =
+                        selectedBlockId;
+
+
+                    metadata.BackgroundTransform =
+                        0;
+                    break;
+
+
+                case StructureEditLayer.Furniture:
+                    metadata.FurnitureId =
+                        selectedBlockId;
+
+
+                    metadata.FurnitureTransform =
+                        0;
+                    break;
+
+
+                default:
+                    cell.ForegroundId =
+                        selectedBlockId;
+
+
+                    metadata.ForegroundTransform =
+                        0;
+                    break;
             }
 
 
@@ -2986,6 +3378,60 @@ namespace Game.World.Structures.EditorRuntime
                         StructureLootEntryDefinition
                     >();
             }
+        }
+
+
+        private StructureCellDefinition GetOrCreateCell(
+            int x,
+            int y
+        )
+        {
+            int key =
+                CellKey(
+                    x,
+                    y
+                );
+
+
+            if (
+                cellIndex.TryGetValue(
+                    key,
+                    out StructureCellDefinition existing
+                )
+            )
+            {
+                return existing;
+            }
+
+
+            StructureCellDefinition cell =
+                new StructureCellDefinition
+                {
+                    X =
+                        x,
+
+                    Y =
+                        y,
+
+                    Loot =
+                        new List<
+                            StructureLootEntryDefinition
+                        >()
+                };
+
+
+            current.Cells.Add(
+                cell
+            );
+
+
+            cellIndex.Add(
+                key,
+                cell
+            );
+
+
+            return cell;
         }
 
 
@@ -3012,26 +3458,54 @@ namespace Game.World.Structures.EditorRuntime
             }
 
 
-            if (
-                editBackground
+            StructureLayerCellMetadata metadata =
+                layerMetadata.GetOrCreate(
+                    x,
+                    y
+                );
+
+
+            switch (
+                editLayer
             )
             {
-                cell.BackgroundId =
-                    string.Empty;
-            }
-            else
-            {
-                cell.ForegroundId =
-                    string.Empty;
+                case StructureEditLayer.Background:
+                    cell.BackgroundId =
+                        string.Empty;
 
 
-                if (
-                    cell.Loot !=
-                    null
-                )
-                {
-                    cell.Loot.Clear();
-                }
+                    metadata.BackgroundTransform =
+                        0;
+                    break;
+
+
+                case StructureEditLayer.Furniture:
+                    metadata.FurnitureId =
+                        string.Empty;
+
+
+                    metadata.FurnitureTransform =
+                        0;
+                    break;
+
+
+                default:
+                    cell.ForegroundId =
+                        string.Empty;
+
+
+                    metadata.ForegroundTransform =
+                        0;
+
+
+                    if (
+                        cell.Loot !=
+                        null
+                    )
+                    {
+                        cell.Loot.Clear();
+                    }
+                    break;
             }
 
 
@@ -3043,6 +3517,10 @@ namespace Game.World.Structures.EditorRuntime
                 string.IsNullOrWhiteSpace(
                     cell.BackgroundId
                 )
+                &&
+                string.IsNullOrWhiteSpace(
+                    metadata.FurnitureId
+                )
             )
             {
                 current.Cells.Remove(
@@ -3053,7 +3531,308 @@ namespace Game.World.Structures.EditorRuntime
                 cellIndex.Remove(
                     key
                 );
+
+
+                layerMetadata.Remove(
+                    x,
+                    y
+                );
             }
+        }
+
+
+        private void TransformCell(
+            int x,
+            int y
+        )
+        {
+            StructureCellDefinition cell =
+                FindCell(
+                    x,
+                    y
+                );
+
+
+            if (
+                cell ==
+                null
+            )
+            {
+                return;
+            }
+
+
+            StructureLayerCellMetadata metadata =
+                layerMetadata.GetOrCreate(
+                    x,
+                    y
+                );
+
+
+            string activeId =
+                GetLayerId(
+                    cell,
+                    metadata,
+                    editLayer
+                );
+
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    activeId
+                )
+            )
+            {
+                return;
+            }
+
+
+            byte value =
+                GetLayerTransform(
+                    metadata,
+                    editLayer
+                );
+
+
+            if (
+                transformEditMode ==
+                StructureTransformEditMode.Rotate
+            )
+            {
+                int rotation =
+                    (
+                        value &
+                        0x03
+                    );
+
+
+                rotation =
+                    (
+                        rotation +
+                        1
+                    )
+                    &
+                    0x03;
+
+
+                value =
+                    (byte)(
+                        (
+                            value &
+                            ~0x03
+                        )
+                        |
+                        rotation
+                    );
+            }
+            else if (
+                transformEditMode ==
+                StructureTransformEditMode.Mirror
+            )
+            {
+                value ^=
+                    0x04;
+            }
+            else
+            {
+                return;
+            }
+
+
+            SetLayerTransform(
+                metadata,
+                editLayer,
+                value
+            );
+
+
+            status =
+                GetLayerLabel(
+                    editLayer
+                )
+                +
+                ": "
+                +
+                TransformLabel(
+                    value
+                );
+        }
+
+
+        private static string GetLayerId(
+            StructureCellDefinition cell,
+            StructureLayerCellMetadata metadata,
+            StructureEditLayer layer
+        )
+        {
+            if (
+                cell ==
+                null
+            )
+            {
+                return null;
+            }
+
+
+            switch (layer)
+            {
+                case StructureEditLayer.Background:
+                    return
+                        cell.BackgroundId;
+
+                case StructureEditLayer.Furniture:
+                    return
+                        metadata !=
+                        null
+                            ? metadata.FurnitureId
+                            : null;
+
+                default:
+                    return
+                        cell.ForegroundId;
+            }
+        }
+
+
+        private static byte GetLayerTransform(
+            StructureLayerCellMetadata metadata,
+            StructureEditLayer layer
+        )
+        {
+            if (
+                metadata ==
+                null
+            )
+            {
+                return 0;
+            }
+
+
+            switch (layer)
+            {
+                case StructureEditLayer.Background:
+                    return
+                        metadata.BackgroundTransform;
+
+                case StructureEditLayer.Furniture:
+                    return
+                        metadata.FurnitureTransform;
+
+                default:
+                    return
+                        metadata.ForegroundTransform;
+            }
+        }
+
+
+        private static void SetLayerTransform(
+            StructureLayerCellMetadata metadata,
+            StructureEditLayer layer,
+            byte value
+        )
+        {
+            if (
+                metadata ==
+                null
+            )
+            {
+                return;
+            }
+
+
+            switch (layer)
+            {
+                case StructureEditLayer.Background:
+                    metadata.BackgroundTransform =
+                        value;
+                    break;
+
+                case StructureEditLayer.Furniture:
+                    metadata.FurnitureTransform =
+                        value;
+                    break;
+
+                default:
+                    metadata.ForegroundTransform =
+                        value;
+                    break;
+            }
+        }
+
+
+        private static string GetLayerLabel(
+            StructureEditLayer layer
+        )
+        {
+            switch (layer)
+            {
+                case StructureEditLayer.Background:
+                    return
+                        "ЗАДНИЙ";
+
+                case StructureEditLayer.Furniture:
+                    return
+                        "ФУРНИТУРА";
+
+                default:
+                    return
+                        "ПЕРЕДНИЙ";
+            }
+        }
+
+
+        private string GetTransformModeLabel()
+        {
+            switch (
+                transformEditMode
+            )
+            {
+                case StructureTransformEditMode.Rotate:
+                    return
+                        "ПОВОРОТ";
+
+                case StructureTransformEditMode.Mirror:
+                    return
+                        "ОТРАЖЕНИЕ";
+
+                default:
+                    return
+                        "ОБЫЧНЫЙ";
+            }
+        }
+
+
+        private static string TransformLabel(
+            byte value
+        )
+        {
+            int rotation =
+                (
+                    value &
+                    0x03
+                )
+                *
+                90;
+
+
+            bool mirror =
+                (
+                    value &
+                    0x04
+                )
+                !=
+                0;
+
+
+            return
+                rotation +
+                "°"
+                +
+                (
+                    mirror
+                        ? " + Mirror"
+                        : string.Empty
+                );
         }
 
 
@@ -3164,6 +3943,12 @@ namespace Game.World.Structures.EditorRuntime
                     current,
                     true
                 )
+            );
+
+
+            StructureLayerMetadataStore.Save(
+                current.ID,
+                layerMetadata
             );
 
 
@@ -3578,8 +4363,5 @@ namespace Game.World.Structures.EditorRuntime
                     )
                     : value;
         }
-    
-    // [BT-AUTO-STRUCTURE-DATA]
-    public byte Transform;
 }
 }

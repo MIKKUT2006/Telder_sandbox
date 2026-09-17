@@ -1,0 +1,7 @@
+{
+  "ID": "game:lavender_02",
+  "Name": "Lavender",
+  "Texture": "lavender_02",
+  "Type": "Block",
+  "MaxStack": 100
+}

@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Collections.Generic;
 
@@ -94,7 +94,10 @@ namespace Game.World.Structures
 
         public List<StructureLootEntryDefinition> Loot =
             new List<StructureLootEntryDefinition>();
-    }
+    
+        // [BT-AUTO-STRUCTURE-DATA]
+        public byte Transform;
+}
 
     [Serializable]
     public class StructureLootEntryDefinition

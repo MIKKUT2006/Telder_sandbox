@@ -1,0 +1,7 @@
+{
+  "ID": "game:lying_stone_02",
+  "Name": "Lying stone",
+  "Texture": "lying_stone_02",
+  "Type": "Block",
+  "MaxStack": 100
+}
