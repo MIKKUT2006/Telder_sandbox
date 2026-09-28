@@ -1,0 +1,7 @@
+{
+  "ID": "game:oak_wood_fence_02",
+  "Name": "Oak wood fence",
+  "Texture": "oak_wood_fence_02",
+  "Type": "Block",
+  "MaxStack": 100
+}

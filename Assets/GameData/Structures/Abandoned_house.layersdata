@@ -1,0 +1,14 @@
+{
+    "Version": 2,
+    "StructureId": "Abandoned_house",
+    "Cells": [
+        {
+            "X": 10,
+            "Y": 6,
+            "FurnitureId": "game:workbench",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        }
+    ]
+}

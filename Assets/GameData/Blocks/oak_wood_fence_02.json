@@ -1,0 +1,31 @@
+{
+  "ID": "game:oak_wood_fence_02",
+
+  "Name": "Oak wood fence",
+
+  "Texture": "oak_wood_fence_02",
+
+  "Hardness": 1,
+
+  "Solid": true,
+  "Drop": "game:oak_wood_fence_02",
+  "DropCount": 1,
+
+  "CraftIngredients": [
+    {
+      "ItemId": "game:oak_wood_planks",
+      "Count": 1
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 2,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+
+
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

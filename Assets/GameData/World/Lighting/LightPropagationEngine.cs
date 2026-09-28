@@ -423,14 +423,8 @@ namespace Game.World.Lighting
             int worldHeight
         )
         {
-
             int skyTop =
-                Mathf.Max(
-                    worldHeight -
-                    1,
-                    bounds.MaxY
-                );
-
+                worldHeight - 1;
 
             for (
                 int x = bounds.MinX;
@@ -438,10 +432,11 @@ namespace Game.World.Lighting
                 x++
             )
             {
-
                 byte directSun =
                     MaxLight;
 
+                int opaqueDepth =
+                    0; // TELDER_TWO_BLOCK_SUN_BOUNDS
 
                 for (
                     int y = skyTop;
@@ -449,107 +444,69 @@ namespace Game.World.Lighting
                     y--
                 )
                 {
-
-                    if (
-                        directSun ==
-                        0
-                    )
-                    {
-
+                    if (directSun == 0)
                         break;
 
-                    }
-
-
                     ushort blockID =
-                        world.GetBlock(
-                            x,
-                            y
-                        );
-
+                        world.GetBlock(x, y);
 
                     int opacity =
-                        GetOpacity(
-                            blockID
-                        );
-
+                        GetOpacity(blockID);
 
                     bool insideRegion =
-                        y <=
-                        bounds.MaxY;
+                        y <= bounds.MaxY;
 
-
-                    if (
-                        blockID ==
-                        0
-                    )
+                    if (blockID == 0)
                     {
+                        // Once sunlight entered solid terrain, a cave/air
+                        // cell below it must be completely dark.
+                        if (opaqueDepth > 0)
+                            break;
 
-                        if (
-                            insideRegion
-                            &&
-                            world.IsLoaded(
-                                x,
-                                y
-                            )
-                        )
+                        if (insideRegion &&
+                            world.IsLoaded(x, y))
                         {
-
                             SetSunlightSource(
                                 x,
                                 y,
                                 directSun,
                                 true
                             );
-
                         }
 
-
                         continue;
-
                     }
 
-
-                    if (
-                        opacity >=
-                        MaxLight
-                    )
+                    if (opacity >= MaxLight)
                     {
+                        opaqueDepth++;
 
-                        if (
-                            insideRegion
-                            &&
-                            world.IsLoaded(
-                                x,
-                                y
-                            )
-                        )
+                        if (opaqueDepth > 2)
+                            break;
+
+                        byte penetration =
+                            opaqueDepth == 1
+                                ? (byte)10
+                                : (byte)5;
+
+                        if (insideRegion &&
+                            world.IsLoaded(x, y))
                         {
-
-                            byte faceLight =
-                                directSun >
-                                0
-                                    ? (byte)(
-                                        directSun -
-                                        1
-                                    )
-                                    : (byte)0;
-
-
                             SetSunlightSource(
                                 x,
                                 y,
-                                faceLight,
+                                penetration,
                                 false
                             );
-
                         }
 
-
-                        break;
-
+                        continue;
                     }
 
+                    // Do not let light reappear below the two solid
+                    // surface cells through semi-transparent material.
+                    if (opaqueDepth > 0)
+                        break;
 
                     directSun =
                         SubtractLight(
@@ -557,31 +514,20 @@ namespace Game.World.Lighting
                             opacity
                         );
 
-
-                    if (
-                        insideRegion
-                        &&
-                        world.IsLoaded(
-                            x,
-                            y
-                        )
-                    )
+                    if (insideRegion &&
+                        world.IsLoaded(x, y))
                     {
-
                         SetSunlightSource(
                             x,
                             y,
                             directSun,
                             true
                         );
-
                     }
-
                 }
-
             }
-
         }
+
 
 
         private void SetSunlightSource(

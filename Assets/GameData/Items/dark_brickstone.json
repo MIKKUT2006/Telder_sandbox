@@ -1,0 +1,7 @@
+{
+  "ID": "game:dark_brickstone",
+  "Name": "Dark brickstone",
+  "Texture": "dark_brickstone",
+  "Type": "Block",
+  "MaxStack": 100
+}

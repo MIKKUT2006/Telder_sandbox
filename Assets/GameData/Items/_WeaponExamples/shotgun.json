@@ -1,0 +1,29 @@
+{
+  "ID": "game:shotgun",
+  "Name": "Shotgun",
+  "Texture": "shotgun",
+  "Type": "Weapon",
+  "MaxStack": 1,
+  "Weapon": {
+    "Kind": "Gun",
+    "Damage": 7,
+    "AttackSpeed": 0.9,
+    "Knockback": 3.0,
+    "ArmAimOffset": -90,
+    "UseBackArm": true,
+    "BackArmAimOffset": -90,
+    "AmmoItem": "game:shotgun_shell",
+    "AmmoPerShot": 1,
+    "ProjectileItem": "game:pellet",
+    "ProjectileCount": 9,
+    "ProjectileSpeed": 24,
+    "ProjectileGravity": 0,
+    "ProjectileLifetime": 2,
+    "SpreadDegrees": 18,
+    "SpreadMode": "Random",
+    "RotateProjectileToVelocity": true,
+    "ProjectileScale": 0.3,
+    "MuzzleOffset": 0.85,
+    "FireNormalizedTime": 0.12
+  }
+}

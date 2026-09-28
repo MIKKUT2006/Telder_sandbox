@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -102,6 +102,7 @@ namespace Game.World.Structures
             }
         }
 
+        
         private static bool TryGetCandidate(
             WorldGenerator generator,
             WorldSettings settings,
@@ -111,8 +112,13 @@ namespace Game.World.Structures
             out int anchorY
         )
         {
-            anchorX = 0;
-            anchorY = 0;
+            anchorX =
+                0;
+
+
+            anchorY =
+                0;
+
 
             int seed =
                 StableHash(
@@ -121,67 +127,138 @@ namespace Game.World.Structures
                     regionX
                 );
 
-            System.Random random =
-                new System.Random(seed);
 
-            if (random.NextDouble() >
-                Mathf.Clamp01(structure.SpawnChance))
+            System.Random random =
+                new System.Random(
+                    seed
+                );
+
+
+            if (
+                random.NextDouble()
+                >
+                Mathf.Clamp01(
+                    structure.SpawnChance
+                )
+            )
+            {
                 return false;
+            }
+
 
             int regionSize =
-                Mathf.Max(8, structure.RegionSize);
+                Mathf.Max(
+                    8,
+                    structure.RegionSize
+                );
+
 
             anchorX =
-                regionX * regionSize +
-                random.Next(0, regionSize);
+                regionX *
+                regionSize +
+                random.Next(
+                    0,
+                    regionSize
+                );
+
 
             int surface =
-                generator.GetSurfaceHeight(anchorX);
+                generator.GetSurfaceHeight(
+                    anchorX
+                );
 
-            switch (structure.SpawnType)
+
+            switch (
+                structure.SpawnType
+            )
             {
                 case StructureSpawnType.Surface:
-                    anchorY = surface + 1;
+                    anchorY =
+                        surface +
+                        1;
+
                     break;
+
 
                 case StructureSpawnType.Any:
-                    anchorY =
-                        PickY(
+                    if (
+                        random.NextDouble()
+                        <
+                        0.5
+                    )
+                    {
+                        anchorY =
+                            surface +
+                            1;
+                    }
+                    else if (
+                        !TryFindCaveFloorAnchor(
+                            generator,
                             settings,
                             structure,
                             random,
+                            anchorX,
                             surface,
-                            false
-                        );
+                            out anchorY
+                        )
+                    )
+                    {
+                        anchorY =
+                            surface +
+                            1;
+                    }
+
                     break;
 
+
                 default:
-                    anchorY =
-                        PickY(
+                    if (
+                        !TryFindCaveFloorAnchor(
+                            generator,
                             settings,
                             structure,
                             random,
+                            anchorX,
                             surface,
-                            true
-                        );
+                            out anchorY
+                        )
+                    )
+                    {
+                        return false;
+                    }
+
                     break;
             }
+
 
             if (structure.UseHeightRange)
             {
-                int min = Mathf.Min(
-                    structure.MinY,
-                    structure.MaxY
-                );
+                int min =
+                    Mathf.Min(
+                        structure.MinY,
+                        structure.MaxY
+                    );
 
-                int max = Mathf.Max(
-                    structure.MinY,
-                    structure.MaxY
-                );
 
-                if (anchorY < min || anchorY > max)
+                int max =
+                    Mathf.Max(
+                        structure.MinY,
+                        structure.MaxY
+                    );
+
+
+                if (
+                    anchorY <
+                    min
+                    ||
+                    anchorY >
+                    max
+                )
+                {
                     return false;
+                }
             }
+
 
             if (
                 !BiomeAllowed(
@@ -196,15 +273,164 @@ namespace Game.World.Structures
                 return false;
             }
 
-            if (structure.RequireFreeSpace &&
+
+            if (
+                structure.RequireFreeSpace
+                &&
                 !HasRequiredFreeSpace(
                     generator,
                     structure,
                     anchorX,
-                    anchorY))
+                    anchorY
+                )
+            )
+            {
                 return false;
+            }
+
 
             return true;
+        }
+
+        
+        private static bool TryFindCaveFloorAnchor(
+            WorldGenerator generator,
+            WorldSettings settings,
+            StructureDefinition structure,
+            System.Random random,
+            int worldX,
+            int surface,
+            out int anchorY
+        )
+        {
+            anchorY =
+                0;
+
+
+            int minAnchor;
+
+
+            int maxAnchor;
+
+
+            if (structure.UseHeightRange)
+            {
+                minAnchor =
+                    Mathf.Min(
+                        structure.MinY,
+                        structure.MaxY
+                    );
+
+
+                maxAnchor =
+                    Mathf.Max(
+                        structure.MinY,
+                        structure.MaxY
+                    );
+            }
+            else
+            {
+                minAnchor =
+                    settings.BottomWorldY +
+                    3 +
+                    structure.OriginY;
+
+
+                // Structure bottom must remain safely underground.
+                maxAnchor =
+                    surface -
+                    3 +
+                    structure.OriginY;
+            }
+
+
+            maxAnchor =
+                Mathf.Min(
+                    maxAnchor,
+                    surface -
+                    2 +
+                    structure.OriginY
+                );
+
+
+            if (
+                maxAnchor <
+                minAnchor
+            )
+            {
+                return false;
+            }
+
+
+            int count =
+                maxAnchor -
+                minAnchor +
+                1;
+
+
+            int start =
+                random.Next(
+                    0,
+                    count
+                );
+
+
+            for (
+                int step = 0;
+                step < count;
+                step++
+            )
+            {
+                int candidateAnchor =
+                    minAnchor +
+                    (
+                        start +
+                        step
+                    )
+                    %
+                    count;
+
+
+                int structureBottom =
+                    candidateAnchor -
+                    structure.OriginY;
+
+
+                ushort floorBlock =
+                    GetBaseForegroundBlock(
+                        generator,
+                        worldX,
+                        structureBottom -
+                        1
+                    );
+
+
+                ushort airBlock =
+                    GetBaseForegroundBlock(
+                        generator,
+                        worldX,
+                        structureBottom
+                    );
+
+
+                if (
+                    floorBlock !=
+                    0
+                    &&
+                    airBlock ==
+                    0
+                )
+                {
+                    anchorY =
+                        candidateAnchor;
+
+
+                    return true;
+                }
+            }
+
+
+            return false;
         }
 
         private static int PickY(
@@ -641,6 +867,7 @@ namespace Game.World.Structures
             return result;
         }
 
+        
         private static bool HasRequiredFreeSpace(
             WorldGenerator generator,
             StructureDefinition structure,
@@ -654,37 +881,83 @@ namespace Game.World.Structures
                     structure.FreeSpacePadding
                 );
 
+
             int minX =
                 anchorX -
                 structure.OriginX -
                 padding;
 
+
             int maxX =
                 minX +
                 structure.Width -
                 1 +
-                padding * 2;
+                padding *
+                2;
+
 
             int minY =
                 anchorY -
                 structure.OriginY -
                 padding;
 
+
             int maxY =
                 minY +
                 structure.Height -
                 1 +
-                padding * 2;
+                padding *
+                2;
 
-            for (int x = minX; x <= maxX; x++)
+
+            int structureBottom =
+                anchorY -
+                structure.OriginY;
+
+
+            bool sittingOnGround =
+                GetBaseForegroundBlock(
+                    generator,
+                    anchorX,
+                    structureBottom -
+                    1
+                )
+                !=
+                0
+                &&
+                GetBaseForegroundBlock(
+                    generator,
+                    anchorX,
+                    structureBottom
+                )
+                ==
+                0;
+
+
+            for (
+                int x = minX;
+                x <= maxX;
+                x++
+            )
             {
-                for (int y = minY; y <= maxY; y++)
+                for (
+                    int y = minY;
+                    y <= maxY;
+                    y++
+                )
                 {
-                    // Ground under a Surface structure is allowed.
-                    if (structure.SpawnType ==
-                            StructureSpawnType.Surface &&
-                        y < anchorY)
+                    // Ground below a surface OR cave-floor structure
+                    // is support, not an obstruction.
+                    if (
+                        sittingOnGround
+                        &&
+                        y <
+                        structureBottom
+                    )
+                    {
                         continue;
+                    }
+
 
                     ushort baseBlock =
                         GetBaseForegroundBlock(
@@ -693,10 +966,14 @@ namespace Game.World.Structures
                             y
                         );
 
+
                     if (baseBlock != 0)
+                    {
                         return false;
+                    }
                 }
             }
+
 
             return true;
         }

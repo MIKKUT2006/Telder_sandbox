@@ -1,14 +1,10 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using Game.World.Collision;
 
 
 public class PlayerAnimationController :
     MonoBehaviour
 {
-    // =====================================================
-    // REFERENCES
-    // =====================================================
-
     [Header("References")]
 
     [SerializeField]
@@ -20,16 +16,12 @@ public class PlayerAnimationController :
 
 
     [Tooltip(
-        "Объект, который содержит весь визуальный скелет игрока. " +
-        "Именно он будет переворачиваться влево/вправо."
+        "РћР±СЉРµРєС‚, РєРѕС‚РѕСЂС‹Р№ СЃРѕРґРµСЂР¶РёС‚ РІРµСЃСЊ РІРёР·СѓР°Р»СЊРЅС‹Р№ СЃРєРµР»РµС‚ РёРіСЂРѕРєР°. " +
+        "РРјРµРЅРЅРѕ РѕРЅ РїРµСЂРµРІРѕСЂР°С‡РёРІР°РµС‚СЃСЏ РІР»РµРІРѕ/РІРїСЂР°РІРѕ."
     )]
     [SerializeField]
     private Transform facingRoot;
 
-
-    // =====================================================
-    // SETTINGS
-    // =====================================================
 
     [Header("Settings")]
 
@@ -42,10 +34,6 @@ public class PlayerAnimationController :
     private float verticalDeadZone =
         0.05f;
 
-
-    // =====================================================
-    // STATE
-    // =====================================================
 
     private PlayerCollision playerCollision;
 
@@ -60,9 +48,15 @@ public class PlayerAnimationController :
     private Vector3 originalFacingScale;
 
 
-    // =====================================================
-    // ANIMATOR HASHES
-    // =====================================================
+    // Weapon-facing override.
+    // Sword can lock the current facing for the whole swing.
+    // Bow can force facing toward the cursor while drawing.
+    private bool externalFacingOverride;
+
+
+    private bool externalFacingRight =
+        true;
+
 
     private static readonly int SpeedHash =
         Animator.StringToHash(
@@ -82,34 +76,16 @@ public class PlayerAnimationController :
         );
 
 
-    // =====================================================
-    // AWAKE
-    // =====================================================
-
     private void Awake()
     {
-        // =================================================
-        // PLAYER CONTROLLER
-        // =================================================
-
-        if (
-            playerController ==
-            null
-        )
+        if (playerController == null)
         {
             playerController =
                 GetComponent<PlayerController>();
         }
 
 
-        // =================================================
-        // ANIMATOR
-        // =================================================
-
-        if (
-            animator ==
-            null
-        )
+        if (animator == null)
         {
             animator =
                 GetComponentInChildren<Animator>(
@@ -119,29 +95,14 @@ public class PlayerAnimationController :
     }
 
 
-    // =====================================================
-    // UPDATE
-    // =====================================================
-
     private void Update()
     {
-        // PlayerController и PlayerCollision
-        // инициализируются в Start().
-        //
-        // Поэтому здесь используем отложенную
-        // инициализацию, чтобы не зависеть от
-        // Script Execution Order.
-
-        if (
-            !initialized
-        )
+        if (!initialized)
         {
             TryInitialize();
 
 
-            if (
-                !initialized
-            )
+            if (!initialized)
             {
                 return;
             }
@@ -154,108 +115,73 @@ public class PlayerAnimationController :
     }
 
 
-    // =====================================================
-    // INITIALIZE
-    // =====================================================
-
     private void TryInitialize()
     {
-        if (
-            playerController ==
-            null
-        )
+        if (playerController == null)
         {
             Debug.LogError(
                 "PLAYER ANIMATION: PlayerController not found."
             );
 
+
             return;
         }
 
 
-        if (
-            animator ==
-            null
-        )
+        if (animator == null)
         {
             Debug.LogError(
                 "PLAYER ANIMATION: Animator not found."
             );
 
+
             return;
         }
 
 
-        if (
-            facingRoot ==
-            null
-        )
+        if (facingRoot == null)
         {
             Debug.LogError(
                 "PLAYER ANIMATION: FacingRoot not assigned."
             );
 
+
             return;
         }
 
 
-        // =================================================
-        // COLLISION
-        // =================================================
-
         playerCollision =
-            playerController
-                .GetPlayerCollision();
+            playerController.GetPlayerCollision();
 
 
-        // PlayerController.Start() мог ещё не выполниться.
-        if (
-            playerCollision ==
-            null
-        )
+        if (playerCollision == null)
         {
             return;
         }
 
 
-        // =================================================
-        // ORIGINAL SCALE
-        // =================================================
-
         originalFacingScale =
             facingRoot.localScale;
 
 
-        // Определяем первоначальное направление
-        // из текущего scale.
-
         facingRight =
-            originalFacingScale.x >= 0f;
+            originalFacingScale.x >=
+            0f;
+
+
+        externalFacingRight =
+            facingRight;
 
 
         initialized =
             true;
-
-
-        Debug.Log(
-            "PLAYER ANIMATION: INITIALIZED."
-        );
     }
 
 
-    // =====================================================
-    // UPDATE ANIMATOR
-    // =====================================================
-
     private void UpdateAnimator()
     {
-        // =================================================
-        // HORIZONTAL
-        // =================================================
-
         float horizontalInput =
-            playerController
-                .GetHorizontalInput();
+            playerController.GetHorizontalInput();
 
 
         float speed =
@@ -264,23 +190,14 @@ public class PlayerAnimationController :
             );
 
 
-        if (
-            speed <
-            horizontalDeadZone
-        )
+        if (speed < horizontalDeadZone)
         {
-            speed =
-                0f;
+            speed = 0f;
         }
 
 
-        // =================================================
-        // VERTICAL
-        // =================================================
-
         float verticalVelocity =
-            playerController
-                .GetVerticalVelocity();
+            playerController.GetVerticalVelocity();
 
 
         if (
@@ -291,22 +208,9 @@ public class PlayerAnimationController :
             verticalDeadZone
         )
         {
-            verticalVelocity =
-                0f;
+            verticalVelocity = 0f;
         }
 
-
-        // =================================================
-        // GROUNDED
-        // =================================================
-
-        bool grounded =
-            playerCollision.IsGrounded;
-
-
-        // =================================================
-        // ANIMATOR PARAMETERS
-        // =================================================
 
         animator.SetFloat(
             SpeedHash,
@@ -322,25 +226,27 @@ public class PlayerAnimationController :
 
         animator.SetBool(
             GroundedHash,
-            grounded
+            playerCollision.IsGrounded
         );
     }
 
 
-    // =====================================================
-    // UPDATE FACING
-    // =====================================================
-
     private void UpdateFacing()
     {
+        if (externalFacingOverride)
+        {
+            SetFacing(
+                externalFacingRight
+            );
+
+
+            return;
+        }
+
+
         float horizontalInput =
-            playerController
-                .GetHorizontalInput();
+            playerController.GetHorizontalInput();
 
-
-        // =================================================
-        // RIGHT
-        // =================================================
 
         if (
             horizontalInput >
@@ -351,13 +257,10 @@ public class PlayerAnimationController :
                 true
             );
 
+
             return;
         }
 
-
-        // =================================================
-        // LEFT
-        // =================================================
 
         if (
             horizontalInput <
@@ -371,17 +274,12 @@ public class PlayerAnimationController :
     }
 
 
-    // =====================================================
-    // SET FACING
-    // =====================================================
-
     private void SetFacing(
         bool right
     )
     {
         if (
-            facingRight ==
-            right
+            facingRight == right
         )
         {
             return;
@@ -414,8 +312,41 @@ public class PlayerAnimationController :
 
 
     // =====================================================
-    // PUBLIC
+    // EXTERNAL FACING CONTROL
     // =====================================================
+
+    public void SetExternalFacingOverride(
+        bool enabled,
+        bool right
+    )
+    {
+        externalFacingOverride =
+            enabled;
+
+
+        externalFacingRight =
+            right;
+
+
+        if (
+            enabled &&
+            initialized
+        )
+        {
+            // Apply immediately in the same frame.
+            SetFacing(
+                right
+            );
+        }
+    }
+
+
+    public void ClearExternalFacingOverride()
+    {
+        externalFacingOverride =
+            false;
+    }
+
 
     public bool IsFacingRight()
     {

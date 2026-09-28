@@ -1,0 +1,7 @@
+{
+  "ID": "game:cobblestone",
+  "Name": "Cobblestone",
+  "Texture": "cobblestone",
+  "Type": "Block",
+  "MaxStack": 100
+}

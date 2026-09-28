@@ -1,0 +1,59 @@
+using Game.World.Furniture;
+
+namespace Game.World.PolishFixes
+{
+    public static class GeneratedFurnitureChunkBridge
+    {
+        public static void Apply(
+            Game.World.ChunkData data,
+            int chunkX,
+            int chunkY
+        )
+        {
+            if (data == null)
+                return;
+
+            FurnitureLayerManager manager =
+                FurnitureLayerManager.EnsureInstance();
+
+            if (manager == null)
+                return;
+
+            int startX = chunkX * Game.World.Chunk.SizeX;
+            int startY = chunkY * Game.World.Chunk.SizeY;
+
+            for (int x = 0; x < Game.World.Chunk.SizeX; x++)
+            {
+                for (int y = 0; y < Game.World.Chunk.SizeY; y++)
+                {
+                    string blockId =
+                        data.GetFurniture(x, y);
+
+                    if (string.IsNullOrWhiteSpace(blockId))
+                        continue;
+
+                    manager.SetGeneratedFurniture(
+                        startX + x,
+                        startY + y,
+                        blockId
+                    );
+                }
+            }
+        }
+
+        public static void Unload(
+            int chunkX,
+            int chunkY
+        )
+        {
+            if (FurnitureLayerManager.Instance == null)
+                return;
+
+            FurnitureLayerManager.Instance
+                .UnloadGeneratedFurnitureChunk(
+                    chunkX,
+                    chunkY
+                );
+        }
+    }
+}

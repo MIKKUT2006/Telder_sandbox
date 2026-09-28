@@ -1,0 +1,15 @@
+{
+  "ID": "game:desert",
+  "Enabled": true,
+  "Biomes": [
+    "game:desert"
+  ],
+  "Plants": [
+    {
+      "BlockId": "game:sand_grass",
+      "Chance": 0.5,
+      "NoiseScale": 0.08,
+      "NoiseThreshold": 0
+    }
+  ]
+}

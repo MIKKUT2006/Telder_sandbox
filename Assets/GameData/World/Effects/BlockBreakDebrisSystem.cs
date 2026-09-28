@@ -140,10 +140,10 @@ namespace Game.World.Effects
             0.035f;
 
         private const int ForegroundSortingOrder =
-            8;
+            1000;
 
         private const int BackgroundSortingOrder =
-            3;
+            1000;
 
 
         // =====================================================
@@ -1436,8 +1436,7 @@ namespace Game.World.Effects
                     15f
                 );
 
-            const float ambient =
-                0.07f;
+            const float ambient = 0f;
 
             red =
                 Mathf.Max(

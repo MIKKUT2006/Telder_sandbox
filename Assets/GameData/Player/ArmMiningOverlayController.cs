@@ -1,408 +1,409 @@
-
-using UnityEngine;
-
+﻿using UnityEngine;
 using Game.Mining;
 
 
-[DefaultExecutionOrder(31000)]
 public class ArmMiningOverlayController :
     MonoBehaviour
 {
-
-    // =====================================================
-    // REFERENCES
-    // =====================================================
-
     [Header("Rig")]
-
     [SerializeField]
     private Transform frontArmPivot;
-
 
     [SerializeField]
     private Transform backArmPivot;
 
-
-    [Tooltip(
-        "Optional. If assigned, the held item is expected to be a child of this point."
-    )]
     [SerializeField]
     private Transform handPoint;
 
 
+    // These are intentionally in ARM.PARENT local space.
+    // The old Held Item Pose Editor uses these exact serialized names.
+    [Header("Shoulder Points")]
     [SerializeField]
-    private Camera playerCamera;
+    private Vector2 frontRotationPointLocal =
+        Vector2.zero;
 
+    [SerializeField]
+    private Vector2 backRotationPointLocal =
+        Vector2.zero;
 
-    // =====================================================
-    // MINING MOTION
-    // =====================================================
+    [SerializeField]
+    private bool rotationPointsInitialized;
+
 
     [Header("Mining Motion")]
-
     [SerializeField]
     private float swingSpeed =
         5.5f;
-
 
     [SerializeField]
     private float frontArmBackAngle =
         52f;
 
-
     [SerializeField]
     private float frontArmForwardAngle =
         -58f;
 
-
     [SerializeField]
     private float backArmBackAngle =
         -12f;
-
 
     [SerializeField]
     private float backArmForwardAngle =
         18f;
 
 
+    [Header("Smoothing")]
     [SerializeField]
     private float blendInSpeed =
-        14f;
-
+        12f;
 
     [SerializeField]
     private float blendOutSpeed =
-        18f;
-
-
-    // =====================================================
-    // OPTIONAL AIM
-    // =====================================================
-
-    [Header("Aim")]
+        9f;
 
     [SerializeField]
-    private bool mirrorSwingWhenAimingLeft =
-        true;
+    private float miningSignalGrace =
+        0.16f;
 
-
+    [Range(0f, 1f)]
     [SerializeField]
-    private bool useMouseDirection =
-        true;
+    private float motionSmoothing =
+        0.75f;
 
-
-    // =====================================================
-    // RUNTIME
-    // =====================================================
 
     private float miningWeight;
 
+    private float swingPhase;
 
-    private float frontAppliedOffset;
+    private float graceTimer;
 
-    private float backAppliedOffset;
+    private bool wasActive;
 
-
-    private bool initialized;
-
-
-    // =====================================================
-    // UNITY
-    // =====================================================
 
     private void Awake()
     {
+        ResolveReferences();
 
-        if (
-            playerCamera ==
-            null
-        )
+        if (!rotationPointsInitialized)
         {
+            if (frontArmPivot != null)
+            {
+                frontRotationPointLocal =
+                    new Vector2(
+                        frontArmPivot.localPosition.x,
+                        frontArmPivot.localPosition.y
+                    );
+            }
 
-            playerCamera =
-                Camera.main;
-
+            if (backArmPivot != null)
+            {
+                backRotationPointLocal =
+                    new Vector2(
+                        backArmPivot.localPosition.x,
+                        backArmPivot.localPosition.y
+                    );
+            }
         }
-
-
-        AutoFindRig();
-
-
-        initialized =
-            frontArmPivot !=
-            null;
-
-
-        if (
-            !initialized
-        )
-        {
-
-            Debug.LogError(
-                "ARM MINING: FrontArmPivot not found."
-            );
-
-        }
-
     }
 
 
-    private void LateUpdate()
+    private void OnEnable()
     {
-
-        if (
-            !initialized
-        )
-        {
-
-            AutoFindRig();
+        miningWeight = 0f;
+        swingPhase = 0f;
+        graceTimer = 0f;
+        wasActive = false;
+    }
 
 
-            initialized =
-                frontArmPivot !=
-                null;
+    private void Update()
+    {
+        ResolveReferences();
 
+        float dt =
+            Mathf.Min(
+                Time.deltaTime,
+                0.05f
+            );
 
-            if (
-                !initialized
-            )
-            {
-
-                return;
-
-            }
-
-        }
-
-
-        // Animator has already evaluated this frame.
-        // Remove only the offset that THIS script applied previously.
-        // This protects us if a locomotion state does not key the arm
-        // on a particular frame/state.
-        RemovePreviousOffsets();
-
-
-        bool mining =
+        bool signal =
             MiningVisualSignal.IsMining;
 
+        if (signal)
+        {
+            graceTimer =
+                Mathf.Max(
+                    0f,
+                    miningSignalGrace
+                );
+        }
+        else
+        {
+            graceTimer =
+                Mathf.Max(
+                    0f,
+                    graceTimer - dt
+                );
+        }
 
-        float targetWeight =
-            mining
+        bool active =
+            signal ||
+            graceTimer > 0f;
+
+        if (
+            active &&
+            !wasActive &&
+            miningWeight < 0.05f
+        )
+        {
+            swingPhase = 0f;
+        }
+
+        float target =
+            active
                 ? 1f
                 : 0f;
 
-
-        float blendSpeed =
-            mining
+        float speed =
+            active
                 ? blendInSpeed
                 : blendOutSpeed;
 
-
         miningWeight =
-            Mathf.MoveTowards(
+            ExpDamp(
                 miningWeight,
-                targetWeight,
-                blendSpeed *
-                Time.deltaTime
+                target,
+                speed,
+                dt
             );
 
-
-        if (
-            miningWeight <=
-            0.0001f
-        )
+        if (active)
         {
+            float cyclesPerSecond =
+                Mathf.Max(
+                    0.01f,
+                    swingSpeed
+                )
+                /
+                (
+                    Mathf.PI *
+                    2f
+                );
 
-            frontAppliedOffset =
-                0f;
-
-
-            backAppliedOffset =
-                0f;
-
-
-            return;
-
+            swingPhase =
+                Mathf.Repeat(
+                    swingPhase +
+                    cyclesPerSecond *
+                    dt,
+                    1f
+                );
         }
 
+        if (
+            !active &&
+            miningWeight < 0.0005f
+        )
+        {
+            miningWeight = 0f;
+        }
 
-        float phase =
-            Mathf.PingPong(
-                Time.time *
-                swingSpeed,
-                1f
+        wasActive = active;
+    }
+
+
+    public bool TryGetMiningPose(
+        out float frontAngle,
+        out float backAngle
+    )
+    {
+        if (miningWeight <= 0.0005f)
+        {
+            frontAngle = 0f;
+            backAngle = 0f;
+            return false;
+        }
+
+        float motion =
+            EvaluateSwing(
+                swingPhase
             );
 
-
-        // SmoothStep without allocating an AnimationCurve.
-        phase =
-            phase *
-            phase *
-            (
-                3f -
-                2f *
-                phase
-            );
-
-
-        float frontOffset =
+        frontAngle =
             Mathf.Lerp(
                 frontArmBackAngle,
                 frontArmForwardAngle,
-                phase
-            );
+                motion
+            )
+            *
+            miningWeight;
 
-
-        float backOffset =
+        backAngle =
             Mathf.Lerp(
                 backArmBackAngle,
                 backArmForwardAngle,
-                phase
-            );
-
-
-        if (
-            mirrorSwingWhenAimingLeft
-            &&
-            IsAimingLeft()
-        )
-        {
-
-            frontOffset =
-                -frontOffset;
-
-
-            backOffset =
-                -backOffset;
-
-        }
-
-
-        frontAppliedOffset =
-            frontOffset *
+                motion
+            )
+            *
             miningWeight;
 
-
-        backAppliedOffset =
-            backOffset *
-            miningWeight;
-
-
-        ApplyLocalZOffset(
-            frontArmPivot,
-            frontAppliedOffset
-        );
-
-
-        if (
-            backArmPivot !=
-            null
-        )
-        {
-
-            ApplyLocalZOffset(
-                backArmPivot,
-                backAppliedOffset
-            );
-
-        }
-
+        return true;
     }
 
 
-    private void OnDisable()
+    // Kept only because the old editor may still call it.
+    // The new runtime does NOT use this helper.
+    public static void RotateCurrentPoseAroundLocalPoint(
+        Transform arm,
+        Vector2 pointInParentLocal,
+        float angle
+    )
     {
+        if (
+            arm == null ||
+            arm.parent == null
+        )
+        {
+            return;
+        }
 
-        RemovePreviousOffsets();
+        Vector3 pivot =
+            new Vector3(
+                pointInParentLocal.x,
+                pointInParentLocal.y,
+                arm.localPosition.z
+            );
 
+        Quaternion delta =
+            Quaternion.Euler(
+                0f,
+                0f,
+                angle
+            );
 
-        miningWeight =
-            0f;
+        arm.localPosition =
+            pivot +
+            delta *
+            (
+                arm.localPosition -
+                pivot
+            );
 
-
-        frontAppliedOffset =
-            0f;
-
-
-        backAppliedOffset =
-            0f;
-
+        arm.localRotation =
+            delta *
+            arm.localRotation;
     }
 
 
-    // =====================================================
-    // RIG SEARCH
-    // =====================================================
-
-    private void AutoFindRig()
+    private float EvaluateSwing(
+        float phase
+    )
     {
+        float value =
+            0.5f -
+            0.5f *
+            Mathf.Cos(
+                phase *
+                Mathf.PI *
+                2f
+            );
 
-        if (
-            frontArmPivot ==
-            null
-        )
+        float smoother =
+            value *
+            value *
+            value *
+            (
+                value *
+                (
+                    value *
+                    6f -
+                    15f
+                )
+                +
+                10f
+            );
+
+        return
+            Mathf.Lerp(
+                value,
+                smoother,
+                Mathf.Clamp01(
+                    motionSmoothing
+                )
+            );
+    }
+
+
+    private static float ExpDamp(
+        float current,
+        float target,
+        float speed,
+        float dt
+    )
+    {
+        speed =
+            Mathf.Max(
+                0.01f,
+                speed
+            );
+
+        float t =
+            1f -
+            Mathf.Exp(
+                -speed *
+                dt
+            );
+
+        return
+            Mathf.Lerp(
+                current,
+                target,
+                t
+            );
+    }
+
+
+    private void ResolveReferences()
+    {
+        if (frontArmPivot == null)
         {
-
             frontArmPivot =
                 FindDeepChild(
                     transform,
                     "FrontArmPivot"
                 );
-
         }
 
-
-        if (
-            backArmPivot ==
-            null
-        )
+        if (backArmPivot == null)
         {
-
             backArmPivot =
                 FindDeepChild(
                     transform,
                     "BackArmPivot"
                 );
-
         }
 
-
         if (
-            handPoint ==
-            null
-            &&
-            frontArmPivot !=
-            null
+            handPoint == null &&
+            frontArmPivot != null
         )
         {
-
             handPoint =
                 FindDeepChild(
                     frontArmPivot,
                     "HandPoint"
                 );
-
         }
-
     }
 
 
     private static Transform FindDeepChild(
         Transform root,
-        string targetName
+        string childName
     )
     {
-
-        if (
-            root ==
-            null
-        )
-        {
-
+        if (root == null)
             return null;
-
-        }
-
 
         Transform[] all =
             root.GetComponentsInChildren<
@@ -411,205 +412,51 @@ public class ArmMiningOverlayController :
                 true
             );
 
-
         for (
             int i = 0;
             i < all.Length;
             i++
         )
         {
-
-            Transform candidate =
-                all[i];
-
-
             if (
-                candidate !=
-                null
-                &&
-                candidate.name ==
-                targetName
+                all[i] != null &&
+                all[i].name == childName
             )
             {
-
-                return candidate;
-
+                return all[i];
             }
-
         }
-
 
         return null;
-
     }
 
-
-    // =====================================================
-    // OVERLAY
-    // =====================================================
-
-    private void RemovePreviousOffsets()
-    {
-
-        if (
-            frontArmPivot !=
-            null
-            &&
-            Mathf.Abs(
-                frontAppliedOffset
-            )
-            >
-            0.0001f
-        )
-        {
-
-            ApplyLocalZOffset(
-                frontArmPivot,
-                -frontAppliedOffset
-            );
-
-        }
-
-
-        if (
-            backArmPivot !=
-            null
-            &&
-            Mathf.Abs(
-                backAppliedOffset
-            )
-            >
-            0.0001f
-        )
-        {
-
-            ApplyLocalZOffset(
-                backArmPivot,
-                -backAppliedOffset
-            );
-
-        }
-
-
-        frontAppliedOffset =
-            0f;
-
-
-        backAppliedOffset =
-            0f;
-
-    }
-
-
-    private static void ApplyLocalZOffset(
-        Transform target,
-        float degrees
-    )
-    {
-
-        if (
-            target ==
-            null
-        )
-        {
-
-            return;
-
-        }
-
-
-        target.localRotation =
-            target.localRotation *
-            Quaternion.Euler(
-                0f,
-                0f,
-                degrees
-            );
-
-    }
-
-
-    // =====================================================
-    // DIRECTION
-    // =====================================================
-
-    private bool IsAimingLeft()
-    {
-
-        if (
-            !useMouseDirection
-        )
-        {
-
-            return false;
-
-        }
-
-
-        if (
-            playerCamera ==
-            null
-        )
-        {
-
-            playerCamera =
-                Camera.main;
-
-        }
-
-
-        if (
-            playerCamera ==
-            null
-        )
-        {
-
-            return false;
-
-        }
-
-
-        Vector3 mouse =
-            playerCamera.ScreenToWorldPoint(
-                Input.mousePosition
-            );
-
-
-        return
-            mouse.x <
-            transform.position.x;
-
-    }
-
-
-    // =====================================================
-    // PUBLIC ACCESS
-    // =====================================================
 
     public Transform GetFrontArmPivot()
     {
-
-        return
-            frontArmPivot;
-
+        return frontArmPivot;
     }
 
 
     public Transform GetBackArmPivot()
     {
-
-        return
-            backArmPivot;
-
+        return backArmPivot;
     }
 
 
     public Transform GetHandPoint()
     {
-
-        return
-            handPoint;
-
+        return handPoint;
     }
 
+
+    public Vector2 GetFrontRotationPointLocal()
+    {
+        return frontRotationPointLocal;
+    }
+
+
+    public Vector2 GetBackRotationPointLocal()
+    {
+        return backRotationPointLocal;
+    }
 }

@@ -129,6 +129,8 @@ namespace Game.UI.Cursor
                 defaultCursor =
                     generatedDefault;
 
+                
+
             }
 
 
@@ -318,7 +320,7 @@ namespace Game.UI.Cursor
                     size
                 );
 
-
+            texture.filterMode = FilterMode.Point;
             Color[] pixels =
                 ClearPixels(
                     size

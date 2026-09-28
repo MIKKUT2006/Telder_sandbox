@@ -112,6 +112,12 @@ namespace Game.World.Biomes.Surface
                 );
 
 
+            Array.Sort(
+                files,
+                StringComparer.OrdinalIgnoreCase
+            );
+
+
             for (
                 int i = 0;
                 i < files.Length;

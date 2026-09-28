@@ -1,0 +1,39 @@
+{
+  "ID": "game:short_grass",
+  "Enabled": true,
+  "Biomes": [
+    "game:ancient_caves"
+  ],
+  "Plants": [
+    {
+      "BlockId": "game:short_grass",
+      "Chance": 0.5,
+      "NoiseScale": 0.08,
+      "NoiseThreshold": 0
+    },
+    {
+      "BlockId": "game:lavender",
+      "Chance": 0.2,
+      "NoiseScale": 0.08,
+      "NoiseThreshold": 0
+    },
+    {
+      "BlockId": "game:lavender_02",
+      "Chance": 0.2,
+      "NoiseScale": 0.08,
+      "NoiseThreshold": 0
+    },
+    {
+      "BlockId": "game:lying_stone",
+      "Chance": 0.2,
+      "NoiseScale": 0.15,
+      "NoiseThreshold": 0
+    },
+    {
+      "BlockId": "game:lying_stone_02",
+      "Chance": 0.3,
+      "NoiseScale": 0.17,
+      "NoiseThreshold": 0
+    }
+  ]
+}

@@ -10,7 +10,7 @@
   "Solid": true,
   "Drop": "game:oak_trunk",
   "DropCount": 1,
-
+  "RequiredTool": "axe",
   "LightOpacity": 15,
   "LightEmissionR": 0,
   "LightEmissionG": 0,

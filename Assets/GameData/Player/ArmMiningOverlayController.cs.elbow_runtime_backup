@@ -1,0 +1,280 @@
+﻿using UnityEngine;
+
+using Game.Mining;
+
+
+[DefaultExecutionOrder(50000)]
+public class ArmMiningOverlayController :
+    MonoBehaviour
+{
+    [Header("Rig")]
+    [SerializeField] private Transform frontArmPivot;
+    [SerializeField] private Transform backArmPivot;
+
+    [Tooltip("Optional. Usually HandPoint is a child of FrontArmPivot.")]
+    [SerializeField] private Transform handPoint;
+
+    [SerializeField] private Camera playerCamera;
+
+    [Header("Mining Motion")]
+    [Tooltip("Angular speed of the mining cycle. Existing values around 5-7 work well.")]
+    [SerializeField] private float swingSpeed = 5.5f;
+    [SerializeField] private float frontArmBackAngle = 52f;
+    [SerializeField] private float frontArmForwardAngle = -58f;
+    [SerializeField] private float backArmBackAngle = -12f;
+    [SerializeField] private float backArmForwardAngle = 18f;
+
+    [Header("Smoothing")]
+    [Tooltip("How quickly the mining pose fades in. Higher = faster.")]
+    [SerializeField] private float blendInSpeed = 12f;
+
+    [Tooltip("How quickly the mining pose returns to the normal Animator pose.")]
+    [SerializeField] private float blendOutSpeed = 9f;
+
+    [Tooltip("Keeps the swing alive through very short gaps between mining pulses.")]
+    [SerializeField] private float miningSignalGrace = 0.16f;
+
+    [Tooltip("Makes the ends of the swing softer and easier to read.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float motionSmoothing = 0.75f;
+
+    private float miningWeight;
+    private float swingPhase;
+    private float graceTimer;
+    private bool wasActive;
+
+    private ArmLayerState frontState;
+    private ArmLayerState backState;
+
+    private struct ArmLayerState
+    {
+        public bool HasWritten;
+        public float LastAppliedOffset;
+        public float LastWrittenZ;
+    }
+
+    private void Awake()
+    {
+        ResolveReferences();
+    }
+
+    private void OnEnable()
+    {
+        miningWeight = 0f;
+        swingPhase = 0f;
+        graceTimer = 0f;
+        wasActive = false;
+        frontState = default;
+        backState = default;
+    }
+
+    private void LateUpdate()
+    {
+        ResolveReferences();
+
+        if (frontArmPivot == null && backArmPivot == null)
+            return;
+
+        float deltaTime = Mathf.Min(Time.deltaTime, 0.05f);
+        bool signal = MiningVisualSignal.IsMining;
+
+        if (signal)
+        {
+            graceTimer = Mathf.Max(0f, miningSignalGrace);
+        }
+        else
+        {
+            graceTimer = Mathf.Max(0f, graceTimer - deltaTime);
+        }
+
+        bool active = signal || graceTimer > 0f;
+
+        // Only a genuinely new mining action restarts at the readable
+        // cocked-back pose. Short gaps are bridged by graceTimer.
+        if (active && !wasActive && miningWeight < 0.05f)
+            swingPhase = 0f;
+
+        float targetWeight = active ? 1f : 0f;
+        float blendSpeed = active ? blendInSpeed : blendOutSpeed;
+
+        miningWeight = ExpDamp(
+            miningWeight,
+            targetWeight,
+            blendSpeed,
+            deltaTime
+        );
+
+        if (active)
+        {
+            // Preserve the old swingSpeed scale: 5.5 is angular speed,
+            // not 5.5 complete swings every second.
+            float cyclesPerSecond =
+                Mathf.Max(0.01f, swingSpeed) /
+                (Mathf.PI * 2f);
+
+            swingPhase = Mathf.Repeat(
+                swingPhase + cyclesPerSecond * deltaTime,
+                1f
+            );
+        }
+
+        float motion = EvaluateSwing(swingPhase);
+
+        float frontOffset = Mathf.Lerp(
+            frontArmBackAngle,
+            frontArmForwardAngle,
+            motion
+        ) * miningWeight;
+
+        float backOffset = Mathf.Lerp(
+            backArmBackAngle,
+            backArmForwardAngle,
+            motion
+        ) * miningWeight;
+
+        ApplyAdditiveRotation(
+            frontArmPivot,
+            frontOffset,
+            ref frontState
+        );
+
+        ApplyAdditiveRotation(
+            backArmPivot,
+            backOffset,
+            ref backState
+        );
+
+        wasActive = active;
+
+        if (!active && miningWeight < 0.0005f)
+        {
+            miningWeight = 0f;
+            frontState = default;
+            backState = default;
+        }
+    }
+
+    private float EvaluateSwing(float phase)
+    {
+        // 0 = cocked back, 0.5 = strike, 1 = cocked back.
+        // Cosine has zero velocity at both extremes, so the arm no longer
+        // snaps when the direction reverses.
+        float value =
+            0.5f -
+            0.5f * Mathf.Cos(phase * Mathf.PI * 2f);
+
+        float smoother =
+            value * value * value *
+            (value * (value * 6f - 15f) + 10f);
+
+        return Mathf.Lerp(
+            value,
+            smoother,
+            Mathf.Clamp01(motionSmoothing)
+        );
+    }
+
+    private static float ExpDamp(
+        float current,
+        float target,
+        float speed,
+        float deltaTime
+    )
+    {
+        speed = Mathf.Max(0.01f, speed);
+        float t = 1f - Mathf.Exp(-speed * deltaTime);
+        return Mathf.Lerp(current, target, t);
+    }
+
+    private static void ApplyAdditiveRotation(
+        Transform pivot,
+        float offset,
+        ref ArmLayerState state
+    )
+    {
+        if (pivot == null)
+            return;
+
+        Vector3 euler = pivot.localEulerAngles;
+        float currentZ = NormalizeAngle(euler.z);
+        float baseZ = currentZ;
+
+        if (state.HasWritten)
+        {
+            float differenceFromLastWrite = Mathf.Abs(
+                Mathf.DeltaAngle(state.LastWrittenZ, currentZ)
+            );
+
+            // Animator did not overwrite our previous result: remove our
+            // previous additive offset first, so offsets never accumulate.
+            if (differenceFromLastWrite < 0.05f)
+            {
+                baseZ = NormalizeAngle(
+                    currentZ - state.LastAppliedOffset
+                );
+            }
+        }
+
+        float finalZ = NormalizeAngle(baseZ + offset);
+        euler.z = finalZ;
+        pivot.localEulerAngles = euler;
+
+        state.HasWritten = true;
+        state.LastAppliedOffset = offset;
+        state.LastWrittenZ = finalZ;
+    }
+
+    private static float NormalizeAngle(float angle)
+    {
+        return Mathf.DeltaAngle(0f, angle);
+    }
+
+    private void ResolveReferences()
+    {
+        if (frontArmPivot == null)
+            frontArmPivot = FindDeepChild(transform, "FrontArmPivot");
+
+        if (backArmPivot == null)
+            backArmPivot = FindDeepChild(transform, "BackArmPivot");
+
+        if (handPoint == null && frontArmPivot != null)
+            handPoint = FindDeepChild(frontArmPivot, "HandPoint");
+
+        if (playerCamera == null)
+            playerCamera = Camera.main;
+    }
+
+    private static Transform FindDeepChild(
+        Transform root,
+        string childName
+    )
+    {
+        if (root == null)
+            return null;
+
+        Transform[] all = root.GetComponentsInChildren<Transform>(true);
+
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] != null && all[i].name == childName)
+                return all[i];
+        }
+
+        return null;
+    }
+
+    public Transform GetFrontArmPivot()
+    {
+        return frontArmPivot;
+    }
+
+    public Transform GetBackArmPivot()
+    {
+        return backArmPivot;
+    }
+
+    public Transform GetHandPoint()
+    {
+        return handPoint;
+    }
+}

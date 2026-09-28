@@ -1,0 +1,33 @@
+{
+  "ID": "game:bow",
+  "Name": "Bow",
+  "Texture": "bow",
+  "Type": "Weapon",
+  "MaxStack": 1,
+  "Weapon": {
+    "Kind": "Bow",
+    "Damage": 12,
+    "AttackSpeed": 1.4,
+    "Knockback": 2.0,
+    "ArmAimOffset": -90,
+    "AmmoItem": "game:arrow",
+    "AmmoPerShot": 1,
+    "ProjectileItem": "game:arrow",
+    "ProjectileCount": 1,
+    "ProjectileSpeed": 30,
+    "ProjectileGravity": 10,
+    "ProjectileLifetime": 8,
+    "SpreadDegrees": 0,
+    "RotateProjectileToVelocity": true,
+    "ProjectileScale": 1.0,
+    "MuzzleOffset": 0.5,
+    "ProjectileDamageMultiplier": 1.0,
+    "FireNormalizedTime": 0.28,
+    "ProjectileWorldSize": 0.72,
+    "BowChargeTime": 0.5,
+    "BowMinPower": 0.25,
+    "BowBackArmRelaxedAngle": -15,
+    "BowBackArmFullDrawAngle": -75,
+    "BowHeldItemFullDrawOffset": 0.0
+  }
+}

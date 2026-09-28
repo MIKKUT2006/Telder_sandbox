@@ -1,0 +1,75 @@
+        private float BufferedFloatField(
+            string key,
+            string label,
+            float value,
+            float min,
+            float max
+        )
+        {
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label(
+                label,
+                GUILayout.Width(120f)
+            );
+
+            string bufferKey = "float:" + key;
+
+            if (!numericFieldBuffers.TryGetValue(bufferKey, out string text))
+            {
+                text = value.ToString(
+                    "0.###",
+                    CultureInfo.InvariantCulture
+                );
+                numericFieldBuffers[bufferKey] = text;
+            }
+
+            string controlName = "StructureNumeric_" + bufferKey;
+            Event evt = Event.current;
+
+            bool enterRequested =
+                evt != null &&
+                evt.type == EventType.KeyDown &&
+                (evt.keyCode == KeyCode.Return ||
+                 evt.keyCode == KeyCode.KeypadEnter) &&
+                string.Equals(
+                    GUI.GetNameOfFocusedControl(),
+                    controlName,
+                    StringComparison.Ordinal
+                );
+
+            GUI.SetNextControlName(controlName);
+
+            string next = GUILayout.TextField(
+                text,
+                GetEditableTextFieldStyle()
+            );
+
+            numericFieldBuffers[bufferKey] = next;
+
+            if (TryParseFlexibleFloat(next, out float liveParsed))
+            {
+                if (liveParsed >= min && liveParsed <= max)
+                    value = liveParsed;
+            }
+
+            if (enterRequested)
+            {
+                if (TryParseFlexibleFloat(next, out float parsed))
+                    value = Mathf.Clamp(parsed, min, max);
+
+                numericFieldBuffers[bufferKey] =
+                    value.ToString(
+                        "0.###",
+                        CultureInfo.InvariantCulture
+                    );
+
+                GUI.FocusControl(null);
+
+                if (evt.type != EventType.Used)
+                    evt.Use();
+            }
+
+            GUILayout.EndHorizontal();
+            return value;
+        }

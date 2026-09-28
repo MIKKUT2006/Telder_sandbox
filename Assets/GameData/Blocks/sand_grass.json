@@ -1,0 +1,31 @@
+{
+  "ID": "game:sand_grass",
+  "Name": "Sand Grass",
+  "Texture": "sand_grass",
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+  "LightLevel": 0,
+  "Material": 0,
+  "Drop": "game:sand_grass",
+  "DropCount": 1,
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+  "Tags": [
+    "grass",
+    "dirt"
+  ],
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

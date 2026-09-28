@@ -1,0 +1,27 @@
+{
+  "ID": "game:stone_sword",
+  "Name": "Stone Sword",
+  "Texture": "stone_sword",
+  "Type": "Weapon",
+  "MaxStack": 1,
+  "Weapon": {
+    "Kind": "Sword",
+    "Damage": 24,
+    "AttackSpeed": 2.0,
+    "Knockback": 4.0,
+    "Range": 1.0,
+    "ArmAimOffset": -90,
+    "UseBackArm": false,
+    "TrackCursorDuringAttack": true,
+    "SwordPattern": [
+      "Swing",
+      "Thrust"
+    ],
+    "SwordSwingStartAngle": 105,
+    "SwordSwingEndAngle": -25,
+    "SwingReach": 1.35,
+    "SwingHitRadius": 0.48,
+    "ThrustDistance": 0.9,
+    "ThrustHitRadius": 0.34
+  }
+}

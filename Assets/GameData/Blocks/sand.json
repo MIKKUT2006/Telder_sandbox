@@ -1,0 +1,25 @@
+{
+  "ID": "game:sand",
+
+  "Name": "Sand",
+
+  "Texture": "sand",
+
+  "Hardness": 1,
+
+  "Solid": true,
+  "Drop": "game:sand",
+  "DropCount": 1,
+  "Tags": [
+    "falling"
+  ],
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

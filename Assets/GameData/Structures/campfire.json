@@ -1,0 +1,73 @@
+{
+    "ID": "campfire",
+    "DisplayName": "Campfire",
+    "Width": 12,
+    "Height": 8,
+    "OriginX": 0,
+    "OriginY": 0,
+    "Type": 0,
+    "SpawnType": 2,
+    "SpawnChance": 0.30000001192092898,
+    "RegionSize": 64,
+    "UseHeightRange": false,
+    "MinY": 10,
+    "MaxY": 90,
+    "RequireFreeSpace": true,
+    "FreeSpacePadding": 1,
+    "BiomeSource": 2,
+    "Biomes": [
+        "game:plains",
+        "game:snow_plains",
+        "game:distorted_fields",
+        "game:mossy_caves",
+        "game:ancient_caves",
+        "game:porous_crystalline_caves"
+    ],
+    "Cells": [
+        {
+            "X": 5,
+            "Y": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 1,
+            "Y": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 0,
+            "ForegroundId": "game:chest",
+            "BackgroundId": "",
+            "Loot": [
+                {
+                    "ItemId": "game:arrow",
+                    "Chance": 0.5,
+                    "MinCount": 1,
+                    "MaxCount": 8
+                },
+                {
+                    "ItemId": "game:raw_iron_ore",
+                    "Chance": 0.5,
+                    "MinCount": 1,
+                    "MaxCount": 4
+                }
+            ],
+            "Transform": 0
+        }
+    ]
+}

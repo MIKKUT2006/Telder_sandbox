@@ -1,4 +1,4 @@
-
+using System;
 using System.Collections.Generic;
 
 using Game.Blocks;
@@ -9,76 +9,40 @@ using Game.Items;
 
 namespace Game.Crafting
 {
-
     public static class CraftingService
     {
+        // =====================================================
+        // VISIBLE RECIPES
+        // =====================================================
 
-        public static List<BlockDefinition>
+        public static List<CraftRecipe>
             GetVisibleRecipes(
                 bool hasWorkbench
             )
         {
-
-            List<BlockDefinition> result =
-                new List<BlockDefinition>();
-
-
-            foreach (
-                BlockDefinition block
-                in BlockRegistry.GetAll()
-            )
-            {
-
-                if (
-                    block ==
-                    null
-                    ||
-                    string.IsNullOrWhiteSpace(
-                        block.ID
-                    )
-                    ||
-                    block.CraftIngredients ==
-                    null
-                    ||
-                    block.CraftIngredients.Count ==
-                    0
-                )
-                {
-
-                    continue;
-
-                }
+            Dictionary<string, CraftRecipe>
+                uniqueRecipes =
+                    new Dictionary<string, CraftRecipe>(
+                        StringComparer.OrdinalIgnoreCase
+                    );
 
 
-                if (
-                    !hasWorkbench
-                    &&
-                    !block.CraftWithoutWorkbench
-                )
-                {
-
-                    continue;
-
-                }
+            AddBlockRecipes(
+                uniqueRecipes,
+                hasWorkbench
+            );
 
 
-                if (
-                    !ItemRegistry.Contains(
-                        block.ID
-                    )
-                )
-                {
-
-                    continue;
-
-                }
+            AddItemRecipes(
+                uniqueRecipes,
+                hasWorkbench
+            );
 
 
-                result.Add(
-                    block
+            List<CraftRecipe> result =
+                new List<CraftRecipe>(
+                    uniqueRecipes.Values
                 );
-
-            }
 
 
             result.Sort(
@@ -89,59 +53,193 @@ namespace Game.Crafting
                     string.Compare(
                         a.Name,
                         b.Name,
-                        System.StringComparison.OrdinalIgnoreCase
+                        StringComparison.OrdinalIgnoreCase
                     )
             );
 
 
             return result;
-
         }
 
 
-        public static bool CanCraft(
-            PlayerInventory inventory,
-            BlockDefinition recipe
+        // =====================================================
+        // BLOCK RECIPES
+        // =====================================================
+
+        private static void AddBlockRecipes(
+            Dictionary<string, CraftRecipe> result,
+            bool hasWorkbench
         )
         {
-
-            if (
-                inventory ==
-                null
-                ||
-                recipe ==
-                null
-                ||
-                recipe.CraftIngredients ==
-                null
-                ||
-                recipe.CraftIngredients.Count ==
-                0
+            foreach (
+                BlockDefinition block
+                in BlockRegistry.GetAll()
             )
             {
+                if (
+                    block == null
+                    ||
+                    string.IsNullOrWhiteSpace(
+                        block.ID
+                    )
+                    ||
+                    block.CraftIngredients == null
+                    ||
+                    block.CraftIngredients.Count == 0
+                )
+                {
+                    continue;
+                }
 
+
+                if (
+                    !hasWorkbench
+                    &&
+                    !block.CraftWithoutWorkbench
+                )
+                {
+                    continue;
+                }
+
+
+                if (
+                    !ItemRegistry.Contains(
+                        block.ID
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                CraftRecipe recipe =
+                    new CraftRecipe
+                    {
+                        ResultItemId =
+                            block.ID,
+
+                        Name =
+                            string.IsNullOrWhiteSpace(
+                                block.Name
+                            )
+                                ? block.ID
+                                : block.Name,
+
+                        ResultCount =
+                            block.CraftResultCount > 0
+                                ? block.CraftResultCount
+                                : 1,
+
+                        CraftWithoutWorkbench =
+                            block.CraftWithoutWorkbench,
+
+                        Ingredients =
+                            CopyIngredients(
+                                block.CraftIngredients
+                            )
+                    };
+
+
+                result[recipe.ResultItemId] =
+                    recipe;
+            }
+        }
+
+
+        // =====================================================
+        // ITEM RECIPES
+        // =====================================================
+
+        private static void AddItemRecipes(
+            Dictionary<string, CraftRecipe> result,
+            bool hasWorkbench
+        )
+        {
+            ItemCraftingMetadataRegistry
+                .EnsureLoaded();
+
+
+            foreach (
+                CraftRecipe recipe
+                in ItemCraftingMetadataRegistry
+                    .GetAll()
+            )
+            {
+                if (
+                    recipe == null
+                    ||
+                    string.IsNullOrWhiteSpace(
+                        recipe.ResultItemId
+                    )
+                    ||
+                    recipe.Ingredients == null
+                    ||
+                    recipe.Ingredients.Count == 0
+                )
+                {
+                    continue;
+                }
+
+
+                if (
+                    !hasWorkbench
+                    &&
+                    !recipe.CraftWithoutWorkbench
+                )
+                {
+                    continue;
+                }
+
+
+                // Item JSON recipe intentionally overrides a block recipe
+                // if both somehow produce the same inventory item.
+                result[recipe.ResultItemId] =
+                    recipe;
+            }
+        }
+
+
+        // =====================================================
+        // CAN CRAFT
+        // =====================================================
+
+        public static bool CanCraft(
+            PlayerInventory inventory,
+            CraftRecipe recipe
+        )
+        {
+            if (
+                inventory == null
+                ||
+                recipe == null
+                ||
+                string.IsNullOrWhiteSpace(
+                    recipe.ResultItemId
+                )
+                ||
+                recipe.Ingredients == null
+                ||
+                recipe.Ingredients.Count == 0
+            )
+            {
                 return false;
-
             }
 
 
             int resultCount =
-                recipe.CraftResultCount >
-                0
-                    ? recipe.CraftResultCount
+                recipe.ResultCount > 0
+                    ? recipe.ResultCount
                     : 1;
 
 
             if (
                 !inventory.CanAddItem(
-                    recipe.ID,
+                    recipe.ResultItemId,
                     resultCount
                 )
             )
             {
-
                 return false;
-
             }
 
 
@@ -156,7 +254,6 @@ namespace Game.Crafting
                 in requirements
             )
             {
-
                 if (
                     !inventory.HasItem(
                         pair.Key,
@@ -164,25 +261,24 @@ namespace Game.Crafting
                     )
                 )
                 {
-
                     return false;
-
                 }
-
             }
 
 
             return true;
-
         }
 
 
+        // =====================================================
+        // CRAFT
+        // =====================================================
+
         public static bool Craft(
             PlayerInventory inventory,
-            BlockDefinition recipe
+            CraftRecipe recipe
         )
         {
-
             if (
                 !CanCraft(
                     inventory,
@@ -190,9 +286,7 @@ namespace Game.Crafting
                 )
             )
             {
-
                 return false;
-
             }
 
 
@@ -207,7 +301,6 @@ namespace Game.Crafting
                 in requirements
             )
             {
-
                 if (
                     !inventory.RemoveItem(
                         pair.Key,
@@ -215,87 +308,78 @@ namespace Game.Crafting
                     )
                 )
                 {
-
                     return false;
-
                 }
-
             }
 
 
             int resultCount =
-                recipe.CraftResultCount >
-                0
-                    ? recipe.CraftResultCount
+                recipe.ResultCount > 0
+                    ? recipe.ResultCount
                     : 1;
 
 
             int remaining =
                 inventory.AddItem(
-                    recipe.ID,
+                    recipe.ResultItemId,
                     resultCount
                 );
 
 
             return
-                remaining ==
-                0;
-
+                remaining == 0;
         }
+
+
+        // =====================================================
+        // REQUIREMENTS
+        // =====================================================
 
         private static Dictionary<string, int>
             BuildRequirements(
-                BlockDefinition recipe
+                CraftRecipe recipe
             )
         {
-
             Dictionary<string, int> result =
-                new Dictionary<string, int>();
+                new Dictionary<string, int>(
+                    StringComparer.OrdinalIgnoreCase
+                );
 
 
             if (
-                recipe ==
-                null
+                recipe == null
                 ||
-                recipe.CraftIngredients ==
-                null
+                recipe.Ingredients == null
             )
             {
-
                 return result;
-
             }
 
 
             for (
                 int i = 0;
-                i < recipe.CraftIngredients.Count;
+                i < recipe.Ingredients.Count;
                 i++
             )
             {
-
                 CraftIngredientDefinition ingredient =
-                    recipe.CraftIngredients[i];
+                    recipe.Ingredients[i];
 
 
                 if (
-                    ingredient ==
-                    null
+                    ingredient == null
                     ||
                     string.IsNullOrWhiteSpace(
                         ingredient.ItemId
                     )
                 )
                 {
-
                     continue;
-
                 }
 
 
                 int count =
-                    ingredient.Count >
-                    0
+                    ingredient.Count > 0
                         ? ingredient.Count
                         : 1;
 
@@ -307,32 +391,64 @@ namespace Game.Crafting
                     )
                 )
                 {
-
-                    result[
-                        ingredient.ItemId
-                    ] =
-                        existing +
-                        count;
-
+                    result[ingredient.ItemId] =
+                        existing + count;
                 }
                 else
                 {
-
-                    result[
-                        ingredient.ItemId
-                    ] =
+                    result[ingredient.ItemId] =
                         count;
-
                 }
-
             }
 
 
             return result;
-
         }
 
 
-    }
+        private static List<CraftIngredientDefinition>
+            CopyIngredients(
+                List<CraftIngredientDefinition> source
+            )
+        {
+            List<CraftIngredientDefinition> result =
+                new List<CraftIngredientDefinition>();
 
+
+            if (source == null)
+                return result;
+
+
+            for (
+                int i = 0;
+                i < source.Count;
+                i++
+            )
+            {
+                CraftIngredientDefinition ingredient =
+                    source[i];
+
+
+                if (ingredient == null)
+                    continue;
+
+
+                result.Add(
+                    new CraftIngredientDefinition
+                    {
+                        ItemId =
+                            ingredient.ItemId,
+
+                        Count =
+                            ingredient.Count > 0
+                                ? ingredient.Count
+                                : 1
+                    }
+                );
+            }
+
+
+            return result;
+        }
+    }
 }

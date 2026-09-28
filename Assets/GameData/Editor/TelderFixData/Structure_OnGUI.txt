@@ -1,0 +1,21 @@
+        private void OnGUI()
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+
+            EnsureStyles();
+
+            if (GUI.skin != null && GUI.skin.settings != null)
+            {
+                GUI.skin.settings.cursorColor = Color.white;
+                GUI.skin.settings.selectionColor =
+                    new Color(0.22f, 0.48f, 0.85f, 0.85f);
+                GUI.skin.settings.cursorFlashSpeed = 0.8f;
+                GUI.skin.settings.doubleClickSelectsWord = true;
+            }
+
+            DrawTopBar();
+            DrawBlockPalette();
+            DrawGrid();
+            DrawSettings();
+        }

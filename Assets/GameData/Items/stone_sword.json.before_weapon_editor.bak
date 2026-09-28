@@ -1,0 +1,85 @@
+{
+  "ID": "game:stone_sword",
+  "Name": "Stone Sword",
+  "Texture": "stone_sword",
+  "Type": "Weapon",
+  "MaxStack": 1,
+  "Weapon": {
+    "Kind": "Sword",
+    "Damage": 24,
+    "AttackSpeed": 2.0,
+    "Knockback": 4.0,
+    "Range": 1.0,
+    "ArmAimOffset": -90,
+    "UseBackArm": false,
+    "TrackCursorDuringAttack": true,
+    "SwordPattern": [
+      "Swing",
+      "Thrust"
+    ],
+    "SwordSwingStartAngle": 105,
+    "SwordSwingEndAngle": -25,
+    "SwingReach": 1.35,
+    "SwingHitRadius": 0.48,
+    "ThrustDistance": 0.9,
+    "ThrustHitRadius": 0.34
+  }
+,
+  "HeldOffsetX": 0.17
+,
+  "HeldOffsetY": -7.65
+,
+  "HeldScale": 1
+,
+  "HeldRotation": 0
+,
+  "Weapon": {
+      "Kind": "Sword",
+      "Damage": 24.0,
+      "AttackSpeed": 2.0,
+      "Knockback": 4.0,
+      "Range": 1.0,
+      "ArmAimOffset": -90.0,
+      "UseBackArm": false,
+      "BackArmAimOffset": -90.0,
+      "TrackCursorDuringAttack": true,
+      "SwordPattern": [
+          "Swing",
+          "Thrust"
+      ],
+      "SwordSwingStartAngle": 105.0,
+      "SwordSwingEndAngle": -25.0,
+      "SwingArc": 130.0,
+      "SwingReach": 1.350000023841858,
+      "SwingHitRadius": 0.47999998927116396,
+      "ThrustDistance": 0.8999999761581421,
+      "ThrustHitRadius": 0.3400000035762787,
+      "SpearBaseReach": 1.4500000476837159,
+      "SpearThrustDistance": 1.600000023841858,
+      "SpearHitRadius": 0.23999999463558198,
+      "AmmoItem": "",
+      "AmmoPerShot": 1,
+      "ProjectileItem": "",
+      "ProjectileCount": 1,
+      "ProjectileSpeed": 14.0,
+      "ProjectileGravity": 0.0,
+      "ProjectileLifetime": 8.0,
+      "SpreadDegrees": 0.0,
+      "SpreadMode": "Random",
+      "RotateProjectileToVelocity": true,
+      "ProjectileWorldSize": 0.7200000286102295,
+      "ProjectileScale": 1.0,
+      "MuzzleOffset": 0.44999998807907107,
+      "ProjectileDamageMultiplier": 1.0,
+      "FireNormalizedTime": 0.11999999731779099,
+      "ProjectileSortingLayer": "Default",
+      "ProjectileOrder": 50,
+      "BowChargeTime": 0.5,
+      "BowMinPower": 0.25,
+      "BowDrawArmStartAngle": 0.0,
+      "BowDrawArmEndAngle": 180.0,
+      "BowHeldItemFullDrawOffset": 0.0,
+      "BowBackArmRelaxedAngle": -15.0,
+      "BowBackArmFullDrawAngle": -75.0
+  }
+}

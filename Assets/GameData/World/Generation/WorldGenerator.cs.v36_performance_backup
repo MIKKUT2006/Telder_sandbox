@@ -1,0 +1,1137 @@
+using Game.World.Biomes;
+using Game.World.Dimensions;
+using Game.World.Generation.Ores;
+using UnityEngine;
+
+namespace Game.World.Generation
+{
+    public class WorldGenerator
+    {
+        private readonly WorldSettings settings;
+
+        private readonly CaveSettings caveSettings;
+
+        private readonly OreGenerator oreGenerator;
+
+        private readonly CaveGenerator caveGenerator;
+
+        private readonly CaveQueryAdapter caveQuery;
+
+
+        private readonly DimensionDefinition dimension;
+
+        private readonly DimensionBiomeProfile biomeProfile;
+
+        private readonly SurfaceBiomeSelector biomeSelector;
+
+        private readonly BiomeRuntimeTable biomeRuntime;
+
+
+        private readonly float terrainOffset;
+
+        private readonly float hillOffset;
+
+        private readonly float detailOffset;
+
+
+        /*
+         * IMPORTANT:
+         *
+         * These values are now INTERNAL GENERATOR BASE VALUES.
+         *
+         * The previous V9 incorrectly expected fields:
+         *
+         * settings.TerrainScale
+         * settings.TerrainDetailScale
+         * settings.TerrainVariation
+         * settings.TerrainDetail
+         *
+         * Your current WorldSettings does not expose them,
+         * so V9.1 does not reference them at all.
+         */
+        private const float BaseTerrainScale =
+            0.012f;
+
+        private const float BaseTerrainVariation =
+            10f;
+
+        private const float BaseDetailScale =
+            0.035f;
+
+        private const float BaseDetailStrength =
+            3f;
+
+
+        public WorldGenerator(
+            WorldSettings settings
+        )
+        {
+            this.settings =
+                settings;
+
+
+            BiomeRegistry.Initialize();
+
+
+            dimension =
+                DimensionTravelRuntime.Current;
+
+
+            biomeProfile =
+                DimensionBiomeProfileGenerator.Generate(
+                    dimension
+                );
+
+
+            if (
+                biomeProfile == null ||
+                !biomeProfile.IsValid
+            )
+            {
+                Debug.LogError(
+                    "WORLD GENERATOR: biome profile is empty. " +
+                    "Check Assets/GameData/Biomes."
+                );
+            }
+
+
+            biomeSelector =
+                new SurfaceBiomeSelector(
+                    settings.Seed,
+                    biomeProfile
+                );
+
+
+            biomeRuntime =
+                new BiomeRuntimeTable(
+                    biomeProfile
+                );
+
+
+            caveSettings =
+                new CaveSettings();
+
+
+            caveGenerator =
+                new CaveGenerator(
+                    settings,
+                    caveSettings
+                );
+
+
+            /*
+             * No direct call to caveGenerator.IsCave().
+             * Therefore this compiles even if your current
+             * CaveGenerator renamed that method.
+             */
+            caveQuery =
+                new CaveQueryAdapter(
+                    caveGenerator,
+                    settings.Seed
+                );
+
+
+            oreGenerator =
+                new OreGenerator(
+                    settings
+                );
+
+
+            terrainOffset =
+                settings.Seed *
+                0.12345f;
+
+
+            hillOffset =
+                settings.Seed *
+                0.54321f;
+
+
+            detailOffset =
+                settings.Seed *
+                0.98765f;
+
+
+            oreGenerator.ReloadOres();
+
+
+            PrintBiomeProfile();
+        }
+
+
+        public void ReloadOres()
+        {
+            oreGenerator.ReloadOres();
+        }
+
+
+        public BiomeSample GetBiomeSample(
+            int worldX
+        )
+        {
+            return
+                biomeSelector.GetSample(
+                    worldX
+                );
+        }
+
+
+        public BiomeDefinition GetDominantBiome(
+            int worldX
+        )
+        {
+            return
+                GetBiomeSample(
+                    worldX
+                ).Dominant;
+        }
+
+
+        public DimensionBiomeProfile GetBiomeProfile()
+        {
+            return
+                biomeProfile;
+        }
+
+
+        public ChunkData GenerateChunkData(
+            int chunkX,
+            int chunkY
+        )
+        {
+            ChunkData data =
+                new ChunkData();
+
+
+            for (
+                int localX = 0;
+                localX < Chunk.SizeX;
+                localX++
+            )
+            {
+                int worldX =
+                    chunkX *
+                    Chunk.SizeX +
+                    localX;
+
+
+                BiomeSample sample =
+                    biomeSelector.GetSample(
+                        worldX
+                    );
+
+
+                int surfaceHeight =
+                    GetSurfaceHeight(
+                        worldX,
+                        sample
+                    );
+
+
+                BiomeRuntimeData biome =
+                    biomeRuntime.Get(
+                        sample.Dominant
+                    );
+
+
+                if (biome == null)
+                {
+                    Debug.LogError(
+                        "WORLD GENERATOR: runtime biome data is null at X=" +
+                        worldX
+                    );
+
+                    continue;
+                }
+
+
+                for (
+                    int localY = 0;
+                    localY < Chunk.SizeY;
+                    localY++
+                )
+                {
+                    int worldY =
+                        chunkY *
+                        Chunk.SizeY +
+                        localY;
+
+
+                    BiomeRuntimeData cellBiome =
+                        SelectBlendedMaterialBiome(
+                            worldX,
+                            worldY,
+                            sample,
+                            biome
+                        );
+
+
+                    ushort foreground =
+                        GenerateForegroundBlock(
+                            worldX,
+                            worldY,
+                            surfaceHeight,
+                            cellBiome
+                        );
+
+
+                    ushort background =
+                        GenerateBackgroundBlock(
+                            worldX,
+                            worldY,
+                            surfaceHeight,
+                            foreground,
+                            cellBiome
+                        );
+
+
+                    data.SetBlock(
+                        localX,
+                        localY,
+                        foreground
+                    );
+
+
+                    data.SetBackground(
+                        localX,
+                        localY,
+                        background
+                    );
+                }
+            }
+
+
+            Game.World.Vegetation.Caves
+                .CaveVegetationGenerationRuntime
+                .ApplyToChunk(
+                    this,
+                    settings,
+                    data,
+                    chunkX,
+                    chunkY
+                );
+
+
+            return data;
+        }
+
+
+                // [TELDER-V35.1-BIOME-MATERIAL-BLEND]
+        private BiomeRuntimeData SelectBlendedMaterialBiome(
+            int worldX,
+            int worldY,
+            BiomeSample sample,
+            BiomeRuntimeData fallback
+        )
+        {
+            if (
+                sample.Primary ==
+                null
+            )
+            {
+                return fallback;
+            }
+
+
+            BiomeRuntimeData primary =
+                biomeRuntime.Get(
+                    sample.Primary
+                );
+
+
+            if (
+                sample.Secondary ==
+                null
+                ||
+                sample.Secondary ==
+                sample.Primary
+            )
+            {
+                return
+                    primary ??
+                    fallback;
+            }
+
+
+            BiomeRuntimeData secondary =
+                biomeRuntime.Get(
+                    sample.Secondary
+                );
+
+
+            if (primary == null)
+            {
+                return
+                    secondary ??
+                    fallback;
+            }
+
+
+            if (secondary == null)
+            {
+                return primary;
+            }
+
+
+            float blend =
+                Mathf.SmoothStep(
+                    0f,
+                    1f,
+                    Mathf.Clamp01(
+                        sample.Blend
+                    )
+                );
+
+
+            if (blend <= 0.01f)
+            {
+                return primary;
+            }
+
+
+            if (blend >= 0.99f)
+            {
+                return secondary;
+            }
+
+
+            // -------------------------------------------------
+            // LARGE ORGANIC PATCHES
+            // -------------------------------------------------
+
+            float largeNoise =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        settings.Seed *
+                        0.37117f
+                    )
+                    *
+                    0.105f,
+
+                    (
+                        worldY +
+                        settings.Seed *
+                        0.61873f
+                    )
+                    *
+                    0.105f
+                );
+
+
+            // -------------------------------------------------
+            // SMALLER EDGE BREAKUP
+            // -------------------------------------------------
+
+            float detailNoise =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        settings.Seed *
+                        1.17341f
+                    )
+                    *
+                    0.285f,
+
+                    (
+                        worldY +
+                        settings.Seed *
+                        0.84713f
+                    )
+                    *
+                    0.285f
+                );
+
+
+            float organicThreshold =
+                Mathf.Clamp01(
+                    largeNoise *
+                    0.74f
+                    +
+                    detailNoise *
+                    0.26f
+                );
+
+
+            // Near the Primary side only a few Secondary cells appear.
+            // Moving through the transition increases their density until
+            // Secondary completely takes over.
+            return
+                blend >=
+                organicThreshold
+                    ? secondary
+                    : primary;
+        }
+
+
+private ushort GenerateForegroundBlock(
+    int worldX,
+    int worldY,
+    int surfaceHeight,
+    BiomeRuntimeData biome
+)
+        {
+            // =====================================================
+            // ABOVE SURFACE
+            // =====================================================
+
+            if (
+                worldY >
+                surfaceHeight
+            )
+            {
+                return 0;
+            }
+
+
+            // =====================================================
+            // SURFACE
+            // =====================================================
+
+            if (
+                worldY ==
+                surfaceHeight
+            )
+            {
+                return
+                    biome.TopBlockID;
+            }
+
+
+            int depth =
+                surfaceHeight -
+                worldY;
+
+
+            // =====================================================
+            // SOIL
+            // =====================================================
+
+            if (
+                depth <=
+                biome.Definition
+                    .Terrain
+                    .SoilDepth
+            )
+            {
+                return
+                    biome.SoilBlockID;
+            }
+
+
+            // =====================================================
+            // CAVE
+            // =====================================================
+
+            if (
+                caveQuery.IsCave(
+                    worldX,
+                    worldY,
+                    surfaceHeight
+                )
+            )
+            {
+                return 0;
+            }
+
+
+            // =====================================================
+            // BIOME ID
+            // =====================================================
+
+            string biomeID =
+                biome.Definition.ID;
+
+
+            // =====================================================
+            // ORE
+            // =====================================================
+
+            ushort ore =
+                oreGenerator.GetOre(
+                    worldX,
+                    worldY,
+                    surfaceHeight,
+                    biomeID
+                );
+
+
+            if (
+                ore != 0
+            )
+            {
+                return ore;
+            }
+
+
+            // =====================================================
+            // STONE
+            // =====================================================
+
+            return
+                biome.StoneBlockID;
+        }
+
+        private ushort GenerateBackgroundBlock(
+    int worldX,
+    int worldY,
+    int surfaceHeight,
+    ushort foreground,
+    BiomeRuntimeData biome
+)
+        {
+            // =====================================================
+            // SURFACE / ABOVE
+            // =====================================================
+
+            if (
+                worldY >=
+                surfaceHeight
+            )
+            {
+                return 0;
+            }
+
+
+            int depth =
+                surfaceHeight -
+                worldY;
+
+
+            // =====================================================
+            // NO BACKGROUND NEAR SURFACE
+            // =====================================================
+
+            if (
+                depth <= 2
+            )
+            {
+                return 0;
+            }
+
+
+            // =====================================================
+            // FOREGROUND ORE
+            // =====================================================
+
+            if (
+                IsOre(
+                    foreground,
+                    biome
+                )
+            )
+            {
+                return
+                    biome.BackgroundBlockID;
+            }
+
+
+            // =====================================================
+            // CAVE BACKGROUND
+            // =====================================================
+
+            if (
+                caveQuery.IsCave(
+                    worldX,
+                    worldY,
+                    surfaceHeight
+                )
+            )
+            {
+                return
+                    biome.BackgroundBlockID;
+            }
+
+
+            // =====================================================
+            // BACKGROUND ORE
+            // =====================================================
+
+            if (
+                IsBackgroundOre(
+                    worldX,
+                    worldY
+                )
+            )
+            {
+                string biomeID =
+                    biome.Definition.ID;
+
+
+                // -------------------------------------------------
+                // ������� ������ X.
+                //
+                // ��� ��� ������ deterministic ore distribution,
+                // �� �� ������ ���������� ������� �� worldY.
+                // -------------------------------------------------
+
+                ushort backgroundOre =
+                    oreGenerator.GetOre(
+                        worldX + 100000,
+                        worldY,
+                        surfaceHeight,
+                        biomeID
+                    );
+
+
+                if (
+                    backgroundOre != 0
+                )
+                {
+                    return
+                        backgroundOre;
+                }
+            }
+
+
+            // =====================================================
+            // NORMAL BACKGROUND
+            // =====================================================
+
+            return
+                biome.BackgroundBlockID;
+        }
+
+        private bool IsOre(
+            ushort blockID,
+            BiomeRuntimeData biome
+        )
+        {
+            return
+                blockID != 0 &&
+                biome != null &&
+                !biome.IsTerrainBlock(
+                    blockID
+                );
+        }
+
+
+        private bool IsBackgroundOre(
+            int worldX,
+            int worldY
+        )
+        {
+            float noise =
+                Mathf.PerlinNoise(
+                    (
+                        worldX +
+                        settings.Seed *
+                        0.173f
+                    )
+                    *
+                    0.045f,
+
+                    (
+                        worldY +
+                        settings.Seed *
+                        0.731f
+                    )
+                    *
+                    0.045f
+                );
+
+
+            return
+                noise >
+                0.72f;
+        }
+
+
+        public int GetSurfaceHeight(
+            int worldX
+        )
+        {
+            return
+                GetSurfaceHeight(
+                    worldX,
+                    biomeSelector.GetSample(
+                        worldX
+                    )
+                );
+        }
+
+
+        private int GetSurfaceHeight(
+            int worldX,
+            BiomeSample sample
+        )
+        {
+            if (sample.Primary == null)
+            {
+                return
+                    ClampSurface(
+                        Mathf.RoundToInt(
+                            settings.SurfaceHeight
+                        )
+                    );
+            }
+
+
+            float primary =
+                CalculateBiomeSurfaceHeight(
+                    worldX,
+                    sample.Primary
+                );
+
+
+            if (
+                sample.Secondary == null ||
+                sample.Secondary ==
+                sample.Primary
+            )
+            {
+                return
+                    ClampSurface(
+                        Mathf.RoundToInt(
+                            primary
+                        )
+                    );
+            }
+
+
+            float secondary =
+                CalculateBiomeSurfaceHeight(
+                    worldX,
+                    sample.Secondary
+                );
+
+
+            return
+                ClampSurface(
+                    Mathf.RoundToInt(
+                        Mathf.Lerp(
+                            primary,
+                            secondary,
+                            sample.Blend
+                        )
+                    )
+                );
+        }
+
+
+        private float CalculateBiomeSurfaceHeight(
+            int worldX,
+            BiomeDefinition biome
+        )
+        {
+            BiomeTerrainSettings terrain =
+                biome.Terrain;
+
+
+            float distortedX =
+                worldX;
+
+
+            // ---------------------------------------------
+            // DOMAIN DISTORTION
+            // ---------------------------------------------
+
+            if (
+                Mathf.Abs(
+                    terrain.DistortionStrength
+                )
+                >
+                0.001f
+            )
+            {
+                float distortion =
+                    Mathf.PerlinNoise(
+                        (
+                            worldX +
+                            settings.Seed *
+                            0.41731f
+                        )
+                        *
+                        Mathf.Max(
+                            0.000001f,
+                            terrain.DistortionScale
+                        ),
+
+                        43.713f +
+                        settings.Seed *
+                        0.000031f
+                    );
+
+
+                distortedX +=
+                    (
+                        distortion -
+                        0.5f
+                    )
+                    *
+                    2f *
+                    terrain.DistortionStrength;
+            }
+
+
+            // ---------------------------------------------
+            // LARGE TERRAIN
+            //
+            // Uses ONLY fields that exist in the user's
+            // current WorldSettings:
+            //
+            // Seed
+            // SurfaceHeight
+            // HillScale
+            // HillHeight
+            // WorldHeight
+            // ---------------------------------------------
+
+            float large =
+                Mathf.PerlinNoise(
+                    (
+                        distortedX +
+                        terrainOffset
+                    )
+                    *
+                    Mathf.Max(
+                        0.000001f,
+                        settings.HillScale *
+                        terrain.HillScaleMultiplier
+                    ),
+
+                    0f
+                );
+
+
+            float middle =
+                Mathf.PerlinNoise(
+                    (
+                        distortedX +
+                        hillOffset
+                    )
+                    *
+                    Mathf.Max(
+                        0.000001f,
+                        BaseTerrainScale *
+                        terrain.TerrainScaleMultiplier
+                    ),
+
+                    0f
+                );
+
+
+            float detail =
+                Mathf.PerlinNoise(
+                    (
+                        distortedX +
+                        detailOffset
+                    )
+                    *
+                    Mathf.Max(
+                        0.000001f,
+                        BaseDetailScale *
+                        terrain.DetailScaleMultiplier
+                    ),
+
+                    0f
+                );
+
+
+            float height =
+                settings.SurfaceHeight +
+                terrain.HeightOffset;
+
+
+            height +=
+                (
+                    large -
+                    0.5f
+                )
+                *
+                settings.HillHeight *
+                terrain.HillHeightMultiplier;
+
+
+            height +=
+                (
+                    middle -
+                    0.5f
+                )
+                *
+                BaseTerrainVariation *
+                terrain.TerrainVariationMultiplier;
+
+
+            height +=
+                (
+                    detail -
+                    0.5f
+                )
+                *
+                BaseDetailStrength *
+                terrain.DetailMultiplier;
+
+
+            // ---------------------------------------------
+            // DISTORTED RIDGES
+            // ---------------------------------------------
+
+            if (
+                Mathf.Abs(
+                    terrain.RidgeStrength
+                )
+                >
+                0.001f
+            )
+            {
+                float ridgeNoise =
+                    Mathf.PerlinNoise(
+                        (
+                            distortedX +
+                            settings.Seed *
+                            0.8917f
+                        )
+                        *
+                        Mathf.Max(
+                            0.000001f,
+                            terrain.RidgeScale
+                        ),
+
+                        91.37f
+                    );
+
+
+                float ridge =
+                    1f -
+                    Mathf.Abs(
+                        ridgeNoise *
+                        2f -
+                        1f
+                    );
+
+
+                ridge =
+                    ridge *
+                    ridge;
+
+
+                height +=
+                    (
+                        ridge -
+                        0.35f
+                    )
+                    *
+                    terrain.RidgeStrength;
+            }
+
+
+            // ---------------------------------------------
+            // DISTORTED WAVE
+            // ---------------------------------------------
+
+            if (
+                Mathf.Abs(
+                    terrain.WaveStrength
+                )
+                >
+                0.001f
+            )
+            {
+                float phase =
+                    Mathf.PerlinNoise(
+                        (
+                            worldX +
+                            settings.Seed *
+                            0.267f
+                        )
+                        *
+                        0.0041f,
+
+                        157.8f
+                    );
+
+
+                float wave =
+                    Mathf.Sin(
+                        distortedX *
+                        terrain.WaveScale +
+                        phase *
+                        Mathf.PI *
+                        3.5f
+                    );
+
+
+                wave =
+                    Mathf.Sign(
+                        wave
+                    )
+                    *
+                    Mathf.Pow(
+                        Mathf.Abs(
+                            wave
+                        ),
+                        1.65f
+                    );
+
+
+                height +=
+                    wave *
+                    terrain.WaveStrength;
+            }
+
+
+            return height;
+        }
+
+
+        private int ClampSurface(
+            int surface
+        )
+        {
+            return
+                Mathf.Clamp(
+                    surface,
+                    2,
+                    settings.WorldHeight -
+                    2
+                );
+        }
+
+
+        private void PrintBiomeProfile()
+        {
+            if (
+                biomeProfile == null ||
+                !biomeProfile.IsValid
+            )
+            {
+                return;
+            }
+
+
+            string list =
+                string.Empty;
+
+
+            for (
+                int i = 0;
+                i < biomeProfile.SurfaceBiomes.Count;
+                i++
+            )
+            {
+                if (i > 0)
+                    list += ", ";
+
+                list +=
+                    biomeProfile
+                        .SurfaceBiomes[i]
+                        .DisplayName;
+            }
+
+
+            Debug.Log(
+                "WORLD BIOME PROFILE: " +
+                dimension.Name +
+                " | TYPE: " +
+                (
+                    dimension.Type != null
+                    ? dimension.Type.DisplayName
+                    : "UNKNOWN"
+                ) +
+                " | BIOMES: " +
+                list
+            );
+        }
+    }
+}

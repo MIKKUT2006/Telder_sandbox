@@ -1,23 +1,19 @@
 using System.Collections.Generic;
+using System.Diagnostics;
+
 using UnityEngine;
 
-using Game.Save;
-
 using Game.World.Collision;
-using Game.World.Generation;
-using Game.World.Rendering;
-using Game.World.Structures;
-using Game.World.Biomes.Generation;
-using Game.World.Biomes.Surface;
 using Game.World.Furniture;
+using Game.World.Generation;
+using Game.World.Physics;
+using Game.World.Rendering;
 
 
 namespace Game.World.Loading
 {
-
     public class ChunkLoader
     {
-
         // =====================================================
         // REFERENCES
         // =====================================================
@@ -34,46 +30,57 @@ namespace Game.World.Loading
 
 
         // =====================================================
-        // LOADED CHUNKS
+        // LOADED / QUEUED
         // =====================================================
 
-        private readonly HashSet<Vector2Int> loadedChunks =
-            new HashSet<Vector2Int>();
+        private readonly HashSet<UnityEngine.Vector2Int>
+            loadedChunks =
+                new HashSet<UnityEngine.Vector2Int>();
 
 
-        // =====================================================
-        // LOAD QUEUE
-        // =====================================================
-
-        private readonly Queue<Vector2Int> loadQueue =
-            new Queue<Vector2Int>();
+        private readonly HashSet<UnityEngine.Vector2Int>
+            collisionChunks =
+                new HashSet<UnityEngine.Vector2Int>();
 
 
-        private readonly HashSet<Vector2Int> queuedChunks =
-            new HashSet<Vector2Int>();
+        private readonly Queue<UnityEngine.Vector2Int>
+            loadQueue =
+                new Queue<UnityEngine.Vector2Int>();
+
+
+        private readonly HashSet<UnityEngine.Vector2Int>
+            queuedChunks =
+                new HashSet<UnityEngine.Vector2Int>();
 
 
         // =====================================================
         // PLAYER CHUNK
         // =====================================================
 
-        private Vector2Int currentPlayerChunk;
+        private UnityEngine.Vector2Int currentPlayerChunk;
 
         private bool initialized;
 
 
         // =====================================================
-        // SETTINGS
+        // PERFORMANCE SETTINGS
         // =====================================================
 
-        // Сколько чанков максимум
-        // загружаем за один кадр.
-        //
-        // Начинаем с 1 для максимальной стабильности.
-        //
-        // Позже можно увеличить до 2-3.
+        // More than 1 chunk can finish in a frame IF there is budget.
+        // The time budget is the real limiter.
+        private const int MaxChunksPerProcess =
+            2;
 
-        private const int MaxChunksPerProcess = 1;
+
+        // Prevent chunk generation from monopolizing the main thread.
+        private const double ProcessBudgetMilliseconds =
+            3.25;
+
+
+        // Physics collision is unnecessary for the entire render distance.
+        // 2 chunks = 64 blocks around the player for 32x32 chunks.
+        private const int CollisionChunkRadius =
+            2;
 
 
         // =====================================================
@@ -88,7 +95,6 @@ namespace Game.World.Loading
             ChunkCollision collision
         )
         {
-
             this.world =
                 world;
 
@@ -104,15 +110,13 @@ namespace Game.World.Loading
             this.collision =
                 collision;
 
-
             initialized =
                 false;
-
         }
 
 
         // =====================================================
-        // SET PLAYER CHUNK
+        // PLAYER CHUNK
         // =====================================================
 
         public void SetPlayerChunk(
@@ -120,45 +124,31 @@ namespace Game.World.Loading
             int playerChunkY
         )
         {
-
-            Vector2Int newChunk =
-                new Vector2Int(
+            UnityEngine.Vector2Int next =
+                new UnityEngine.Vector2Int(
                     playerChunkX,
                     playerChunkY
                 );
 
 
-            // =================================================
-            // ПЕРВЫЙ ЗАПУСК
-            // =================================================
-
-            if (
-                !initialized
-            )
+            if (!initialized)
             {
-
                 initialized =
                     true;
 
-
                 currentPlayerChunk =
-                    newChunk;
-
+                    next;
 
                 BuildInitialQueue();
 
+                RefreshCollisionWindow();
 
                 return;
-
             }
 
 
-            // =================================================
-            // ИГРОК НЕ СМЕНИЛ ЧАНК
-            // =================================================
-
             if (
-                newChunk ==
+                next ==
                 currentPlayerChunk
             )
             {
@@ -166,16 +156,17 @@ namespace Game.World.Loading
             }
 
 
-            // =================================================
-            // ИГРОК СМЕНИЛ ЧАНК
-            // =================================================
-
             currentPlayerChunk =
-                newChunk;
+                next;
 
 
+            // These operations only need to happen when the player
+            // actually crosses a chunk boundary.
             UpdateLoadQueue();
 
+            UnloadFarChunks();
+
+            RefreshCollisionWindow();
         }
 
 
@@ -185,14 +176,13 @@ namespace Game.World.Loading
 
         public void Process()
         {
-            //Debug.Log(
-            //    "CHUNK LOADER PROCESS: Queue = " +
-            //    loadQueue.Count
-            //);
-
             ProcessLoadQueue();
 
-            UnloadFarChunks();
+            // IMPORTANT:
+            // No UnloadFarChunks() here.
+            //
+            // The old loader iterated every loaded chunk every Process()
+            // call even while the player stayed in one chunk.
         }
 
 
@@ -202,7 +192,6 @@ namespace Game.World.Loading
 
         private void BuildInitialQueue()
         {
-
             loadQueue.Clear();
 
             queuedChunks.Clear();
@@ -212,43 +201,31 @@ namespace Game.World.Loading
                 settings.ViewDistance;
 
 
-            // =================================================
-            // ЦЕНТР
-            // =================================================
-
             EnqueueChunk(
                 currentPlayerChunk.x,
                 currentPlayerChunk.y
             );
 
 
-            // =================================================
-            // ОСТАЛЬНЫЕ ЧАНКИ
-            // =================================================
-
+            // Ring order = nearest chunks first.
             for (
                 int radius = 1;
                 radius <= viewDistance;
                 radius++
             )
             {
-
                 for (
                     int x = -radius;
                     x <= radius;
                     x++
                 )
                 {
-
                     for (
                         int y = -radius;
                         y <= radius;
                         y++
                     )
                     {
-
-                        // Берём только внешний край кольца.
-
                         if (
                             Mathf.Abs(x) != radius &&
                             Mathf.Abs(y) != radius
@@ -262,75 +239,68 @@ namespace Game.World.Loading
                             currentPlayerChunk.x + x,
                             currentPlayerChunk.y + y
                         );
-
                     }
-
                 }
-
             }
-
         }
 
 
-        // =====================================================
-        // UPDATE LOAD QUEUE
-        // =====================================================
-
         private void UpdateLoadQueue()
         {
-
             int viewDistance =
                 settings.ViewDistance;
 
 
-            // =================================================
-            // ВСЕ ЧАНКИ ВОКРУГ ИГРОКА
-            // =================================================
-
+            // Add only missing chunks. Existing queue entries remain deduped.
             for (
-                int x = -viewDistance;
-                x <= viewDistance;
-                x++
+                int radius = 0;
+                radius <= viewDistance;
+                radius++
             )
             {
-
                 for (
-                    int y = -viewDistance;
-                    y <= viewDistance;
-                    y++
+                    int x = -radius;
+                    x <= radius;
+                    x++
                 )
                 {
+                    for (
+                        int y = -radius;
+                        y <= radius;
+                        y++
+                    )
+                    {
+                        if (
+                            radius > 0 &&
+                            Mathf.Abs(x) != radius &&
+                            Mathf.Abs(y) != radius
+                        )
+                        {
+                            continue;
+                        }
 
-                    EnqueueChunk(
-                        currentPlayerChunk.x + x,
-                        currentPlayerChunk.y + y
-                    );
 
+                        EnqueueChunk(
+                            currentPlayerChunk.x + x,
+                            currentPlayerChunk.y + y
+                        );
+                    }
                 }
-
             }
-
         }
 
-
-        // =====================================================
-        // ENQUEUE
-        // =====================================================
 
         private void EnqueueChunk(
             int chunkX,
             int chunkY
         )
         {
-
-            Vector2Int position =
-                new Vector2Int(
+            UnityEngine.Vector2Int position =
+                new UnityEngine.Vector2Int(
                     chunkX,
                     chunkY
                 );
 
-
-            // Уже загружен.
 
             if (
                 loadedChunks.Contains(
@@ -341,8 +311,6 @@ namespace Game.World.Loading
                 return;
             }
 
-
-            // Уже в очереди.
 
             if (
                 queuedChunks.Contains(
@@ -362,16 +330,22 @@ namespace Game.World.Loading
             queuedChunks.Add(
                 position
             );
-
         }
 
 
         // =====================================================
-        // PROCESS QUEUE
+        // LOAD
         // =====================================================
 
         private void ProcessLoadQueue()
         {
+            if (loadQueue.Count == 0)
+                return;
+
+
+            Stopwatch stopwatch =
+                Stopwatch.StartNew();
+
 
             int processed =
                 0;
@@ -383,8 +357,18 @@ namespace Game.World.Loading
                 MaxChunksPerProcess
             )
             {
+                // Always allow at least one chunk.
+                if (
+                    processed > 0 &&
+                    stopwatch.Elapsed.TotalMilliseconds >=
+                    ProcessBudgetMilliseconds
+                )
+                {
+                    break;
+                }
 
-                Vector2Int position =
+
+                UnityEngine.Vector2Int position =
                     loadQueue.Dequeue();
 
 
@@ -393,39 +377,15 @@ namespace Game.World.Loading
                 );
 
 
-                // =================================================
-                // ПРОВЕРЯЕМ ДАЛЬНОСТЬ
-                // =================================================
-
-                int distanceX =
-                    Mathf.Abs(
-                        position.x -
-                        currentPlayerChunk.x
-                    );
-
-
-                int distanceY =
-                    Mathf.Abs(
-                        position.y -
-                        currentPlayerChunk.y
-                    );
-
-
                 if (
-                    distanceX >
-                    settings.ViewDistance
-                    ||
-                    distanceY >
-                    settings.ViewDistance
+                    !IsInsideViewDistance(
+                        position
+                    )
                 )
                 {
                     continue;
                 }
 
-
-                // =================================================
-                // ПРОВЕРЯЕМ, НЕ СОЗДАН ЛИ УЖЕ
-                // =================================================
 
                 if (
                     loadedChunks.Contains(
@@ -437,10 +397,6 @@ namespace Game.World.Loading
                 }
 
 
-                // =================================================
-                // CREATE CHUNK
-                // =================================================
-
                 Chunk chunk =
                     world.CreateChunk(
                         position.x,
@@ -448,17 +404,9 @@ namespace Game.World.Loading
                     );
 
 
-                if (
-                    chunk == null
-                )
-                {
+                if (chunk == null)
                     continue;
-                }
 
-
-                // =================================================
-                // GENERATE DATA
-                // =================================================
 
                 ChunkData data =
                     generator.GenerateChunkData(
@@ -467,234 +415,343 @@ namespace Game.World.Loading
                     );
 
 
-                if (
-                    data == null
-                )
+                if (data == null)
                 {
-
-                    world.RemoveChunk(
+                    Game.World.Vegetation.Runtime
+                    .GeneratedFloraFurnitureCommit
+                    .Unload(
                         position.x,
                         position.y
                     );
 
 
-                    continue;
+                world.RemoveChunk(
+                        position.x,
+                        position.y
+                    );
 
+                    continue;
                 }
 
-
-                // =================================================
-                // PROCEDURAL STRUCTURES
-                // =================================================
-
-                StructureGenerationRuntime.ApplyToChunk(
-                    generator,
-                    settings,
-                    data,
-                    position.x,
-                    position.y
-                );
-
-
-                // =================================================
-                // APPLY DATA
-                // =================================================
 
                 chunk.ApplyData(
                     data
                 );
 
+                // TELDER_VEGETATION_FIX_V2
+                Game.World.Vegetation.Runtime
+                    .GeneratedVegetationFurnitureBridge
+                    .Apply(
+                        data,
+                        position.x,
+                        position.y
+                    );
 
-                // =================================================
-                // CAVE BIOMES + SURFACE FLORA
-                // =================================================
-                //
-                // This is still BASE GENERATION. It runs before the
-                // save overlay, therefore blocks broken/placed by
-                // the player in an existing save remain authoritative.
-                //
-                // =================================================
+                // TELDER_POLISH_FIX_PACK_V1
+                Game.World.PolishFixes.GeneratedFurnitureChunkBridge.Apply(
+                    data,
+                    position.x,
+                    position.y
+                );
 
-                BiomeGenerationPostProcessor.ApplyToChunk(
-                    generator,
-                    settings,
+                // Newly loaded/generated chunks must get light immediately,
+                // not only during the initial WorldManager lighting pass.
+                if (
+                    world.GetLightEngine() !=
+                    null
+                )
+                {
+                    world.GetLightEngine()
+                        .RebuildAfterChunkGenerated(
+                            position.x,
+                            position.y,
+                            settings.WorldHeight
+                        );
+                }
+
+
+                // Rendering is required for all visible chunks.
+                renderer?.Render(
                     chunk
                 );
 
-
-                // =================================================
-                // APPLY SAVED DIMENSION CHANGES
-                // =================================================
-
-                SaveGameRuntime.ApplyChangesToChunk(
-                    chunk
-                );
-
-
-                // =================================================
-                // MARK LOADED
-                // =================================================
-                //
-                // The World already contains this chunk after
-                // CreateChunk(), but ChunkLoader also tracks it
-                // explicitly for streaming/unloading.
-                //
-                // =================================================
 
                 loadedChunks.Add(
                     position
                 );
 
 
-                // =================================================
-                // SURFACE FLORA -> FURNITURE LAYER
-                // =================================================
-                //
-                // This runs AFTER the save overlay, therefore saved/player
-                // foreground changes win over procedural grass/flowers.
-                // It still runs BEFORE lighting so emissive procedural
-                // furniture can be included in the initial light rebuild.
-                //
-                // =================================================
-
-                SurfaceFloraFurnitureGenerator.ApplyToLoadedChunk(
-                    generator,
-                    settings,
+                // Falling-block discovery is now event driven by chunk load.
+                FallingBlockSystem.RegisterChunk(
                     chunk
                 );
 
 
-                // =================================================
-                // GENERATE LIGHT FOR THE NEW CHUNK
-                // =================================================
-                //
-                // IMPORTANT:
-                //
-                // Previously newly streamed chunks were rendered
-                // immediately with an empty ChunkLightData.
-                //
-                // Initial world lighting was built only once in
-                // WorldManager.Start(), therefore after walking far
-                // enough the player eventually reached newly loaded
-                // chunks that had never received sunlight/RGB light.
-                //
-                // Rebuild lighting AFTER terrain/structures/save
-                // changes are applied and BEFORE the chunk is first
-                // rendered.
-                //
-                // =================================================
-
-                world.NotifyChunkGenerated(
-                    position.x,
-                    position.y
-                );
-
-
-                // =================================================
-                // RENDER
-                // =================================================
-
-                renderer.Render(
-                    chunk
-                );
-
-
-                // =================================================
-                // COLLISION
-                // =================================================
-
-                collision.BuildChunkCollision(
-                    chunk
-                );
+                // Build expensive collision ONLY close to the player.
+                if (
+                    ShouldHaveCollision(
+                        position
+                    )
+                )
+                {
+                    BuildCollision(
+                        position,
+                        chunk
+                    );
+                }
 
 
                 processed++;
-
             }
-
         }
 
 
         // =====================================================
-        // UNLOAD FAR CHUNKS
+        // COLLISION WINDOW
         // =====================================================
 
-        private void UnloadFarChunks()
+        private bool ShouldHaveCollision(
+            UnityEngine.Vector2Int position
+        )
         {
+            return
+                Mathf.Abs(
+                    position.x -
+                    currentPlayerChunk.x
+                )
+                <=
+                CollisionChunkRadius
+                &&
+                Mathf.Abs(
+                    position.y -
+                    currentPlayerChunk.y
+                )
+                <=
+                CollisionChunkRadius;
+        }
 
-            List<Vector2Int> toUnload =
-                new List<Vector2Int>();
+
+        private void BuildCollision(
+            UnityEngine.Vector2Int position,
+            Chunk chunk
+        )
+        {
+            if (
+                collision == null ||
+                chunk == null ||
+                collisionChunks.Contains(
+                    position
+                )
+            )
+            {
+                return;
+            }
+
+
+            collision.BuildChunkCollision(
+                chunk
+            );
+
+
+            collisionChunks.Add(
+                position
+            );
+        }
+
+
+        private void RefreshCollisionWindow()
+        {
+            if (collision == null)
+                return;
+
+
+            List<UnityEngine.Vector2Int>
+                remove =
+                    null;
 
 
             foreach (
-                Vector2Int position
-                in loadedChunks
+                UnityEngine.Vector2Int position
+                in collisionChunks
             )
             {
-
-                int distanceX =
-                    Mathf.Abs(
-                        position.x -
-                        currentPlayerChunk.x
-                    );
-
-
-                int distanceY =
-                    Mathf.Abs(
-                        position.y -
-                        currentPlayerChunk.y
-                    );
-
-
                 if (
-                    distanceX >
-                    settings.ViewDistance
-                    ||
-                    distanceY >
-                    settings.ViewDistance
+                    ShouldHaveCollision(
+                        position
+                    )
                 )
                 {
-
-                    toUnload.Add(
-                        position
-                    );
-
+                    continue;
                 }
 
+
+                if (remove == null)
+                {
+                    remove =
+                        new List<UnityEngine.Vector2Int>();
+                }
+
+
+                remove.Add(
+                    position
+                );
+            }
+
+
+            if (remove != null)
+            {
+                for (
+                    int i = 0;
+                    i < remove.Count;
+                    i++
+                )
+                {
+                    UnityEngine.Vector2Int position =
+                        remove[i];
+
+
+                    collision.RemoveChunkCollision(
+                        position.x,
+                        position.y
+                    );
+
+
+                    collisionChunks.Remove(
+                        position
+                    );
+                }
             }
 
 
             foreach (
-                Vector2Int position
-                in toUnload
+                UnityEngine.Vector2Int position
+                in loadedChunks
             )
             {
-
                 if (
-                    FurnitureLayerManager.Instance !=
-                    null
+                    !ShouldHaveCollision(
+                        position
+                    )
                 )
                 {
-
-                    FurnitureLayerManager.Instance
-                        .UnloadGeneratedFurnitureChunk(
-                            position.x,
-                            position.y
-                        );
-
+                    continue;
                 }
 
 
-                renderer.RemoveChunk(
+                if (
+                    collisionChunks.Contains(
+                        position
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                Chunk chunk =
+                    world.GetChunk(
+                        position.x,
+                        position.y
+                    );
+
+
+                BuildCollision(
+                    position,
+                    chunk
+                );
+            }
+        }
+
+
+        // =====================================================
+        // UNLOAD
+        // =====================================================
+
+        private void UnloadFarChunks()
+        {
+            List<UnityEngine.Vector2Int>
+                toUnload =
+                    null;
+
+
+            foreach (
+                UnityEngine.Vector2Int position
+                in loadedChunks
+            )
+            {
+                if (
+                    IsInsideViewDistance(
+                        position
+                    )
+                )
+                {
+                    continue;
+                }
+
+
+                if (toUnload == null)
+                {
+                    toUnload =
+                        new List<UnityEngine.Vector2Int>();
+                }
+
+
+                toUnload.Add(
+                    position
+                );
+            }
+
+
+            if (toUnload == null)
+                return;
+
+
+            for (
+                int i = 0;
+                i < toUnload.Count;
+                i++
+            )
+            {
+                UnityEngine.Vector2Int position =
+                    toUnload[i];
+
+
+                FallingBlockSystem.UnregisterChunk(
                     position.x,
                     position.y
                 );
 
 
-                collision.RemoveChunkCollision(
+                FurnitureLayerManager furniture =
+                    FurnitureLayerManager.Instance;
+
+
+                if (furniture != null)
+                {
+                    furniture.UnloadGeneratedFurnitureChunk(
+                        position.x,
+                        position.y
+                    );
+                }
+
+
+                renderer?.RemoveChunk(
                     position.x,
                     position.y
                 );
+
+
+                if (
+                    collisionChunks.Remove(
+                        position
+                    )
+                )
+                {
+                    collision?.RemoveChunkCollision(
+                        position.x,
+                        position.y
+                    );
+                }
 
 
                 world.RemoveChunk(
@@ -706,55 +763,62 @@ namespace Game.World.Loading
                 loadedChunks.Remove(
                     position
                 );
-
             }
-
         }
 
 
-        // =====================================================
-        // GET LOADED
-        // =====================================================
-
-        public IEnumerable<Vector2Int> GetLoadedChunks()
+        private bool IsInsideViewDistance(
+            UnityEngine.Vector2Int position
+        )
         {
-
-            return loadedChunks;
-
+            return
+                Mathf.Abs(
+                    position.x -
+                    currentPlayerChunk.x
+                )
+                <=
+                settings.ViewDistance
+                &&
+                Mathf.Abs(
+                    position.y -
+                    currentPlayerChunk.y
+                )
+                <=
+                settings.ViewDistance;
         }
 
 
         // =====================================================
-        // QUEUE SIZE
+        // PUBLIC
         // =====================================================
+
+        public IEnumerable<UnityEngine.Vector2Int>
+            GetLoadedChunks()
+        {
+            return
+                loadedChunks;
+        }
+
 
         public int GetLoadQueueSize()
         {
-
-            return loadQueue.Count;
-
+            return
+                loadQueue.Count;
         }
 
-
-        // =====================================================
-        // IS LOADED
-        // =====================================================
 
         public bool IsChunkLoaded(
             int chunkX,
             int chunkY
         )
         {
-
-            return loadedChunks.Contains(
-                new Vector2Int(
-                    chunkX,
-                    chunkY
-                )
-            );
-
+            return
+                loadedChunks.Contains(
+                    new UnityEngine.Vector2Int(
+                        chunkX,
+                        chunkY
+                    )
+                );
         }
-
     }
-
 }

@@ -1,0 +1,165 @@
+using System;
+namespace Game.World
+{
+    public class ChunkData
+    {
+        private readonly BlockStorage foregroundBlocks;
+
+        private readonly BlockStorage backgroundBlocks;
+
+
+        public ChunkData()
+        {
+            foregroundBlocks =
+                new BlockStorage(
+                    Chunk.SizeX,
+                    Chunk.SizeY
+                );
+
+
+            backgroundBlocks =
+                new BlockStorage(
+                    Chunk.SizeX,
+                    Chunk.SizeY
+                );
+
+
+            foregroundBlocks.Fill(
+                0
+            );
+
+
+            backgroundBlocks.Fill(
+                0
+            );
+        }
+
+
+        public ushort GetBlock(
+            int x,
+            int y
+        )
+        {
+            return
+                foregroundBlocks.Get(
+                    x,
+                    y
+                );
+        }
+
+
+        public void SetBlock(
+            int x,
+            int y,
+            ushort blockID
+        )
+        {
+            foregroundBlocks.Set(
+                x,
+                y,
+                blockID
+            );
+        }
+
+
+        public ushort GetBackground(
+            int x,
+            int y
+        )
+        {
+            return
+                backgroundBlocks.Get(
+                    x,
+                    y
+                );
+        }
+
+
+        public void SetBackground(
+            int x,
+            int y,
+            ushort blockID
+        )
+        {
+            backgroundBlocks.Set(
+                x,
+                y,
+                blockID
+            );
+        }
+    
+
+        // =====================================================
+        // PROCEDURAL FURNITURE DATA
+        // TELDER_POLISH_FIX_PACK_V1
+        // =====================================================
+
+        private readonly string[,] polishFurniture =
+            new string[
+                Chunk.SizeX,
+                Chunk.SizeY
+            ];
+
+        public string GetFurniture(
+            int localX,
+            int localY
+        )
+        {
+            if (
+                localX < 0 ||
+                localX >= Chunk.SizeX ||
+                localY < 0 ||
+                localY >= Chunk.SizeY
+            )
+            {
+                return null;
+            }
+
+            return polishFurniture[
+                localX,
+                localY
+            ];
+        }
+
+        public bool SetFurniture(
+            int localX,
+            int localY,
+            string blockId
+        )
+        {
+            if (
+                localX < 0 ||
+                localX >= Chunk.SizeX ||
+                localY < 0 ||
+                localY >= Chunk.SizeY
+            )
+            {
+                return false;
+            }
+
+            string normalized =
+                string.IsNullOrWhiteSpace(blockId)
+                    ? null
+                    : blockId;
+
+            if (
+                string.Equals(
+                    polishFurniture[localX, localY],
+                    normalized,
+                    StringComparison.Ordinal
+                )
+            )
+            {
+                return false;
+            }
+
+            polishFurniture[
+                localX,
+                localY
+            ] =
+                normalized;
+
+            return true;
+        }
+}
+}

@@ -1,0 +1,27 @@
+{
+  "ID": "game:wooden_bow",
+  "Name": "Wooden Bow",
+  "Texture": "wooden_bow",
+  "Type": "Weapon",
+  "MaxStack": 1,
+  "Weapon": {
+    "Kind": "Bow",
+    "Damage": 12,
+    "AttackSpeed": 1.4,
+    "Knockback": 2.0,
+    "ArmAimOffset": -90,
+    "AmmoItem": "game:arrow",
+    "AmmoPerShot": 1,
+    "ProjectileItem": "game:arrow",
+    "ProjectileCount": 1,
+    "ProjectileSpeed": 15,
+    "ProjectileGravity": 18,
+    "ProjectileLifetime": 8,
+    "SpreadDegrees": 0,
+    "RotateProjectileToVelocity": true,
+    "ProjectileScale": 0.7,
+    "MuzzleOffset": 0.5,
+    "ProjectileDamageMultiplier": 1.0,
+    "FireNormalizedTime": 0.28
+  }
+}

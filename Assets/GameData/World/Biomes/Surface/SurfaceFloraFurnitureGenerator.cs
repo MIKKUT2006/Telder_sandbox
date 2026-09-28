@@ -18,6 +18,299 @@ namespace Game.World.Biomes.Surface
     /// </summary>
     public static class SurfaceFloraFurnitureGenerator
     {
+        /// <summary>
+        /// Writes surface flora into the generation-time furniture buffer.
+        /// V4 calls this from WorldGenerator after structures are stamped.
+        /// </summary>
+        public static void ApplyToChunkData(
+            WorldGenerator generator,
+            WorldSettings settings,
+            ChunkData data,
+            int chunkX,
+            int chunkY
+        )
+        {
+            if (
+                generator == null ||
+                settings == null ||
+                data == null
+            )
+            {
+                return;
+            }
+
+
+            IReadOnlyList<
+                SurfaceFloraProfileRuntime
+            > profiles =
+                SurfaceFloraRegistry.GetAll();
+
+
+            if (
+                profiles == null ||
+                profiles.Count == 0
+            )
+            {
+                return;
+            }
+
+
+            int chunkMinX =
+                chunkX *
+                Chunk.SizeX;
+
+
+            int chunkMinY =
+                chunkY *
+                Chunk.SizeY;
+
+
+            for (
+                int localX = 0;
+                localX < Chunk.SizeX;
+                localX++
+            )
+            {
+                int worldX =
+                    chunkMinX +
+                    localX;
+
+
+                int surfaceY =
+                    generator.GetSurfaceHeight(
+                        worldX
+                    );
+
+
+                int plantY =
+                    surfaceY +
+                    1;
+
+
+                int localPlantY =
+                    plantY -
+                    chunkMinY;
+
+
+                if (
+                    localPlantY < 0 ||
+                    localPlantY >= Chunk.SizeY
+                )
+                {
+                    continue;
+                }
+
+
+                // Plant cell must still be empty after structures.
+                if (
+                    data.GetBlock(
+                        localX,
+                        localPlantY
+                    ) != 0
+                )
+                {
+                    continue;
+                }
+
+
+                if (
+                    data.GetFurniture(
+                        localX,
+                        localPlantY
+                    ) != 0
+                )
+                {
+                    continue;
+                }
+
+
+                // Usually the ground is in this chunk. If plantY is exactly
+                // the bottom cell, the surface block belongs to the chunk
+                // directly below; generator surface height is enough to
+                // accept that boundary case.
+                int localSurfaceY =
+                    surfaceY -
+                    chunkMinY;
+
+
+                if (
+                    localSurfaceY >= 0 &&
+                    localSurfaceY < Chunk.SizeY &&
+                    data.GetBlock(
+                        localX,
+                        localSurfaceY
+                    ) == 0
+                )
+                {
+                    continue;
+                }
+
+
+                if (
+                    localSurfaceY < -1 ||
+                    localSurfaceY >= Chunk.SizeY
+                )
+                {
+                    continue;
+                }
+
+
+                BiomeDefinition biome =
+                    generator.GetDominantBiome(
+                        worldX
+                    );
+
+
+                if (
+                    biome == null
+                )
+                {
+                    continue;
+                }
+
+
+                bool placed =
+                    false;
+
+
+                for (
+                    int profileIndex = 0;
+                    profileIndex < profiles.Count;
+                    profileIndex++
+                )
+                {
+                    SurfaceFloraProfileRuntime profile =
+                        profiles[
+                            profileIndex
+                        ];
+
+
+                    if (
+                        profile == null ||
+                        profile.Definition == null ||
+                        !BiomeNameUtility.Matches(
+                            biome,
+                            profile.Definition.Biomes
+                        )
+                    )
+                    {
+                        continue;
+                    }
+
+
+                    for (
+                        int plantIndex = 0;
+                        plantIndex < profile.Plants.Count;
+                        plantIndex++
+                    )
+                    {
+                        SurfaceFloraEntryRuntime plant =
+                            profile.Plants[
+                                plantIndex
+                            ];
+
+
+                        if (
+                            plant == null ||
+                            plant.Definition == null ||
+                            plant.BlockId == 0
+                        )
+                        {
+                            continue;
+                        }
+
+
+                        SurfaceFloraEntry definition =
+                            plant.Definition;
+
+
+                        if (
+                            definition.NoiseThreshold > 0f
+                        )
+                        {
+                            float scale =
+                                Mathf.Max(
+                                    0.00001f,
+                                    definition.NoiseScale
+                                );
+
+
+                            float patchNoise =
+                                Mathf.PerlinNoise(
+                                    (
+                                        worldX +
+                                        settings.Seed *
+                                        0.173f +
+                                        profileIndex *
+                                        131.7f
+                                    )
+                                    *
+                                    scale,
+
+                                    67.31f +
+                                    plantIndex *
+                                    11.9f
+                                );
+
+
+                            if (
+                                patchNoise <
+                                Mathf.Clamp01(
+                                    definition.NoiseThreshold
+                                )
+                            )
+                            {
+                                continue;
+                            }
+                        }
+
+
+                        float roll =
+                            Hash01(
+                                settings.Seed,
+                                worldX,
+                                profileIndex,
+                                plantIndex
+                            );
+
+
+                        if (
+                            roll >
+                            Mathf.Clamp01(
+                                definition.Chance
+                            )
+                        )
+                        {
+                            continue;
+                        }
+
+
+                        if (
+                            data.SetFurniture(
+                                localX,
+                                localPlantY,
+                                plant.BlockId
+                            )
+                        )
+                        {
+                            placed =
+                                true;
+
+
+                            break;
+                        }
+                    }
+
+
+                    if (placed)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+
         public static void ApplyToLoadedChunk(
             WorldGenerator generator,
             WorldSettings settings,

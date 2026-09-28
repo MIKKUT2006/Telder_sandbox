@@ -1,0 +1,823 @@
+{
+    "ID": "Dark_castle",
+    "DisplayName": "Dartk castle",
+    "Width": 12,
+    "Height": 18,
+    "OriginX": 0,
+    "OriginY": 0,
+    "Type": 0,
+    "SpawnType": 0,
+    "SpawnChance": 0.10000000149011612,
+    "RegionSize": 64,
+    "UseHeightRange": true,
+    "MinY": 10,
+    "MaxY": 90,
+    "RequireFreeSpace": true,
+    "FreeSpacePadding": 1,
+    "BiomeSource": 1,
+    "Biomes": [
+        "game:ancient_caves"
+    ],
+    "Cells": [
+        {
+            "X": 3,
+            "Y": 0,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 0,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 0,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 0,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 0,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 0,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 0,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 11,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 10,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 9,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 8,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 7,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 6,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 5,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 4,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 3,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 2,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 1,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 1,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 2,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 3,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 4,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 7,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 8,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 9,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 10,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 11,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 6,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 5,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 1,
+            "Y": 14,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 1,
+            "Y": 13,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 1,
+            "Y": 12,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 12,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 13,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 13,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 13,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 9,
+            "Y": 14,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 9,
+            "Y": 13,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 9,
+            "Y": 12,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 12,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 12,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 12,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 12,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 12,
+            "ForegroundId": "game:moss_dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 12,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 9,
+            "ForegroundId": "game:torch",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 9,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 9,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 9,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 11,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 10,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 9,
+            "ForegroundId": "game:torch",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 8,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 8,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 8,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 8,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 8,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 7,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 7,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 7,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 7,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 7,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 6,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 6,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 6,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 6,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 6,
+            "ForegroundId": "game:dark_brickstone",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 5,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 4,
+            "ForegroundId": "game:torch",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 6,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 5,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 4,
+            "Y": 4,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 4,
+            "ForegroundId": "game:torch",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 3,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 7,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        }
+    ]
+}

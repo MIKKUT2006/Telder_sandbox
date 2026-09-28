@@ -73,6 +73,24 @@ namespace Game.World.Generation
             BiomeRegistry.Initialize();
 
 
+            // V4: these registries are static and the game changes
+            // dimensions by reloading the scene without necessarily
+            // reloading the scripting domain.
+            Game.World.Biomes.Caves
+                .CaveBiomeRegistry
+                .Reload();
+
+
+            Game.World.Biomes.Surface
+                .SurfaceFloraRegistry
+                .Reload();
+
+
+            Game.World.Vegetation.Caves
+                .CaveVegetationGenerationRuntime
+                .Reload();
+
+
             dimension =
                 DimensionTravelRuntime.Current;
 
@@ -203,6 +221,10 @@ namespace Game.World.Generation
                 new ChunkData();
 
 
+            // =====================================================
+            // 1. BASE SURFACE BIOME TERRAIN
+            // =====================================================
+
             for (
                 int localX = 0;
                 localX < Chunk.SizeX;
@@ -241,6 +263,7 @@ namespace Game.World.Generation
                         worldX
                     );
 
+
                     continue;
                 }
 
@@ -257,12 +280,21 @@ namespace Game.World.Generation
                         localY;
 
 
+                    BiomeRuntimeData cellBiome =
+                        SelectBlendedMaterialBiome(
+                            worldX,
+                            worldY,
+                            sample,
+                            biome
+                        );
+
+
                     ushort foreground =
                         GenerateForegroundBlock(
                             worldX,
                             worldY,
                             surfaceHeight,
-                            biome
+                            cellBiome
                         );
 
 
@@ -272,7 +304,7 @@ namespace Game.World.Generation
                             worldY,
                             surfaceHeight,
                             foreground,
-                            biome
+                            cellBiome
                         );
 
 
@@ -292,11 +324,358 @@ namespace Game.World.Generation
             }
 
 
+            // =====================================================
+            // 2. CAVE BIOME MATERIALS + BIOME-SPECIFIC CAVE POCKETS
+            // =====================================================
+
+            Game.World.Biomes.Caves
+                .CaveBiomePostProcessor
+                .ApplyToChunkData(
+                    this,
+                    settings,
+                    data,
+                    chunkX,
+                    chunkY
+                );
+
+
+            // =====================================================
+            // 3. STRUCTURES
+            //
+            // Structures go before flora so plants never appear
+            // inside a newly stamped structure.
+            // =====================================================
+
+            Game.World.Structures
+                .StructureGenerationRuntime
+                .ApplyToChunk(
+                    this,
+                    settings,
+                    data,
+                    chunkX,
+                    chunkY
+                );
+
+
+            // =====================================================
+            // 4. SURFACE FLORA
+            // =====================================================
+
+            Game.World.Biomes.Surface
+                .SurfaceFloraFurnitureGenerator
+                .ApplyToChunkData(
+                    this,
+                    settings,
+                    data,
+                    chunkX,
+                    chunkY
+                );
+
+
+            // =====================================================
+            // 5. CAVE FLORA
+            // =====================================================
+
+            Game.World.Vegetation.Caves
+                .CaveVegetationGenerationRuntime
+                .ApplyToChunk(
+                    this,
+                    settings,
+                    data,
+                    chunkX,
+                    chunkY
+                );
+
+
             return data;
         }
 
 
-        private ushort GenerateForegroundBlock(
+                // [TELDER-V35.1-BIOME-MATERIAL-BLEND]
+                // [TELDER-V36-BIOME-BLEND-CACHE]
+        private int materialBlendCacheX =
+            int.MinValue;
+
+        private BiomeDefinition materialBlendCachePrimaryDefinition;
+
+        private BiomeDefinition materialBlendCacheSecondaryDefinition;
+
+        private BiomeRuntimeData materialBlendCachePrimary;
+
+        private BiomeRuntimeData materialBlendCacheSecondary;
+
+        private float materialBlendCacheBlend;
+
+        private float materialBlendCacheNoise;
+
+
+private BiomeRuntimeData SelectBlendedMaterialBiome(
+            int worldX,
+            int worldY,
+            BiomeSample sample,
+            BiomeRuntimeData fallback
+        )
+        {
+            if (
+                sample.Primary ==
+                null
+            )
+            {
+                return fallback;
+            }
+
+
+            if (
+                sample.Secondary ==
+                null
+                ||
+                sample.Secondary ==
+                sample.Primary
+            )
+            {
+                if (
+                    materialBlendCacheX !=
+                    worldX
+                    ||
+                    materialBlendCachePrimaryDefinition !=
+                    sample.Primary
+                )
+                {
+                    materialBlendCacheX =
+                        worldX;
+
+
+                    materialBlendCachePrimaryDefinition =
+                        sample.Primary;
+
+
+                    materialBlendCacheSecondaryDefinition =
+                        null;
+
+
+                    materialBlendCachePrimary =
+                        biomeRuntime.Get(
+                            sample.Primary
+                        );
+
+
+                    materialBlendCacheSecondary =
+                        null;
+
+
+                    materialBlendCacheBlend =
+                        0f;
+
+
+                    materialBlendCacheNoise =
+                        0f;
+                }
+
+
+                return
+                    materialBlendCachePrimary ??
+                    fallback;
+            }
+
+
+            bool cacheInvalid =
+                materialBlendCacheX !=
+                worldX
+                ||
+                materialBlendCachePrimaryDefinition !=
+                sample.Primary
+                ||
+                materialBlendCacheSecondaryDefinition !=
+                sample.Secondary;
+
+
+            if (cacheInvalid)
+            {
+                materialBlendCacheX =
+                    worldX;
+
+
+                materialBlendCachePrimaryDefinition =
+                    sample.Primary;
+
+
+                materialBlendCacheSecondaryDefinition =
+                    sample.Secondary;
+
+
+                // Dictionary/runtime lookup only once for the whole X column.
+                materialBlendCachePrimary =
+                    biomeRuntime.Get(
+                        sample.Primary
+                    );
+
+
+                materialBlendCacheSecondary =
+                    biomeRuntime.Get(
+                        sample.Secondary
+                    );
+
+
+                materialBlendCacheBlend =
+                    Mathf.SmoothStep(
+                        0f,
+                        1f,
+                        Mathf.Clamp01(
+                            sample.Blend
+                        )
+                    );
+
+
+                // IMPORTANT PERFORMANCE CHANGE:
+                //
+                // Old V35.1 did TWO Mathf.PerlinNoise calls for EVERY TILE.
+                // 32x32 chunk = ~2048 extra Perlin calls.
+                //
+                // Now we calculate coherent edge noise ONCE PER X COLUMN.
+                float large =
+                    Mathf.PerlinNoise(
+                        (
+                            worldX +
+                            settings.Seed *
+                            0.37117f
+                        )
+                        *
+                        0.105f,
+
+                        17.731f +
+                        settings.Seed *
+                        0.00013f
+                    );
+
+
+                float detail =
+                    Mathf.PerlinNoise(
+                        (
+                            worldX +
+                            settings.Seed *
+                            1.17341f
+                        )
+                        *
+                        0.285f,
+
+                        71.219f +
+                        settings.Seed *
+                        0.00019f
+                    );
+
+
+                materialBlendCacheNoise =
+                    Mathf.Clamp01(
+                        large *
+                        0.74f
+                        +
+                        detail *
+                        0.26f
+                    );
+            }
+
+
+            BiomeRuntimeData primary =
+                materialBlendCachePrimary;
+
+
+            BiomeRuntimeData secondary =
+                materialBlendCacheSecondary;
+
+
+            if (primary == null)
+            {
+                return
+                    secondary ??
+                    fallback;
+            }
+
+
+            if (secondary == null)
+            {
+                return primary;
+            }
+
+
+            float blend =
+                materialBlendCacheBlend;
+
+
+            if (blend <= 0.01f)
+                return primary;
+
+
+            if (blend >= 0.99f)
+                return secondary;
+
+
+            // Cheap deterministic Y breakup.
+            // This keeps the border organic without expensive Perlin per tile.
+            int band =
+                worldY >>
+                1;
+
+
+            uint hash =
+                unchecked(
+                    (uint)(
+                        worldX *
+                        73856093
+                        ^
+                        band *
+                        19349663
+                        ^
+                        settings.Seed *
+                        83492791
+                    )
+                );
+
+
+            hash ^=
+                hash >>
+                13;
+
+
+            hash *=
+                1274126177u;
+
+
+            hash ^=
+                hash >>
+                16;
+
+
+            float yJitter =
+                (
+                    (
+                        hash &
+                        1023u
+                    )
+                    /
+                    1023f
+                    -
+                    0.5f
+                )
+                *
+                0.16f;
+
+
+            float threshold =
+                Mathf.Clamp01(
+                    materialBlendCacheNoise +
+                    yJitter
+                );
+
+
+            return
+                blend >=
+                threshold
+                    ? secondary
+                    : primary;
+        }
+
+
+private ushort GenerateForegroundBlock(
     int worldX,
     int worldY,
     int surfaceHeight,
@@ -491,10 +870,10 @@ namespace Game.World.Generation
 
 
                 // -------------------------------------------------
-                // Смещаем только X.
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ X.
                 //
-                // Это даёт другую deterministic ore distribution,
-                // но не ломает вычисление глубины по worldY.
+                // пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ deterministic ore distribution,
+                // пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ worldY.
                 // -------------------------------------------------
 
                 ushort backgroundOre =

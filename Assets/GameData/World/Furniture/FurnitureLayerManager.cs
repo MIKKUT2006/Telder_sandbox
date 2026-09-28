@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1319,7 +1319,7 @@ namespace Game.World.Furniture
 
 
             renderer.sortingOrder =
-                3;
+                1000;
 
         }
 

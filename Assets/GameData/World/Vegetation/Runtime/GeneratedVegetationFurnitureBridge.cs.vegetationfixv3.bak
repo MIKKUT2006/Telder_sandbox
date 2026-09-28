@@ -1,0 +1,87 @@
+using Game.World.Furniture;
+
+namespace Game.World.Vegetation.Runtime
+{
+    public static class GeneratedVegetationFurnitureBridge
+    {
+        public static void Apply(
+            ChunkData data,
+            int chunkX,
+            int chunkY
+        )
+        {
+            if (data == null)
+                return;
+
+            FurnitureLayerManager manager =
+                FurnitureLayerManager.EnsureInstance();
+
+            if (manager == null)
+                return;
+
+            int startX =
+                chunkX *
+                Chunk.SizeX;
+
+            int startY =
+                chunkY *
+                Chunk.SizeY;
+
+            for (
+                int localX = 0;
+                localX < Chunk.SizeX;
+                localX++
+            )
+            {
+                for (
+                    int localY = 0;
+                    localY < Chunk.SizeY;
+                    localY++
+                )
+                {
+                    string blockId =
+                        data.GetFurniture(
+                            localX,
+                            localY
+                        );
+
+                    if (
+                        string.IsNullOrWhiteSpace(
+                            blockId
+                        )
+                    )
+                    {
+                        continue;
+                    }
+
+                    manager.SetGeneratedFurniture(
+                        startX + localX,
+                        startY + localY,
+                        blockId
+                    );
+                }
+            }
+        }
+
+
+        public static void Unload(
+            int chunkX,
+            int chunkY
+        )
+        {
+            if (
+                FurnitureLayerManager.Instance ==
+                null
+            )
+            {
+                return;
+            }
+
+            FurnitureLayerManager.Instance
+                .UnloadGeneratedFurnitureChunk(
+                    chunkX,
+                    chunkY
+                );
+        }
+    }
+}

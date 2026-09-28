@@ -1,0 +1,211 @@
+        private void DrawBlockPalette()
+        {
+            Rect area = new Rect(
+                0f,
+                54f,
+                PaletteWidth,
+                Mathf.Max(1f, Screen.height - 54f)
+            );
+
+            GUI.Box(area, string.Empty);
+
+            GUI.Label(
+                new Rect(
+                    area.x + 8f,
+                    area.y + 7f,
+                    area.width - 16f,
+                    22f
+                ),
+                "БЛОКИ"
+            );
+
+            GUI.Label(
+                new Rect(
+                    area.x + 8f,
+                    area.y + 28f,
+                    area.width - 16f,
+                    38f
+                ),
+                "ЛКМ — выбрать | сетка 4 в ряд"
+            );
+
+            string nextSearch = GUI.TextField(
+                new Rect(
+                    area.x + 8f,
+                    area.y + 67f,
+                    area.width - 16f,
+                    24f
+                ),
+                blockSearch ?? string.Empty,
+                GetEditableTextFieldStyle()
+            );
+
+            if (!string.Equals(
+                    nextSearch,
+                    blockSearch,
+                    StringComparison.Ordinal
+                ))
+            {
+                blockSearch = nextSearch;
+                RebuildFilteredBlocks();
+                blockScroll = Vector2.zero;
+            }
+
+            Rect viewport = new Rect(
+                area.x + 8f,
+                area.y + 97f,
+                area.width - 16f,
+                Mathf.Max(10f, area.height - 105f)
+            );
+
+            const int columns = 4;
+            const float gap = 4f;
+            const float tileHeight = 70f;
+
+            float contentWidth = Mathf.Max(
+                1f,
+                viewport.width - 18f
+            );
+
+            float tileWidth = Mathf.Max(
+                40f,
+                (contentWidth - gap * (columns - 1)) / columns
+            );
+
+            int rowCount = Mathf.CeilToInt(
+                filteredBlocks.Count / (float)columns
+            );
+
+            float contentHeight = Mathf.Max(
+                viewport.height,
+                rowCount * (tileHeight + gap)
+            );
+
+            Rect content = new Rect(
+                0f,
+                0f,
+                contentWidth,
+                contentHeight
+            );
+
+            blockScroll = GUI.BeginScrollView(
+                viewport,
+                blockScroll,
+                content
+            );
+
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
+            labelStyle.fontSize = 9;
+            labelStyle.alignment = TextAnchor.LowerCenter;
+            labelStyle.clipping = TextClipping.Clip;
+            labelStyle.normal.textColor = Color.white;
+
+            int firstRow = Mathf.Max(
+                0,
+                Mathf.FloorToInt(
+                    blockScroll.y / (tileHeight + gap)
+                ) - 1
+            );
+
+            int lastRow = Mathf.Min(
+                Mathf.Max(0, rowCount - 1),
+                Mathf.CeilToInt(
+                    (blockScroll.y + viewport.height) /
+                    (tileHeight + gap)
+                ) + 1
+            );
+
+            for (int row = firstRow; row <= lastRow; row++)
+            {
+                for (int column = 0; column < columns; column++)
+                {
+                    int index = row * columns + column;
+
+                    if (index < 0 || index >= filteredBlocks.Count)
+                        continue;
+
+                    StructureEditorContentScanner.BlockInfo block =
+                        filteredBlocks[index];
+
+                    Rect buttonRect = new Rect(
+                        column * (tileWidth + gap),
+                        row * (tileHeight + gap),
+                        tileWidth,
+                        tileHeight
+                    );
+
+                    Color old = GUI.backgroundColor;
+
+                    if (string.Equals(
+                            selectedBlockId,
+                            block.ID,
+                            StringComparison.OrdinalIgnoreCase
+                        ))
+                    {
+                        GUI.backgroundColor =
+                            new Color(0.35f, 0.55f, 0.90f);
+                    }
+
+                    if (GUI.Button(
+                            buttonRect,
+                            new GUIContent(
+                                string.Empty,
+                                block.DisplayLabel
+                            )
+                        ))
+                    {
+                        selectedBlockId = block.ID;
+                    }
+
+                    GUI.backgroundColor = old;
+
+                    if (Event.current.type == EventType.Repaint)
+                    {
+                        Texture2D icon =
+                            StructureEditorIconCache.Get(block);
+
+                        float iconSize = Mathf.Min(
+                            tileWidth - 8f,
+                            43f
+                        );
+
+                        if (icon != null)
+                        {
+                            GUI.DrawTexture(
+                                new Rect(
+                                    buttonRect.x +
+                                    (buttonRect.width - iconSize) * 0.5f,
+                                    buttonRect.y + 4f,
+                                    iconSize,
+                                    iconSize
+                                ),
+                                icon,
+                                ScaleMode.ScaleToFit,
+                                true
+                            );
+                        }
+
+                        string label =
+                            block.DisplayLabel ??
+                            block.ID ??
+                            string.Empty;
+
+                        if (label.Length > 10)
+                            label = label.Substring(0, 9) + "…";
+
+                        GUI.Label(
+                            new Rect(
+                                buttonRect.x + 2f,
+                                buttonRect.y + buttonRect.height - 22f,
+                                buttonRect.width - 4f,
+                                19f
+                            ),
+                            label,
+                            labelStyle
+                        );
+                    }
+                }
+            }
+
+            GUI.EndScrollView();
+        }

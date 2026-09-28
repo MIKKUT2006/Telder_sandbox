@@ -1,0 +1,24 @@
+        private string LabeledText(
+            string label,
+            string value
+        )
+        {
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label(
+                label,
+                GUILayout.Width(120f)
+            );
+
+            GUI.SetNextControlName(
+                "StructureText_" + label
+            );
+
+            value = GUILayout.TextField(
+                value ?? string.Empty,
+                GetEditableTextFieldStyle()
+            );
+
+            GUILayout.EndHorizontal();
+            return value;
+        }

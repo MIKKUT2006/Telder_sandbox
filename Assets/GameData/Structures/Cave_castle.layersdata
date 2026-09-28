@@ -1,0 +1,46 @@
+{
+    "Version": 2,
+    "StructureId": "Cave_castle",
+    "Cells": [
+        {
+            "X": 2,
+            "Y": 8,
+            "FurnitureId": "game:workbench",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 13,
+            "FurnitureId": "game:tool_bench",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 10,
+            "FurnitureId": "game:torch",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 15,
+            "FurnitureId": "game:torch",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 22,
+            "FurnitureId": "game:torch",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        }
+    ]
+}

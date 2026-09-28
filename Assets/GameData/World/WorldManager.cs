@@ -1,4 +1,4 @@
-﻿using Game.Blocks;
+using Game.Blocks;
 using Game.Content;
 using Game.World.Collision;
 using Game.World.Dimensions;
@@ -904,6 +904,13 @@ namespace Game.World
             }
 
             SaveGameRuntime.RecordForegroundChange(worldX,worldY,blockID);
+            // [TELDER-V34-FALLING-NOTIFY]
+            Game.World.Physics.FallingBlockSystem.NotifyCellChanged(
+                worldX,
+                worldY
+            );
+
+
             return true;
         }
 

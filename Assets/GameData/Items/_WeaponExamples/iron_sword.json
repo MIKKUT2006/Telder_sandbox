@@ -1,0 +1,25 @@
+{
+  "ID": "game:iron_sword",
+  "Name": "Iron Sword",
+  "Texture": "iron_sword",
+  "Type": "Weapon",
+  "MaxStack": 1,
+  "Weapon": {
+    "Kind": "Sword",
+    "Damage": 24,
+    "AttackSpeed": 2.0,
+    "Knockback": 4.0,
+    "Range": 1.0,
+    "ArmAimOffset": -90,
+    "UseBackArm": false,
+    "SwordPattern": [
+      "Swing",
+      "Thrust"
+    ],
+    "SwingArc": 135,
+    "SwingReach": 1.35,
+    "SwingHitRadius": 0.48,
+    "ThrustDistance": 0.9,
+    "ThrustHitRadius": 0.34
+  }
+}

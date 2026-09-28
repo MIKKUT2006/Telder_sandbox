@@ -1,0 +1,40 @@
+{
+  "ID": "game:desert",
+  "DisplayName": "DESERT",
+  "AllowedDimensionTypes": [
+    "*"
+  ],
+  "Weight": 1.0,
+  "Rare": false,
+  "Terrain": {
+    "TopBlock": "game:sand",
+    "SoilBlock": "game:sand",
+    "StoneBlock": "game:stone",
+    "BackgroundBlock": "game:stone",
+    "SoilDepth": 8,
+    "HeightOffset": 0.0,
+    "HillHeightMultiplier": 0.65,
+    "HillScaleMultiplier": 1.0,
+    "TerrainVariationMultiplier": 0.75,
+    "TerrainScaleMultiplier": 1.0,
+    "DetailMultiplier": 0.65,
+    "DetailScaleMultiplier": 1.0,
+    "DistortionStrength": 0.0,
+    "DistortionScale": 0.0035,
+    "RidgeStrength": 0.0,
+    "RidgeScale": 0.01,
+    "WaveStrength": 0.0,
+    "WaveScale": 0.024
+  },
+  "Caves": {
+    "FrequencyMultiplier": 1.0,
+    "SizeMultiplier": 0.2,
+    "ChamberMultiplier": 1.0,
+    "EntranceMultiplier": 1.0
+  },
+  "Climate": {
+    "Temperature": 0.80,
+    "Humidity": 0.55,
+    "Weirdness": 0.2
+  }
+}

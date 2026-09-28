@@ -1,0 +1,17 @@
+{
+  "ID": "game:iron_spear",
+  "Name": "Iron Spear",
+  "Texture": "iron_spear",
+  "Type": "Weapon",
+  "MaxStack": 1,
+  "Weapon": {
+    "Kind": "Spear",
+    "Damage": 20,
+    "AttackSpeed": 1.7,
+    "Knockback": 3.5,
+    "ArmAimOffset": -90,
+    "SpearBaseReach": 1.55,
+    "SpearThrustDistance": 1.7,
+    "SpearHitRadius": 0.26
+  }
+}

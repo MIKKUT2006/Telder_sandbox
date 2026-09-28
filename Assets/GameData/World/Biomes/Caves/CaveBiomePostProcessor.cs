@@ -10,6 +10,276 @@ namespace Game.World.Biomes.Caves
 {
     public static class CaveBiomePostProcessor
     {
+        /// <summary>
+        /// Applies cave-biome materials directly to generation-time ChunkData.
+        ///
+        /// This is the important V4 path: previously the only processor
+        /// accepted a live Chunk, but WorldGenerator never called it.
+        /// </summary>
+        public static void ApplyToChunkData(
+            WorldGenerator generator,
+            WorldSettings settings,
+            ChunkData data,
+            int chunkX,
+            int chunkY
+        )
+        {
+            if (
+                generator == null ||
+                settings == null ||
+                data == null
+            )
+            {
+                return;
+            }
+
+
+            string[] dimensionKeys =
+                CaveBiomeDimensionRuntime
+                    .GetCurrentKeys();
+
+
+            int chunkMinX =
+                chunkX *
+                Chunk.SizeX;
+
+
+            int chunkMinY =
+                chunkY *
+                Chunk.SizeY;
+
+
+            // =================================================
+            // PASS 1:
+            // material overrides + biome-specific extra caves
+            // =================================================
+
+            for (
+                int localX = 0;
+                localX < Chunk.SizeX;
+                localX++
+            )
+            {
+                int worldX =
+                    chunkMinX +
+                    localX;
+
+
+                if (
+                    !WorldGenerationBiomeProbe
+                        .TryGetTerrainIds(
+                            generator,
+                            worldX,
+                            out ushort baseStone,
+                            out ushort baseBackground
+                        )
+                )
+                {
+                    continue;
+                }
+
+
+                for (
+                    int localY = 0;
+                    localY < Chunk.SizeY;
+                    localY++
+                )
+                {
+                    int worldY =
+                        chunkMinY +
+                        localY;
+
+
+                    CaveBiomeRuntimeData biome =
+                        CaveBiomeRegistry.FindAt(
+                            worldX,
+                            worldY,
+                            settings.Seed,
+                            dimensionKeys
+                        );
+
+
+                    if (
+                        biome ==
+                        null
+                    )
+                    {
+                        continue;
+                    }
+
+
+                    ushort foreground =
+                        data.GetBlock(
+                            localX,
+                            localY
+                        );
+
+
+                    ushort background =
+                        data.GetBackground(
+                            localX,
+                            localY
+                        );
+
+
+                    if (
+                        foreground != 0 &&
+                        foreground == baseStone
+                    )
+                    {
+                        if (
+                            biome.Definition.ExtraCaves &&
+                            IsExtraCave(
+                                biome.Definition,
+                                worldX,
+                                worldY,
+                                settings.Seed
+                            )
+                        )
+                        {
+                            data.SetBlock(
+                                localX,
+                                localY,
+                                0
+                            );
+                        }
+                        else if (
+                            biome.StoneBlockId != 0
+                        )
+                        {
+                            data.SetBlock(
+                                localX,
+                                localY,
+                                biome.StoneBlockId
+                            );
+                        }
+                    }
+
+
+                    if (
+                        background != 0 &&
+                        background == baseBackground &&
+                        biome.BackgroundBlockId != 0
+                    )
+                    {
+                        data.SetBackground(
+                            localX,
+                            localY,
+                            biome.BackgroundBlockId
+                        );
+                    }
+                }
+            }
+
+
+            // =================================================
+            // PASS 2:
+            // optional cave floor / ceiling materials
+            // =================================================
+
+            for (
+                int localX = 0;
+                localX < Chunk.SizeX;
+                localX++
+            )
+            {
+                int worldX =
+                    chunkMinX +
+                    localX;
+
+
+                for (
+                    int localY = 1;
+                    localY < Chunk.SizeY - 1;
+                    localY++
+                )
+                {
+                    int worldY =
+                        chunkMinY +
+                        localY;
+
+
+                    CaveBiomeRuntimeData biome =
+                        CaveBiomeRegistry.FindAt(
+                            worldX,
+                            worldY,
+                            settings.Seed,
+                            dimensionKeys
+                        );
+
+
+                    if (
+                        biome ==
+                        null
+                    )
+                    {
+                        continue;
+                    }
+
+
+                    ushort current =
+                        data.GetBlock(
+                            localX,
+                            localY
+                        );
+
+
+                    if (
+                        current == 0
+                    )
+                    {
+                        continue;
+                    }
+
+
+                    bool airAbove =
+                        data.GetBlock(
+                            localX,
+                            localY + 1
+                        ) ==
+                        0;
+
+
+                    bool airBelow =
+                        data.GetBlock(
+                            localX,
+                            localY - 1
+                        ) ==
+                        0;
+
+
+                    if (
+                        airAbove &&
+                        biome.FloorBlockId != 0
+                    )
+                    {
+                        data.SetBlock(
+                            localX,
+                            localY,
+                            biome.FloorBlockId
+                        );
+
+
+                        continue;
+                    }
+
+
+                    if (
+                        airBelow &&
+                        biome.CeilingBlockId != 0
+                    )
+                    {
+                        data.SetBlock(
+                            localX,
+                            localY,
+                            biome.CeilingBlockId
+                        );
+                    }
+                }
+            }
+        }
+
+
         public static void ApplyToChunk(
             WorldGenerator generator,
             WorldSettings settings,

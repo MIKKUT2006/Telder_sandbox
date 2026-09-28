@@ -1,0 +1,30 @@
+{
+    "Version": 2,
+    "StructureId": "campfire",
+    "Cells": [
+        {
+            "X": 5,
+            "Y": 0,
+            "FurnitureId": "game:campfire",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 0,
+            "FurnitureId": "game:lying_stone",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 1,
+            "Y": 0,
+            "FurnitureId": "game:lying_stone_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        }
+    ]
+}

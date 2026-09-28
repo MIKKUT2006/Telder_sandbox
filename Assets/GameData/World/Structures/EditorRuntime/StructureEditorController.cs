@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -165,6 +165,30 @@ namespace Game.World.Structures.EditorRuntime
             -1;
 
 
+        // TELDER_AREA_SELECTION_V1
+        private bool areaSelectionActive;
+
+        private bool areaSelecting;
+
+        private bool areaMoving;
+
+        private int areaStartX;
+
+        private int areaStartY;
+
+        private int areaEndX;
+
+        private int areaEndY;
+
+        private int moveStartX;
+
+        private int moveStartY;
+
+        private int moveOffsetX;
+
+        private int moveOffsetY;
+
+
         private Vector2 blockScroll;
 
         private Vector2 settingsScroll;
@@ -181,6 +205,8 @@ namespace Game.World.Structures.EditorRuntime
         private string status =
             string.Empty;
 
+
+        private GUIStyle editableTextFieldStyle;
 
         private GUIStyle cellIdStyle;
 
@@ -314,18 +340,28 @@ namespace Game.World.Structures.EditorRuntime
         }
 
 
-        private void OnGUI()
+                private void OnGUI()
         {
+            global::UnityEngine.Cursor.visible = true;
+            global::UnityEngine.Cursor.lockState = CursorLockMode.None;
+
             EnsureStyles();
 
+            if (GUI.skin != null && GUI.skin.settings != null)
+            {
+                GUI.skin.settings.cursorColor = Color.white;
+                GUI.skin.settings.selectionColor =
+                    new Color(0.22f, 0.48f, 0.85f, 0.85f);
+                GUI.skin.settings.cursorFlashSpeed = 0.8f;
+                GUI.skin.settings.doubleClickSelectsWord = true;
+            }
+
             DrawTopBar();
-
             DrawBlockPalette();
-
             DrawGrid();
-
             DrawSettings();
         }
+
 
 
         // =====================================================
@@ -648,255 +684,186 @@ namespace Game.World.Structures.EditorRuntime
         // BLOCK PALETTE
         // =====================================================
 
-        private void DrawBlockPalette()
+                private void DrawBlockPalette()
         {
-            Rect area =
-                new Rect(
-                    0f,
-                    54f,
-                    PaletteWidth,
-                    Mathf.Max(
-                        1f,
-                        Screen.height -
-                        54f
-                    )
-                );
-
-
-            GUI.Box(
-                area,
-                string.Empty
+            Rect area = new Rect(
+                0f,
+                54f,
+                PaletteWidth,
+                Mathf.Max(1f, Screen.height - 54f)
             );
 
+            GUI.Box(area, string.Empty);
 
             GUI.Label(
                 new Rect(
-                    area.x +
-                    8f,
-                    area.y +
-                    7f,
-                    area.width -
-                    16f,
+                    area.x + 8f,
+                    area.y + 7f,
+                    area.width - 16f,
                     22f
                 ),
                 "БЛОКИ"
             );
 
-
             GUI.Label(
                 new Rect(
-                    area.x +
-                    8f,
-                    area.y +
-                    28f,
-                    area.width -
-                    16f,
+                    area.x + 8f,
+                    area.y + 28f,
+                    area.width - 16f,
                     38f
                 ),
-                "ЛКМ — поставить/изменить | ПКМ — удалить | Z — поворот/зеркало"
+                "ЛКМ — выбрать | сетка 4 в ряд"
             );
 
+            string nextSearch = GUI.TextField(
+                new Rect(
+                    area.x + 8f,
+                    area.y + 67f,
+                    area.width - 16f,
+                    24f
+                ),
+                blockSearch ?? string.Empty,
+                GetEditableTextFieldStyle()
+            );
 
-            string nextSearch =
-                GUI.TextField(
-                    new Rect(
-                        area.x +
-                        8f,
-                        area.y +
-                        67f,
-                        area.width -
-                        16f,
-                        24f
-                    ),
-                    blockSearch ??
-                    string.Empty
-                );
-
-
-            if (
-                !string.Equals(
+            if (!string.Equals(
                     nextSearch,
                     blockSearch,
                     StringComparison.Ordinal
-                )
-            )
+                ))
             {
-                blockSearch =
-                    nextSearch;
-
-
+                blockSearch = nextSearch;
                 RebuildFilteredBlocks();
-
-
-                blockScroll =
-                    Vector2.zero;
+                blockScroll = Vector2.zero;
             }
 
+            Rect viewport = new Rect(
+                area.x + 8f,
+                area.y + 97f,
+                area.width - 16f,
+                Mathf.Max(10f, area.height - 105f)
+            );
 
-            Rect viewport =
-                new Rect(
-                    area.x +
-                    8f,
-                    area.y +
-                    97f,
-                    area.width -
-                    16f,
-                    Mathf.Max(
-                        10f,
-                        area.height -
-                        105f
-                    )
-                );
+            const int columns = 4;
+            const float gap = 4f;
+            const float tileHeight = 70f;
 
+            float contentWidth = Mathf.Max(
+                1f,
+                viewport.width - 18f
+            );
 
-            float contentHeight =
-                Mathf.Max(
-                    viewport.height,
-                    filteredBlocks.Count *
-                    PaletteRowHeight
-                );
+            float tileWidth = Mathf.Max(
+                40f,
+                (contentWidth - gap * (columns - 1)) / columns
+            );
 
+            int rowCount = Mathf.CeilToInt(
+                filteredBlocks.Count / (float)columns
+            );
 
-            Rect content =
-                new Rect(
-                    0f,
-                    0f,
-                    Mathf.Max(
-                        1f,
-                        viewport.width -
-                        18f
-                    ),
-                    contentHeight
-                );
+            float contentHeight = Mathf.Max(
+                viewport.height,
+                rowCount * (tileHeight + gap)
+            );
 
+            Rect content = new Rect(
+                0f,
+                0f,
+                contentWidth,
+                contentHeight
+            );
 
-            blockScroll =
-                GUI.BeginScrollView(
-                    viewport,
-                    blockScroll,
-                    content
-                );
+            blockScroll = GUI.BeginScrollView(
+                viewport,
+                blockScroll,
+                content
+            );
 
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
+            labelStyle.fontSize = 9;
+            labelStyle.alignment = TextAnchor.LowerCenter;
+            labelStyle.clipping = TextClipping.Clip;
+            labelStyle.normal.textColor = Color.white;
 
-            if (
-                filteredBlocks.Count >
-                0
-            )
+            int firstRow = Mathf.Max(
+                0,
+                Mathf.FloorToInt(
+                    blockScroll.y / (tileHeight + gap)
+                ) - 1
+            );
+
+            int lastRow = Mathf.Min(
+                Mathf.Max(0, rowCount - 1),
+                Mathf.CeilToInt(
+                    (blockScroll.y + viewport.height) /
+                    (tileHeight + gap)
+                ) + 1
+            );
+
+            for (int row = firstRow; row <= lastRow; row++)
             {
-                int first =
-                    Mathf.Clamp(
-                        Mathf.FloorToInt(
-                            blockScroll.y /
-                            PaletteRowHeight
-                        )
-                        -
-                        1,
-                        0,
-                        filteredBlocks.Count -
-                        1
-                    );
-
-
-                int last =
-                    Mathf.Clamp(
-                        Mathf.CeilToInt(
-                            (
-                                blockScroll.y +
-                                viewport.height
-                            )
-                            /
-                            PaletteRowHeight
-                        )
-                        +
-                        1,
-                        0,
-                        filteredBlocks.Count -
-                        1
-                    );
-
-
-                for (
-                    int i = first;
-                    i <= last;
-                    i++
-                )
+                for (int column = 0; column < columns; column++)
                 {
+                    int index = row * columns + column;
+
+                    if (index < 0 || index >= filteredBlocks.Count)
+                        continue;
+
                     StructureEditorContentScanner.BlockInfo block =
-                        filteredBlocks[i];
+                        filteredBlocks[index];
 
+                    Rect buttonRect = new Rect(
+                        column * (tileWidth + gap),
+                        row * (tileHeight + gap),
+                        tileWidth,
+                        tileHeight
+                    );
 
-                    Rect buttonRect =
-                        new Rect(
-                            0f,
-                            i *
-                            PaletteRowHeight,
-                            content.width,
-                            PaletteRowHeight -
-                            4f
-                        );
+                    Color old = GUI.backgroundColor;
 
-
-                    Color old =
-                        GUI.backgroundColor;
-
-
-                    if (
-                        string.Equals(
+                    if (string.Equals(
                             selectedBlockId,
                             block.ID,
                             StringComparison.OrdinalIgnoreCase
-                        )
-                    )
+                        ))
                     {
                         GUI.backgroundColor =
-                            new Color(
-                                0.35f,
-                                0.55f,
-                                0.90f
-                            );
+                            new Color(0.35f, 0.55f, 0.90f);
                     }
 
-
-                    if (
-                        GUI.Button(
+                    if (GUI.Button(
                             buttonRect,
-                            string.Empty
-                        )
-                    )
+                            new GUIContent(
+                                string.Empty,
+                                block.DisplayLabel
+                            )
+                        ))
                     {
-                        selectedBlockId =
-                            block.ID;
+                        selectedBlockId = block.ID;
                     }
 
+                    GUI.backgroundColor = old;
 
-                    GUI.backgroundColor =
-                        old;
-
-
-                    if (
-                        Event.current.type ==
-                        EventType.Repaint
-                    )
+                    if (Event.current.type == EventType.Repaint)
                     {
                         Texture2D icon =
-                            StructureEditorIconCache.Get(
-                                block
-                            );
+                            StructureEditorIconCache.Get(block);
 
+                        float iconSize = Mathf.Min(
+                            tileWidth - 8f,
+                            43f
+                        );
 
-                        if (
-                            icon !=
-                            null
-                        )
+                        if (icon != null)
                         {
                             GUI.DrawTexture(
                                 new Rect(
                                     buttonRect.x +
-                                    5f,
-                                    buttonRect.y +
-                                    5f,
-                                    48f,
-                                    48f
+                                    (buttonRect.width - iconSize) * 0.5f,
+                                    buttonRect.y + 4f,
+                                    iconSize,
+                                    iconSize
                                 ),
                                 icon,
                                 ScaleMode.ScaleToFit,
@@ -904,33 +871,38 @@ namespace Game.World.Structures.EditorRuntime
                             );
                         }
 
+                        string label =
+                            block.DisplayLabel ??
+                            block.ID ??
+                            string.Empty;
+
+                        if (label.Length > 10)
+                            label = label.Substring(0, 9) + "…";
 
                         GUI.Label(
                             new Rect(
-                                buttonRect.x +
-                                60f,
-                                buttonRect.y +
-                                3f,
-                                buttonRect.width -
-                                64f,
-                                buttonRect.height -
-                                6f
+                                buttonRect.x + 2f,
+                                buttonRect.y + buttonRect.height - 22f,
+                                buttonRect.width - 4f,
+                                19f
                             ),
-                            block.DisplayLabel
+                            label,
+                            labelStyle
                         );
                     }
                 }
             }
 
-
             GUI.EndScrollView();
         }
+
 
 
         // =====================================================
         // GRID
         // =====================================================
 
+        
         private void DrawGrid()
         {
             float width =
@@ -963,38 +935,26 @@ namespace Game.World.Structures.EditorRuntime
 
             GUI.Label(
                 new Rect(
-                    area.x +
-                    8f,
-                    area.y +
-                    7f,
-                    area.width -
-                    16f,
+                    area.x + 8f,
+                    area.y + 7f,
+                    area.width - 16f,
                     22f
                 ),
-                "СТРУКТУРА   |   " +
-                GetLayerLabel(
-                    editLayer
-                ) +
-                "   |   " +
-                GetTransformModeLabel()
+                "СТРУКТУРА | Shift+ЛКМ — выделить | ЛКМ по выделению — перенести | Delete — удалить"
             );
 
 
             Rect viewport =
                 new Rect(
-                    area.x +
-                    8f,
-                    area.y +
-                    31f,
+                    area.x + 8f,
+                    area.y + 31f,
                     Mathf.Max(
                         10f,
-                        area.width -
-                        16f
+                        area.width - 16f
                     ),
                     Mathf.Max(
                         10f,
-                        area.height -
-                        39f
+                        area.height - 39f
                     )
                 );
 
@@ -1024,6 +984,41 @@ namespace Game.World.Structures.EditorRuntime
                 evt.mousePosition;
 
 
+            if (
+                evt.type ==
+                EventType.KeyDown
+                &&
+                evt.keyCode ==
+                KeyCode.Delete
+                &&
+                areaSelectionActive
+                &&
+                GUIUtility.keyboardControl ==
+                0
+            )
+            {
+                DeleteAreaSelection();
+
+                evt.Use();
+            }
+
+
+            if (
+                evt.type ==
+                EventType.KeyDown
+                &&
+                evt.keyCode ==
+                KeyCode.Escape
+                &&
+                areaSelectionActive
+            )
+            {
+                ClearAreaSelection();
+
+                evt.Use();
+            }
+
+
             gridScroll =
                 GUI.BeginScrollView(
                     viewport,
@@ -1040,40 +1035,30 @@ namespace Game.World.Structures.EditorRuntime
                 DrawVisibleGridCells(
                     viewport
                 );
+
+
+                DrawAreaSelectionOverlay();
             }
 
 
             GUI.EndScrollView();
 
 
-            bool mouseEvent =
-                evt.type ==
-                    EventType.MouseDown
-                ||
-                (
-                    transformEditMode ==
-                        StructureTransformEditMode.None
-                    &&
-                    evt.type ==
-                        EventType.MouseDrag
+            bool mouseInside =
+                viewport.Contains(
+                    screenMouse
                 );
 
 
-            if (
-                mouseEvent
-                &&
-                (
-                    evt.button ==
-                    0
-                    ||
-                    evt.button ==
-                    1
-                )
-                &&
-                viewport.Contains(
-                    screenMouse
-                )
-            )
+            int mouseX =
+                -1;
+
+
+            int mouseY =
+                -1;
+
+
+            if (mouseInside)
             {
                 float contentX =
                     screenMouse.x -
@@ -1087,7 +1072,7 @@ namespace Game.World.Structures.EditorRuntime
                     gridScroll.y;
 
 
-                int x =
+                mouseX =
                     Mathf.FloorToInt(
                         contentX /
                         CellSize
@@ -1101,68 +1086,869 @@ namespace Game.World.Structures.EditorRuntime
                     );
 
 
-                int y =
+                mouseY =
                     current.Height -
                     1 -
                     displayY;
 
 
                 if (
-                    x >=
+                    mouseX <
                     0
-                    &&
-                    x <
+                    ||
+                    mouseX >=
                     current.Width
-                    &&
-                    y >=
+                    ||
+                    mouseY <
                     0
-                    &&
-                    y <
+                    ||
+                    mouseY >=
                     current.Height
                 )
                 {
-                    selectedCellX =
-                        x;
+                    mouseX =
+                        -1;
+
+                    mouseY =
+                        -1;
+                }
+            }
 
 
-                    selectedCellY =
-                        y;
-
-
-                    if (
-                        evt.button ==
-                        1
-                    )
-                    {
-                        Remove(
-                            x,
-                            y
-                        );
-                    }
-                    else if (
-                        transformEditMode ==
-                        StructureTransformEditMode.None
-                    )
-                    {
-                        Place(
-                            x,
-                            y
-                        );
-                    }
-                    else
-                    {
-                        TransformCell(
-                            x,
-                            y
-                        );
-                    }
+            if (
+                evt.type ==
+                EventType.MouseDown
+                &&
+                evt.button ==
+                0
+                &&
+                mouseX >=
+                0
+            )
+            {
+                if (evt.shift)
+                {
+                    BeginAreaSelection(
+                        mouseX,
+                        mouseY
+                    );
 
 
                     evt.Use();
+
+                    return;
                 }
+
+
+                if (
+                    areaSelectionActive
+                    &&
+                    IsInsideAreaSelection(
+                        mouseX,
+                        mouseY
+                    )
+                )
+                {
+                    areaMoving =
+                        true;
+
+
+                    moveStartX =
+                        mouseX;
+
+
+                    moveStartY =
+                        mouseY;
+
+
+                    moveOffsetX =
+                        0;
+
+
+                    moveOffsetY =
+                        0;
+
+
+                    evt.Use();
+
+                    return;
+                }
+
+
+                ClearAreaSelection();
+
+
+                selectedCellX =
+                    mouseX;
+
+
+                selectedCellY =
+                    mouseY;
+
+
+                Place(
+                    mouseX,
+                    mouseY
+                );
+
+
+                evt.Use();
+
+                return;
+            }
+
+
+            if (
+                evt.type ==
+                EventType.MouseDrag
+                &&
+                evt.button ==
+                0
+                &&
+                mouseX >=
+                0
+            )
+            {
+                if (areaSelecting)
+                {
+                    UpdateAreaSelection(
+                        mouseX,
+                        mouseY
+                    );
+
+
+                    evt.Use();
+
+                    return;
+                }
+
+
+                if (areaMoving)
+                {
+                    UpdateMoveOffset(
+                        mouseX -
+                        moveStartX,
+                        mouseY -
+                        moveStartY
+                    );
+
+
+                    evt.Use();
+
+                    return;
+                }
+
+
+                selectedCellX =
+                    mouseX;
+
+
+                selectedCellY =
+                    mouseY;
+
+
+                Place(
+                    mouseX,
+                    mouseY
+                );
+
+
+                evt.Use();
+
+                return;
+            }
+
+
+            if (
+                evt.type ==
+                EventType.MouseUp
+                &&
+                evt.button ==
+                0
+            )
+            {
+                if (areaSelecting)
+                {
+                    areaSelecting =
+                        false;
+
+
+                    areaSelectionActive =
+                        true;
+
+
+                    evt.Use();
+
+                    return;
+                }
+
+
+                if (areaMoving)
+                {
+                    CommitAreaMove();
+
+
+                    areaMoving =
+                        false;
+
+
+                    evt.Use();
+
+                    return;
+                }
+            }
+
+
+            if (
+                (
+                    evt.type ==
+                    EventType.MouseDown
+                    ||
+                    evt.type ==
+                    EventType.MouseDrag
+                )
+                &&
+                evt.button ==
+                1
+                &&
+                mouseX >=
+                0
+            )
+            {
+                selectedCellX =
+                    mouseX;
+
+
+                selectedCellY =
+                    mouseY;
+
+
+                Remove(
+                    mouseX,
+                    mouseY
+                );
+
+
+                evt.Use();
             }
         }
 
+
+        
+        private void BeginAreaSelection(
+            int x,
+            int y
+        )
+        {
+            areaSelecting =
+                true;
+
+
+            areaMoving =
+                false;
+
+
+            areaSelectionActive =
+                true;
+
+
+            areaStartX =
+                x;
+
+
+            areaEndX =
+                x;
+
+
+            areaStartY =
+                y;
+
+
+            areaEndY =
+                y;
+
+
+            moveOffsetX =
+                0;
+
+
+            moveOffsetY =
+                0;
+        }
+
+
+        private void UpdateAreaSelection(
+            int x,
+            int y
+        )
+        {
+            areaEndX =
+                Mathf.Clamp(
+                    x,
+                    0,
+                    current.Width - 1
+                );
+
+
+            areaEndY =
+                Mathf.Clamp(
+                    y,
+                    0,
+                    current.Height - 1
+                );
+        }
+
+
+        private void ClearAreaSelection()
+        {
+            areaSelectionActive =
+                false;
+
+
+            areaSelecting =
+                false;
+
+
+            areaMoving =
+                false;
+
+
+            moveOffsetX =
+                0;
+
+
+            moveOffsetY =
+                0;
+        }
+
+
+        private bool IsInsideAreaSelection(
+            int x,
+            int y
+        )
+        {
+            if (!areaSelectionActive)
+                return false;
+
+
+            int minX =
+                Mathf.Min(
+                    areaStartX,
+                    areaEndX
+                );
+
+
+            int maxX =
+                Mathf.Max(
+                    areaStartX,
+                    areaEndX
+                );
+
+
+            int minY =
+                Mathf.Min(
+                    areaStartY,
+                    areaEndY
+                );
+
+
+            int maxY =
+                Mathf.Max(
+                    areaStartY,
+                    areaEndY
+                );
+
+
+            return
+                x >= minX
+                &&
+                x <= maxX
+                &&
+                y >= minY
+                &&
+                y <= maxY;
+        }
+
+
+        private void UpdateMoveOffset(
+            int requestedX,
+            int requestedY
+        )
+        {
+            int minX =
+                Mathf.Min(
+                    areaStartX,
+                    areaEndX
+                );
+
+
+            int maxX =
+                Mathf.Max(
+                    areaStartX,
+                    areaEndX
+                );
+
+
+            int minY =
+                Mathf.Min(
+                    areaStartY,
+                    areaEndY
+                );
+
+
+            int maxY =
+                Mathf.Max(
+                    areaStartY,
+                    areaEndY
+                );
+
+
+            moveOffsetX =
+                Mathf.Clamp(
+                    requestedX,
+                    -minX,
+                    current.Width -
+                    1 -
+                    maxX
+                );
+
+
+            moveOffsetY =
+                Mathf.Clamp(
+                    requestedY,
+                    -minY,
+                    current.Height -
+                    1 -
+                    maxY
+                );
+        }
+
+
+        private void DeleteAreaSelection()
+        {
+            if (
+                !areaSelectionActive
+                ||
+                current.Cells ==
+                null
+            )
+            {
+                return;
+            }
+
+
+            for (
+                int i =
+                    current.Cells.Count -
+                    1;
+                i >=
+                0;
+                i--
+            )
+            {
+                StructureCellDefinition cell =
+                    current.Cells[i];
+
+
+                if (
+                    cell !=
+                    null
+                    &&
+                    IsInsideAreaSelection(
+                        cell.X,
+                        cell.Y
+                    )
+                )
+                {
+                    current.Cells.RemoveAt(
+                        i
+                    );
+                }
+            }
+
+
+            RebuildCellIndex();
+
+
+            selectedCellX =
+                -1;
+
+
+            selectedCellY =
+                -1;
+
+
+            status =
+                "Выделенная область удалена";
+
+
+            ClearAreaSelection();
+        }
+
+
+        private void CommitAreaMove()
+        {
+            if (
+                !areaSelectionActive
+                ||
+                current.Cells ==
+                null
+            )
+            {
+                return;
+            }
+
+
+            if (
+                moveOffsetX ==
+                0
+                &&
+                moveOffsetY ==
+                0
+            )
+            {
+                return;
+            }
+
+
+            List<StructureCellDefinition> moving =
+                new List<StructureCellDefinition>();
+
+
+            HashSet<int> movingKeys =
+                new HashSet<int>();
+
+
+            for (
+                int i = 0;
+                i < current.Cells.Count;
+                i++
+            )
+            {
+                StructureCellDefinition cell =
+                    current.Cells[i];
+
+
+                if (
+                    cell !=
+                    null
+                    &&
+                    IsInsideAreaSelection(
+                        cell.X,
+                        cell.Y
+                    )
+                )
+                {
+                    moving.Add(
+                        cell
+                    );
+
+
+                    movingKeys.Add(
+                        cell.X +
+                        cell.Y *
+                        current.Width
+                    );
+                }
+            }
+
+
+            HashSet<int> destinationKeys =
+                new HashSet<int>();
+
+
+            for (
+                int i = 0;
+                i < moving.Count;
+                i++
+            )
+            {
+                StructureCellDefinition cell =
+                    moving[i];
+
+
+                int targetX =
+                    cell.X +
+                    moveOffsetX;
+
+
+                int targetY =
+                    cell.Y +
+                    moveOffsetY;
+
+
+                destinationKeys.Add(
+                    targetX +
+                    targetY *
+                    current.Width
+                );
+            }
+
+
+            for (
+                int i =
+                    current.Cells.Count -
+                    1;
+                i >=
+                0;
+                i--
+            )
+            {
+                StructureCellDefinition cell =
+                    current.Cells[i];
+
+
+                if (cell == null)
+                    continue;
+
+
+                int key =
+                    cell.X +
+                    cell.Y *
+                    current.Width;
+
+
+                if (
+                    !movingKeys.Contains(
+                        key
+                    )
+                    &&
+                    destinationKeys.Contains(
+                        key
+                    )
+                )
+                {
+                    current.Cells.RemoveAt(
+                        i
+                    );
+                }
+            }
+
+
+            for (
+                int i = 0;
+                i < moving.Count;
+                i++
+            )
+            {
+                moving[i].X +=
+                    moveOffsetX;
+
+
+                moving[i].Y +=
+                    moveOffsetY;
+            }
+
+
+            areaStartX +=
+                moveOffsetX;
+
+
+            areaEndX +=
+                moveOffsetX;
+
+
+            areaStartY +=
+                moveOffsetY;
+
+
+            areaEndY +=
+                moveOffsetY;
+
+
+            moveOffsetX =
+                0;
+
+
+            moveOffsetY =
+                0;
+
+
+            RebuildCellIndex();
+
+
+            status =
+                "Выделенная область перемещена";
+        }
+
+
+        private void DrawAreaSelectionOverlay()
+        {
+            if (!areaSelectionActive)
+                return;
+
+
+            int minX =
+                Mathf.Min(
+                    areaStartX,
+                    areaEndX
+                );
+
+
+            int maxX =
+                Mathf.Max(
+                    areaStartX,
+                    areaEndX
+                );
+
+
+            int minY =
+                Mathf.Min(
+                    areaStartY,
+                    areaEndY
+                );
+
+
+            int maxY =
+                Mathf.Max(
+                    areaStartY,
+                    areaEndY
+                );
+
+
+            if (areaMoving)
+            {
+                minX +=
+                    moveOffsetX;
+
+
+                maxX +=
+                    moveOffsetX;
+
+
+                minY +=
+                    moveOffsetY;
+
+
+                maxY +=
+                    moveOffsetY;
+            }
+
+
+            int topDisplayY =
+                current.Height -
+                1 -
+                maxY;
+
+
+            Rect selectionRect =
+                new Rect(
+                    minX *
+                    CellSize,
+                    topDisplayY *
+                    CellSize,
+                    (
+                        maxX -
+                        minX +
+                        1
+                    )
+                    *
+                    CellSize,
+                    (
+                        maxY -
+                        minY +
+                        1
+                    )
+                    *
+                    CellSize
+                );
+
+
+            Color old =
+                GUI.color;
+
+
+            GUI.color =
+                areaMoving
+                    ? new Color(
+                        0.35f,
+                        1f,
+                        0.55f,
+                        0.18f
+                    )
+                    : new Color(
+                        0.30f,
+                        0.65f,
+                        1f,
+                        0.18f
+                    );
+
+
+            GUI.DrawTexture(
+                selectionRect,
+                Texture2D.whiteTexture
+            );
+
+
+            GUI.color =
+                areaMoving
+                    ? new Color(
+                        0.45f,
+                        1f,
+                        0.60f,
+                        0.95f
+                    )
+                    : new Color(
+                        0.45f,
+                        0.75f,
+                        1f,
+                        0.95f
+                    );
+
+
+            const float border =
+                2f;
+
+
+            GUI.DrawTexture(
+                new Rect(
+                    selectionRect.x,
+                    selectionRect.y,
+                    selectionRect.width,
+                    border
+                ),
+                Texture2D.whiteTexture
+            );
+
+
+            GUI.DrawTexture(
+                new Rect(
+                    selectionRect.x,
+                    selectionRect.yMax -
+                    border,
+                    selectionRect.width,
+                    border
+                ),
+                Texture2D.whiteTexture
+            );
+
+
+            GUI.DrawTexture(
+                new Rect(
+                    selectionRect.x,
+                    selectionRect.y,
+                    border,
+                    selectionRect.height
+                ),
+                Texture2D.whiteTexture
+            );
+
+
+            GUI.DrawTexture(
+                new Rect(
+                    selectionRect.xMax -
+                    border,
+                    selectionRect.y,
+                    border,
+                    selectionRect.height
+                ),
+                Texture2D.whiteTexture
+            );
+
+
+            GUI.color =
+                old;
+        }
 
         private void DrawVisibleGridCells(
             Rect viewport
@@ -3965,37 +4751,34 @@ namespace Game.World.Structures.EditorRuntime
         // FIELD HELPERS
         // =====================================================
 
-        private string LabeledText(
+                private string LabeledText(
             string label,
             string value
         )
         {
             GUILayout.BeginHorizontal();
 
-
             GUILayout.Label(
                 label,
-                GUILayout.Width(
-                    120f
-                )
+                GUILayout.Width(120f)
             );
 
+            GUI.SetNextControlName(
+                "StructureText_" + label
+            );
 
-            value =
-                GUILayout.TextField(
-                    value ??
-                    string.Empty
-                );
-
+            value = GUILayout.TextField(
+                value ?? string.Empty,
+                GetEditableTextFieldStyle()
+            );
 
             GUILayout.EndHorizontal();
-
-
             return value;
         }
 
 
-        private int BufferedIntField(
+
+                private int BufferedIntField(
             string key,
             string label,
             int value,
@@ -4005,119 +4788,99 @@ namespace Game.World.Structures.EditorRuntime
         {
             GUILayout.BeginHorizontal();
 
-
             GUILayout.Label(
                 label,
-                GUILayout.Width(
-                    120f
-                )
+                GUILayout.Width(120f)
             );
 
+            string bufferKey = "int:" + key;
 
-            string bufferKey =
-                "int:" +
-                key;
-
-
-            if (
-                !numericFieldBuffers.TryGetValue(
-                    bufferKey,
-                    out string text
-                )
-            )
+            if (!numericFieldBuffers.TryGetValue(bufferKey, out string text))
             {
-                text =
-                    value.ToString(
-                        CultureInfo.InvariantCulture
-                    );
-
-
-                numericFieldBuffers[
-                    bufferKey
-                ] =
-                    text;
+                text = value.ToString(CultureInfo.InvariantCulture);
+                numericFieldBuffers[bufferKey] = text;
             }
 
+            string controlName = "StructureNumeric_" + bufferKey;
+            Event evt = Event.current;
 
-            string controlName =
-                "StructureNumeric_" +
-                bufferKey;
+            // Capture Enter BEFORE TextField processes the event.
+            bool enterRequested =
+                evt != null &&
+                evt.type == EventType.KeyDown &&
+                (evt.keyCode == KeyCode.Return ||
+                 evt.keyCode == KeyCode.KeypadEnter) &&
+                string.Equals(
+                    GUI.GetNameOfFocusedControl(),
+                    controlName,
+                    StringComparison.Ordinal
+                );
 
+            GUI.SetNextControlName(controlName);
 
-            GUI.SetNextControlName(
-                controlName
+            string next = GUILayout.TextField(
+                text,
+                GetEditableTextFieldStyle()
             );
 
+            numericFieldBuffers[bufferKey] = next;
 
-            string next =
-                GUILayout.TextField(
-                    text
+            int liveParsed;
+            bool liveValid =
+                int.TryParse(
+                    next,
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out liveParsed
+                ) ||
+                int.TryParse(
+                    next,
+                    NumberStyles.Integer,
+                    CultureInfo.CurrentCulture,
+                    out liveParsed
                 );
 
+            // Valid in-range values update immediately, so the editor visibly
+            // reacts while typing. Invalid/out-of-range text remains editable.
+            if (liveValid && liveParsed >= min && liveParsed <= max)
+                value = liveParsed;
 
-            numericFieldBuffers[
-                bufferKey
-            ] =
-                next;
-
-
-            bool commit =
-                IsEnterPressedForControl(
-                    controlName
-                );
-
-
-            if (
-                commit
-            )
+            if (enterRequested)
             {
-                if (
+                int parsed;
+                bool parsedOk =
                     int.TryParse(
                         next,
                         NumberStyles.Integer,
                         CultureInfo.InvariantCulture,
-                        out int parsed
-                    )
-                    ||
+                        out parsed
+                    ) ||
                     int.TryParse(
                         next,
                         NumberStyles.Integer,
                         CultureInfo.CurrentCulture,
                         out parsed
-                    )
-                )
-                {
-                    value =
-                        Mathf.Clamp(
-                            parsed,
-                            min,
-                            max
-                        );
-                }
-
-
-                numericFieldBuffers[
-                    bufferKey
-                ] =
-                    value.ToString(
-                        CultureInfo.InvariantCulture
                     );
 
+                if (parsedOk)
+                    value = Mathf.Clamp(parsed, min, max);
 
-                GUI.FocusControl(
-                    null
-                );
+                numericFieldBuffers[bufferKey] =
+                    value.ToString(CultureInfo.InvariantCulture);
+
+                GUI.FocusControl(null);
+
+                if (evt.type != EventType.Used)
+                    evt.Use();
             }
 
-
             GUILayout.EndHorizontal();
-
-
             return value;
         }
 
 
-        private float BufferedFloatField(
+
+                private float BufferedFloatField(
             string key,
             string label,
             float value,
@@ -4127,109 +4890,72 @@ namespace Game.World.Structures.EditorRuntime
         {
             GUILayout.BeginHorizontal();
 
-
             GUILayout.Label(
                 label,
-                GUILayout.Width(
-                    120f
-                )
+                GUILayout.Width(120f)
             );
 
+            string bufferKey = "float:" + key;
 
-            string bufferKey =
-                "float:" +
-                key;
-
-
-            if (
-                !numericFieldBuffers.TryGetValue(
-                    bufferKey,
-                    out string text
-                )
-            )
+            if (!numericFieldBuffers.TryGetValue(bufferKey, out string text))
             {
-                text =
+                text = value.ToString(
+                    "0.###",
+                    CultureInfo.InvariantCulture
+                );
+                numericFieldBuffers[bufferKey] = text;
+            }
+
+            string controlName = "StructureNumeric_" + bufferKey;
+            Event evt = Event.current;
+
+            bool enterRequested =
+                evt != null &&
+                evt.type == EventType.KeyDown &&
+                (evt.keyCode == KeyCode.Return ||
+                 evt.keyCode == KeyCode.KeypadEnter) &&
+                string.Equals(
+                    GUI.GetNameOfFocusedControl(),
+                    controlName,
+                    StringComparison.Ordinal
+                );
+
+            GUI.SetNextControlName(controlName);
+
+            string next = GUILayout.TextField(
+                text,
+                GetEditableTextFieldStyle()
+            );
+
+            numericFieldBuffers[bufferKey] = next;
+
+            if (TryParseFlexibleFloat(next, out float liveParsed))
+            {
+                if (liveParsed >= min && liveParsed <= max)
+                    value = liveParsed;
+            }
+
+            if (enterRequested)
+            {
+                if (TryParseFlexibleFloat(next, out float parsed))
+                    value = Mathf.Clamp(parsed, min, max);
+
+                numericFieldBuffers[bufferKey] =
                     value.ToString(
                         "0.###",
                         CultureInfo.InvariantCulture
                     );
 
+                GUI.FocusControl(null);
 
-                numericFieldBuffers[
-                    bufferKey
-                ] =
-                    text;
+                if (evt.type != EventType.Used)
+                    evt.Use();
             }
-
-
-            string controlName =
-                "StructureNumeric_" +
-                bufferKey;
-
-
-            GUI.SetNextControlName(
-                controlName
-            );
-
-
-            string next =
-                GUILayout.TextField(
-                    text
-                );
-
-
-            numericFieldBuffers[
-                bufferKey
-            ] =
-                next;
-
-
-            bool commit =
-                IsEnterPressedForControl(
-                    controlName
-                );
-
-
-            if (
-                commit
-            )
-            {
-                if (
-                    TryParseFlexibleFloat(
-                        next,
-                        out float parsed
-                    )
-                )
-                {
-                    value =
-                        Mathf.Clamp(
-                            parsed,
-                            min,
-                            max
-                        );
-                }
-
-
-                numericFieldBuffers[
-                    bufferKey
-                ] =
-                    value.ToString(
-                        "0.###",
-                        CultureInfo.InvariantCulture
-                    );
-
-
-                GUI.FocusControl(
-                    null
-                );
-            }
-
 
             GUILayout.EndHorizontal();
-
-
             return value;
         }
+
 
 
         private static bool TryParseFlexibleFloat(
@@ -4321,6 +5047,25 @@ namespace Game.World.Structures.EditorRuntime
 
 
             return true;
+        }
+
+
+                private GUIStyle GetEditableTextFieldStyle()
+        {
+            if (editableTextFieldStyle == null)
+            {
+                editableTextFieldStyle =
+                    new GUIStyle(GUI.skin.textField);
+
+                editableTextFieldStyle.normal.textColor = Color.white;
+                editableTextFieldStyle.hover.textColor = Color.white;
+                editableTextFieldStyle.active.textColor = Color.white;
+                editableTextFieldStyle.focused.textColor = Color.white;
+                editableTextFieldStyle.alignment = TextAnchor.MiddleLeft;
+                editableTextFieldStyle.clipping = TextClipping.Clip;
+            }
+
+            return editableTextFieldStyle;
         }
 
 

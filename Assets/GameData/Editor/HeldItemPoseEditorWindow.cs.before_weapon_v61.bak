@@ -1,0 +1,5306 @@
+﻿#if UNITY_EDITOR
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
+
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+
+using Game.Inventory;
+using Game.Items.Visual;
+
+
+public partial class HeldItemPoseEditorWindow :
+    EditorWindow
+{
+    private enum ArmSide
+    {
+        Front,
+        Back
+    }
+
+
+    private enum ToolMode
+    {
+        ArmPosition,
+        Pivot,
+        HandPoint,
+        Item
+    }
+
+
+    // =====================================================
+    // SOURCE
+    // =====================================================
+
+    private GameObject player;
+
+    private Animator sourceAnimator;
+
+    private Transform sourceFrontArm;
+
+    private Transform sourceBackArm;
+
+    private Transform sourceHandPoint;
+
+    private ArmMiningOverlayController sourceOverlay;
+
+
+    // =====================================================
+    // ARM SCENE POSITIONS
+    // =====================================================
+
+    private Vector2 frontArmScenePosition;
+
+    private Vector2 backArmScenePosition;
+
+
+    // =====================================================
+    // ROTATION POINTS
+    // =====================================================
+
+    private Vector2 frontPivotPoint;
+
+    private Vector2 backPivotPoint;
+
+
+    // =====================================================
+    // SWING
+    // =====================================================
+
+    private bool previewSwing =
+        true;
+
+
+    private bool autoSwing;
+
+
+    private float swingPhase =
+        0.5f;
+
+
+    private float swingSpeed =
+        5.5f;
+
+
+    private float frontBackAngle =
+        52f;
+
+
+    private float frontForwardAngle =
+        -58f;
+
+
+    private float backBackAngle =
+        -12f;
+
+
+    private float backForwardAngle =
+        18f;
+
+
+    // =====================================================
+    // HAND / ITEM
+    // =====================================================
+
+    private Vector2 handLocalPosition =
+        new Vector2(
+            0.28f,
+            0f
+        );
+
+
+    private string itemId =
+        "game:wood_pickaxe";
+
+
+    private string itemJsonPath;
+
+
+    private float heldOffsetX;
+
+    private float heldOffsetY;
+
+    private float heldScale =
+        1f;
+
+    private float heldRotation;
+
+
+    // =====================================================
+    // ANIMATION
+    // =====================================================
+
+    private AnimationClip[] clips =
+        Array.Empty<
+            AnimationClip
+        >();
+
+
+    private string[] clipNames =
+        Array.Empty<
+            string
+        >();
+
+
+    private int selectedClip;
+
+    private float animationTime;
+
+
+    // =====================================================
+    // PREVIEW
+    // =====================================================
+
+    private GameObject previewPlayer;
+
+    private Animator previewAnimator;
+
+    private Transform previewFrontArm;
+
+    private Transform previewBackArm;
+
+    private Transform previewHandPoint;
+
+    private SpriteRenderer previewHeldRenderer;
+
+    private Sprite generatedItemSprite;
+
+
+    private float previewZoom =
+        1.15f;
+
+
+    private Vector2 previewPan;
+
+
+    private ArmSide armSide =
+        ArmSide.Front;
+
+
+    private ToolMode toolMode =
+        ToolMode.Pivot;
+
+
+    private bool snapToPixel =
+        true;
+
+
+    private Vector2 inspectorScroll;
+
+
+    private bool saveQueued;
+
+    private string status;
+
+
+    // =====================================================
+    // MENU
+    // =====================================================
+
+    [MenuItem(
+        "Tools/Game/Held Item Pose Editor"
+    )]
+    public static void Open()
+    {
+        HeldItemPoseEditorWindow window =
+            GetWindow<
+                HeldItemPoseEditorWindow
+            >(
+                "Held Item Pose"
+            );
+
+
+        window.minSize =
+            new Vector2(
+                1000f,
+                650f
+            );
+    }
+
+
+    // =====================================================
+    // UNITY
+    // =====================================================
+
+    private void OnEnable()
+    {
+        EditorApplication.update +=
+            EditorTick;
+
+
+        TryUseSelection();
+    }
+
+
+    private void OnDisable()
+    {
+        EditorApplication.update -=
+            EditorTick;
+
+
+        CleanupPreview();
+    }
+
+
+    private void OnSelectionChange()
+    {
+        TryUseSelection();
+
+        Repaint();
+    }
+
+
+    private void EditorTick()
+    {
+        if (
+            previewSwing
+            &&
+            autoSwing
+        )
+        {
+            swingPhase =
+                Mathf.PingPong(
+                    (float)
+                    EditorApplication.timeSinceStartup
+                    *
+                    swingSpeed
+                    *
+                    0.18f,
+                    1f
+                );
+
+
+            Repaint();
+        }
+    }
+
+
+    // =====================================================
+    // PLAYER
+    // =====================================================
+
+    private void TryUseSelection()
+    {
+        GameObject selected =
+            Selection.activeGameObject;
+
+
+        if (selected == null)
+            return;
+
+
+        PlayerInventory inventory =
+            selected.GetComponent<
+                PlayerInventory
+            >();
+
+
+        if (inventory == null)
+        {
+            inventory =
+                selected.GetComponentInParent<
+                    PlayerInventory
+                >();
+        }
+
+
+        if (inventory != null)
+        {
+            SetPlayer(
+                inventory.gameObject
+            );
+        }
+    }
+
+
+    private void SetPlayer(
+        GameObject value
+    )
+    {
+        if (player == value)
+            return;
+
+
+        player =
+            value;
+
+
+        ResolveSource();
+
+        ReadOverlay();
+
+        ReadHandPoint();
+
+        CollectClips();
+
+        LoadItem();
+
+        QueueRebuildPreview();
+    }
+
+
+    private void ResolveSource()
+    {
+        sourceAnimator =
+            null;
+
+
+        sourceFrontArm =
+            null;
+
+
+        sourceBackArm =
+            null;
+
+
+        sourceHandPoint =
+            null;
+
+
+        sourceOverlay =
+            null;
+
+
+        if (player == null)
+            return;
+
+
+        sourceAnimator =
+            player.GetComponentInChildren<
+                Animator
+            >(
+                true
+            );
+
+
+        sourceFrontArm =
+            FindDeepChild(
+                player.transform,
+                "FrontArmPivot"
+            );
+
+
+        sourceBackArm =
+            FindDeepChild(
+                player.transform,
+                "BackArmPivot"
+            );
+
+
+        if (sourceFrontArm != null)
+        {
+            sourceHandPoint =
+                FindDeepChild(
+                    sourceFrontArm,
+                    "HandPoint"
+                );
+        }
+
+
+        sourceOverlay =
+            player.GetComponent<
+                ArmMiningOverlayController
+            >();
+    }
+
+
+    private void ReadOverlay()
+    {
+        if (sourceFrontArm != null)
+        {
+            frontArmScenePosition =
+                XY(
+                    sourceFrontArm.localPosition
+                );
+
+
+            frontPivotPoint =
+                frontArmScenePosition;
+        }
+
+
+        if (sourceBackArm != null)
+        {
+            backArmScenePosition =
+                XY(
+                    sourceBackArm.localPosition
+                );
+
+
+            backPivotPoint =
+                backArmScenePosition;
+        }
+
+
+        if (sourceOverlay == null)
+            return;
+
+
+        SerializedObject so =
+            new SerializedObject(
+                sourceOverlay
+            );
+
+
+        frontPivotPoint =
+            ReadVector2(
+                so,
+                "frontRotationPointLocal",
+                frontPivotPoint
+            );
+
+
+        backPivotPoint =
+            ReadVector2(
+                so,
+                "backRotationPointLocal",
+                backPivotPoint
+            );
+
+
+        swingSpeed =
+            ReadFloat(
+                so,
+                "swingSpeed",
+                swingSpeed
+            );
+
+
+        frontBackAngle =
+            ReadFloat(
+                so,
+                "frontArmBackAngle",
+                frontBackAngle
+            );
+
+
+        frontForwardAngle =
+            ReadFloat(
+                so,
+                "frontArmForwardAngle",
+                frontForwardAngle
+            );
+
+
+        backBackAngle =
+            ReadFloat(
+                so,
+                "backArmBackAngle",
+                backBackAngle
+            );
+
+
+        backForwardAngle =
+            ReadFloat(
+                so,
+                "backArmForwardAngle",
+                backForwardAngle
+            );
+    }
+
+
+    private void ReadHandPoint()
+    {
+        if (sourceHandPoint == null)
+            return;
+
+
+        handLocalPosition =
+            XY(
+                sourceHandPoint.localPosition
+            );
+    }
+
+
+    // =====================================================
+    // GUI
+    // =====================================================
+
+    private void OnGUI()
+    {
+        DrawToolbar();
+
+
+        Rect body =
+            new Rect(
+                0f,
+                22f,
+                position.width,
+                position.height -
+                22f
+            );
+
+
+        float inspectorWidth =
+            Mathf.Clamp(
+                position.width *
+                0.34f,
+                360f,
+                430f
+            );
+
+
+        Rect previewRect =
+            new Rect(
+                6f,
+                body.y +
+                6f,
+                body.width -
+                inspectorWidth -
+                18f,
+                body.height -
+                12f
+            );
+
+
+        Rect inspectorRect =
+            new Rect(
+                previewRect.xMax +
+                6f,
+                body.y +
+                6f,
+                inspectorWidth,
+                body.height -
+                12f
+            );
+
+
+        DrawPreview(
+            previewRect
+        );
+
+
+        GUILayout.BeginArea(
+            inspectorRect
+        );
+
+
+        inspectorScroll =
+            EditorGUILayout.BeginScrollView(
+                inspectorScroll
+            );
+
+
+        DrawInspector();
+
+
+        EditorGUILayout.EndScrollView();
+
+        GUILayout.EndArea();
+    }
+
+
+    private void DrawToolbar()
+    {
+        EditorGUILayout.BeginHorizontal(
+            EditorStyles.toolbar
+        );
+
+
+        GameObject nextPlayer =
+            EditorGUILayout.ObjectField(
+                player,
+                typeof(GameObject),
+                true,
+                GUILayout.Width(240f)
+            )
+            as GameObject;
+
+
+        if (nextPlayer != player)
+        {
+            SetPlayer(
+                nextPlayer
+            );
+        }
+
+
+        GUILayout.Space(
+            8f
+        );
+
+
+        GUILayout.Label(
+            "Item",
+            GUILayout.Width(30f)
+        );
+
+
+        itemId =
+            GUILayout.TextField(
+                itemId,
+                GUILayout.Width(175f)
+            );
+
+
+        if (
+            GUILayout.Button(
+                "Р—Р°РіСЂСѓР·РёС‚СЊ",
+                EditorStyles.toolbarButton,
+                GUILayout.Width(70f)
+            )
+        )
+        {
+            LoadItem();
+
+            RefreshItemSprite();
+        }
+
+
+        GUILayout.Space(
+            12f
+        );
+
+
+        DrawArmButton(
+            "FRONT",
+            ArmSide.Front
+        );
+
+
+        DrawArmButton(
+            "BACK",
+            ArmSide.Back
+        );
+
+
+        GUILayout.Space(
+            8f
+        );
+
+
+        DrawToolButton(
+            "РџРћР›РћР–Р•РќРР• Р РЈРљР",
+            ToolMode.ArmPosition,
+            118f
+        );
+
+
+        DrawToolButton(
+            "РўРћР§РљРђ Р’Р РђР©Р•РќРРЇ",
+            ToolMode.Pivot,
+            120f
+        );
+
+
+        DrawToolButton(
+            "РўРћР§РљРђ Р РЈРљР",
+            ToolMode.HandPoint,
+            92f
+        );
+
+
+        DrawToolButton(
+            "РџР Р•Р”РњР•Рў",
+            ToolMode.Item,
+            75f
+        );
+
+
+        GUILayout.FlexibleSpace();
+
+
+        if (
+            GUILayout.Button(
+                saveQueued
+                    ? "..."
+                    : "РЎРћРҐР РђРќРРўР¬",
+                EditorStyles.toolbarButton,
+                GUILayout.Width(95f)
+            )
+        )
+        {
+            QueueSave();
+        }
+
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+
+    private void DrawArmButton(
+        string label,
+        ArmSide side
+    )
+    {
+        bool selected =
+            armSide == side;
+
+
+        bool next =
+            GUILayout.Toggle(
+                selected,
+                label,
+                EditorStyles.toolbarButton,
+                GUILayout.Width(58f)
+            );
+
+
+        if (next && !selected)
+        {
+            armSide =
+                side;
+
+
+            Repaint();
+        }
+    }
+
+
+    private void DrawToolButton(
+        string label,
+        ToolMode mode,
+        float width
+    )
+    {
+        bool selected =
+            toolMode == mode;
+
+
+        bool next =
+            GUILayout.Toggle(
+                selected,
+                label,
+                EditorStyles.toolbarButton,
+                GUILayout.Width(width)
+            );
+
+
+        if (next && !selected)
+        {
+            toolMode =
+                mode;
+
+
+            Repaint();
+        }
+    }
+
+
+    private void DrawInspector()
+    {
+        DrawArmPositionEditor();
+
+
+        EditorGUILayout.Space(
+            12f
+        );
+
+
+        DrawPivotEditor();
+
+
+        EditorGUILayout.Space(
+            12f
+        );
+
+
+        DrawSwingEditor();
+
+
+        EditorGUILayout.Space(
+            12f
+        );
+
+
+        DrawDefaultItemEditor();
+
+
+        EditorGUILayout.Space(
+            12f
+        );
+
+
+        DrawHandPointEditor();
+
+
+        EditorGUILayout.Space(
+            12f
+        );
+
+
+        DrawAnimationEditor();
+
+
+        EditorGUILayout.Space(
+            12f
+        );
+
+
+        EditorGUILayout.LabelField(
+            "Preview",
+            EditorStyles.boldLabel
+        );
+
+
+        snapToPixel =
+            EditorGUILayout.Toggle(
+                "Snap 1/16",
+                snapToPixel
+            );
+
+
+        previewZoom =
+            EditorGUILayout.Slider(
+                "Zoom",
+                previewZoom,
+                0.5f,
+                3f
+            );
+
+
+        if (
+            GUILayout.Button(
+                "Р¦РµРЅС‚СЂРёСЂРѕРІР°С‚СЊ Preview"
+            )
+        )
+        {
+            previewPan =
+                Vector2.zero;
+        }
+
+
+        EditorGUILayout.Space(
+            12f
+        );
+
+
+        if (
+            GUILayout.Button(
+                "РЎРћРҐР РђРќРРўР¬ Р’РЎРЃ",
+                GUILayout.Height(36f)
+            )
+        )
+        {
+            QueueSave();
+        }
+
+
+        if (
+            !string.IsNullOrWhiteSpace(
+                status
+            )
+        )
+        {
+            EditorGUILayout.HelpBox(
+                status,
+                status.StartsWith(
+                    "РћС€РёР±РєР°",
+                    StringComparison.OrdinalIgnoreCase
+                )
+                    ? MessageType.Error
+                    : MessageType.Info
+            );
+        }
+    }
+
+
+    // =====================================================
+    // ARM POSITION EDITOR
+    // =====================================================
+
+    private void DrawArmPositionEditor()
+    {
+        EditorGUILayout.LabelField(
+            armSide ==
+            ArmSide.Front
+                ? "РџРѕР»РѕР¶РµРЅРёРµ СЂСѓРєРё вЂ” РїРµСЂРµРґРЅСЏСЏ"
+                : "РџРѕР»РѕР¶РµРЅРёРµ СЂСѓРєРё вЂ” Р·Р°РґРЅСЏСЏ",
+            EditorStyles.boldLabel
+        );
+
+
+        EditorGUILayout.HelpBox(
+            "Р­С‚Рѕ СЂРµР°Р»СЊРЅРѕРµ localPosition РІС‹Р±СЂР°РЅРЅРѕР№ СЂСѓРєРё РІ СЂРёРіРµ. " +
+            "Р’ СЂРµР¶РёРјРµ В«РџРћР›РћР–Р•РќРР• Р РЈРљРВ» Р›РљРњ РґРІРёРіР°РµС‚ СЃР°РјСѓ СЂСѓРєСѓ Рё РµС‘ С‚РµРєСЃС‚СѓСЂСѓ. " +
+            "РўРѕС‡РєР° РІСЂР°С‰РµРЅРёСЏ РїСЂРё СЌС‚РѕРј РќР• РјРµРЅСЏРµС‚СЃСЏ.",
+            MessageType.Info
+        );
+
+
+        Vector2 value =
+            GetCurrentArmScenePosition();
+
+
+        Vector2 next =
+            EditorGUILayout.Vector2Field(
+                "Arm Local Position",
+                value
+            );
+
+
+        if (next != value)
+        {
+            SetCurrentArmScenePosition(
+                Snap(
+                    next
+                )
+            );
+        }
+
+
+        EditorGUILayout.BeginHorizontal();
+
+
+        if (
+            GUILayout.Button(
+                "РЎС‡РёС‚Р°С‚СЊ РёР· СЃС†РµРЅС‹"
+            )
+        )
+        {
+            ReadCurrentArmScenePosition();
+        }
+
+
+        if (
+            GUILayout.Button(
+                "Pivot Рє СЂСѓРєРµ"
+            )
+        )
+        {
+            SetCurrentPivot(
+                GetCurrentArmScenePosition()
+            );
+        }
+
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+
+    // =====================================================
+    // PIVOT EDITOR
+    // =====================================================
+
+    private void DrawPivotEditor()
+    {
+        EditorGUILayout.LabelField(
+            armSide ==
+            ArmSide.Front
+                ? "РўРѕС‡РєР° РІСЂР°С‰РµРЅРёСЏ вЂ” РїРµСЂРµРґРЅСЏСЏ СЂСѓРєР°"
+                : "РўРѕС‡РєР° РІСЂР°С‰РµРЅРёСЏ вЂ” Р·Р°РґРЅСЏСЏ СЂСѓРєР°",
+            EditorStyles.boldLabel
+        );
+
+
+        EditorGUILayout.HelpBox(
+            "Р­С‚Рѕ РѕС‚РґРµР»СЊРЅР°СЏ РјР°С‚РµРјР°С‚РёС‡РµСЃРєР°СЏ С‚РѕС‡РєР°. " +
+            "Р•С‘ РёР·РјРµРЅРµРЅРёРµ РќР• РјРµРЅСЏРµС‚ Transform СЂСѓРєРё Рё РќР• РґРІРёРіР°РµС‚ С‚РµРєСЃС‚СѓСЂСѓ. " +
+            "Р’ СЂРµР¶РёРјРµ В«РўРћР§РљРђ Р’Р РђР©Р•РќРРЇВ» РїСЂРѕСЃС‚Рѕ С‚Р°С‰Рё Р¶С‘Р»С‚С‹Р№/РѕСЂР°РЅР¶РµРІС‹Р№ РјР°СЂРєРµСЂ РјС‹С€СЊСЋ.",
+            MessageType.Info
+        );
+
+
+        Vector2 value =
+            GetCurrentPivot();
+
+
+        Vector2 next =
+            EditorGUILayout.Vector2Field(
+                "Pivot",
+                value
+            );
+
+
+        if (next != value)
+        {
+            SetCurrentPivot(
+                Snap(
+                    next
+                )
+            );
+        }
+
+
+        EditorGUILayout.BeginHorizontal();
+
+
+        if (
+            GUILayout.Button(
+                "РђР’РўРћ Рљ РџР›Р•Р§РЈ"
+            )
+        )
+        {
+            AutoPivot(
+                armSide
+            );
+        }
+
+
+        if (
+            GUILayout.Button(
+                "РђР’РўРћ РћР‘Р• Р РЈРљР"
+            )
+        )
+        {
+            AutoPivot(
+                ArmSide.Front
+            );
+
+
+            AutoPivot(
+                ArmSide.Back
+            );
+        }
+
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+
+    // =====================================================
+    // SWING EDITOR
+    // =====================================================
+
+    private void DrawSwingEditor()
+    {
+        EditorGUILayout.LabelField(
+            "Р Р°Р·РјР°С… РїСЂРё РєРѕРїР°РЅРёРё",
+            EditorStyles.boldLabel
+        );
+
+
+        previewSwing =
+            EditorGUILayout.Toggle(
+                "РџРѕРєР°Р·С‹РІР°С‚СЊ",
+                previewSwing
+            );
+
+
+        autoSwing =
+            EditorGUILayout.Toggle(
+                "РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё",
+                autoSwing
+            );
+
+
+        if (!autoSwing)
+        {
+            swingPhase =
+                EditorGUILayout.Slider(
+                    "Р¤Р°Р·Р°",
+                    swingPhase,
+                    0f,
+                    1f
+                );
+        }
+
+
+        swingSpeed =
+            EditorGUILayout.Slider(
+                "РЎРєРѕСЂРѕСЃС‚СЊ",
+                swingSpeed,
+                0.5f,
+                12f
+            );
+
+
+        EditorGUILayout.Space(
+            4f
+        );
+
+
+        if (
+            armSide ==
+            ArmSide.Front
+        )
+        {
+            frontBackAngle =
+                EditorGUILayout.Slider(
+                    "РџРµСЂРµРґРЅСЏСЏ вЂ” РЅР°Р·Р°Рґ",
+                    frontBackAngle,
+                    -180f,
+                    180f
+                );
+
+
+            frontForwardAngle =
+                EditorGUILayout.Slider(
+                    "РџРµСЂРµРґРЅСЏСЏ вЂ” РІРїРµСЂС‘Рґ",
+                    frontForwardAngle,
+                    -180f,
+                    180f
+                );
+        }
+        else
+        {
+            backBackAngle =
+                EditorGUILayout.Slider(
+                    "Р—Р°РґРЅСЏСЏ вЂ” РЅР°Р·Р°Рґ",
+                    backBackAngle,
+                    -180f,
+                    180f
+                );
+
+
+            backForwardAngle =
+                EditorGUILayout.Slider(
+                    "Р—Р°РґРЅСЏСЏ вЂ” РІРїРµСЂС‘Рґ",
+                    backForwardAngle,
+                    -180f,
+                    180f
+                );
+        }
+
+
+        EditorGUILayout.BeginHorizontal();
+
+
+        if (
+            GUILayout.Button(
+                "РџРѕРєР°Р·Р°С‚СЊ Р·Р°РґРЅСЋСЋ С‚РѕС‡РєСѓ"
+            )
+        )
+        {
+            swingPhase =
+                0f;
+
+
+            autoSwing =
+                false;
+
+
+            previewSwing =
+                true;
+        }
+
+
+        if (
+            GUILayout.Button(
+                "РџРѕРєР°Р·Р°С‚СЊ РїРµСЂРµРґРЅСЋСЋ С‚РѕС‡РєСѓ"
+            )
+        )
+        {
+            swingPhase =
+                0.5f;
+
+
+            autoSwing =
+                false;
+
+
+            previewSwing =
+                true;
+        }
+
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+
+    // =====================================================
+    // ITEM EDITOR
+    // =====================================================
+
+    private void DrawDefaultItemEditor()
+    {
+        EditorGUILayout.LabelField(
+            "РџСЂРµРґРјРµС‚ вЂ” РїРѕР»РѕР¶РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ",
+            EditorStyles.boldLabel
+        );
+
+
+        EditorGUILayout.HelpBox(
+            "Р’С‹Р±РµСЂРё СЃРІРµСЂС…Сѓ СЂРµР¶РёРј В«РџР Р•Р”РњР•РўВ» Рё С‚Р°С‰Рё СЂРѕР·РѕРІС‹Р№ РјР°СЂРєРµСЂ РїСЂСЏРјРѕ РІ preview. " +
+            "Р­С‚Рѕ РѕР±С‹С‡РЅР°СЏ РїРѕР·Р° РїСЂРµРґРјРµС‚Р° РІ СЂСѓРєРµ, РЅРµ Р°РЅРёРјР°С†РёСЏ Р°С‚Р°РєРё.",
+            MessageType.None
+        );
+
+
+        Vector2 offset =
+            new Vector2(
+                heldOffsetX,
+                heldOffsetY
+            );
+
+
+        Vector2 nextOffset =
+            EditorGUILayout.Vector2Field(
+                "Offset",
+                offset
+            );
+
+
+        if (nextOffset != offset)
+        {
+            nextOffset =
+                Snap(
+                    nextOffset
+                );
+
+
+            heldOffsetX =
+                nextOffset.x;
+
+
+            heldOffsetY =
+                nextOffset.y;
+        }
+
+
+        heldRotation =
+            EditorGUILayout.Slider(
+                "Rotation",
+                heldRotation,
+                -180f,
+                180f
+            );
+
+
+        heldScale =
+            EditorGUILayout.Slider(
+                "Scale",
+                heldScale,
+                0.05f,
+                4f
+            );
+
+
+        EditorGUILayout.BeginHorizontal();
+
+
+        if (
+            GUILayout.Button(
+                "Р’ HandPoint"
+            )
+        )
+        {
+            heldOffsetX =
+                0f;
+
+
+            heldOffsetY =
+                0f;
+        }
+
+
+        if (
+            GUILayout.Button(
+                "РЎР±СЂРѕСЃРёС‚СЊ"
+            )
+        )
+        {
+            heldOffsetX =
+                0f;
+
+
+            heldOffsetY =
+                0f;
+
+
+            heldRotation =
+                0f;
+
+
+            heldScale =
+                1f;
+        }
+
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+
+    private void DrawHandPointEditor()
+    {
+        EditorGUILayout.LabelField(
+            "HandPoint",
+            EditorStyles.boldLabel
+        );
+
+
+        EditorGUILayout.HelpBox(
+            "Р—Р•Р›РЃРќРђРЇ С‚РѕС‡РєР° вЂ” HandPoint РЅР° РїРµСЂРµРґРЅРµР№ СЂСѓРєРµ. " +
+            "Р•С‘ РјРѕР¶РЅРѕ С‚Р°СЃРєР°С‚СЊ РјС‹С€СЊСЋ РІ СЂРµР¶РёРјРµ В«РўРћР§РљРђ Р РЈРљРВ». " +
+            "РћРЅР° РґРІРёРіР°РµС‚ С‚РѕР»СЊРєРѕ СЃР°Рј HandPoint Рё РќР• РґРІРёРіР°РµС‚ С‚РµРєСЃС‚СѓСЂСѓ СЂСѓРєРё. " +
+            "РўРѕС‡РєР° РІСЂР°С‰РµРЅРёСЏ СЂСѓРєРё РЅР°СЃС‚СЂР°РёРІР°РµС‚СЃСЏ РѕС‚РґРµР»СЊРЅРѕ.",
+            MessageType.Info
+        );
+
+
+        handLocalPosition =
+            EditorGUILayout.Vector2Field(
+                "Local Position",
+                handLocalPosition
+            );
+    }
+
+
+    // =====================================================
+    // ANIMATION
+    // =====================================================
+
+    private void DrawAnimationEditor()
+    {
+        EditorGUILayout.LabelField(
+            "Р‘Р°Р·РѕРІР°СЏ Р°РЅРёРјР°С†РёСЏ",
+            EditorStyles.boldLabel
+        );
+
+
+        if (
+            clips == null
+            ||
+            clips.Length == 0
+        )
+        {
+            EditorGUILayout.LabelField(
+                "AnimationClip РЅРµ РЅР°Р№РґРµРЅ."
+            );
+
+
+            return;
+        }
+
+
+        selectedClip =
+            EditorGUILayout.Popup(
+                "Clip",
+                selectedClip,
+                clipNames
+            );
+
+
+        AnimationClip clip =
+            GetClip();
+
+
+        if (clip != null)
+        {
+            animationTime =
+                EditorGUILayout.Slider(
+                    "Time",
+                    animationTime,
+                    0f,
+                    Mathf.Max(
+                        0.001f,
+                        clip.length
+                    )
+                );
+        }
+    }
+
+
+    // =====================================================
+    // PREVIEW BUILD
+    // =====================================================
+
+    private void QueueRebuildPreview()
+    {
+        EditorApplication.delayCall +=
+            RebuildPreview;
+    }
+
+
+    private void RebuildPreview()
+    {
+        if (this == null)
+            return;
+
+
+        CleanupPreview();
+
+
+        if (player == null)
+        {
+            Repaint();
+
+            return;
+        }
+
+
+        previewPlayer =
+            Instantiate(
+                player
+            );
+
+
+        previewPlayer.name =
+            "HeldItemPosePreview";
+
+
+        previewPlayer.hideFlags =
+            HideFlags.HideAndDontSave;
+
+
+        previewPlayer.transform.position =
+            Vector3.zero;
+
+
+        previewPlayer.transform.rotation =
+            Quaternion.identity;
+
+
+        previewPlayer.transform.localScale =
+            player.transform.localScale;
+
+
+        StripRuntimeComponents(
+            previewPlayer
+        );
+
+
+        previewAnimator =
+            previewPlayer.GetComponentInChildren<
+                Animator
+            >(
+                true
+            );
+
+
+        previewFrontArm =
+            FindDeepChild(
+                previewPlayer.transform,
+                "FrontArmPivot"
+            );
+
+
+        previewBackArm =
+            FindDeepChild(
+                previewPlayer.transform,
+                "BackArmPivot"
+            );
+
+
+        if (previewFrontArm != null)
+        {
+            previewHandPoint =
+                FindDeepChild(
+                    previewFrontArm,
+                    "HandPoint"
+                );
+        }
+
+
+        CreatePreviewItem();
+
+
+        SpriteRenderer[] renderers =
+            previewPlayer.GetComponentsInChildren<
+                SpriteRenderer
+            >(
+                true
+            );
+
+
+        for (
+            int i = 0;
+            i < renderers.Length;
+            i++
+        )
+        {
+            if (renderers[i] != null)
+            {
+                renderers[i].forceRenderingOff =
+                    true;
+            }
+        }
+
+
+        Repaint();
+    }
+
+
+    private static void StripRuntimeComponents(
+        GameObject root
+    )
+    {
+        MonoBehaviour[] scripts =
+            root.GetComponentsInChildren<
+                MonoBehaviour
+            >(
+                true
+            );
+
+
+        for (
+            int i = scripts.Length - 1;
+            i >= 0;
+            i--
+        )
+        {
+            if (scripts[i] != null)
+            {
+                UnityEngine.Object.DestroyImmediate(
+                    scripts[i]
+                );
+            }
+        }
+
+
+        Rigidbody2D[] bodies =
+            root.GetComponentsInChildren<
+                Rigidbody2D
+            >(
+                true
+            );
+
+
+        for (
+            int i = bodies.Length - 1;
+            i >= 0;
+            i--
+        )
+        {
+            if (bodies[i] != null)
+            {
+                UnityEngine.Object.DestroyImmediate(
+                    bodies[i]
+                );
+            }
+        }
+
+
+        Collider2D[] colliders =
+            root.GetComponentsInChildren<
+                Collider2D
+            >(
+                true
+            );
+
+
+        for (
+            int i = colliders.Length - 1;
+            i >= 0;
+            i--
+        )
+        {
+            if (colliders[i] != null)
+            {
+                UnityEngine.Object.DestroyImmediate(
+                    colliders[i]
+                );
+            }
+        }
+    }
+
+
+    private void CleanupPreview()
+    {
+        if (generatedItemSprite != null)
+        {
+            UnityEngine.Object.DestroyImmediate(
+                generatedItemSprite
+            );
+
+
+            generatedItemSprite =
+                null;
+        }
+
+
+        if (previewPlayer != null)
+        {
+            UnityEngine.Object.DestroyImmediate(
+                previewPlayer
+            );
+        }
+
+
+        previewPlayer =
+            null;
+
+
+        previewAnimator =
+            null;
+
+
+        previewFrontArm =
+            null;
+
+
+        previewBackArm =
+            null;
+
+
+        previewHandPoint =
+            null;
+
+
+        previewHeldRenderer =
+            null;
+    }
+
+
+    // =====================================================
+    // BASE POSE + SWING
+    // =====================================================
+
+    private void PreparePreviewPose()
+    {
+        if (previewPlayer == null)
+            return;
+
+
+        AnimationClip clip =
+            GetClip();
+
+
+        if (clip != null)
+        {
+            GameObject animationRoot =
+                previewAnimator != null
+                    ? previewAnimator.gameObject
+                    : previewPlayer;
+
+
+            clip.SampleAnimation(
+                animationRoot,
+                Mathf.Clamp(
+                    animationTime,
+                    0f,
+                    clip.length
+                )
+            );
+        }
+
+
+        SetLocalXY(
+            previewFrontArm,
+            frontArmScenePosition
+        );
+
+
+        SetLocalXY(
+            previewBackArm,
+            backArmScenePosition
+        );
+
+
+        if (previewHandPoint != null)
+        {
+            SetLocalXY(
+                previewHandPoint,
+                handLocalPosition
+            );
+        }
+
+
+        UpdatePreviewItem();
+
+
+        if (!previewSwing)
+            return;
+
+
+        float smoothPhase =
+            swingPhase
+            *
+            swingPhase
+            *
+            (
+                3f
+                -
+                2f
+                *
+                swingPhase
+            );
+
+
+        ArmMiningOverlayController
+            .RotateCurrentPoseAroundLocalPoint(
+                previewFrontArm,
+                frontPivotPoint,
+                Mathf.Lerp(
+                    frontBackAngle,
+                    frontForwardAngle,
+                    smoothPhase
+                )
+            );
+
+
+        ArmMiningOverlayController
+            .RotateCurrentPoseAroundLocalPoint(
+                previewBackArm,
+                backPivotPoint,
+                Mathf.Lerp(
+                    backBackAngle,
+                    backForwardAngle,
+                    smoothPhase
+                )
+            );
+    }
+
+
+    // =====================================================
+    // AUTO PIVOT
+    // =====================================================
+
+    private void AutoPivot(
+        ArmSide side
+    )
+    {
+        PrepareBasePoseWithoutSwing();
+
+
+        Transform arm =
+            side ==
+            ArmSide.Front
+                ? previewFrontArm
+                : previewBackArm;
+
+
+        if (
+            arm == null
+            ||
+            arm.parent == null
+        )
+        {
+            return;
+        }
+
+
+        SpriteRenderer armRenderer =
+            FindBestArmRenderer(
+                arm
+            );
+
+
+        SpriteRenderer bodyRenderer =
+            FindBodyRenderer();
+
+
+        if (
+            armRenderer == null
+            ||
+            bodyRenderer == null
+        )
+        {
+            return;
+        }
+
+
+        Bounds armBounds =
+            armRenderer.bounds;
+
+
+        Vector3 from =
+            armBounds.center;
+
+
+        Vector3 to =
+            bodyRenderer.bounds.center;
+
+
+        Vector3 direction =
+            to -
+            from;
+
+
+        if (
+            direction.sqrMagnitude <
+            0.000001f
+        )
+        {
+            return;
+        }
+
+
+        Vector3 extents =
+            armBounds.extents;
+
+
+        float tx =
+            Mathf.Abs(
+                direction.x
+            )
+            >
+            0.00001f
+                ? Mathf.Abs(
+                    extents.x
+                    /
+                    direction.x
+                )
+                : float.MaxValue;
+
+
+        float ty =
+            Mathf.Abs(
+                direction.y
+            )
+            >
+            0.00001f
+                ? Mathf.Abs(
+                    extents.y
+                    /
+                    direction.y
+                )
+                : float.MaxValue;
+
+
+        float t =
+            Mathf.Min(
+                tx,
+                ty
+            );
+
+
+        Vector3 edgePoint =
+            from
+            +
+            direction
+            *
+            t;
+
+
+        Vector3 local =
+            arm.parent.InverseTransformPoint(
+                edgePoint
+            );
+
+
+        Vector2 pivot =
+            Snap(
+                new Vector2(
+                    local.x,
+                    local.y
+                )
+            );
+
+
+        if (
+            side ==
+            ArmSide.Front
+        )
+        {
+            frontPivotPoint =
+                pivot;
+        }
+        else
+        {
+            backPivotPoint =
+                pivot;
+        }
+
+
+        status =
+            side ==
+            ArmSide.Front
+                ? "РџРµСЂРµРґРЅСЏСЏ С‚РѕС‡РєР° РїРѕСЃС‚Р°РІР»РµРЅР° Рє РїР»РµС‡Сѓ."
+                : "Р—Р°РґРЅСЏСЏ С‚РѕС‡РєР° РїРѕСЃС‚Р°РІР»РµРЅР° Рє РїР»РµС‡Сѓ.";
+    }
+
+
+    private void PrepareBasePoseWithoutSwing()
+    {
+        if (previewPlayer == null)
+            return;
+
+
+        AnimationClip clip =
+            GetClip();
+
+
+        if (clip != null)
+        {
+            GameObject animationRoot =
+                previewAnimator != null
+                    ? previewAnimator.gameObject
+                    : previewPlayer;
+
+
+            clip.SampleAnimation(
+                animationRoot,
+                Mathf.Clamp(
+                    animationTime,
+                    0f,
+                    clip.length
+                )
+            );
+        }
+
+
+        SetLocalXY(
+            previewFrontArm,
+            frontArmScenePosition
+        );
+
+
+        SetLocalXY(
+            previewBackArm,
+            backArmScenePosition
+        );
+
+
+        if (previewHandPoint != null)
+        {
+            SetLocalXY(
+                previewHandPoint,
+                handLocalPosition
+            );
+        }
+
+
+        UpdatePreviewItem();
+    }
+
+
+    private static SpriteRenderer FindBestArmRenderer(
+        Transform arm
+    )
+    {
+        if (arm == null)
+            return null;
+
+
+        SpriteRenderer direct =
+            arm.GetComponent<
+                SpriteRenderer
+            >();
+
+
+        if (
+            direct != null
+            &&
+            direct.sprite != null
+        )
+        {
+            return direct;
+        }
+
+
+        SpriteRenderer[] all =
+            arm.GetComponentsInChildren<
+                SpriteRenderer
+            >(
+                true
+            );
+
+
+        SpriteRenderer best =
+            null;
+
+
+        float bestArea =
+            0f;
+
+
+        for (
+            int i = 0;
+            i < all.Length;
+            i++
+        )
+        {
+            if (
+                all[i] == null
+                ||
+                all[i].sprite == null
+            )
+            {
+                continue;
+            }
+
+
+            float area =
+                all[i].bounds.size.x
+                *
+                all[i].bounds.size.y;
+
+
+            if (area > bestArea)
+            {
+                bestArea =
+                    area;
+
+
+                best =
+                    all[i];
+            }
+        }
+
+
+        return best;
+    }
+
+
+    private SpriteRenderer FindBodyRenderer()
+    {
+        if (previewPlayer == null)
+            return null;
+
+
+        string[] preferred =
+        {
+            "Body",
+            "Torso",
+            "Chest"
+        };
+
+
+        for (
+            int n = 0;
+            n < preferred.Length;
+            n++
+        )
+        {
+            Transform t =
+                FindDeepChild(
+                    previewPlayer.transform,
+                    preferred[n]
+                );
+
+
+            if (t == null)
+                continue;
+
+
+            SpriteRenderer renderer =
+                t.GetComponent<
+                    SpriteRenderer
+                >();
+
+
+            if (
+                renderer != null
+                &&
+                renderer.sprite != null
+            )
+            {
+                return renderer;
+            }
+        }
+
+
+        SpriteRenderer[] all =
+            previewPlayer.GetComponentsInChildren<
+                SpriteRenderer
+            >(
+                true
+            );
+
+
+        SpriteRenderer best =
+            null;
+
+
+        float bestArea =
+            0f;
+
+
+        for (
+            int i = 0;
+            i < all.Length;
+            i++
+        )
+        {
+            SpriteRenderer renderer =
+                all[i];
+
+
+            if (
+                renderer == null
+                ||
+                renderer.sprite == null
+            )
+            {
+                continue;
+            }
+
+
+            if (
+                previewFrontArm != null
+                &&
+                renderer.transform.IsChildOf(
+                    previewFrontArm
+                )
+            )
+            {
+                continue;
+            }
+
+
+            if (
+                previewBackArm != null
+                &&
+                renderer.transform.IsChildOf(
+                    previewBackArm
+                )
+            )
+            {
+                continue;
+            }
+
+
+            float area =
+                renderer.bounds.size.x
+                *
+                renderer.bounds.size.y;
+
+
+            if (area > bestArea)
+            {
+                bestArea =
+                    area;
+
+
+                best =
+                    renderer;
+            }
+        }
+
+
+        return best;
+    }
+
+
+    // =====================================================
+    // PREVIEW ITEM
+    // =====================================================
+
+    private void CreatePreviewItem()
+    {
+        if (previewHandPoint == null)
+            return;
+
+
+        GameObject go =
+            new GameObject(
+                "HeldItem"
+            );
+
+
+        go.hideFlags =
+            HideFlags.HideAndDontSave;
+
+
+        go.transform.SetParent(
+            previewHandPoint,
+            false
+        );
+
+
+        previewHeldRenderer =
+            go.AddComponent<
+                SpriteRenderer
+            >();
+
+
+        previewHeldRenderer.sprite =
+            LoadItemSprite();
+
+
+        previewHeldRenderer.sortingOrder =
+            1000;
+
+
+        previewHeldRenderer.forceRenderingOff =
+            true;
+
+
+        UpdatePreviewItem();
+    }
+
+
+    private void RefreshItemSprite()
+    {
+        if (previewHeldRenderer == null)
+            return;
+
+
+        if (generatedItemSprite != null)
+        {
+            UnityEngine.Object.DestroyImmediate(
+                generatedItemSprite
+            );
+
+
+            generatedItemSprite =
+                null;
+        }
+
+
+        previewHeldRenderer.sprite =
+            LoadItemSprite();
+
+
+        Repaint();
+    }
+
+
+    private void UpdatePreviewItem()
+    {
+        if (previewHeldRenderer == null)
+            return;
+
+
+        Transform item =
+            previewHeldRenderer.transform;
+
+
+        item.localPosition =
+            new Vector3(
+                heldOffsetX,
+                heldOffsetY,
+                0f
+            );
+
+
+        item.localRotation =
+            Quaternion.Euler(
+                0f,
+                0f,
+                heldRotation
+            );
+
+
+        Sprite sprite =
+            previewHeldRenderer.sprite;
+
+
+        if (sprite == null)
+            return;
+
+
+        float biggest =
+            Mathf.Max(
+                0.0001f,
+                Mathf.Max(
+                    sprite.bounds.size.x,
+                    sprite.bounds.size.y
+                )
+            );
+
+
+        item.localScale =
+            Vector3.one
+            *
+            (
+                0.58f
+                /
+                biggest
+                *
+                heldScale
+            );
+    }
+
+
+    // =====================================================
+    // PREVIEW DRAWING
+    // =====================================================
+
+    private void DrawPreview(
+        Rect rect
+    )
+    {
+        EditorGUI.DrawRect(
+            rect,
+            new Color(
+                0.045f,
+                0.048f,
+                0.06f,
+                1f
+            )
+        );
+
+
+        Rect inner =
+            new Rect(
+                rect.x +
+                10f,
+                rect.y +
+                42f,
+                rect.width -
+                20f,
+                rect.height -
+                70f
+            );
+
+
+        EditorGUI.DrawRect(
+            inner,
+            new Color(
+                0.075f,
+                0.078f,
+                0.092f,
+                1f
+            )
+        );
+
+
+        DrawPreviewHeader(
+            rect
+        );
+
+
+        if (previewPlayer == null)
+        {
+            GUI.Label(
+                inner,
+                "Р’С‹Р±РµСЂРё Player",
+                EditorStyles.centeredGreyMiniLabel
+            );
+
+
+            return;
+        }
+
+
+        HandlePanZoom(
+            inner
+        );
+
+
+        // CAMERA FRAMING IS BASED ON THE UNSWUNG POSE.
+        PrepareBasePoseWithoutSwing();
+
+
+        List<SpriteRenderer> renderers =
+            CollectRenderers();
+
+
+        Bounds stableBounds =
+            CalculateBounds(
+                renderers,
+                true
+            );
+
+
+        PreparePreviewPose();
+
+
+        float fit =
+            Mathf.Min(
+                inner.width
+                /
+                Mathf.Max(
+                    0.25f,
+                    stableBounds.size.x
+                ),
+
+                inner.height
+                /
+                Mathf.Max(
+                    0.25f,
+                    stableBounds.size.y
+                )
+            );
+
+
+        float pixelsPerWorld =
+            fit
+            *
+            0.72f
+            *
+            previewZoom;
+
+
+        Vector2 center =
+            new Vector2(
+                stableBounds.center.x,
+                stableBounds.center.y
+            )
+            +
+            previewPan;
+
+
+        renderers.Sort(
+            CompareRenderers
+        );
+
+
+        for (
+            int i = 0;
+            i < renderers.Count;
+            i++
+        )
+        {
+            DrawSprite(
+                renderers[i],
+                inner,
+                center,
+                pixelsPerWorld
+            );
+        }
+
+
+        DrawArmPositionMarkers(
+            inner,
+            center,
+            pixelsPerWorld
+        );
+
+
+        DrawPivotMarkers(
+            inner,
+            center,
+            pixelsPerWorld
+        );
+
+
+        DrawHandPointMarker(
+            inner,
+            center,
+            pixelsPerWorld
+        );
+
+
+        DrawItemMarker(
+            inner,
+            center,
+            pixelsPerWorld
+        );
+
+
+        HandleEditInput(
+            inner,
+            center,
+            pixelsPerWorld
+        );
+
+
+        GUI.Label(
+            new Rect(
+                rect.x +
+                10f,
+                rect.yMax -
+                22f,
+                rect.width -
+                20f,
+                18f
+            ),
+            GetToolHint(),
+            EditorStyles.whiteMiniLabel
+        );
+    }
+
+
+    private void DrawPreviewHeader(
+        Rect rect
+    )
+    {
+        Rect area =
+            new Rect(
+                rect.x +
+                10f,
+                rect.y +
+                9f,
+                rect.width -
+                20f,
+                26f
+            );
+
+
+        GUILayout.BeginArea(
+            area
+        );
+
+
+        EditorGUILayout.BeginHorizontal();
+
+
+        GUILayout.Label(
+            armSide ==
+            ArmSide.Front
+                ? "FRONT ARM"
+                : "BACK ARM",
+            EditorStyles.boldLabel,
+            GUILayout.Width(90f)
+        );
+
+
+        GUILayout.Label(
+            GetToolTitle(),
+            GUILayout.Width(150f)
+        );
+
+
+        GUILayout.FlexibleSpace();
+
+
+        if (
+            GUILayout.Button(
+                "РђРІС‚Рѕ Рє РїР»РµС‡Сѓ",
+                GUILayout.Width(95f)
+            )
+        )
+        {
+            AutoPivot(
+                armSide
+            );
+        }
+
+
+        if (
+            GUILayout.Button(
+                "Р¦РµРЅС‚СЂ",
+                GUILayout.Width(60f)
+            )
+        )
+        {
+            previewPan =
+                Vector2.zero;
+        }
+
+
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.EndArea();
+    }
+
+
+    private List<SpriteRenderer> CollectRenderers()
+    {
+        List<SpriteRenderer> result =
+            new List<SpriteRenderer>();
+
+
+        SpriteRenderer[] all =
+            previewPlayer.GetComponentsInChildren<
+                SpriteRenderer
+            >(
+                true
+            );
+
+
+        for (
+            int i = 0;
+            i < all.Length;
+            i++
+        )
+        {
+            if (
+                all[i] == null
+                ||
+                !all[i].enabled
+                ||
+                all[i].sprite == null
+                ||
+                !all[i].gameObject.activeInHierarchy
+            )
+            {
+                continue;
+            }
+
+
+            result.Add(
+                all[i]
+            );
+        }
+
+
+        return result;
+    }
+
+
+    private Bounds CalculateBounds(
+        List<SpriteRenderer> renderers,
+        bool ignoreHeldItem
+    )
+    {
+        bool initialized =
+            false;
+
+
+        Bounds bounds =
+            default;
+
+
+        for (
+            int i = 0;
+            i < renderers.Count;
+            i++
+        )
+        {
+            SpriteRenderer renderer =
+                renderers[i];
+
+
+            if (
+                ignoreHeldItem
+                &&
+                previewHeldRenderer !=
+                null
+                &&
+                renderer ==
+                previewHeldRenderer
+            )
+            {
+                continue;
+            }
+
+
+            EncapsulateSprite(
+                renderer,
+                ref bounds,
+                ref initialized
+            );
+        }
+
+
+        if (!initialized)
+        {
+            bounds =
+                new Bounds(
+                    Vector3.zero,
+                    new Vector3(
+                        2f,
+                        3f,
+                        0f
+                    )
+                );
+        }
+
+
+        return bounds;
+    }
+
+
+    private static void EncapsulateSprite(
+        SpriteRenderer renderer,
+        ref Bounds bounds,
+        ref bool initialized
+    )
+    {
+        Sprite sprite =
+            renderer.sprite;
+
+
+        if (sprite == null)
+            return;
+
+
+        float ppu =
+            Mathf.Max(
+                0.0001f,
+                sprite.pixelsPerUnit
+            );
+
+
+        float left =
+            -sprite.pivot.x
+            /
+            ppu;
+
+
+        float right =
+            (
+                sprite.rect.width
+                -
+                sprite.pivot.x
+            )
+            /
+            ppu;
+
+
+        float bottom =
+            -sprite.pivot.y
+            /
+            ppu;
+
+
+        float top =
+            (
+                sprite.rect.height
+                -
+                sprite.pivot.y
+            )
+            /
+            ppu;
+
+
+        Vector3[] corners =
+        {
+            new Vector3(
+                left,
+                bottom,
+                0f
+            ),
+
+            new Vector3(
+                left,
+                top,
+                0f
+            ),
+
+            new Vector3(
+                right,
+                bottom,
+                0f
+            ),
+
+            new Vector3(
+                right,
+                top,
+                0f
+            )
+        };
+
+
+        for (
+            int i = 0;
+            i < corners.Length;
+            i++
+        )
+        {
+            Vector3 world =
+                renderer.transform.TransformPoint(
+                    corners[i]
+                );
+
+
+            if (!initialized)
+            {
+                bounds =
+                    new Bounds(
+                        world,
+                        Vector3.zero
+                    );
+
+
+                initialized =
+                    true;
+            }
+            else
+            {
+                bounds.Encapsulate(
+                    world
+                );
+            }
+        }
+    }
+
+
+    private static int CompareRenderers(
+        SpriteRenderer a,
+        SpriteRenderer b
+    )
+    {
+        int layerA =
+            SortingLayer.GetLayerValueFromID(
+                a.sortingLayerID
+            );
+
+
+        int layerB =
+            SortingLayer.GetLayerValueFromID(
+                b.sortingLayerID
+            );
+
+
+        int result =
+            layerA.CompareTo(
+                layerB
+            );
+
+
+        if (result != 0)
+            return result;
+
+
+        result =
+            a.sortingOrder.CompareTo(
+                b.sortingOrder
+            );
+
+
+        if (result != 0)
+            return result;
+
+
+        return
+            b.transform.position.z.CompareTo(
+                a.transform.position.z
+            );
+    }
+
+
+    private static void DrawSprite(
+        SpriteRenderer renderer,
+        Rect previewRect,
+        Vector2 worldCenter,
+        float pixelsPerWorld
+    )
+    {
+        Sprite sprite =
+            renderer.sprite;
+
+
+        if (sprite == null)
+            return;
+
+
+        Texture2D texture =
+            sprite.texture;
+
+
+        if (texture == null)
+            return;
+
+
+        float spritePPU =
+            Mathf.Max(
+                0.0001f,
+                sprite.pixelsPerUnit
+            );
+
+
+        Vector3 localCenter =
+            new Vector3(
+                (
+                    sprite.rect.width
+                    *
+                    0.5f
+                    -
+                    sprite.pivot.x
+                )
+                /
+                spritePPU,
+
+                (
+                    sprite.rect.height
+                    *
+                    0.5f
+                    -
+                    sprite.pivot.y
+                )
+                /
+                spritePPU,
+
+                0f
+            );
+
+
+        Vector3 world =
+            renderer.transform.TransformPoint(
+                localCenter
+            );
+
+
+        Vector3 scale =
+            renderer.transform.lossyScale;
+
+
+        float width =
+            sprite.rect.width
+            /
+            spritePPU
+            *
+            Mathf.Abs(
+                scale.x
+            );
+
+
+        float height =
+            sprite.rect.height
+            /
+            spritePPU
+            *
+            Mathf.Abs(
+                scale.y
+            );
+
+
+        Vector2 screen =
+            WorldToScreen(
+                world,
+                previewRect,
+                worldCenter,
+                pixelsPerWorld
+            );
+
+
+        Rect drawRect =
+            new Rect(
+                screen.x
+                -
+                width
+                *
+                pixelsPerWorld
+                *
+                0.5f,
+
+                screen.y
+                -
+                height
+                *
+                pixelsPerWorld
+                *
+                0.5f,
+
+                width
+                *
+                pixelsPerWorld,
+
+                height
+                *
+                pixelsPerWorld
+            );
+
+
+        Rect textureRect =
+            sprite.textureRect;
+
+
+        Rect uv =
+            new Rect(
+                textureRect.x
+                /
+                texture.width,
+
+                textureRect.y
+                /
+                texture.height,
+
+                textureRect.width
+                /
+                texture.width,
+
+                textureRect.height
+                /
+                texture.height
+            );
+
+
+        bool flipX =
+            renderer.flipX
+            ^
+            (
+                scale.x <
+                0f
+            );
+
+
+        bool flipY =
+            renderer.flipY
+            ^
+            (
+                scale.y <
+                0f
+            );
+
+
+        if (flipX)
+        {
+            uv.x +=
+                uv.width;
+
+
+            uv.width =
+                -uv.width;
+        }
+
+
+        if (flipY)
+        {
+            uv.y +=
+                uv.height;
+
+
+            uv.height =
+                -uv.height;
+        }
+
+
+        Matrix4x4 oldMatrix =
+            GUI.matrix;
+
+
+        GUIUtility.RotateAroundPivot(
+            -renderer.transform.eulerAngles.z,
+            screen
+        );
+
+
+        Color oldColor =
+            GUI.color;
+
+
+        GUI.color =
+            renderer.color;
+
+
+        GUI.DrawTextureWithTexCoords(
+            drawRect,
+            texture,
+            uv,
+            true
+        );
+
+
+        GUI.color =
+            oldColor;
+
+
+        GUI.matrix =
+            oldMatrix;
+    }
+
+
+    // =====================================================
+    // MARKERS
+    // =====================================================
+
+    private void DrawArmPositionMarkers(
+        Rect rect,
+        Vector2 center,
+        float ppu
+    )
+    {
+        DrawSingleArmPositionMarker(
+            previewFrontArm,
+            rect,
+            center,
+            ppu,
+            armSide ==
+            ArmSide.Front
+                ? new Color(
+                    0.1f,
+                    0.75f,
+                    1f,
+                    toolMode ==
+                    ToolMode.ArmPosition
+                        ? 1f
+                        : 0.35f
+                )
+                : new Color(
+                    0.1f,
+                    0.75f,
+                    1f,
+                    0.2f
+                )
+        );
+
+
+        DrawSingleArmPositionMarker(
+            previewBackArm,
+            rect,
+            center,
+            ppu,
+            armSide ==
+            ArmSide.Back
+                ? new Color(
+                    0.1f,
+                    1f,
+                    0.72f,
+                    toolMode ==
+                    ToolMode.ArmPosition
+                        ? 1f
+                        : 0.35f
+                )
+                : new Color(
+                    0.1f,
+                    1f,
+                    0.72f,
+                    0.2f
+                )
+        );
+    }
+
+
+    private static void DrawSingleArmPositionMarker(
+        Transform arm,
+        Rect rect,
+        Vector2 center,
+        float ppu,
+        Color color
+    )
+    {
+        if (arm == null)
+            return;
+
+
+        Vector2 screen =
+            WorldToScreen(
+                arm.position,
+                rect,
+                center,
+                ppu
+            );
+
+
+        float size =
+            9f;
+
+
+        EditorGUI.DrawRect(
+            new Rect(
+                screen.x -
+                size *
+                0.5f,
+                screen.y -
+                size *
+                0.5f,
+                size,
+                size
+            ),
+            color
+        );
+    }
+
+
+    private void DrawPivotMarkers(
+        Rect rect,
+        Vector2 center,
+        float ppu
+    )
+    {
+        DrawSinglePivotMarker(
+            previewFrontArm,
+            frontPivotPoint,
+            rect,
+            center,
+            ppu,
+            armSide ==
+            ArmSide.Front
+                ? new Color(
+                    1f,
+                    0.82f,
+                    0.05f,
+                    1f
+                )
+                : new Color(
+                    1f,
+                    0.82f,
+                    0.05f,
+                    0.35f
+                )
+        );
+
+
+        DrawSinglePivotMarker(
+            previewBackArm,
+            backPivotPoint,
+            rect,
+            center,
+            ppu,
+            armSide ==
+            ArmSide.Back
+                ? new Color(
+                    1f,
+                    0.35f,
+                    0.08f,
+                    1f
+                )
+                : new Color(
+                    1f,
+                    0.35f,
+                    0.08f,
+                    0.35f
+                )
+        );
+    }
+
+
+    private static void DrawSinglePivotMarker(
+        Transform arm,
+        Vector2 pivot,
+        Rect rect,
+        Vector2 center,
+        float ppu,
+        Color color
+    )
+    {
+        if (
+            arm == null
+            ||
+            arm.parent == null
+        )
+        {
+            return;
+        }
+
+
+        Vector3 world =
+            arm.parent.TransformPoint(
+                new Vector3(
+                    pivot.x,
+                    pivot.y,
+                    arm.localPosition.z
+                )
+            );
+
+
+        Vector2 screen =
+            WorldToScreen(
+                world,
+                rect,
+                center,
+                ppu
+            );
+
+
+        float size =
+            15f;
+
+
+        Rect outer =
+            new Rect(
+                screen.x
+                -
+                size
+                *
+                0.5f,
+
+                screen.y
+                -
+                size
+                *
+                0.5f,
+
+                size,
+                size
+            );
+
+
+        const float t =
+            2f;
+
+
+        EditorGUI.DrawRect(
+            new Rect(
+                outer.x,
+                outer.y,
+                outer.width,
+                t
+            ),
+            color
+        );
+
+
+        EditorGUI.DrawRect(
+            new Rect(
+                outer.x,
+                outer.yMax -
+                t,
+                outer.width,
+                t
+            ),
+            color
+        );
+
+
+        EditorGUI.DrawRect(
+            new Rect(
+                outer.x,
+                outer.y,
+                t,
+                outer.height
+            ),
+            color
+        );
+
+
+        EditorGUI.DrawRect(
+            new Rect(
+                outer.xMax -
+                t,
+                outer.y,
+                t,
+                outer.height
+            ),
+            color
+        );
+
+
+        EditorGUI.DrawRect(
+            new Rect(
+                screen.x -
+                2f,
+                screen.y -
+                2f,
+                4f,
+                4f
+            ),
+            color
+        );
+    }
+
+
+    private void DrawHandPointMarker(
+        Rect rect,
+        Vector2 center,
+        float ppu
+    )
+    {
+        if (
+            previewHandPoint == null
+        )
+        {
+            return;
+        }
+
+
+        Vector2 screen =
+            WorldToScreen(
+                previewHandPoint.position,
+                rect,
+                center,
+                ppu
+            );
+
+
+        Color color =
+            toolMode ==
+            ToolMode.HandPoint
+                ? new Color(
+                    0.12f,
+                    1f,
+                    0.38f,
+                    1f
+                )
+                : new Color(
+                    0.12f,
+                    1f,
+                    0.38f,
+                    0.35f
+                );
+
+
+        float size =
+            toolMode ==
+            ToolMode.HandPoint
+                ? 13f
+                : 9f;
+
+
+        float thickness =
+            toolMode ==
+            ToolMode.HandPoint
+                ? 3f
+                : 2f;
+
+
+        EditorGUI.DrawRect(
+            new Rect(
+                screen.x -
+                size *
+                0.5f,
+                screen.y -
+                thickness *
+                0.5f,
+                size,
+                thickness
+            ),
+            color
+        );
+
+
+        EditorGUI.DrawRect(
+            new Rect(
+                screen.x -
+                thickness *
+                0.5f,
+                screen.y -
+                size *
+                0.5f,
+                thickness,
+                size
+            ),
+            color
+        );
+
+
+        EditorGUI.DrawRect(
+            new Rect(
+                screen.x -
+                2f,
+                screen.y -
+                2f,
+                4f,
+                4f
+            ),
+            color
+        );
+    }
+
+
+    private void DrawItemMarker(
+        Rect rect,
+        Vector2 center,
+        float ppu
+    )
+    {
+        if (
+            previewHeldRenderer == null
+            ||
+            previewHeldRenderer.sprite ==
+            null
+        )
+        {
+            return;
+        }
+
+
+        Vector2 screen =
+            WorldToScreen(
+                previewHeldRenderer
+                    .transform
+                    .position,
+                rect,
+                center,
+                ppu
+            );
+
+
+        Color color =
+            toolMode ==
+            ToolMode.Item
+                ? new Color(
+                    1f,
+                    0.2f,
+                    0.9f,
+                    1f
+                )
+                : new Color(
+                    1f,
+                    0.2f,
+                    0.9f,
+                    0.35f
+                );
+
+
+        Matrix4x4 old =
+            GUI.matrix;
+
+
+        GUIUtility.RotateAroundPivot(
+            45f,
+            screen
+        );
+
+
+        EditorGUI.DrawRect(
+            new Rect(
+                screen.x -
+                5f,
+                screen.y -
+                5f,
+                10f,
+                10f
+            ),
+            color
+        );
+
+
+        GUI.matrix =
+            old;
+    }
+
+
+    // =====================================================
+    // EDIT INPUT
+    // =====================================================
+
+    private void HandleEditInput(
+        Rect rect,
+        Vector2 center,
+        float ppu
+    )
+    {
+        Event e =
+            Event.current;
+
+
+        if (
+            e == null
+            ||
+            e.button !=
+            0
+            ||
+            !rect.Contains(
+                e.mousePosition
+            )
+        )
+        {
+            return;
+        }
+
+
+        if (
+            e.type !=
+            EventType.MouseDown
+            &&
+            e.type !=
+            EventType.MouseDrag
+        )
+        {
+            return;
+        }
+
+
+        Vector3 world =
+            ScreenToWorld(
+                e.mousePosition,
+                rect,
+                center,
+                ppu
+            );
+
+
+        if (
+            toolMode ==
+            ToolMode.ArmPosition
+        )
+        {
+            SetArmPositionFromWorld(
+                armSide,
+                world
+            );
+        }
+        else if (
+            toolMode ==
+            ToolMode.Pivot
+        )
+        {
+            SetPivotFromWorld(
+                armSide,
+                world
+            );
+        }
+        else if (
+            toolMode ==
+            ToolMode.HandPoint
+        )
+        {
+            SetHandPointFromWorld(
+                world
+            );
+        }
+        else
+        {
+            SetItemFromWorld(
+                world
+            );
+        }
+
+
+        e.Use();
+
+        Repaint();
+    }
+
+
+    private void SetArmPositionFromWorld(
+        ArmSide side,
+        Vector3 world
+    )
+    {
+        Transform arm =
+            side ==
+            ArmSide.Front
+                ? previewFrontArm
+                : previewBackArm;
+
+
+        if (
+            arm == null
+            ||
+            arm.parent == null
+        )
+        {
+            return;
+        }
+
+
+        Vector3 local =
+            arm.parent.InverseTransformPoint(
+                world
+            );
+
+
+        Vector2 next =
+            Snap(
+                new Vector2(
+                    local.x,
+                    local.y
+                )
+            );
+
+
+        // Move ONLY the selected arm transform.
+        // The independent rotation point remains exactly where the user put it.
+        if (
+            side ==
+            ArmSide.Front
+        )
+        {
+            frontArmScenePosition =
+                next;
+        }
+        else
+        {
+            backArmScenePosition =
+                next;
+        }
+
+
+        SetLocalXY(
+            arm,
+            next
+        );
+    }
+
+
+    private void SetPivotFromWorld(
+        ArmSide side,
+        Vector3 world
+    )
+    {
+        Transform arm =
+            side ==
+            ArmSide.Front
+                ? previewFrontArm
+                : previewBackArm;
+
+
+        if (
+            arm == null
+            ||
+            arm.parent == null
+        )
+        {
+            return;
+        }
+
+
+        Vector3 local =
+            arm.parent.InverseTransformPoint(
+                world
+            );
+
+
+        Vector2 next =
+            Snap(
+                new Vector2(
+                    local.x,
+                    local.y
+                )
+            );
+
+
+        // THIS IS THE ONLY CHANGE.
+        // previewFrontArm/previewBackArm Transform is untouched.
+        if (
+            side ==
+            ArmSide.Front
+        )
+        {
+            frontPivotPoint =
+                next;
+        }
+        else
+        {
+            backPivotPoint =
+                next;
+        }
+    }
+
+
+    private void SetHandPointFromWorld(
+        Vector3 world
+    )
+    {
+        if (
+            previewHandPoint == null
+            ||
+            previewHandPoint.parent == null
+        )
+        {
+            return;
+        }
+
+
+        Vector3 local =
+            previewHandPoint.parent.InverseTransformPoint(
+                world
+            );
+
+
+        handLocalPosition =
+            Snap(
+                new Vector2(
+                    local.x,
+                    local.y
+                )
+            );
+
+
+        // Only HandPoint moves.
+        // FrontArmPivot / BackArmPivot and their SpriteRenderers are untouched.
+        SetLocalXY(
+            previewHandPoint,
+            handLocalPosition
+        );
+    }
+
+
+    private void SetItemFromWorld(
+        Vector3 world
+    )
+    {
+        if (
+            previewHeldRenderer == null
+            ||
+            previewHeldRenderer.transform.parent ==
+            null
+        )
+        {
+            return;
+        }
+
+
+        Vector3 local =
+            previewHeldRenderer
+                .transform
+                .parent
+                .InverseTransformPoint(
+                    world
+                );
+
+
+        Vector2 offset =
+            Snap(
+                new Vector2(
+                    local.x,
+                    local.y
+                )
+            );
+
+
+        heldOffsetX =
+            offset.x;
+
+
+        heldOffsetY =
+            offset.y;
+    }
+
+
+    // =====================================================
+    // PAN / ZOOM
+    // =====================================================
+
+    private void HandlePanZoom(
+        Rect rect
+    )
+    {
+        Event e =
+            Event.current;
+
+
+        if (
+            e == null
+            ||
+            !rect.Contains(
+                e.mousePosition
+            )
+        )
+        {
+            return;
+        }
+
+
+        if (
+            e.type ==
+            EventType.ScrollWheel
+        )
+        {
+            previewZoom =
+                Mathf.Clamp(
+                    previewZoom
+                    *
+                    (
+                        1f
+                        -
+                        e.delta.y
+                        *
+                        0.05f
+                    ),
+                    0.5f,
+                    3f
+                );
+
+
+            e.Use();
+
+            Repaint();
+        }
+
+
+        if (
+            e.type ==
+            EventType.MouseDrag
+            &&
+            e.button ==
+            2
+        )
+        {
+            // Pan is approximate; it is intentionally independent from editing.
+            previewPan.x -=
+                e.delta.x
+                /
+                100f;
+
+
+            previewPan.y +=
+                e.delta.y
+                /
+                100f;
+
+
+            e.Use();
+
+            Repaint();
+        }
+    }
+
+
+    // =====================================================
+    // SAVE
+    // =====================================================
+
+    private void QueueSave()
+    {
+        if (saveQueued)
+            return;
+
+
+        saveQueued =
+            true;
+
+
+        status =
+            "РЎРѕС…СЂР°РЅРµРЅРёРµ...";
+
+
+        EditorApplication.delayCall +=
+            SaveDeferred;
+    }
+
+
+    private void SaveDeferred()
+    {
+        saveQueued =
+            false;
+
+
+        try
+        {
+            ApplyArmPositions();
+
+            ApplyOverlayToPlayer();
+
+            ApplyHandPoint();
+
+            SaveItemJson();
+
+
+            if (
+                !EditorApplication.isPlaying
+                &&
+                player !=
+                null
+                &&
+                player.scene.IsValid()
+            )
+            {
+                EditorSceneManager.MarkSceneDirty(
+                    player.scene
+                );
+            }
+
+
+            status =
+                EditorApplication.isPlaying
+                    ? "Runtime Player Рё item pose РѕР±РЅРѕРІР»РµРЅС‹."
+                    : "РџРѕР»РѕР¶РµРЅРёРµ СЂСѓРє, С‚РѕС‡РєРё РІСЂР°С‰РµРЅРёСЏ, СЂР°Р·РјР°С… Рё item pose СЃРѕС…СЂР°РЅРµРЅС‹.";
+        }
+        catch (Exception exception)
+        {
+            status =
+                "РћС€РёР±РєР°: "
+                +
+                exception.Message;
+
+
+            Debug.LogError(
+                "HELD ITEM POSE SAVE FAILED:\n"
+                +
+                exception
+            );
+        }
+
+
+        Repaint();
+    }
+
+
+    private void ApplyArmPositions()
+    {
+        ApplySingleArmPosition(
+            sourceFrontArm,
+            frontArmScenePosition,
+            "Front Arm Position"
+        );
+
+
+        ApplySingleArmPosition(
+            sourceBackArm,
+            backArmScenePosition,
+            "Back Arm Position"
+        );
+    }
+
+
+    private static void ApplySingleArmPosition(
+        Transform arm,
+        Vector2 localPosition,
+        string undoName
+    )
+    {
+        if (arm == null)
+            return;
+
+
+        if (!EditorApplication.isPlaying)
+        {
+            Undo.RecordObject(
+                arm,
+                undoName
+            );
+        }
+
+
+        SetLocalXY(
+            arm,
+            localPosition
+        );
+
+
+        if (!EditorApplication.isPlaying)
+        {
+            EditorUtility.SetDirty(
+                arm
+            );
+
+
+            PrefabUtility
+                .RecordPrefabInstancePropertyModifications(
+                    arm
+                );
+        }
+    }
+
+
+    private void ApplyOverlayToPlayer()
+    {
+        if (player == null)
+            return;
+
+
+        if (sourceOverlay == null)
+        {
+            if (EditorApplication.isPlaying)
+            {
+                sourceOverlay =
+                    player.AddComponent<
+                        ArmMiningOverlayController
+                    >();
+            }
+            else
+            {
+                sourceOverlay =
+                    Undo.AddComponent<
+                        ArmMiningOverlayController
+                    >(
+                        player
+                    );
+            }
+        }
+
+
+        if (sourceOverlay == null)
+            return;
+
+
+        if (!EditorApplication.isPlaying)
+        {
+            Undo.RecordObject(
+                sourceOverlay,
+                "Held Item Pose"
+            );
+        }
+
+
+        SerializedObject so =
+            new SerializedObject(
+                sourceOverlay
+            );
+
+
+        WriteVector2(
+            so,
+            "frontRotationPointLocal",
+            frontPivotPoint
+        );
+
+
+        WriteVector2(
+            so,
+            "backRotationPointLocal",
+            backPivotPoint
+        );
+
+
+        WriteBool(
+            so,
+            "rotationPointsInitialized",
+            true
+        );
+
+
+        WriteFloat(
+            so,
+            "swingSpeed",
+            swingSpeed
+        );
+
+
+        WriteFloat(
+            so,
+            "frontArmBackAngle",
+            frontBackAngle
+        );
+
+
+        WriteFloat(
+            so,
+            "frontArmForwardAngle",
+            frontForwardAngle
+        );
+
+
+        WriteFloat(
+            so,
+            "backArmBackAngle",
+            backBackAngle
+        );
+
+
+        WriteFloat(
+            so,
+            "backArmForwardAngle",
+            backForwardAngle
+        );
+
+
+        so.ApplyModifiedProperties();
+
+
+        if (!EditorApplication.isPlaying)
+        {
+            EditorUtility.SetDirty(
+                sourceOverlay
+            );
+
+
+            PrefabUtility
+                .RecordPrefabInstancePropertyModifications(
+                    sourceOverlay
+                );
+        }
+    }
+
+
+    private void ApplyHandPoint()
+    {
+        if (sourceHandPoint == null)
+            return;
+
+
+        if (!EditorApplication.isPlaying)
+        {
+            Undo.RecordObject(
+                sourceHandPoint,
+                "Hand Point"
+            );
+        }
+
+
+        SetLocalXY(
+            sourceHandPoint,
+            handLocalPosition
+        );
+
+
+        if (!EditorApplication.isPlaying)
+        {
+            EditorUtility.SetDirty(
+                sourceHandPoint
+            );
+
+
+            PrefabUtility
+                .RecordPrefabInstancePropertyModifications(
+                    sourceHandPoint
+                );
+        }
+    }
+
+
+    // =====================================================
+    // ITEM JSON
+    // =====================================================
+
+    private void LoadItem()
+    {
+        itemJsonPath =
+            FindItemJson(
+                itemId
+            );
+
+
+        heldOffsetX =
+            0f;
+
+
+        heldOffsetY =
+            0f;
+
+
+        heldScale =
+            1f;
+
+
+        heldRotation =
+            0f;
+
+
+        if (
+            string.IsNullOrWhiteSpace(
+                itemJsonPath
+            )
+            ||
+            !File.Exists(
+                itemJsonPath
+            )
+        )
+        {
+            status =
+                "JSON РЅРµ РЅР°Р№РґРµРЅ: "
+                +
+                itemId;
+
+
+            return;
+        }
+
+
+        string json =
+            File.ReadAllText(
+                itemJsonPath
+            );
+
+
+        heldOffsetX =
+            ReadJsonFloat(
+                json,
+                "HeldOffsetX",
+                0f
+            );
+
+
+        heldOffsetY =
+            ReadJsonFloat(
+                json,
+                "HeldOffsetY",
+                0f
+            );
+
+
+        heldScale =
+            ReadJsonFloat(
+                json,
+                "HeldScale",
+                1f
+            );
+
+
+        heldRotation =
+            ReadJsonFloat(
+                json,
+                "HeldRotation",
+                0f
+            );
+
+
+        status =
+            "Р—Р°РіСЂСѓР¶РµРЅ "
+            +
+            itemId;
+    }
+
+
+    private void SaveItemJson()
+    {
+        if (
+            string.IsNullOrWhiteSpace(
+                itemJsonPath
+            )
+            ||
+            !File.Exists(
+                itemJsonPath
+            )
+        )
+        {
+            throw new FileNotFoundException(
+                "Item JSON РЅРµ РЅР°Р№РґРµРЅ.",
+                itemJsonPath
+            );
+        }
+
+
+        string json =
+            File.ReadAllText(
+                itemJsonPath
+            );
+
+
+        json =
+            SetJsonFloat(
+                json,
+                "HeldOffsetX",
+                heldOffsetX
+            );
+
+
+        json =
+            SetJsonFloat(
+                json,
+                "HeldOffsetY",
+                heldOffsetY
+            );
+
+
+        json =
+            SetJsonFloat(
+                json,
+                "HeldScale",
+                heldScale
+            );
+
+
+        json =
+            SetJsonFloat(
+                json,
+                "HeldRotation",
+                heldRotation
+            );
+
+
+        File.WriteAllText(
+            itemJsonPath,
+            json
+        );
+
+
+        string assetPath =
+            AbsoluteToAssetPath(
+                itemJsonPath
+            );
+
+
+        if (
+            !string.IsNullOrWhiteSpace(
+                assetPath
+            )
+        )
+        {
+            AssetDatabase.ImportAsset(
+                assetPath,
+                ImportAssetOptions.ForceUpdate
+            );
+        }
+
+
+        HeldItemPoseRegistry.Reload();
+    }
+
+
+    private static string FindItemJson(
+        string targetId
+    )
+    {
+        if (
+            string.IsNullOrWhiteSpace(
+                targetId
+            )
+        )
+        {
+            return null;
+        }
+
+
+        string folder =
+            Path.Combine(
+                Application.dataPath,
+                "GameData",
+                "Items"
+            );
+
+
+        if (!Directory.Exists(folder))
+            return null;
+
+
+        string[] files =
+            Directory.GetFiles(
+                folder,
+                "*.json",
+                SearchOption.AllDirectories
+            );
+
+
+        for (
+            int i = 0;
+            i < files.Length;
+            i++
+        )
+        {
+            try
+            {
+                string json =
+                    File.ReadAllText(
+                        files[i]
+                    );
+
+
+                string id =
+                    ReadJsonString(
+                        json,
+                        "ID"
+                    );
+
+
+                if (
+                    string.Equals(
+                        id,
+                        targetId,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                {
+                    return
+                        files[i];
+                }
+            }
+            catch
+            {
+            }
+        }
+
+
+        return null;
+    }
+
+
+    private Sprite LoadItemSprite()
+    {
+        if (
+            string.IsNullOrWhiteSpace(
+                itemJsonPath
+            )
+            ||
+            !File.Exists(
+                itemJsonPath
+            )
+        )
+        {
+            return null;
+        }
+
+
+        string json =
+            File.ReadAllText(
+                itemJsonPath
+            );
+
+
+        string textureName =
+            ReadJsonString(
+                json,
+                "Texture"
+            );
+
+
+        if (
+            string.IsNullOrWhiteSpace(
+                textureName
+            )
+        )
+        {
+            return null;
+        }
+
+
+        if (
+            textureName.EndsWith(
+                ".png",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+        {
+            textureName =
+                textureName.Substring(
+                    0,
+                    textureName.Length -
+                    4
+                );
+        }
+
+
+        string assetPath =
+            "Assets/GameData/ResourcePacks/Default/textures/items/"
+            +
+            textureName
+            +
+            ".png";
+
+
+        Sprite sprite =
+            AssetDatabase.LoadAssetAtPath<
+                Sprite
+            >(
+                assetPath
+            );
+
+
+        if (sprite != null)
+            return sprite;
+
+
+        Texture2D texture =
+            AssetDatabase.LoadAssetAtPath<
+                Texture2D
+            >(
+                assetPath
+            );
+
+
+        if (texture == null)
+            return null;
+
+
+        generatedItemSprite =
+            Sprite.Create(
+                texture,
+                new Rect(
+                    0f,
+                    0f,
+                    texture.width,
+                    texture.height
+                ),
+                new Vector2(
+                    0.5f,
+                    0.5f
+                ),
+                16f,
+                0,
+                SpriteMeshType.FullRect
+            );
+
+
+        generatedItemSprite.name =
+            "HeldItemPose_"
+            +
+            itemId;
+
+
+        return
+            generatedItemSprite;
+    }
+
+
+    // =====================================================
+    // CLIPS
+    // =====================================================
+
+    private void CollectClips()
+    {
+        List<AnimationClip> result =
+            new List<
+                AnimationClip
+            >();
+
+
+        HashSet<int> used =
+            new HashSet<
+                int
+            >();
+
+
+        if (
+            sourceAnimator !=
+            null
+            &&
+            sourceAnimator.runtimeAnimatorController !=
+            null
+        )
+        {
+            AnimationClip[] found =
+                sourceAnimator
+                    .runtimeAnimatorController
+                    .animationClips;
+
+
+            for (
+                int i = 0;
+                i < found.Length;
+                i++
+            )
+            {
+                if (
+                    found[i] !=
+                    null
+                    &&
+                    used.Add(
+                        found[i].GetInstanceID()
+                    )
+                )
+                {
+                    result.Add(
+                        found[i]
+                    );
+                }
+            }
+        }
+
+
+        clips =
+            result.ToArray();
+
+
+        clipNames =
+            new string[
+                clips.Length
+            ];
+
+
+        for (
+            int i = 0;
+            i < clips.Length;
+            i++
+        )
+        {
+            clipNames[i] =
+                clips[i].name;
+        }
+
+
+        selectedClip =
+            Mathf.Clamp(
+                selectedClip,
+                0,
+                Mathf.Max(
+                    0,
+                    clips.Length -
+                    1
+                )
+            );
+
+
+        animationTime =
+            0f;
+    }
+
+
+    private AnimationClip GetClip()
+    {
+        if (
+            clips == null
+            ||
+            selectedClip <
+            0
+            ||
+            selectedClip >=
+            clips.Length
+        )
+        {
+            return null;
+        }
+
+
+        return
+            clips[
+                selectedClip
+            ];
+    }
+
+
+    // =====================================================
+    // SERIALIZED HELPERS
+    // =====================================================
+
+    private static Vector2 ReadVector2(
+        SerializedObject so,
+        string name,
+        Vector2 fallback
+    )
+    {
+        SerializedProperty p =
+            so.FindProperty(
+                name
+            );
+
+
+        return
+            p != null
+                ? p.vector2Value
+                : fallback;
+    }
+
+
+    private static float ReadFloat(
+        SerializedObject so,
+        string name,
+        float fallback
+    )
+    {
+        SerializedProperty p =
+            so.FindProperty(
+                name
+            );
+
+
+        return
+            p != null
+                ? p.floatValue
+                : fallback;
+    }
+
+
+    private static void WriteVector2(
+        SerializedObject so,
+        string name,
+        Vector2 value
+    )
+    {
+        SerializedProperty p =
+            so.FindProperty(
+                name
+            );
+
+
+        if (p != null)
+        {
+            p.vector2Value =
+                value;
+        }
+    }
+
+
+    private static void WriteFloat(
+        SerializedObject so,
+        string name,
+        float value
+    )
+    {
+        SerializedProperty p =
+            so.FindProperty(
+                name
+            );
+
+
+        if (p != null)
+        {
+            p.floatValue =
+                value;
+        }
+    }
+
+
+    private static void WriteBool(
+        SerializedObject so,
+        string name,
+        bool value
+    )
+    {
+        SerializedProperty p =
+            so.FindProperty(
+                name
+            );
+
+
+        if (p != null)
+        {
+            p.boolValue =
+                value;
+        }
+    }
+
+
+    // =====================================================
+    // JSON HELPERS
+    // =====================================================
+
+    private static string ReadJsonString(
+        string json,
+        string field
+    )
+    {
+        Match match =
+            Regex.Match(
+                json,
+                "\""
+                +
+                Regex.Escape(
+                    field
+                )
+                +
+                "\"\\s*:\\s*\"([^\"]*)\""
+            );
+
+
+        return
+            match.Success
+                ? match.Groups[1].Value
+                : null;
+    }
+
+
+    private static float ReadJsonFloat(
+        string json,
+        string field,
+        float fallback
+    )
+    {
+        Match match =
+            Regex.Match(
+                json,
+                "\""
+                +
+                Regex.Escape(
+                    field
+                )
+                +
+                "\"\\s*:\\s*(-?[0-9]+(?:\\.[0-9]+)?)"
+            );
+
+
+        if (!match.Success)
+            return fallback;
+
+
+        if (
+            float.TryParse(
+                match.Groups[1].Value,
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out float value
+            )
+        )
+        {
+            return value;
+        }
+
+
+        return fallback;
+    }
+
+
+    private static string SetJsonFloat(
+        string json,
+        string field,
+        float value
+    )
+    {
+        string number =
+            value.ToString(
+                "0.####",
+                System.Globalization.CultureInfo.InvariantCulture
+            );
+
+
+        string pattern =
+            "\""
+            +
+            Regex.Escape(
+                field
+            )
+            +
+            "\"\\s*:\\s*-?[0-9]+(?:\\.[0-9]+)?";
+
+
+        Regex regex =
+            new Regex(
+                pattern
+            );
+
+
+        string replacement =
+            "\""
+            +
+            field
+            +
+            "\": "
+            +
+            number;
+
+
+        if (regex.IsMatch(json))
+        {
+            return
+                regex.Replace(
+                    json,
+                    replacement,
+                    1
+                );
+        }
+
+
+        int closing =
+            json.LastIndexOf(
+                '}'
+            );
+
+
+        if (closing < 0)
+            return json;
+
+
+        string before =
+            json
+                .Substring(
+                    0,
+                    closing
+                )
+                .TrimEnd();
+
+
+        bool comma =
+            before.Length >
+            0
+            &&
+            !before.EndsWith(
+                "{",
+                StringComparison.Ordinal
+            )
+            &&
+            !before.EndsWith(
+                ",",
+                StringComparison.Ordinal
+            );
+
+
+        return
+            before
+            +
+            (
+                comma
+                    ? ","
+                    : ""
+            )
+            +
+            Environment.NewLine
+            +
+            "  \""
+            +
+            field
+            +
+            "\": "
+            +
+            number
+            +
+            Environment.NewLine
+            +
+            json.Substring(
+                closing
+            );
+    }
+
+
+    private string GetToolTitle()
+    {
+        switch (toolMode)
+        {
+            case ToolMode.ArmPosition:
+                return
+                    "РџРћР›РћР–Р•РќРР• Р РЈРљР";
+
+            case ToolMode.Pivot:
+                return
+                    "РўРћР§РљРђ Р’Р РђР©Р•РќРРЇ";
+
+            case ToolMode.HandPoint:
+                return
+                    "РўРћР§РљРђ Р РЈРљР";
+
+            case ToolMode.Item:
+                return
+                    "РџР Р•Р”РњР•Рў";
+
+            default:
+                return
+                    string.Empty;
+        }
+    }
+
+
+    private string GetToolHint()
+    {
+        switch (toolMode)
+        {
+            case ToolMode.ArmPosition:
+                return
+                    "Р›РљРњ: РґРІРёРіР°РµС‚ РЎРђРњРЈ РІС‹Р±СЂР°РЅРЅСѓСЋ СЂСѓРєСѓ РїРѕ СЃС†РµРЅРµ. Pivot РѕСЃС‚Р°С‘С‚СЃСЏ РЅР° РјРµСЃС‚Рµ.";
+
+            case ToolMode.Pivot:
+                return
+                    "Р›РљРњ: РґРІРёРіР°РµС‚ РўРћР›Р¬РљРћ С‚РѕС‡РєСѓ РІСЂР°С‰РµРЅРёСЏ. РўРµРєСЃС‚СѓСЂР° СЂСѓРєРё РЅРµ РјРµРЅСЏРµС‚СЃСЏ.";
+
+            case ToolMode.HandPoint:
+                return
+                    "Р›РљРњ: РґРІРёРіР°РµС‚ Р—Р•Р›РЃРќР«Р™ HandPoint. РўРµРєСЃС‚СѓСЂР° СЂСѓРєРё Рё pivot РЅРµ РјРµРЅСЏСЋС‚СЃСЏ.";
+
+            case ToolMode.Item:
+                return
+                    "Р›РљРњ: РїРѕР»РѕР¶РµРЅРёРµ РїСЂРµРґРјРµС‚Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ. РљРѕР»РµСЃРѕ: zoom. РЎРљРњ: pan.";
+
+            default:
+                return
+                    string.Empty;
+        }
+    }
+
+
+    // =====================================================
+    // COMMON HELPERS
+    // =====================================================
+
+    private Vector2 GetCurrentArmScenePosition()
+    {
+        return
+            armSide ==
+            ArmSide.Front
+                ? frontArmScenePosition
+                : backArmScenePosition;
+    }
+
+
+    private void SetCurrentArmScenePosition(
+        Vector2 value
+    )
+    {
+        if (
+            armSide ==
+            ArmSide.Front
+        )
+        {
+            frontArmScenePosition =
+                value;
+
+
+            SetLocalXY(
+                previewFrontArm,
+                value
+            );
+        }
+        else
+        {
+            backArmScenePosition =
+                value;
+
+
+            SetLocalXY(
+                previewBackArm,
+                value
+            );
+        }
+    }
+
+
+    private void ReadCurrentArmScenePosition()
+    {
+        Transform source =
+            armSide ==
+            ArmSide.Front
+                ? sourceFrontArm
+                : sourceBackArm;
+
+
+        if (source == null)
+            return;
+
+
+        SetCurrentArmScenePosition(
+            XY(
+                source.localPosition
+            )
+        );
+    }
+
+
+    private Vector2 GetCurrentPivot()
+    {
+        return
+            armSide ==
+            ArmSide.Front
+                ? frontPivotPoint
+                : backPivotPoint;
+    }
+
+
+    private void SetCurrentPivot(
+        Vector2 value
+    )
+    {
+        if (
+            armSide ==
+            ArmSide.Front
+        )
+        {
+            frontPivotPoint =
+                value;
+        }
+        else
+        {
+            backPivotPoint =
+                value;
+        }
+    }
+
+
+    private Vector2 Snap(
+        Vector2 value
+    )
+    {
+        if (!snapToPixel)
+            return value;
+
+
+        const float step =
+            1f /
+            16f;
+
+
+        return
+            new Vector2(
+                Mathf.Round(
+                    value.x
+                    /
+                    step
+                )
+                *
+                step,
+
+                Mathf.Round(
+                    value.y
+                    /
+                    step
+                )
+                *
+                step
+            );
+    }
+
+
+    private static Vector2 XY(
+        Vector3 value
+    )
+    {
+        return
+            new Vector2(
+                value.x,
+                value.y
+            );
+    }
+
+
+    private static void SetLocalXY(
+        Transform target,
+        Vector2 value
+    )
+    {
+        if (target == null)
+            return;
+
+
+        Vector3 local =
+            target.localPosition;
+
+
+        local.x =
+            value.x;
+
+
+        local.y =
+            value.y;
+
+
+        target.localPosition =
+            local;
+    }
+
+
+    private static Transform FindDeepChild(
+        Transform root,
+        string targetName
+    )
+    {
+        if (root == null)
+            return null;
+
+
+        Transform[] all =
+            root.GetComponentsInChildren<
+                Transform
+            >(
+                true
+            );
+
+
+        for (
+            int i = 0;
+            i < all.Length;
+            i++
+        )
+        {
+            if (
+                all[i] !=
+                null
+                &&
+                all[i].name ==
+                targetName
+            )
+            {
+                return
+                    all[i];
+            }
+        }
+
+
+        return null;
+    }
+
+
+    private static Vector2 WorldToScreen(
+        Vector3 world,
+        Rect rect,
+        Vector2 center,
+        float pixelsPerWorld
+    )
+    {
+        return
+            new Vector2(
+                rect.center.x
+                +
+                (
+                    world.x
+                    -
+                    center.x
+                )
+                *
+                pixelsPerWorld,
+
+                rect.center.y
+                -
+                (
+                    world.y
+                    -
+                    center.y
+                )
+                *
+                pixelsPerWorld
+            );
+    }
+
+
+    private static Vector3 ScreenToWorld(
+        Vector2 screen,
+        Rect rect,
+        Vector2 center,
+        float pixelsPerWorld
+    )
+    {
+        return
+            new Vector3(
+                center.x
+                +
+                (
+                    screen.x
+                    -
+                    rect.center.x
+                )
+                /
+                pixelsPerWorld,
+
+                center.y
+                -
+                (
+                    screen.y
+                    -
+                    rect.center.y
+                )
+                /
+                pixelsPerWorld,
+
+                0f
+            );
+    }
+
+
+    private static string AbsoluteToAssetPath(
+        string absolute
+    )
+    {
+        if (
+            string.IsNullOrWhiteSpace(
+                absolute
+            )
+        )
+        {
+            return null;
+        }
+
+
+        string project =
+            Directory
+                .GetParent(
+                    Application.dataPath
+                )
+                .FullName
+                .Replace(
+                    '\\',
+                    '/'
+                );
+
+
+        string normalized =
+            Path
+                .GetFullPath(
+                    absolute
+                )
+                .Replace(
+                    '\\',
+                    '/'
+                );
+
+
+        if (
+            !normalized.StartsWith(
+                project
+                +
+                "/",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+        {
+            return null;
+        }
+
+
+        return
+            normalized.Substring(
+                project.Length
+                +
+                1
+            );
+    }
+}
+
+#endif
+

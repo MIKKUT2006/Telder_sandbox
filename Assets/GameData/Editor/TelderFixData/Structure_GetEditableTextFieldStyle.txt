@@ -1,0 +1,17 @@
+        private GUIStyle GetEditableTextFieldStyle()
+        {
+            if (editableTextFieldStyle == null)
+            {
+                editableTextFieldStyle =
+                    new GUIStyle(GUI.skin.textField);
+
+                editableTextFieldStyle.normal.textColor = Color.white;
+                editableTextFieldStyle.hover.textColor = Color.white;
+                editableTextFieldStyle.active.textColor = Color.white;
+                editableTextFieldStyle.focused.textColor = Color.white;
+                editableTextFieldStyle.alignment = TextAnchor.MiddleLeft;
+                editableTextFieldStyle.clipping = TextClipping.Clip;
+            }
+
+            return editableTextFieldStyle;
+        }

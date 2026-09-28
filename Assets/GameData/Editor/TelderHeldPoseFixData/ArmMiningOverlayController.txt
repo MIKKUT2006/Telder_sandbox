@@ -1,0 +1,739 @@
+using UnityEngine;
+
+using Game.Mining;
+
+
+[DefaultExecutionOrder(50000)]
+public class ArmMiningOverlayController :
+    MonoBehaviour
+{
+    // =====================================================
+    // REFERENCES
+    // =====================================================
+
+    [Header("Rig")]
+
+    [SerializeField]
+    private Transform frontArmPivot;
+
+
+    [SerializeField]
+    private Transform backArmPivot;
+
+
+    [SerializeField]
+    private Transform handPoint;
+
+
+    [SerializeField]
+    private Camera playerCamera;
+
+
+    // =====================================================
+    // REAL ROTATION POINTS
+    // =====================================================
+
+    [Header("Rotation Points")]
+
+    [Tooltip(
+        "Local point INSIDE FrontArmPivot that stays fixed while the arm swings. " +
+        "Place this point on the elbow."
+    )]
+    [SerializeField]
+    private Vector2 frontRotationPivotLocal =
+        Vector2.zero;
+
+
+    [Tooltip(
+        "Local point INSIDE BackArmPivot that stays fixed while the arm swings."
+    )]
+    [SerializeField]
+    private Vector2 backRotationPivotLocal =
+        Vector2.zero;
+
+
+    // =====================================================
+    // MINING MOTION
+    // =====================================================
+
+    [Header("Mining Motion")]
+
+    [SerializeField]
+    private float swingSpeed =
+        5.5f;
+
+
+    [SerializeField]
+    private float frontArmBackAngle =
+        52f;
+
+
+    [SerializeField]
+    private float frontArmForwardAngle =
+        -58f;
+
+
+    [SerializeField]
+    private float backArmBackAngle =
+        -12f;
+
+
+    [SerializeField]
+    private float backArmForwardAngle =
+        18f;
+
+
+    // =====================================================
+    // SMOOTHING
+    // =====================================================
+
+    [Header("Smoothing")]
+
+    [SerializeField]
+    private float blendInSpeed =
+        12f;
+
+
+    [SerializeField]
+    private float blendOutSpeed =
+        9f;
+
+
+    [SerializeField]
+    private float miningSignalGrace =
+        0.16f;
+
+
+    [Range(0f, 1f)]
+    [SerializeField]
+    private float motionSmoothing =
+        0.75f;
+
+
+    // =====================================================
+    // STATE
+    // =====================================================
+
+    private float miningWeight;
+
+    private float swingPhase;
+
+    private float graceTimer;
+
+    private bool wasActive;
+
+
+    private ArmPoseState frontState;
+
+    private ArmPoseState backState;
+
+
+    private struct ArmPoseState
+    {
+        public bool HasWritten;
+
+        public Vector3 BaseLocalPosition;
+
+        public Quaternion BaseLocalRotation;
+
+        public Vector3 LastOutputLocalPosition;
+
+        public Quaternion LastOutputLocalRotation;
+    }
+
+
+    // =====================================================
+    // UNITY
+    // =====================================================
+
+    private void Awake()
+    {
+        ResolveReferences();
+    }
+
+
+    private void OnEnable()
+    {
+        miningWeight =
+            0f;
+
+        swingPhase =
+            0f;
+
+        graceTimer =
+            0f;
+
+        wasActive =
+            false;
+
+        frontState =
+            default;
+
+        backState =
+            default;
+    }
+
+
+    private void LateUpdate()
+    {
+        ResolveReferences();
+
+
+        if (
+            frontArmPivot ==
+            null
+            &&
+            backArmPivot ==
+            null
+        )
+        {
+            return;
+        }
+
+
+        float deltaTime =
+            Mathf.Min(
+                Time.deltaTime,
+                0.05f
+            );
+
+
+        bool signal =
+            MiningVisualSignal.IsMining;
+
+
+        if (signal)
+        {
+            graceTimer =
+                Mathf.Max(
+                    0f,
+                    miningSignalGrace
+                );
+        }
+        else
+        {
+            graceTimer =
+                Mathf.Max(
+                    0f,
+                    graceTimer -
+                    deltaTime
+                );
+        }
+
+
+        bool active =
+            signal
+            ||
+            graceTimer >
+            0f;
+
+
+        if (
+            active
+            &&
+            !wasActive
+            &&
+            miningWeight <
+            0.05f
+        )
+        {
+            swingPhase =
+                0f;
+        }
+
+
+        float targetWeight =
+            active
+                ? 1f
+                : 0f;
+
+
+        float blendSpeed =
+            active
+                ? blendInSpeed
+                : blendOutSpeed;
+
+
+        miningWeight =
+            ExpDamp(
+                miningWeight,
+                targetWeight,
+                blendSpeed,
+                deltaTime
+            );
+
+
+        if (active)
+        {
+            float cyclesPerSecond =
+                Mathf.Max(
+                    0.01f,
+                    swingSpeed
+                )
+                /
+                (
+                    Mathf.PI *
+                    2f
+                );
+
+
+            swingPhase =
+                Mathf.Repeat(
+                    swingPhase +
+                    cyclesPerSecond *
+                    deltaTime,
+                    1f
+                );
+        }
+
+
+        float motion =
+            EvaluateSwing(
+                swingPhase
+            );
+
+
+        float frontAngle =
+            Mathf.Lerp(
+                frontArmBackAngle,
+                frontArmForwardAngle,
+                motion
+            )
+            *
+            miningWeight;
+
+
+        float backAngle =
+            Mathf.Lerp(
+                backArmBackAngle,
+                backArmForwardAngle,
+                motion
+            )
+            *
+            miningWeight;
+
+
+        ApplyRotationAroundLocalPoint(
+            frontArmPivot,
+            frontRotationPivotLocal,
+            frontAngle,
+            ref frontState
+        );
+
+
+        ApplyRotationAroundLocalPoint(
+            backArmPivot,
+            backRotationPivotLocal,
+            backAngle,
+            ref backState
+        );
+
+
+        wasActive =
+            active;
+
+
+        if (
+            !active
+            &&
+            miningWeight <
+            0.0005f
+        )
+        {
+            miningWeight =
+                0f;
+
+
+            RestoreBasePose(
+                frontArmPivot,
+                ref frontState
+            );
+
+
+            RestoreBasePose(
+                backArmPivot,
+                ref backState
+            );
+
+
+            frontState =
+                default;
+
+
+            backState =
+                default;
+        }
+    }
+
+
+    // =====================================================
+    // REAL PIVOT ROTATION
+    // =====================================================
+
+    private static void ApplyRotationAroundLocalPoint(
+        Transform arm,
+        Vector2 localPivot,
+        float angle,
+        ref ArmPoseState state
+    )
+    {
+        if (arm == null)
+            return;
+
+
+        Vector3 currentPosition =
+            arm.localPosition;
+
+
+        Quaternion currentRotation =
+            arm.localRotation;
+
+
+        bool animatorOrOtherSystemChangedPose =
+            !state.HasWritten
+            ||
+            (
+                currentPosition -
+                state.LastOutputLocalPosition
+            )
+            .sqrMagnitude >
+            0.0000005f
+            ||
+            Quaternion.Angle(
+                currentRotation,
+                state.LastOutputLocalRotation
+            )
+            >
+            0.02f;
+
+
+        if (animatorOrOtherSystemChangedPose)
+        {
+            state.BaseLocalPosition =
+                currentPosition;
+
+
+            state.BaseLocalRotation =
+                currentRotation;
+        }
+
+
+        arm.localPosition =
+            state.BaseLocalPosition;
+
+
+        arm.localRotation =
+            state.BaseLocalRotation;
+
+
+        RotateCurrentPoseAroundLocalPoint(
+            arm,
+            localPivot,
+            angle
+        );
+
+
+        state.HasWritten =
+            true;
+
+
+        state.LastOutputLocalPosition =
+            arm.localPosition;
+
+
+        state.LastOutputLocalRotation =
+            arm.localRotation;
+    }
+
+
+    public static void RotateCurrentPoseAroundLocalPoint(
+        Transform arm,
+        Vector2 localPivot,
+        float angle
+    )
+    {
+        if (arm == null)
+            return;
+
+
+        Vector3 pivotLocal =
+            new Vector3(
+                localPivot.x,
+                localPivot.y,
+                0f
+            );
+
+
+        // Transform.localPosition is in parent space.
+        // Convert the point from arm-local coordinates into that same space.
+        Vector3 scaledPivot =
+            Vector3.Scale(
+                pivotLocal,
+                arm.localScale
+            );
+
+
+        Quaternion baseRotation =
+            arm.localRotation;
+
+
+        Vector3 pivotInParentSpace =
+            arm.localPosition
+            +
+            baseRotation *
+            scaledPivot;
+
+
+        Quaternion resultRotation =
+            baseRotation
+            *
+            Quaternion.Euler(
+                0f,
+                0f,
+                angle
+            );
+
+
+        arm.localRotation =
+            resultRotation;
+
+
+        arm.localPosition =
+            pivotInParentSpace
+            -
+            resultRotation *
+            scaledPivot;
+    }
+
+
+    private static void RestoreBasePose(
+        Transform arm,
+        ref ArmPoseState state
+    )
+    {
+        if (
+            arm == null
+            ||
+            !state.HasWritten
+        )
+        {
+            return;
+        }
+
+
+        arm.localPosition =
+            state.BaseLocalPosition;
+
+
+        arm.localRotation =
+            state.BaseLocalRotation;
+    }
+
+
+    // =====================================================
+    // MOTION CURVE
+    // =====================================================
+
+    private float EvaluateSwing(
+        float phase
+    )
+    {
+        float value =
+            0.5f
+            -
+            0.5f *
+            Mathf.Cos(
+                phase *
+                Mathf.PI *
+                2f
+            );
+
+
+        float smoother =
+            value *
+            value *
+            value *
+            (
+                value *
+                (
+                    value *
+                    6f -
+                    15f
+                )
+                +
+                10f
+            );
+
+
+        return
+            Mathf.Lerp(
+                value,
+                smoother,
+                Mathf.Clamp01(
+                    motionSmoothing
+                )
+            );
+    }
+
+
+    private static float ExpDamp(
+        float current,
+        float target,
+        float speed,
+        float deltaTime
+    )
+    {
+        speed =
+            Mathf.Max(
+                0.01f,
+                speed
+            );
+
+
+        float t =
+            1f
+            -
+            Mathf.Exp(
+                -speed *
+                deltaTime
+            );
+
+
+        return
+            Mathf.Lerp(
+                current,
+                target,
+                t
+            );
+    }
+
+
+    // =====================================================
+    // REFERENCES
+    // =====================================================
+
+    private void ResolveReferences()
+    {
+        if (frontArmPivot == null)
+        {
+            frontArmPivot =
+                FindDeepChild(
+                    transform,
+                    "FrontArmPivot"
+                );
+        }
+
+
+        if (backArmPivot == null)
+        {
+            backArmPivot =
+                FindDeepChild(
+                    transform,
+                    "BackArmPivot"
+                );
+        }
+
+
+        if (
+            handPoint ==
+            null
+            &&
+            frontArmPivot !=
+            null
+        )
+        {
+            handPoint =
+                FindDeepChild(
+                    frontArmPivot,
+                    "HandPoint"
+                );
+        }
+
+
+        if (playerCamera == null)
+        {
+            playerCamera =
+                Camera.main;
+        }
+    }
+
+
+    private static Transform FindDeepChild(
+        Transform root,
+        string childName
+    )
+    {
+        if (root == null)
+            return null;
+
+
+        Transform[] all =
+            root.GetComponentsInChildren<
+                Transform
+            >(
+                true
+            );
+
+
+        for (
+            int i = 0;
+            i < all.Length;
+            i++
+        )
+        {
+            if (
+                all[i] !=
+                null
+                &&
+                all[i].name ==
+                childName
+            )
+            {
+                return
+                    all[i];
+            }
+        }
+
+
+        return null;
+    }
+
+
+    // =====================================================
+    // PUBLIC API
+    // =====================================================
+
+    public Transform GetFrontArmPivot()
+    {
+        return
+            frontArmPivot;
+    }
+
+
+    public Transform GetBackArmPivot()
+    {
+        return
+            backArmPivot;
+    }
+
+
+    public Transform GetHandPoint()
+    {
+        return
+            handPoint;
+    }
+
+
+    public Vector2 GetFrontRotationPivotLocal()
+    {
+        return
+            frontRotationPivotLocal;
+    }
+
+
+    public Vector2 GetBackRotationPivotLocal()
+    {
+        return
+            backRotationPivotLocal;
+    }
+}

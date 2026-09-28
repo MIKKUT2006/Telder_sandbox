@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -976,10 +976,7 @@ namespace Game.World.Rendering
             );
 
 
-            data.ForegroundProperties.SetFloat(
-                "_Ambient",
-                0.055f
-            );
+            data.ForegroundProperties.SetFloat("_Ambient", 0f);
 
 
             data.ForegroundProperties.SetFloat(
@@ -1022,10 +1019,7 @@ namespace Game.World.Rendering
             );
 
 
-            data.BackgroundProperties.SetFloat(
-                "_Ambient",
-                0.055f
-            );
+            data.BackgroundProperties.SetFloat("_Ambient", 0f);
 
 
             data.BackgroundProperties.SetFloat(

@@ -1,0 +1,7 @@
+{
+  "Name": "arrow",
+  "ID": "game:arrow",
+  "Texture": "arrow",
+  "Type": "Misc",
+  "MaxStack": 100
+}

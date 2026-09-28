@@ -1,0 +1,26 @@
+{
+  "ID": "game:triple_bow",
+  "Name": "Triple Bow",
+  "Texture": "triple_bow",
+  "Type": "Weapon",
+  "MaxStack": 1,
+  "Weapon": {
+    "Kind": "Bow",
+    "Damage": 10,
+    "AttackSpeed": 1.0,
+    "Knockback": 1.8,
+    "ArmAimOffset": -90,
+    "AmmoItem": "game:arrow",
+    "AmmoPerShot": 3,
+    "ProjectileItem": "game:arrow",
+    "ProjectileCount": 3,
+    "ProjectileSpeed": 15,
+    "ProjectileGravity": 18,
+    "SpreadDegrees": 10,
+    "SpreadMode": "Even",
+    "RotateProjectileToVelocity": true,
+    "ProjectileScale": 0.7,
+    "MuzzleOffset": 0.5,
+    "FireNormalizedTime": 0.28
+  }
+}

@@ -1203,7 +1203,7 @@ namespace Game.Debugging
 
             if (
                 GUILayout.Button(
-                    "Кирка II",
+                    "Меч",
                     GUILayout.Height(
                         30f
                     )
@@ -1211,14 +1211,14 @@ namespace Game.Debugging
             )
             {
                 GiveItem(
-                    "game:iron_pickaxe"
+                    "game:stone_sword"
                 );
             }
 
 
             if (
                 GUILayout.Button(
-                    "Кирка III",
+                    "Лук",
                     GUILayout.Height(
                         30f
                     )
@@ -1226,10 +1226,22 @@ namespace Game.Debugging
             )
             {
                 GiveItem(
-                    "game:teleportium_pickaxe"
+                    "game:bow"
                 );
             }
-
+            if (
+                GUILayout.Button(
+                    "стрелы",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:arrow"
+                );
+            }
 
             GUILayout.EndHorizontal();
         }

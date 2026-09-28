@@ -1,0 +1,14 @@
+{
+  "ID": "game:moss_cave_vegetation",
+  "SpawnType": "Cave",
+  "BlockId": "game:short_grass",
+  "Biomes": [
+    "mossy_caves"
+  ],
+  "Chance": 0.2,
+  "MinY": -1000000,
+  "MaxY": 1000000,
+  "Floor": true,
+  "Ceiling": false,
+  "Walls": false
+}
