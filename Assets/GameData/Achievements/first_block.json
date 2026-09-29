@@ -1,0 +1,16 @@
+{
+  "ID": "game:first_block",
+  "Title": "Первый ресурс",
+  "Description": "Добудьте свой первый блок.",
+  "Icon": "game:stone",
+  "Parent": "",
+  "HiddenUntilUnlocked": false,
+  "SortOrder": 0,
+  "Conditions": [
+    {
+      "Type": 1,
+      "Target": "*",
+      "Count": 1
+    }
+  ]
+}

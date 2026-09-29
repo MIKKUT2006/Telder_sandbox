@@ -1,0 +1,8 @@
+{
+  "GlobalMaxAlive": 24,
+  "SpawnInterval": 1.5,
+  "AttemptsPerTick": 8,
+  "DespawnDistance": 58.0,
+  "SpawnSafetyRadius": 10.0,
+  "VerticalSearchCells": 40
+}

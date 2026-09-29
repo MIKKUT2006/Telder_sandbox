@@ -66,6 +66,7 @@ namespace Game.UI.Pause
             }
 
             ApplyPixelFont();
+            Game.UI.Achievements.AchievementUIController.EnsureInstalled(this, pausePanel, pixelFont);
         }
 
 
@@ -76,6 +77,11 @@ namespace Game.UI.Pause
                     KeyCode.Escape
                 )
             )
+            {
+                return;
+            }
+
+            if (Game.UI.Achievements.AchievementUIController.CloseIfOpen())
             {
                 return;
             }
@@ -127,6 +133,8 @@ namespace Game.UI.Pause
         {
             IsPaused =
                 false;
+
+            Game.UI.Achievements.AchievementUIController.CloseIfOpen();
 
             if (
                 settingsPanel != null

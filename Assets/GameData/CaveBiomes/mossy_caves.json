@@ -11,7 +11,7 @@
   "BackgroundBlockId": "game:moss",
   "FloorBlockId": "",
   "CeilingBlockId": "",
-  "ExtraCaves": true,
+  "ExtraCaves": false,
   "ExtraCaveScale": 0.018,
   "ExtraCaveDetailScale": 0.055,
   "ExtraCaveThreshold": 0.79

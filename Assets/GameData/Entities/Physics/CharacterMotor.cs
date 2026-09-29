@@ -3,523 +3,170 @@ using Game.World.Collision;
 
 namespace Game.Entities.Physics
 {
-    public class CharacterMotor
+    /// <summary>
+    /// Lightweight kinematic motor for entity movement against the tile world.
+    /// Transform position is always the CENTER of the entity collider.
+    /// </summary>
+    public sealed class CharacterMotor
     {
         private readonly WorldCollision collision;
-
         private readonly float width;
         private readonly float height;
 
         private const float Skin = 0.01f;
-
         private const float MaxStep = 0.25f;
+        private const int ResolveIterations = 10;
+        private const float GroundProbeDistance = 0.035f;
 
+        public bool IsGrounded { get; private set; }
+        public bool HitCeiling { get; private set; }
+        public bool HitWall { get; private set; }
 
-        public bool IsGrounded
+        public CharacterMotor(WorldCollision collision, float width, float height)
         {
-            get;
-            private set;
+            this.collision = collision;
+            this.width = Mathf.Max(0.05f, width);
+            this.height = Mathf.Max(0.05f, height);
         }
 
-
-        public bool HitCeiling
+        public Vector2 Move(Vector2 position, ref Vector2 velocity, float deltaTime)
         {
-            get;
-            private set;
-        }
+            IsGrounded = false;
+            HitCeiling = false;
+            HitWall = false;
 
+            if (collision == null || deltaTime <= 0f)
+                return position + velocity * Mathf.Max(0f, deltaTime);
 
-        public bool HitWall
-        {
-            get;
-            private set;
-        }
+            position = MoveHorizontal(position, ref velocity, deltaTime);
+            position = MoveVertical(position, ref velocity, deltaTime);
 
-
-        public CharacterMotor(
-            WorldCollision collision,
-            float width,
-            float height
-        )
-        {
-            this.collision =
-                collision;
-
-            this.width =
-                width;
-
-            this.height =
-                height;
-        }
-
-
-        // =====================================================
-        // Œ—ÕŒ¬ÕŒ≈ ƒ¬»∆≈Õ»≈
-        // =====================================================
-
-        public Vector2 Move(
-            Vector2 position,
-            ref Vector2 velocity,
-            float deltaTime
-        )
-        {
-            IsGrounded =
-                false;
-
-            HitCeiling =
-                false;
-
-            HitWall =
-                false;
-
-
-            position =
-                MoveHorizontal(
-                    position,
-                    ref velocity,
-                    deltaTime
-                );
-
-
-            position =
-                MoveVertical(
-                    position,
-                    ref velocity,
-                    deltaTime
-                );
-
+            // A body that is resting exactly on the floor can have an almost-zero
+            // vertical movement on a frame. Probe slightly below so Ground entities
+            // keep a stable grounded state instead of alternating grounded/airborne.
+            if (!IsGrounded && velocity.y <= 0.001f && HasGroundImmediatelyBelow(position))
+                IsGrounded = true;
 
             return position;
         }
 
-
-        // =====================================================
-        // ƒ¬»∆≈Õ»≈ œŒ X
-        // =====================================================
-
-        private Vector2 MoveHorizontal(
-            Vector2 position,
-            ref Vector2 velocity,
-            float deltaTime
-        )
+        private Vector2 MoveHorizontal(Vector2 position, ref Vector2 velocity, float deltaTime)
         {
-            float movement =
-                velocity.x *
-                deltaTime;
-
-
-            if (
-                Mathf.Abs(
-                    movement
-                ) <=
-                Mathf.Epsilon
-            )
-            {
+            float movement = velocity.x * deltaTime;
+            if (Mathf.Abs(movement) <= Mathf.Epsilon)
                 return position;
-            }
 
+            float direction = Mathf.Sign(movement);
+            float distance = Mathf.Abs(movement);
+            int steps = Mathf.Max(1, Mathf.CeilToInt(distance / MaxStep));
+            float stepDistance = distance / steps;
 
-            float direction =
-                Mathf.Sign(
-                    movement
-                );
-
-
-            float distance =
-                Mathf.Abs(
-                    movement
-                );
-
-
-            int steps =
-                Mathf.CeilToInt(
-                    distance /
-                    MaxStep
-                );
-
-
-            steps =
-                Mathf.Max(
-                    steps,
-                    1
-                );
-
-
-            float stepDistance =
-                distance /
-                steps;
-
-
-            for (
-                int i = 0;
-                i < steps;
-                i++
-            )
+            for (int i = 0; i < steps; i++)
             {
-                float step =
-                    direction *
-                    stepDistance;
+                Vector2 target = position;
+                target.x += direction * stepDistance;
 
-
-                float targetX =
-                    position.x +
-                    step;
-
-
-                if (
-                    IsColliding(
-                        targetX,
-                        position.y
-                    )
-                )
+                if (IsColliding(target.x, target.y))
                 {
-                    position.x =
-                        GetSafeHorizontalPosition(
-                            position,
-                            direction
-                        );
-
-
-                    velocity.x =
-                        0f;
-
-
-                    HitWall =
-                        true;
-
-
+                    position = ResolveBetween(position, target);
+                    velocity.x = 0f;
+                    HitWall = true;
                     break;
                 }
 
-
-                position.x =
-                    targetX;
+                position = target;
             }
-
 
             return position;
         }
 
-
-        // =====================================================
-        // ƒ¬»∆≈Õ»≈ œŒ Y
-        // =====================================================
-
-        private Vector2 MoveVertical(
-            Vector2 position,
-            ref Vector2 velocity,
-            float deltaTime
-        )
+        private Vector2 MoveVertical(Vector2 position, ref Vector2 velocity, float deltaTime)
         {
-            float movement =
-                velocity.y *
-                deltaTime;
-
-
-            if (
-                Mathf.Abs(
-                    movement
-                ) <=
-                Mathf.Epsilon
-            )
-            {
+            float movement = velocity.y * deltaTime;
+            if (Mathf.Abs(movement) <= Mathf.Epsilon)
                 return position;
-            }
 
+            float direction = Mathf.Sign(movement);
+            float distance = Mathf.Abs(movement);
+            int steps = Mathf.Max(1, Mathf.CeilToInt(distance / MaxStep));
+            float stepDistance = distance / steps;
 
-            float direction =
-                Mathf.Sign(
-                    movement
-                );
-
-
-            float distance =
-                Mathf.Abs(
-                    movement
-                );
-
-
-            int steps =
-                Mathf.CeilToInt(
-                    distance /
-                    MaxStep
-                );
-
-
-            steps =
-                Mathf.Max(
-                    steps,
-                    1
-                );
-
-
-            float stepDistance =
-                distance /
-                steps;
-
-
-            for (
-                int i = 0;
-                i < steps;
-                i++
-            )
+            for (int i = 0; i < steps; i++)
             {
-                float step =
-                    direction *
-                    stepDistance;
+                Vector2 target = position;
+                target.y += direction * stepDistance;
 
-
-                float targetY =
-                    position.y +
-                    step;
-
-
-                if (
-                    IsColliding(
-                        position.x,
-                        targetY
-                    )
-                )
+                if (IsColliding(target.x, target.y))
                 {
-                    position.y =
-                        GetSafeVerticalPosition(
-                            position,
-                            direction
-                        );
+                    // IMPORTANT: resolve between the known-safe position and the
+                    // actual blocked target. The old code derived a block index from
+                    // the previous position, which could snap the entity one whole
+                    // tile upward when landing on the floor.
+                    position = ResolveBetween(position, target);
+                    velocity.y = 0f;
 
-
-                    velocity.y =
-                        0f;
-
-
-                    if (
-                        direction < 0f
-                    )
-                    {
-                        IsGrounded =
-                            true;
-                    }
+                    if (direction < 0f)
+                        IsGrounded = true;
                     else
-                    {
-                        HitCeiling =
-                            true;
-                    }
-
+                        HitCeiling = true;
 
                     break;
                 }
 
-
-                position.y =
-                    targetY;
+                position = target;
             }
-
 
             return position;
         }
 
-
-        // =====================================================
-        // “Œ◊Õ¿ﬂ œŒ«»÷»ﬂ œ–» —“ŒÀ ÕŒ¬≈Õ»» œŒ X
-        // =====================================================
-
-        private float GetSafeHorizontalPosition(
-            Vector2 position,
-            float direction
-        )
+        private Vector2 ResolveBetween(Vector2 safePosition, Vector2 blockedPosition)
         {
-            float halfWidth =
-                width *
-                0.5f;
+            Vector2 safe = safePosition;
+            Vector2 blocked = blockedPosition;
 
-
-            if (
-                direction > 0f
-            )
+            for (int i = 0; i < ResolveIterations; i++)
             {
-                int blockX =
-                    Mathf.FloorToInt(
-                        position.x +
-                        halfWidth
-                    );
-
-
-                float blockLeft =
-                    blockX;
-
-
-                return
-                    blockLeft -
-                    halfWidth -
-                    Skin;
+                Vector2 mid = (safe + blocked) * 0.5f;
+                if (IsColliding(mid.x, mid.y))
+                    blocked = mid;
+                else
+                    safe = mid;
             }
 
-
-            int leftBlockX =
-                Mathf.FloorToInt(
-                    position.x -
-                    halfWidth
-                );
-
-
-            float blockRight =
-                leftBlockX +
-                1f;
-
-
-            return
-                blockRight +
-                halfWidth +
-                Skin;
+            return safe;
         }
 
-
-        // =====================================================
-        // “Œ◊Õ¿ﬂ œŒ«»÷»ﬂ œ–» —“ŒÀ ÕŒ¬≈Õ»» œŒ Y
-        // =====================================================
-
-        private float GetSafeVerticalPosition(
-            Vector2 position,
-            float direction
-        )
+        private bool HasGroundImmediatelyBelow(Vector2 position)
         {
-            float halfHeight =
-                height *
-                0.5f;
-
-
-            if (
-                direction > 0f
-            )
-            {
-                int blockY =
-                    Mathf.FloorToInt(
-                        position.y +
-                        halfHeight
-                    );
-
-
-                float blockBottom =
-                    blockY;
-
-
-                return
-                    blockBottom -
-                    halfHeight -
-                    Skin;
-            }
-
-
-            int bottomBlockY =
-                Mathf.FloorToInt(
-                    position.y -
-                    halfHeight
-                );
-
-
-            float blockTop =
-                bottomBlockY +
-                1f;
-
-
-            return
-                blockTop +
-                halfHeight +
-                Skin;
+            return IsColliding(position.x, position.y - GroundProbeDistance);
         }
 
-
-        // =====================================================
-        // œ–Œ¬≈– ¿ œ≈–≈—≈◊≈Õ»ﬂ — Ã»–ŒÃ
-        // =====================================================
-
-        private bool IsColliding(
-            float centerX,
-            float centerY
-        )
+        private bool IsColliding(float centerX, float centerY)
         {
-            float halfWidth =
-                width *
-                0.5f;
+            if (collision == null)
+                return false;
 
+            float halfWidth = width * 0.5f;
+            float halfHeight = height * 0.5f;
 
-            float halfHeight =
-                height *
-                0.5f;
+            float minX = centerX - halfWidth + Skin;
+            float maxX = centerX + halfWidth - Skin;
+            float minY = centerY - halfHeight + Skin;
+            float maxY = centerY + halfHeight - Skin;
 
+            int minBlockX = Mathf.FloorToInt(minX);
+            int maxBlockX = Mathf.FloorToInt(maxX);
+            int minBlockY = Mathf.FloorToInt(minY);
+            int maxBlockY = Mathf.FloorToInt(maxY);
 
-            float minX =
-                centerX -
-                halfWidth +
-                Skin;
-
-
-            float maxX =
-                centerX +
-                halfWidth -
-                Skin;
-
-
-            float minY =
-                centerY -
-                halfHeight +
-                Skin;
-
-
-            float maxY =
-                centerY +
-                halfHeight -
-                Skin;
-
-
-            int minBlockX =
-                Mathf.FloorToInt(
-                    minX
-                );
-
-
-            int maxBlockX =
-                Mathf.FloorToInt(
-                    maxX
-                );
-
-
-            int minBlockY =
-                Mathf.FloorToInt(
-                    minY
-                );
-
-
-            int maxBlockY =
-                Mathf.FloorToInt(
-                    maxY
-                );
-
-
-            for (
-                int x = minBlockX;
-                x <= maxBlockX;
-                x++
-            )
+            for (int x = minBlockX; x <= maxBlockX; x++)
             {
-                for (
-                    int y = minBlockY;
-                    y <= maxBlockY;
-                    y++
-                )
+                for (int y = minBlockY; y <= maxBlockY; y++)
                 {
-                    if (
-                        collision.IsSolid(
-                            x,
-                            y
-                        )
-                    )
-                    {
+                    if (collision.IsSolid(x, y))
                         return true;
-                    }
                 }
             }
-
 
             return false;
         }

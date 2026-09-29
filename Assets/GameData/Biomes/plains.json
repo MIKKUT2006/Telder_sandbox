@@ -36,5 +36,19 @@
     "Temperature": 0.55,
     "Humidity": 0.55,
     "Weirdness": 0.2
+  },
+  "LiquidGeneration": {
+    "Enabled": true,
+    "Liquids": [
+      {
+        "ID": "game:water",
+        "Weight": 1.0,
+        "LakeChance": 0.16,
+        "MinLakeSize": 30,
+        "MaxLakeSize": 140,
+        "MinDepth": 2,
+        "MaxDepth": 6
+      }
+    ]
   }
 }

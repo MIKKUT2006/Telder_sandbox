@@ -326,8 +326,13 @@ namespace Game.Crafting
                 );
 
 
-            return
-                remaining == 0;
+            if (remaining == 0)
+            {
+                Game.Achievements.AchievementRuntime.NotifyCraft(recipe.ResultItemId, resultCount);
+                return true;
+            }
+
+            return false;
         }
 
 

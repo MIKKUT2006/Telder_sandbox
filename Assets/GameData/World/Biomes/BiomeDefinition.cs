@@ -26,6 +26,9 @@ namespace Game.World.Biomes
         public BiomeWeatherSettings Weather =
             new BiomeWeatherSettings();
 
+        public BiomeLiquidSettings LiquidGeneration =
+            new BiomeLiquidSettings();
+
         public bool SupportsDimensionType(
             string dimensionTypeID
         )

@@ -1,0 +1,37 @@
+{
+  "ID": "game:bomb",
+  "Name": "Bomb",
+  "Texture": "bomb",
+  "Type": "Bomb",
+  "MaxStack": 20,
+
+  "Weapon": {
+    "Kind": "Bomb",
+    "AIUseMode": "Throwable",
+    "Damage": 35.0,
+    "AttackSpeed": 0.8,
+    "Knockback": 5.0,
+    "Range": 10.0,
+    "ArmAimOffset": 0.0,
+    "UseBackArm": false,
+    "TrackCursorDuringAttack": true,
+
+    "ProjectileItem": "game:bomb",
+    "ProjectileWorldSize": 0.55,
+    "ProjectileSortingLayer": "Default",
+    "ProjectileOrder": 105,
+    "MuzzleOffset": 0.45,
+    "FireNormalizedTime": 0.22,
+
+    "BombFuseTime": 3.0,
+    "BombExplosionWidth": 2,
+    "BombExplosionHeight": 2,
+    "BombThrowSpeed": 8.0,
+    "BombGravity": 18.0,
+    "BombBounce": 0.32,
+    "BombDestroyBlocks": true,
+    "BombDestroyBackground": false,
+    "BombDestroyFurniture": true,
+    "BombKnockback": 5.0
+  }
+}

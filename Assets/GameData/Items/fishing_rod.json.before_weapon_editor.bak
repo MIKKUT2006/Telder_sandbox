@@ -1,0 +1,35 @@
+{
+  "ID": "game:fishing_rod",
+  "Name": "Fishing rod",
+  "Texture": "fishing_rod",
+  "MaxStack": 1,
+  "Type": "Tool",
+  "ToolType": "pickaxe",
+  "ToolLevel": 1,
+  "MiningSpeed": 1.0,
+  "Durability": 350,
+  "HeldScale": 1.85,
+  "HeldRotation": 2,
+  "HeldOffsetX": 0.3125,
+  "HeldOffsetY": 0,
+  "Weapon": {
+    "Kind": "None",
+    "Damage": 10.0,
+    "AttackSpeed": 1.5,
+    "Knockback": 2.0,
+    "Range": 1.2000000476837159,
+    "ArmAimOffset": 0.0,
+    "UseBackArm": false,
+    "BackArmAimOffset": 0.0,
+    "TrackCursorDuringAttack": true,
+    "FistPointsConfigured": true,
+    "FrontFistPointLocal": {
+      "x": 0.2800000011920929,
+      "y": 0.0
+    },
+    "BackFistPointLocal": {
+      "x": 0.2800000011920929,
+      "y": 0.0
+    }
+  }
+}

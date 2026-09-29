@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Entities;
 
 namespace Game.Combat
 {
@@ -41,7 +42,9 @@ namespace Game.Combat
             Transform owner,
             LayerMask worldMask,
             LayerMask targetMask,
-            float power = 1f)
+            float power = 1f,
+            float damageMultiplier = 1f,
+            float flatDamageBonus = 0f)
         {
             WeaponProjectile projectile =
                 Pool.Count > 0
@@ -62,7 +65,9 @@ namespace Game.Combat
                 owner,
                 worldMask,
                 targetMask,
-                power
+                power,
+                damageMultiplier,
+                flatDamageBonus
             );
 
             return projectile;
@@ -109,7 +114,9 @@ namespace Game.Combat
             Transform ownerTransform,
             LayerMask worldMask,
             LayerMask targetMask,
-            float power)
+            float power,
+            float damageMultiplier,
+            float flatDamageBonus)
         {
             alive = true;
 
@@ -131,7 +138,8 @@ namespace Game.Combat
                 );
 
             damage =
-                weapon.Damage *
+                (weapon.Damage + Mathf.Max(0f, flatDamageBonus)) *
+                Mathf.Max(0f, damageMultiplier) *
                 weapon.ProjectileDamageMultiplier *
                 p;
 
@@ -218,11 +226,46 @@ namespace Game.Combat
                     movement /
                     distance;
 
+                Vector2 endPosition = start + movement;
+
+                // EntityActor hit detection is intentionally independent from
+                // collisionMask/targetMask. Older PlayerWeaponController components
+                // may have a serialized mask that predates the enemy system, so a
+                // Physics2D-only projectile could fly through the enemy hitbox.
+                WeaponDamageInfo entityProbe =
+                    new WeaponDamageInfo(
+                        damage,
+                        knockback,
+                        direction,
+                        endPosition,
+                        owner != null ? owner.gameObject : null
+                    );
+
+                EntityActor entityTarget;
+                Vector2 entityHitPoint;
+                float entityHitT;
+                bool hasEntityHit =
+                    WeaponDamageUtility.TryGetFirstActiveEntityHitOnSegment(
+                        start,
+                        endPosition,
+                        entityProbe,
+                        out entityTarget,
+                        out entityHitPoint,
+                        out entityHitT
+                    );
+
+                // Still respect solid world geometry in front of the entity. If an
+                // arrow crosses both a wall and an enemy during one FixedUpdate, the
+                // wall must win when it is closer.
+                float physicalDistance = hasEntityHit
+                    ? Mathf.Min(distance, distance * entityHitT + 0.001f)
+                    : distance;
+
                 RaycastHit2D[] hits =
-                    Physics2D.RaycastAll(
+                    WeaponDamageUtility.RaycastAllIncludingTriggers(
                         start,
                         direction,
-                        distance,
+                        physicalDistance,
                         collisionMask
                     );
 
@@ -238,12 +281,31 @@ namespace Game.Combat
 
                     if (owner != null &&
                         (
-                            collider.transform ==
-                                owner ||
-                            collider.transform.IsChildOf(
-                                owner
-                            )
+                            collider.transform == owner ||
+                            collider.transform.IsChildOf(owner)
                         ))
+                    {
+                        continue;
+                    }
+
+                    // EntityActor is handled by the logical swept hit test above.
+                    // This prevents layer masks and trigger settings from deciding
+                    // whether an arrow can damage an enemy.
+                    if (collider.GetComponentInParent<EntityActor>() != null)
+                        continue;
+
+                    WeaponDamageInfo probeInfo =
+                        new WeaponDamageInfo(
+                            damage,
+                            knockback,
+                            direction,
+                            hits[i].point,
+                            owner != null ? owner.gameObject : null
+                        );
+
+                    if (WeaponDamageUtility.IsExplicitlyIgnored(
+                            collider,
+                            probeInfo))
                     {
                         continue;
                     }
@@ -251,24 +313,40 @@ namespace Game.Combat
                     transform.position =
                         hits[i].point;
 
-                    WeaponDamageInfo info =
+                    bool dealtDamage =
+                        WeaponDamageUtility.TryDealDamage(
+                            collider,
+                            probeInfo
+                        );
+
+                    // A real damage target or solid collider consumes the arrow.
+                    // Harmless triggers (pickups, sensors, etc.) do not.
+                    if (dealtDamage || !collider.isTrigger)
+                    {
+                        Despawn();
+                        return;
+                    }
+                }
+
+                if (hasEntityHit && entityTarget != null)
+                {
+                    transform.position = entityHitPoint;
+
+                    WeaponDamageInfo entityInfo =
                         new WeaponDamageInfo(
                             damage,
                             knockback,
                             direction,
-                            hits[i].point,
-                            owner != null
-                                ? owner.gameObject
-                                : null
+                            entityHitPoint,
+                            owner != null ? owner.gameObject : null
                         );
 
-                    WeaponDamageUtility.TryDealDamage(
-                        collider,
-                        info
-                    );
-
-                    Despawn();
-                    return;
+                    if (entityTarget.CanReceiveWeaponDamage(entityInfo))
+                    {
+                        entityTarget.ReceiveWeaponDamage(entityInfo);
+                        Despawn();
+                        return;
+                    }
                 }
             }
 

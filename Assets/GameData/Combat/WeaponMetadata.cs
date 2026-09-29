@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace Game.Combat
@@ -9,7 +9,8 @@ namespace Game.Combat
         Sword,
         Bow,
         Gun,
-        Spear
+        Spear,
+        Bomb
     }
 
     public enum SwordAttackKind
@@ -38,6 +39,10 @@ namespace Game.Combat
         public float BackArmAimOffset = 0f;
 
         public bool TrackCursorDuringAttack = true;
+
+        // AI can use any current/future weapon without an enemy-specific script.
+        // Values: Auto, Melee, Ranged, Throwable.
+        public string AIUseMode = "Auto";
 
         public bool FistPointsConfigured = false;
 
@@ -128,6 +133,21 @@ namespace Game.Combat
         public float BowBackArmRelaxedAngle = -15f;
 
         public float BowBackArmFullDrawAngle = -75f;
+
+        // =====================================================
+        // BOMB / THROWABLE
+        // =====================================================
+
+        public float BombFuseTime = 3f;
+        public int BombExplosionWidth = 2;
+        public int BombExplosionHeight = 2;
+        public float BombThrowSpeed = 8f;
+        public float BombGravity = 18f;
+        public float BombBounce = 0.32f;
+        public bool BombDestroyBlocks = true;
+        public bool BombDestroyBackground = false;
+        public bool BombDestroyFurniture = true;
+        public float BombKnockback = 5f;
 
 
         public WeaponKind GetKind()
@@ -365,6 +385,54 @@ namespace Game.Combat
                 );
 
 
+            BombFuseTime =
+                Mathf.Max(
+                    0.05f,
+                    BombFuseTime
+                );
+
+
+            BombExplosionWidth =
+                Mathf.Max(
+                    1,
+                    BombExplosionWidth
+                );
+
+
+            BombExplosionHeight =
+                Mathf.Max(
+                    1,
+                    BombExplosionHeight
+                );
+
+
+            BombThrowSpeed =
+                Mathf.Max(
+                    0.1f,
+                    BombThrowSpeed
+                );
+
+
+            BombGravity =
+                Mathf.Max(
+                    0f,
+                    BombGravity
+                );
+
+
+            BombBounce =
+                Mathf.Clamp01(
+                    BombBounce
+                );
+
+
+            BombKnockback =
+                Mathf.Max(
+                    0f,
+                    BombKnockback
+                );
+
+
             if (
                 Mathf.Abs(
                     SwordSwingStartAngle
@@ -410,6 +478,17 @@ namespace Game.Combat
                         "Swing",
                         "Thrust"
                     };
+            }
+
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    AIUseMode
+                )
+            )
+            {
+                AIUseMode =
+                    "Auto";
             }
 
 

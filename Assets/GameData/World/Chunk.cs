@@ -35,6 +35,9 @@ namespace Game.World
 
         private BlockStorage backgroundBlocks;
 
+        private ushort[,] liquidIDs;
+        private byte[,] liquidAmounts;
+
 
         // =====================================================
         // LIGHT STORAGE
@@ -77,6 +80,9 @@ namespace Game.World
                     SizeX,
                     SizeY
                 );
+
+            liquidIDs = new ushort[SizeX, SizeY];
+            liquidAmounts = new byte[SizeX, SizeY];
 
 
             // =================================================
@@ -175,6 +181,14 @@ namespace Game.World
         }
 
 
+        public ushort GetLiquidID(int x, int y) { return liquidIDs[x, y]; }
+        public byte GetLiquidAmount(int x, int y) { return liquidAmounts[x, y]; }
+        public void SetLiquid(int x, int y, ushort id, byte amount)
+        {
+            liquidIDs[x, y] = amount == 0 ? (ushort)0 : id;
+            liquidAmounts[x, y] = (byte)System.Math.Min((byte)8, amount);
+        }
+
         // =====================================================
         // LIGHT DATA
         // =====================================================
@@ -231,6 +245,8 @@ namespace Game.World
                             y
                         )
                     );
+
+                    SetLiquid(x, y, data.GetLiquidID(x, y), data.GetLiquidAmount(x, y));
                 }
             }
         }

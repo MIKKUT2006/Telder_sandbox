@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using Game.Blocks;
 using Game.Content;
@@ -266,6 +266,25 @@ namespace Game.World
             );
         }
 
+
+        public ushort GetLiquidID(int worldX, int worldY)
+        {
+            GetChunkCoordinates(worldX, worldY, out int cx, out int cy, out int lx, out int ly);
+            Chunk c = GetChunk(cx, cy); return c == null ? (ushort)0 : c.GetLiquidID(lx, ly);
+        }
+
+        public byte GetLiquidAmount(int worldX, int worldY)
+        {
+            GetChunkCoordinates(worldX, worldY, out int cx, out int cy, out int lx, out int ly);
+            Chunk c = GetChunk(cx, cy); return c == null ? (byte)0 : c.GetLiquidAmount(lx, ly);
+        }
+
+        public bool SetLiquid(int worldX, int worldY, ushort id, byte amount)
+        {
+            GetChunkCoordinates(worldX, worldY, out int cx, out int cy, out int lx, out int ly);
+            Chunk c = GetChunk(cx, cy); if (c == null) return false;
+            c.SetLiquid(lx, ly, id, amount); return true;
+        }
 
         // =====================================================
         // SET BLOCK

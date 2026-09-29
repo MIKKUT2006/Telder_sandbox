@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 
 using System;
 using System.Collections.Generic;
@@ -238,6 +238,15 @@ public partial class HeldItemPoseEditorWindow :
             );
 
 
+        weapon.AIUseMode =
+            EditorGUILayout.TextField(
+                "AI Use Mode (Auto/Melee/Ranged/Throwable)",
+                string.IsNullOrWhiteSpace(weapon.AIUseMode)
+                    ? "Auto"
+                    : weapon.AIUseMode
+            );
+
+
         EditorGUILayout.Space(
             5f
         );
@@ -383,6 +392,10 @@ public partial class HeldItemPoseEditorWindow :
                 DrawGunWeaponEditor();
                 DrawProjectileWeaponEditor();
                 break;
+
+            case WeaponKind.Bomb:
+                DrawBombWeaponEditor();
+                break;
         }
 
 
@@ -475,6 +488,8 @@ public partial class HeldItemPoseEditorWindow :
             kind == WeaponKind.Bow
             ||
             kind == WeaponKind.Gun
+            ||
+            kind == WeaponKind.Bomb
         )
         {
             projectilePreviewTime =
@@ -739,6 +754,109 @@ private void DrawBowWeaponEditor()
                 0f,
                 1f
             );
+    }
+
+
+    private void DrawBombWeaponEditor()
+    {
+        EditorGUILayout.LabelField(
+            "Бомба",
+            EditorStyles.boldLabel
+        );
+
+        weapon.AIUseMode =
+            EditorGUILayout.TextField(
+                "AI Use Mode",
+                string.IsNullOrWhiteSpace(weapon.AIUseMode) ? "Throwable" : weapon.AIUseMode
+            );
+
+        weapon.ProjectileItem =
+            EditorGUILayout.TextField(
+                "Sprite Item",
+                weapon.ProjectileItem ?? ""
+            );
+
+        weapon.FireNormalizedTime =
+            EditorGUILayout.Slider(
+                "Момент броска",
+                weapon.FireNormalizedTime,
+                0f,
+                1f
+            );
+
+        weapon.BombFuseTime =
+            EditorGUILayout.FloatField(
+                "Взрыв через, сек",
+                weapon.BombFuseTime
+            );
+
+        weapon.BombExplosionWidth =
+            EditorGUILayout.IntField(
+                "Ширина взрыва, блоков",
+                weapon.BombExplosionWidth
+            );
+
+        weapon.BombExplosionHeight =
+            EditorGUILayout.IntField(
+                "Высота взрыва, блоков",
+                weapon.BombExplosionHeight
+            );
+
+        weapon.BombThrowSpeed =
+            EditorGUILayout.FloatField(
+                "Скорость броска",
+                weapon.BombThrowSpeed
+            );
+
+        weapon.BombGravity =
+            EditorGUILayout.FloatField(
+                "Гравитация",
+                weapon.BombGravity
+            );
+
+        weapon.BombBounce =
+            EditorGUILayout.Slider(
+                "Отскок",
+                weapon.BombBounce,
+                0f,
+                1f
+            );
+
+        weapon.BombKnockback =
+            EditorGUILayout.FloatField(
+                "Отбрасывание взрывом",
+                weapon.BombKnockback
+            );
+
+        weapon.BombDestroyBlocks =
+            EditorGUILayout.Toggle(
+                "Ломать блоки",
+                weapon.BombDestroyBlocks
+            );
+
+        weapon.BombDestroyBackground =
+            EditorGUILayout.Toggle(
+                "Ломать фон",
+                weapon.BombDestroyBackground
+            );
+
+        weapon.BombDestroyFurniture =
+            EditorGUILayout.Toggle(
+                "Ломать мебель",
+                weapon.BombDestroyFurniture
+            );
+
+        weapon.ProjectileWorldSize =
+            EditorGUILayout.FloatField(
+                "Размер бомбы",
+                weapon.ProjectileWorldSize
+            );
+
+        EditorGUILayout.HelpBox(
+            "BombExplosionWidth=2 и BombExplosionHeight=2 дают точный взрыв 2x2 клетки. " +
+            "Таймер начинается сразу после броска.",
+            MessageType.Info
+        );
     }
 
 
@@ -2903,7 +3021,7 @@ if (kind == WeaponKind.Bow)
         }
 
 
-if (kind == WeaponKind.Gun)
+if (kind == WeaponKind.Gun || kind == WeaponKind.Bomb)
     {
         RotatePreviewFrontArmToWorldDirection(
             weaponAimAngle
@@ -3528,10 +3646,38 @@ private void ApplyPreviewBackArmWorldOffset(
             weapon.MuzzleOffset;
 
 
+        bool bombPreview =
+            weapon.GetKind() ==
+            WeaponKind.Bomb;
+
+
+        float previewSpeed =
+            bombPreview
+                ? weapon.BombThrowSpeed
+                : weapon.ProjectileSpeed;
+
+
+        float previewGravity =
+            bombPreview
+                ? weapon.BombGravity
+                : weapon.ProjectileGravity;
+
+
+        Vector2 previewAim =
+            aim;
+
+
+        if (bombPreview)
+        {
+            previewAim.y += 0.28f;
+            previewAim.Normalize();
+        }
+
+
         Vector2 velocity =
-            aim
+            previewAim
             *
-            weapon.ProjectileSpeed
+            previewSpeed
             *
             Mathf.Max(
                 0.01f,
@@ -3551,7 +3697,7 @@ private void ApplyPreviewBackArmWorldOffset(
             (
                 0.5f
                 *
-                weapon.ProjectileGravity
+                previewGravity
                 *
                 t
                 *
@@ -3565,7 +3711,7 @@ private void ApplyPreviewBackArmWorldOffset(
             Vector2.down
             *
             (
-                weapon.ProjectileGravity
+                previewGravity
                 *
                 t
             );
@@ -5821,7 +5967,7 @@ private static void DrawSingleFistMarker(
         if (
             kind == WeaponKind.Bow
             ||
-            kind == WeaponKind.Gun
+            (kind == WeaponKind.Gun || kind == WeaponKind.Bomb)
         )
         {
             DrawProjectileTrajectory(
@@ -5869,10 +6015,38 @@ private static void DrawSingleFistMarker(
             weapon.MuzzleOffset;
 
 
+        bool bombTrajectory =
+            weapon.GetKind() ==
+            WeaponKind.Bomb;
+
+
+        float trajectorySpeed =
+            bombTrajectory
+                ? weapon.BombThrowSpeed
+                : weapon.ProjectileSpeed;
+
+
+        float trajectoryGravity =
+            bombTrajectory
+                ? weapon.BombGravity
+                : weapon.ProjectileGravity;
+
+
+        Vector2 trajectoryAim =
+            aim;
+
+
+        if (bombTrajectory)
+        {
+            trajectoryAim.y += 0.28f;
+            trajectoryAim.Normalize();
+        }
+
+
         Vector2 velocity =
-            aim
+            trajectoryAim
             *
-            weapon.ProjectileSpeed
+            trajectorySpeed
             *
             Mathf.Max(
                 0.01f,

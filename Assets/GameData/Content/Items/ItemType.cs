@@ -16,7 +16,10 @@ namespace Game.Items
 
         Armor,
 
-        Misc
+        Misc,
+
+        // Added at the end to preserve numeric values of existing serialized types.
+        Bomb
 
     }
 

@@ -1,0 +1,14 @@
+{
+  "ID": "game:sand_cave_vegetation",
+  "SpawnType": "Cave",
+  "BlockId": "game:sand_grass",
+  "Biomes": [
+    "desert"
+  ],
+  "Chance": 0.2,
+  "MinY": -1000000,
+  "MaxY": 1000000,
+  "Floor": true,
+  "Ceiling": false,
+  "Walls": false
+}

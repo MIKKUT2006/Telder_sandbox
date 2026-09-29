@@ -1433,6 +1433,9 @@ namespace Game.Save
 
         public static void SaveCurrentScene()
         {
+            Game.World.Fluids.LiquidRuntime liquidRuntime = UnityEngine.Object.FindFirstObjectByType<Game.World.Fluids.LiquidRuntime>();
+            if (liquidRuntime != null) liquidRuntime.Flush();
+            Game.Achievements.AchievementRuntime.Instance.Save();
             if (
                 !HasActiveSave
             )

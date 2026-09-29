@@ -1,0 +1,7 @@
+{
+  "ID": "game:dynamite",
+  "Name": "Dynamite",
+  "Texture": "tnt",
+  "Type": "Bomb",
+  "MaxStack": 20
+}

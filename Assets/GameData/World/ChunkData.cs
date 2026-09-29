@@ -1,3 +1,6 @@
+using System;
+using Unity.VisualScripting;
+
 namespace Game.World
 {
     /// <summary>
@@ -14,6 +17,9 @@ namespace Game.World
         private readonly BlockStorage backgroundBlocks;
 
         private readonly BlockStorage furnitureBlocks;
+
+        private readonly ushort[,] liquidIDs;
+        private readonly byte[,] liquidAmounts;
 
 
         public ChunkData()
@@ -37,6 +43,9 @@ namespace Game.World
                     Chunk.SizeX,
                     Chunk.SizeY
                 );
+
+            liquidIDs = new ushort[Chunk.SizeX, Chunk.SizeY];
+            liquidAmounts = new byte[Chunk.SizeX, Chunk.SizeY];
 
 
             foregroundBlocks.Fill(
@@ -108,6 +117,15 @@ namespace Game.World
             );
         }
 
+
+        public ushort GetLiquidID(int x, int y) { return liquidIDs[x, y]; }
+        public byte GetLiquidAmount(int x, int y) { return liquidAmounts[x, y]; }
+        public void SetLiquid(int x, int y, ushort liquidID, byte amount)
+        {
+            if (x < 0 || x >= Chunk.SizeX || y < 0 || y >= Chunk.SizeY) return;
+            liquidIDs[x, y] = amount == 0 ? (ushort)0 : liquidID;
+            liquidAmounts[x, y] = (byte)System.Math.Min((byte)8, amount);
+        }
 
         // =====================================================
         // PROCEDURAL FURNITURE

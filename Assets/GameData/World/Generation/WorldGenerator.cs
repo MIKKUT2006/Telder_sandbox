@@ -358,7 +358,12 @@ namespace Game.World.Generation
 
 
             // =====================================================
-            // 4. SURFACE FLORA
+            // 4. LIQUID LAKES
+            // =====================================================
+            Game.World.Fluids.LiquidLakeGenerator.ApplyToChunk(this, settings, data, chunkX, chunkY);
+
+            // =====================================================
+            // 5. SURFACE FLORA
             // =====================================================
 
             Game.World.Biomes.Surface

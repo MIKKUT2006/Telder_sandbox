@@ -1,0 +1,16 @@
+{
+    "ID": "game:new_achievement",
+    "Title": "Каменный век",
+    "Description": "Получите свой первый камень",
+    "Icon": "",
+    "Parent": "",
+    "HiddenUntilUnlocked": false,
+    "SortOrder": 0,
+    "Conditions": [
+        {
+            "Type": 3,
+            "Target": "game:stone",
+            "Count": 1
+        }
+    ]
+}

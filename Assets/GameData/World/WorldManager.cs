@@ -53,6 +53,13 @@ namespace Game.World
         // =====================================================
 
         private bool worldGenerated;
+        private bool initialLightingReady;
+
+
+        public bool InitialLightingReady
+        {
+            get { return initialLightingReady; }
+        }
 
 
         public bool IsReady
@@ -74,6 +81,12 @@ namespace Game.World
         private void Awake()
         {
             Instance = this;
+
+
+            if (GetComponent<Game.Entities.Spawn.EntitySpawnManager>() == null)
+            {
+                gameObject.AddComponent<Game.Entities.Spawn.EntitySpawnManager>();
+            }
 
 
             // =====================================================
@@ -229,6 +242,7 @@ namespace Game.World
             // =====================================================
 
             GenerateInitialLighting();
+            initialLightingReady = true;
 
 
             // =====================================================
@@ -904,6 +918,16 @@ namespace Game.World
             }
 
             SaveGameRuntime.RecordForegroundChange(worldX,worldY,blockID);
+            if (oldBlockID != 0 && blockID == 0)
+            {
+                try { Game.Achievements.AchievementRuntime.NotifyBlockBreak(Game.Content.BlockIDRegistry.GetContentID(oldBlockID).ToString()); } catch { }
+            }
+            else if (oldBlockID == 0 && blockID != 0)
+            {
+                try { Game.Achievements.AchievementRuntime.NotifyBlockPlace(Game.Content.BlockIDRegistry.GetContentID(blockID).ToString()); } catch { }
+                world.SetLiquid(worldX, worldY, 0, 0);
+            }
+            Game.World.Fluids.LiquidRuntime.NotifyCellChanged(worldX, worldY);
             // [TELDER-V34-FALLING-NOTIFY]
             Game.World.Physics.FallingBlockSystem.NotifyCellChanged(
                 worldX,

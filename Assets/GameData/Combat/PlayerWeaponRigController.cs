@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -1007,7 +1007,9 @@ namespace Game.Combat
 
             if (
                 request.Kind ==
-                WeaponKind.Gun
+                WeaponKind.Gun ||
+                request.Kind ==
+                WeaponKind.Bomb
             )
             {
                 AimFrontFist(

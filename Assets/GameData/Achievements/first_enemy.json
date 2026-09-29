@@ -1,0 +1,16 @@
+{
+  "ID": "game:first_enemy",
+  "Title": "Первая победа",
+  "Description": "Победите первого противника.",
+  "Icon": "game:stone_sword",
+  "Parent": "game:first_block",
+  "HiddenUntilUnlocked": false,
+  "SortOrder": 20,
+  "Conditions": [
+    {
+      "Type": 4,
+      "Target": "*",
+      "Count": 1
+    }
+  ]
+}

@@ -36,5 +36,28 @@
     "Temperature": 0.78,
     "Humidity": 0.14,
     "Weirdness": 0.35
+  },
+  "LiquidGeneration": {
+    "Enabled": true,
+    "Liquids": [
+      {
+        "ID": "game:acid",
+        "Weight": 0.65,
+        "LakeChance": 0.08,
+        "MinLakeSize": 18,
+        "MaxLakeSize": 90,
+        "MinDepth": 2,
+        "MaxDepth": 6
+      },
+      {
+        "ID": "game:lava",
+        "Weight": 0.35,
+        "LakeChance": 0.035,
+        "MinLakeSize": 12,
+        "MaxLakeSize": 55,
+        "MinDepth": 2,
+        "MaxDepth": 5
+      }
+    ]
   }
 }

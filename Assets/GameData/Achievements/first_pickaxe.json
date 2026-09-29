@@ -1,0 +1,16 @@
+{
+  "ID": "game:first_pickaxe",
+  "Title": "Вперёд за ресурсами!",
+  "Description": "Подберите каменную кирку.",
+  "Icon": "game:stone_pickaxe",
+  "Parent": "game:first_block",
+  "HiddenUntilUnlocked": false,
+  "SortOrder": 10,
+  "Conditions": [
+    {
+      "Type": 3,
+      "Target": "game:stone_pickaxe",
+      "Count": 1
+    }
+  ]
+}

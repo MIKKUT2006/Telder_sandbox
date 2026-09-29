@@ -88,117 +88,25 @@ namespace Game.Content
 
         private static void LoadFluids()
         {
-
-            FluidRegistry.Register(
-
-                new FluidDefinition()
-                {
-
-                    ID = new ContentID(
-                        "game",
-                        "water"
-                    ),
-
-
-                    Name = "Water",
-
-
-                    Texture = "water",
-
-
-                    FlowSpeed = 5,
-
-
-                    Viscosity = 1,
-
-
-                    IsLiquid = true
-
-                }
-
-            );
-
-
-
-            FluidRegistry.Register(
-
-                new FluidDefinition()
-                {
-
-                    ID = new ContentID(
-                        "game",
-                        "lava"
-                    ),
-
-
-                    Name = "Lava",
-
-
-                    Texture = "lava",
-
-
-                    FlowSpeed = 2,
-
-
-                    Viscosity = 3,
-
-
-                    Damage = 10,
-
-
-                    IsHot = true,
-
-
-                    IsLiquid = true
-
-                }
-
-            );
-
+            RegisterFluid("game:water", "Water", "#3C8DFFB8", 5f, 1f, 0f, false);
+            RegisterFluid("game:lava", "Lava", "#FF6A1AD9", 2f, 3f, 10f, true);
+            RegisterFluid("game:acid", "Acid", "#77FF39C8", 4f, 1.4f, 7f, false);
+            RegisterFluid("game:ice_water", "Ice Water", "#9DE9FFE0", 4f, 1.25f, 3f, false);
+            FluidIDRegistry.RegisterLoadedFluids();
         }
 
-
-
-
+        private static void RegisterFluid(string id, string name, string color, float speed, float viscosity, float damage, bool hot)
+        {
+            FluidRegistry.Register(new FluidDefinition
+            {
+                ID = ContentID.Parse(id), Name = name, Color = color, FlowSpeed = speed,
+                Viscosity = viscosity, Damage = damage, DamageInterval = 1f, IsHot = hot, IsLiquid = true
+            });
+        }
 
         private static void LoadAchievements()
         {
-
-            AchievementRegistry.Register(
-
-                new AchievementDefinition()
-                {
-
-                    ID = new ContentID(
-                        "game",
-                        "first_block"
-                    ),
-
-
-                    Title = "First Block",
-
-
-                    Description =
-                    "Break your first block",
-
-
-                    Icon = "stone",
-
-
-                    ConditionType =
-                    AchievementConditionType.BlockBreak,
-
-
-                    Target =
-                    new ContentID(
-                        "game",
-                        "stone"
-                    )
-
-                }
-
-            );
-
+            AchievementFolderLoader.LoadDefaultFolder();
         }
 
 

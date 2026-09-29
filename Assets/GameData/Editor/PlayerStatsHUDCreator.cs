@@ -679,6 +679,14 @@ namespace Game.EditorTools
 
             SetObjectReference(
                 so,
+                "healthShakeRoot",
+                healthFrame != null
+                    ? healthFrame.rectTransform.parent as RectTransform
+                    : null
+            );
+
+            SetObjectReference(
+                so,
                 "healthFillTexture",
                 defaultSprite
             );

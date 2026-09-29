@@ -1,0 +1,88 @@
+{
+  "ID": "game:cave_crawler",
+  "Name": "Cave crawler",
+  "Enabled": true,
+  "Behavior": "Aggressive",
+  "MaxHealth": 70.0,
+  "ColliderWidth": 0.8,
+  "ColliderHeight": 0.8,
+  "WanderRadius": 8.0,
+
+  "Movement": {
+    "Type": "Ground",
+    "Speed": 2.4,
+    "Acceleration": 18.0,
+    "Gravity": 25.0,
+    "MaxFallSpeed": 20.0,
+    "JumpForce": 8.0,
+    "MaxStepUpCells": 1,
+    "MaxJumpUpCells": 2,
+    "MaxDropCells": 5
+  },
+
+  "Combat": {
+    "VisionRange": 12.0,
+    "LoseTargetRange": 18.0,
+    "BaseDamage": 9.0,
+    "AttackRange": 1.5,
+    "AttackCooldown": 1.0,
+    "AggroAfterHitSeconds": 12.0,
+    "RequireLineOfSight": true
+  },
+
+  "Stars": {
+    "MinStars": 1,
+    "MaxStars": 5,
+    "StarWeights": [ 55.0, 25.0, 12.0, 6.0, 2.0 ],
+    "HealthPerExtraStar": 0.35,
+    "DamagePerExtraStar": 0.20,
+    "LootPerExtraStar": 0.25
+  },
+
+
+  "Spawn": {
+    "Enabled": true,
+    "MaxAlive": 8,
+    "Weight": 6.0,
+    "MinLight": 0.0,
+    "MaxLight": 1.0,
+    "MinDistanceFromPlayer": 12.0,
+    "MaxDistanceFromPlayer": 38.0,
+    "RequiredWidth": 1,
+    "RequiredHeight": 2,
+    "Biomes": [ "game:ancient_caves" ]
+  },
+
+  "Visual": {
+    "PrefabResource": "Entities/cave_crawler",
+    "PrefabScale": 1.0,
+    "PrefabFacesRight": true,
+    "OffsetX": 0.0,
+    "OffsetY": 0.0,
+
+    "HeldItemAnchorPath": "Armature/Body/RightArm/Hand/HeldItemAnchor",
+    "HeldItemOffsetX": 0.0,
+    "HeldItemOffsetY": 0.0,
+    "HeldItemWorldSize": 0.72,
+
+    "AnimatorIdleState": "Idle",
+    "AnimatorWalkState": "Walk",
+    "AnimatorAttackState": "Attack",
+    "AnimatorHurtState": "Hurt",
+    "AnimatorDeathState": "Death",
+    "AnimatorCrossFade": 0.06,
+    "DeathDespawnDelay": 0.9,
+
+    "SortingLayer": "Default",
+    "SortingOrder": 80
+  },
+
+  "Loot": [
+    {
+      "ItemId": "game:coal_ore",
+      "Min": 1,
+      "Max": 3,
+      "Chance": 0.8
+    }
+  ]
+}

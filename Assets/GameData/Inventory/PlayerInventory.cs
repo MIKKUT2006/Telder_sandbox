@@ -91,7 +91,11 @@ namespace Game.Inventory
                 changed = true;
             }
 
-            if (changed) NotifyChanged();
+            if (changed)
+            {
+                NotifyChanged();
+                Game.Achievements.AchievementRuntime.NotifyItemCollect(itemId, amount - remaining);
+            }
             return remaining;
         }
 

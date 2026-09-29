@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -49,6 +49,7 @@ namespace Game.Combat
             Idle,
             Melee,
             Gun,
+            Bomb,
             BowCharging
         }
 
@@ -124,6 +125,9 @@ namespace Game.Combat
 
 
         private WeaponKind kind;
+
+
+        private string selectedWeaponItemId;
 
 
         private SwordAttackKind swordAttack;
@@ -274,6 +278,11 @@ namespace Game.Combat
                     break;
 
 
+                case AttackState.Bomb:
+                    UpdateBomb();
+                    break;
+
+
                 case AttackState.BowCharging:
                     UpdateBow();
                     break;
@@ -415,8 +424,22 @@ namespace Game.Combat
             }
 
 
+            if (
+                selectedKind == WeaponKind.Bomb &&
+                (inventory == null ||
+                 !inventory.HasItem(id, 1))
+            )
+            {
+                return;
+            }
+
+
             weapon =
                 selected;
+
+
+            selectedWeaponItemId =
+                id;
 
 
             kind =
@@ -520,6 +543,27 @@ namespace Game.Combat
 
             attackStartTime =
                 Time.time;
+
+
+            if (
+                kind == WeaponKind.Bomb
+            )
+            {
+                state =
+                    AttackState.Bomb;
+
+
+                if (
+                    weapon.FireNormalizedTime <=
+                    0f
+                )
+                {
+                    ThrowBomb();
+                }
+
+
+                return;
+            }
 
 
             if (
@@ -634,6 +678,39 @@ namespace Game.Combat
                 FireRanged(
                     1f
                 );
+            }
+
+
+            if (t >= 1f)
+            {
+                EndAttack();
+            }
+        }
+
+
+        private void UpdateBomb()
+        {
+            if (weapon == null)
+            {
+                CancelAttack();
+                return;
+            }
+
+
+            RefreshRawAim();
+
+
+            float t =
+                NormalizedAttackTime();
+
+
+            if (
+                !fired &&
+                t >=
+                weapon.FireNormalizedTime
+            )
+            {
+                ThrowBomb();
             }
 
 
@@ -976,10 +1053,27 @@ namespace Game.Combat
                       transform.position;
 
 
-            DamageCircle(
+            Vector2 swingTip =
                 origin +
                 direction *
-                weapon.SwingReach,
+                weapon.SwingReach;
+
+            WeaponDamageUtility.DamageActiveEntitiesAlongSegment(
+                origin,
+                swingTip,
+                weapon.SwingHitRadius,
+                new WeaponDamageInfo(
+                    weapon.Damage,
+                    weapon.Knockback,
+                    direction,
+                    swingTip,
+                    gameObject
+                ),
+                hitTargets
+            );
+
+            DamageCircle(
+                swingTip,
                 weapon.SwingHitRadius,
                 direction
             );
@@ -1008,6 +1102,20 @@ namespace Game.Combat
                     extension
                 );
 
+
+            WeaponDamageUtility.DamageActiveEntitiesAlongSegment(
+                GetMuzzleWorld(),
+                center,
+                weapon.ThrustHitRadius,
+                new WeaponDamageInfo(
+                    weapon.Damage,
+                    weapon.Knockback,
+                    aimDirection,
+                    center,
+                    gameObject
+                ),
+                hitTargets
+            );
 
             DamageCircle(
                 center,
@@ -1040,6 +1148,20 @@ namespace Game.Combat
                 );
 
 
+            WeaponDamageUtility.DamageActiveEntitiesAlongSegment(
+                GetMuzzleWorld(),
+                center,
+                weapon.SpearHitRadius,
+                new WeaponDamageInfo(
+                    weapon.Damage,
+                    weapon.Knockback,
+                    aimDirection,
+                    center,
+                    gameObject
+                ),
+                hitTargets
+            );
+
             DamageCircle(
                 center,
                 weapon.SpearHitRadius,
@@ -1054,8 +1176,27 @@ namespace Game.Combat
             Vector2 direction
         )
         {
+            // Entity damage must not depend on the serialized targetMask. Existing
+            // PlayerWeaponController components can keep an old mask from before
+            // enemies existed, which made swords visually pass through every enemy.
+            WeaponDamageInfo entityInfo =
+                new WeaponDamageInfo(
+                    weapon.Damage,
+                    weapon.Knockback,
+                    direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right,
+                    center,
+                    gameObject
+                );
+
+            WeaponDamageUtility.DamageActiveEntitiesInCircle(
+                center,
+                Mathf.Max(0.01f, radius),
+                entityInfo,
+                hitTargets
+            );
+
             int count =
-                Physics2D.OverlapCircleNonAlloc(
+                WeaponDamageUtility.OverlapCircleIncludingTriggers(
                     center,
                     Mathf.Max(
                         0.01f,
@@ -1265,6 +1406,62 @@ namespace Game.Combat
         }
 
 
+        private void ThrowBomb()
+        {
+            if (fired || weapon == null)
+                return;
+
+
+            if (
+                inventory == null ||
+                string.IsNullOrWhiteSpace(selectedWeaponItemId) ||
+                !inventory.RemoveItem(
+                    selectedWeaponItemId,
+                    1
+                )
+            )
+            {
+                CancelAttack();
+                return;
+            }
+
+
+            fired =
+                true;
+
+
+            Vector2 direction =
+                aimDirection;
+
+
+            direction.y +=
+                0.28f;
+
+
+            if (direction.sqrMagnitude < 0.0001f)
+            {
+                direction =
+                    attackFacingRight
+                        ? Vector2.right
+                        : Vector2.left;
+            }
+
+
+            direction.Normalize();
+
+
+            Game.World.Projectiles.BombProjectile.Spawn(
+                GetMuzzleWorld() +
+                    direction *
+                    Mathf.Max(0.2f, weapon.MuzzleOffset),
+                direction *
+                    Mathf.Max(0.1f, weapon.BombThrowSpeed),
+                weapon,
+                transform
+            );
+        }
+
+
         private Vector2 GetMuzzleWorld()
         {
             if (rig != null)
@@ -1360,6 +1557,10 @@ namespace Game.Combat
 
             weapon =
                 null;
+
+
+            selectedWeaponItemId =
+                null;
         }
 
 
@@ -1384,6 +1585,10 @@ namespace Game.Combat
 
 
             weapon =
+                null;
+
+
+            selectedWeaponItemId =
                 null;
         }
 

@@ -33,8 +33,22 @@
     "EntranceMultiplier": 1.0
   },
   "Climate": {
-    "Temperature": 0.80,
+    "Temperature": 0.8,
     "Humidity": 0.55,
     "Weirdness": 0.2
+  },
+  "LiquidGeneration": {
+    "Enabled": true,
+    "Liquids": [
+      {
+        "ID": "game:water",
+        "Weight": 1.0,
+        "LakeChance": 0.025,
+        "MinLakeSize": 15,
+        "MaxLakeSize": 55,
+        "MinDepth": 2,
+        "MaxDepth": 4
+      }
+    ]
   }
 }

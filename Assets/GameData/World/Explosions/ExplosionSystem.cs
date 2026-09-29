@@ -188,6 +188,89 @@ namespace Game.World.Explosions
             return destroyed;
         }
 
+        /// <summary>
+        /// Exact cell-box explosion used by bombs. For a 2x2 bomb this destroys
+        /// exactly the two nearest columns by two nearest rows around the center.
+        /// </summary>
+        public static int ExplodeBox(
+            Vector2 center,
+            int widthCells,
+            int heightCells,
+            bool dropBlocks = true,
+            bool destroyBackground = false,
+            bool destroyFurniture = true)
+        {
+            Game.World.WorldManager manager =
+                Game.World.WorldManager.Instance;
+
+            if (manager == null)
+                return 0;
+
+            Game.World.World world = manager.GetWorld();
+            if (world == null)
+                return 0;
+
+            widthCells = Mathf.Max(1, widthCells);
+            heightCells = Mathf.Max(1, heightCells);
+
+            int startX = Mathf.FloorToInt(center.x - (widthCells - 1) * 0.5f);
+            int startY = Mathf.FloorToInt(center.y - (heightCells - 1) * 0.5f);
+            int destroyed = 0;
+
+            ExplosionPixelVfx.Spawn(
+                center,
+                Mathf.Max(widthCells, heightCells) * 0.55f
+            );
+
+            FurnitureLayerManager furniture =
+                destroyFurniture
+                    ? FurnitureLayerManager.Instance
+                    : null;
+
+            for (int oy = 0; oy < heightCells; oy++)
+            {
+                for (int ox = 0; ox < widthCells; ox++)
+                {
+                    int x = startX + ox;
+                    int y = startY + oy;
+
+                    ushort foreground = world.GetBlock(x, y);
+                    if (foreground != 0 && manager.SetBlock(x, y, 0))
+                    {
+                        destroyed++;
+                        BlockBreakDebrisSystem.Emit(world, x, y, foreground, false);
+
+                        if (dropBlocks)
+                            SpawnBlockDrop(foreground, x, y);
+
+                        FallingBlockSystem.NotifyCellChanged(x, y);
+                    }
+
+                    if (destroyBackground)
+                    {
+                        ushort background = world.GetBackground(x, y);
+                        if (background != 0 && manager.SetBackground(x, y, 0))
+                        {
+                            destroyed++;
+                            BlockBreakDebrisSystem.Emit(world, x, y, background, true);
+
+                            if (dropBlocks)
+                                SpawnBlockDrop(background, x, y);
+                        }
+                    }
+
+                    if (furniture != null && furniture.HasFurniture(x, y))
+                    {
+                        if (furniture.BreakFurniture(x, y))
+                            destroyed++;
+                    }
+                }
+            }
+
+            GlobalParticleFrontEnforcer.ApplyNow();
+            return destroyed;
+        }
+
         public static int Explode(
             int worldX,
             int worldY,

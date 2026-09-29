@@ -16,6 +16,13 @@ namespace Game.PlayerStats
         [SerializeField] private Color healthColor = new Color32(140, 14, 26, 255);
         [SerializeField] private Color healthFrameColor = Color.white;
 
+        [Header("Damage shake")]
+        [Tooltip("Optional. If empty, the parent of Health Fill/Frame is used automatically.")]
+        [SerializeField] private RectTransform healthShakeRoot;
+        [SerializeField, Min(0f)] private float healthShakeDuration = 0.18f;
+        [SerializeField, Min(0f)] private float healthShakePixels = 6f;
+        [SerializeField, Min(1f)] private float healthShakeFrequency = 48f;
+
         [Header("Hunger")]
         [SerializeField] private Image hungerFill;
         [SerializeField] private Image hungerFrame;
@@ -24,9 +31,16 @@ namespace Game.PlayerStats
         [SerializeField] private Color hungerColor = new Color32(226, 130, 91, 255);
         [SerializeField] private Color hungerFrameColor = Color.white;
 
+        private Vector2 healthShakeBasePosition;
+        private float healthShakeEndTime;
+        private float healthShakeStartedAt;
+        private float healthShakeStrength;
+        private bool healthShakeBaseCaptured;
+
         private void Awake()
         {
             ApplyVisualSettings();
+            ResolveHealthShakeRoot(true);
         }
 
         private void OnEnable()
@@ -36,17 +50,22 @@ namespace Game.PlayerStats
 
             playerStats.HealthChanged += OnHealthChanged;
             playerStats.HungerChanged += OnHungerChanged;
+            playerStats.Damaged += OnDamaged;
 
+            ResolveHealthShakeRoot(true);
             Refresh();
         }
 
         private void OnDisable()
         {
-            if (playerStats == null)
-                return;
+            if (playerStats != null)
+            {
+                playerStats.HealthChanged -= OnHealthChanged;
+                playerStats.HungerChanged -= OnHungerChanged;
+                playerStats.Damaged -= OnDamaged;
+            }
 
-            playerStats.HealthChanged -= OnHealthChanged;
-            playerStats.HungerChanged -= OnHungerChanged;
+            RestoreHealthBarPosition();
         }
 
         private void OnValidate()
@@ -63,6 +82,7 @@ namespace Game.PlayerStats
             {
                 playerStats.HealthChanged -= OnHealthChanged;
                 playerStats.HungerChanged -= OnHungerChanged;
+                playerStats.Damaged -= OnDamaged;
             }
 
             playerStats = source;
@@ -71,6 +91,7 @@ namespace Game.PlayerStats
             {
                 playerStats.HealthChanged += OnHealthChanged;
                 playerStats.HungerChanged += OnHungerChanged;
+                playerStats.Damaged += OnDamaged;
             }
 
             Refresh();
@@ -83,6 +104,75 @@ namespace Game.PlayerStats
 
             SetFill(healthFill, playerStats.HealthNormalized);
             SetFill(hungerFill, playerStats.HungerNormalized);
+        }
+
+        private void Update()
+        {
+            if (healthShakeRoot == null || !healthShakeBaseCaptured)
+                return;
+
+            if (Time.unscaledTime >= healthShakeEndTime)
+            {
+                RestoreHealthBarPosition();
+                return;
+            }
+
+            float duration = Mathf.Max(0.001f, healthShakeEndTime - healthShakeStartedAt);
+            float remaining = Mathf.Clamp01((healthShakeEndTime - Time.unscaledTime) / duration);
+            float phase = Time.unscaledTime * Mathf.Max(1f, healthShakeFrequency);
+
+            // Two non-matching oscillations give a sharp, game-like hit shake
+            // without random-position drift from frame to frame.
+            float x = Mathf.Sin(phase * 1.37f) * healthShakeStrength * remaining;
+            float y = Mathf.Sin(phase * 2.11f + 1.7f) * healthShakeStrength * 0.45f * remaining;
+
+            healthShakeRoot.anchoredPosition =
+                healthShakeBasePosition + new Vector2(x, y);
+        }
+
+        private void OnDamaged(float damage)
+        {
+            ResolveHealthShakeRoot(false);
+            if (healthShakeRoot == null || healthShakeDuration <= 0f || healthShakePixels <= 0f)
+                return;
+
+            if (Time.unscaledTime >= healthShakeEndTime)
+            {
+                healthShakeBasePosition = healthShakeRoot.anchoredPosition;
+                healthShakeBaseCaptured = true;
+            }
+
+            float damage01 = playerStats != null && playerStats.MaxHealth > 0f
+                ? Mathf.Clamp01(damage / playerStats.MaxHealth * 8f)
+                : 0.5f;
+
+            healthShakeStrength = healthShakePixels * Mathf.Lerp(0.75f, 1.35f, damage01);
+            healthShakeStartedAt = Time.unscaledTime;
+            healthShakeEndTime = Time.unscaledTime + Mathf.Max(0.01f, healthShakeDuration);
+        }
+
+        private void ResolveHealthShakeRoot(bool captureBase)
+        {
+            if (healthShakeRoot == null)
+            {
+                if (healthFrame != null)
+                    healthShakeRoot = healthFrame.rectTransform.parent as RectTransform;
+
+                if (healthShakeRoot == null && healthFill != null)
+                    healthShakeRoot = healthFill.rectTransform.parent as RectTransform;
+            }
+
+            if (captureBase && healthShakeRoot != null)
+            {
+                healthShakeBasePosition = healthShakeRoot.anchoredPosition;
+                healthShakeBaseCaptured = true;
+            }
+        }
+
+        private void RestoreHealthBarPosition()
+        {
+            if (healthShakeRoot != null && healthShakeBaseCaptured)
+                healthShakeRoot.anchoredPosition = healthShakeBasePosition;
         }
 
         private void OnHealthChanged(float current, float max)
