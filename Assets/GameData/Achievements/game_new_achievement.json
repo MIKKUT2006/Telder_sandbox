@@ -1,9 +1,9 @@
 {
-    "ID": "game:new_achievement",
+    "ID": "game:first_stone",
     "Title": "Каменный век",
-    "Description": "Получите свой первый камень",
+    "Description": "Получите свой первый камень, подняв его с земли",
     "Icon": "",
-    "Parent": "",
+    "Parent": "game:welcome",
     "HiddenUntilUnlocked": false,
     "SortOrder": 0,
     "Conditions": [

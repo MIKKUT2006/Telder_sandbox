@@ -1,0 +1,14 @@
+{
+  "ID": "game:crystal_cave_vegetation",
+  "SpawnType": "Cave",
+  "BlockId": "game:crystal",
+  "Biomes": [
+    "porous_crystalline_caves"
+  ],
+  "Chance": 0.2,
+  "MinY": -1000000,
+  "MaxY": 1000000,
+  "Floor": true,
+  "Ceiling": true,
+  "Walls": true
+}

@@ -1,0 +1,16 @@
+{
+    "ID": "game:welcome",
+    "Title": "Добро пожаловать в игру!",
+    "Description": "Добро пожаловать в Telder!.  ",
+    "Icon": "game:ancient_stone",
+    "Parent": "",
+    "HiddenUntilUnlocked": false,
+    "SortOrder": 1,
+    "Conditions": [
+        {
+            "Type": 1,
+            "Target": "*",
+            "Count": 1
+        }
+    ]
+}

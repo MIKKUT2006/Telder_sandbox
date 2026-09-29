@@ -1,0 +1,34 @@
+{
+  "ID": "game:crystal",
+  "Name": "Crystal",
+  "Texture": "crystal",
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+  "LightLevel": 0,
+  "Material": 0,
+  "Drop": "game:crystal",
+  "DropCount": 1,
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+  "Tags": [
+    "crystal",
+    "light"
+  ],
+
+  "closed": false,
+
+  "LightOpacity": 0,
+  "LightEmissionR": 223,
+  "LightEmissionG": 109,
+  "LightEmissionB": 202,
+
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

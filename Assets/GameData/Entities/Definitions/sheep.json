@@ -1,9 +1,9 @@
 {
-  "ID": "game:moss_titan",
-  "Name": "Moss titan",
+  "ID": "game:sheep",
+  "Name": "Sheep",
   "Enabled": true,
-  "Behavior": "Aggressive",
-  "MaxHealth": 80.0,
+  "Behavior": "Passive",
+  "MaxHealth": 70.0,
   "ColliderWidth": 0.8,
   "ColliderHeight": 1.9,
   "WanderRadius": 8.0,
@@ -31,7 +31,7 @@
   },
 
   "Stars": {
-    "MinStars": 1,
+    "MinStars": 0,
     "MaxStars": 5,
     "StarWeights": [ 55.0, 25.0, 12.0, 6.0, 2.0 ],
     "HealthPerExtraStar": 0.35,
@@ -43,19 +43,19 @@
   "Spawn": {
     "Enabled": true,
     "MaxAlive": 8,
-    "Weight": 0.5,
+    "Weight": 1.0,
     "MinLight": 0.0,
     "MaxLight": 1.0,
     "MinDistanceFromPlayer": 12.0,
     "MaxDistanceFromPlayer": 38.0,
     "RequiredWidth": 1,
     "RequiredHeight": 2,
-    "Biomes": [ "game:mossy_caves" ]
+    "Biomes": [ "*" ]
   },
 
   "Visual": {
-    "PrefabResource": "Entities/Moss_titan",
-    "PrefabScale": 1.0,
+    "PrefabResource": "Entities/Sheep",
+    "PrefabScale": 2.0,
     "PrefabFacesRight": true,
     "OffsetX": 0.0,
     "OffsetY": 0.0,
@@ -65,9 +65,9 @@
     "HeldItemOffsetY": 0.0,
     "HeldItemWorldSize": 0.72,
 
-    "AnimatorIdleState": "Moss_titan_idle",
+    "AnimatorIdleState": "Idle",
     "AnimatorWalkState": "Walk",
-    "AnimatorAttackState": "Moss_titan_attack",
+    "AnimatorAttackState": "Attack",
     "AnimatorHurtState": "Hurt",
     "AnimatorDeathState": "Death",
     "AnimatorCrossFade": 0.06,
@@ -76,17 +76,6 @@
     "SortingLayer": "Default",
     "SortingOrder": 80
   },
-
-  "Equipment": [
-    {
-      "ItemId": "game:stone_sword",
-      "Chance": 0.5
-    },
-    {
-      "ItemId": "game:tnt",
-      "Chance": 0.5
-    }
-  ],
 
   "Loot": [
     {

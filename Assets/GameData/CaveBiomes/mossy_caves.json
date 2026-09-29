@@ -14,5 +14,20 @@
   "ExtraCaves": false,
   "ExtraCaveScale": 0.018,
   "ExtraCaveDetailScale": 0.055,
-  "ExtraCaveThreshold": 0.79
+  "ExtraCaveThreshold": 0.79,
+
+  "LiquidGeneration": {
+    "Enabled": true,
+    "Liquids": [
+      {
+        "ID": "game:water",
+        "Weight": 1.0,
+        "LakeChance": 0.16,
+        "MinLakeSize": 30,
+        "MaxLakeSize": 140,
+        "MinDepth": 2,
+        "MaxDepth": 6
+      }
+    ]
+  }
 }
