@@ -227,6 +227,12 @@ namespace Game.Debugging
                     mainScroll
                 );
 
+            DrawQuickGive();
+
+
+            GUILayout.Space(
+                10f
+            );
 
             DrawBiomeStatus();
 
@@ -257,12 +263,7 @@ namespace Game.Debugging
             );
 
 
-            DrawQuickGive();
-
-
-            GUILayout.Space(
-                10f
-            );
+            
 
 
             DrawChests();
@@ -1176,6 +1177,58 @@ namespace Game.Debugging
             {
                 GiveItem(
                     "game:workbench"
+                );
+            }
+            if (
+                GUILayout.Button(
+                    "Печь",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:furnace"
+                );
+            }
+            if (
+                GUILayout.Button(
+                    "Кровать",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:bed"
+                );
+            }
+            if (
+                GUILayout.Button(
+                    "Уголь",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:coal"
+                );
+            }
+            if (
+                GUILayout.Button(
+                    "железо",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:raw_iron_ore"
                 );
             }
 

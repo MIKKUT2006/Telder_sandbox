@@ -1,40 +1,72 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Game.Inventory;
 using Game.Items.Durability;
 
 namespace Game.ToolBench
 {
-    // No Inspector wiring required: scans the active scene and attaches the two player-side components.
     public class ToolBenchRuntimeBootstrap : MonoBehaviour
     {
-        private float nextScanTime;
+        private Coroutine attachRoutine;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Create()
         {
             ToolBenchUI.EnsureCreated();
-            if (FindObjectOfType<ToolBenchRuntimeBootstrap>() != null) return;
+            if (FindFirstObjectByType<ToolBenchRuntimeBootstrap>() != null)
+                return;
+
             GameObject go = new GameObject("ToolBenchRuntimeBootstrap");
             DontDestroyOnLoad(go);
             go.AddComponent<ToolBenchRuntimeBootstrap>();
         }
 
-        private void Update()
+        private void OnEnable()
         {
-            if (Time.unscaledTime < nextScanTime) return;
-            nextScanTime = Time.unscaledTime + 1f;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            BeginAttach();
+        }
 
-            PlayerInventory[] inventories = UnityEngine.Resources.FindObjectsOfTypeAll<PlayerInventory>();
-            for (int i = 0; i < inventories.Length; i++)
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            if (attachRoutine != null)
+                StopCoroutine(attachRoutine);
+            attachRoutine = null;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            ToolBenchUI.EnsureCreated();
+            BeginAttach();
+        }
+
+        private void BeginAttach()
+        {
+            if (attachRoutine != null)
+                StopCoroutine(attachRoutine);
+            attachRoutine = StartCoroutine(AttachWhenPlayerExists());
+        }
+
+        private IEnumerator AttachWhenPlayerExists()
+        {
+            while (true)
             {
-                PlayerInventory inv = inventories[i];
-                if (inv == null || !inv.gameObject.scene.IsValid()) continue;
+                PlayerInventory inventory = FindFirstObjectByType<PlayerInventory>();
+                if (inventory != null)
+                {
+                    if (inventory.GetComponent<ToolBenchInteraction>() == null)
+                        inventory.gameObject.AddComponent<ToolBenchInteraction>();
 
-                if (inv.GetComponent<ToolBenchInteraction>() == null)
-                    inv.gameObject.AddComponent<ToolBenchInteraction>();
+                    if (inventory.GetComponent<DurabilityMiningHook>() == null)
+                        inventory.gameObject.AddComponent<DurabilityMiningHook>();
 
-                if (inv.GetComponent<DurabilityMiningHook>() == null)
-                    inv.gameObject.AddComponent<DurabilityMiningHook>();
+                    attachRoutine = null;
+                    yield break;
+                }
+
+                yield return new WaitForSecondsRealtime(0.25f);
             }
         }
     }

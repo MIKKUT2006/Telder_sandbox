@@ -6,27 +6,38 @@
   "MaxY": 15,
   "TransitionHeight": 18,
   "Priority": 50,
-  "Dimensions": [ "volcanic", "toxic", "oceanic" ],
+  "Dimensions": [
+    "volcanic",
+    "toxic",
+    "oceanic"
+  ],
   "StoneBlockId": "game:moss",
   "BackgroundBlockId": "game:moss",
   "FloorBlockId": "",
   "CeilingBlockId": "",
-  "ExtraCaves": false,
+  "ExtraCaves": true,
   "ExtraCaveScale": 0.018,
   "ExtraCaveDetailScale": 0.055,
   "ExtraCaveThreshold": 0.79,
-
   "LiquidGeneration": {
     "Enabled": true,
+    "HorizontalRegionSize": 24,
+    "VerticalRegionSize": 16,
+    "EdgeRoughness": 0.3,
+    "RequireBackground": true,
     "Liquids": [
       {
         "ID": "game:water",
         "Weight": 1.0,
-        "LakeChance": 0.16,
-        "MinLakeSize": 30,
-        "MaxLakeSize": 140,
-        "MinDepth": 2,
-        "MaxDepth": 6
+        "LakeChance": 0.0,
+        "PoolChance": 0.34,
+        "MinLakeSize": 18,
+        "MaxLakeSize": 70,
+        "MinWidth": 5,
+        "MaxWidth": 14,
+        "MinDepth": 1,
+        "MaxDepth": 3,
+        "FillAmount": 8
       }
     ]
   }

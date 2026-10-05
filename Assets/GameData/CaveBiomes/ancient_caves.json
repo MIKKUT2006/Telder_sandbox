@@ -6,7 +6,9 @@
   "MaxY": -80,
   "TransitionHeight": 18,
   "Priority": 100,
-  "Dimensions": [ "volcanic" ],
+  "Dimensions": [
+    "volcanic"
+  ],
   "StoneBlockId": "game:ancient_stone",
   "BackgroundBlockId": "game:ancient_stone",
   "FloorBlockId": "",
@@ -14,5 +16,27 @@
   "ExtraCaves": true,
   "ExtraCaveScale": 0.018,
   "ExtraCaveDetailScale": 0.055,
-  "ExtraCaveThreshold": 0.79
+  "ExtraCaveThreshold": 0.79,
+  "LiquidGeneration": {
+    "Enabled": true,
+    "HorizontalRegionSize": 28,
+    "VerticalRegionSize": 18,
+    "EdgeRoughness": 0.24,
+    "RequireBackground": true,
+    "Liquids": [
+      {
+        "ID": "game:lava",
+        "Weight": 1.0,
+        "LakeChance": 0.0,
+        "PoolChance": 0.18,
+        "MinLakeSize": 14,
+        "MaxLakeSize": 55,
+        "MinWidth": 4,
+        "MaxWidth": 12,
+        "MinDepth": 1,
+        "MaxDepth": 3,
+        "FillAmount": 8
+      }
+    ]
+  }
 }

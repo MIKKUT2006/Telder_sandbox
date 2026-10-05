@@ -22,6 +22,14 @@ namespace Game.World.Rendering
 
         private Material lightingMaterial;
 
+        private readonly List<int> dynamicCellScratch =
+            new List<int>(128);
+
+        private readonly List<int> dynamicRemoveScratch =
+            new List<int>(32);
+
+        private float nextDynamicVisualCheck;
+
 
         // =========================================================
         // VISUAL LAYERS
@@ -473,14 +481,38 @@ namespace Game.World.Rendering
                     x++
                 )
                 {
+                    ushort backgroundId =
+                        chunk.GetBackground(
+                            x,
+                            y
+                        );
+
+                    int worldX =
+                        chunk.X * Chunk.SizeX +
+                        x;
+
+                    int worldY =
+                        chunk.Y * Chunk.SizeY +
+                        y;
+
                     BlockRenderer.DrawBlock(
                         data.BackgroundTexture,
                         x,
                         y,
-                        chunk.GetBackground(
-                            x,
-                            y
-                        )
+                        backgroundId,
+                        worldX,
+                        worldY,
+                        BlockVisualLayer.Background
+                    );
+
+                    TrackDynamicCell(
+                        data.BackgroundDynamicVisuals,
+                        x,
+                        y,
+                        backgroundId,
+                        worldX,
+                        worldY,
+                        BlockVisualLayer.Background
                     );
                     // [STRUCTURE-LAYERS-BACKGROUND-TRANSFORM-V1]
                     Game.BlockTransforms.BackgroundBlockTransformRegistry.ApplyToCell(
@@ -493,14 +525,30 @@ namespace Game.World.Rendering
 
 
 
+                    ushort foregroundId =
+                        chunk.GetBlock(
+                            x,
+                            y
+                        );
+
                     BlockRenderer.DrawBlock(
                         data.ForegroundTexture,
                         x,
                         y,
-                        chunk.GetBlock(
-                            x,
-                            y
-                        )
+                        foregroundId,
+                        worldX,
+                        worldY,
+                        BlockVisualLayer.Foreground
+                    );
+
+                    TrackDynamicCell(
+                        data.ForegroundDynamicVisuals,
+                        x,
+                        y,
+                        foregroundId,
+                        worldX,
+                        worldY,
+                        BlockVisualLayer.Foreground
                     );
                     // [BT-AUTO-RENDER] EXACT_V14
                     Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(
@@ -524,6 +572,211 @@ namespace Game.World.Rendering
                 false,
                 false
             );
+        }
+
+
+        private static void TrackDynamicCell(
+            Dictionary<int, string> registry,
+            int localX,
+            int localY,
+            ushort blockId,
+            int worldX,
+            int worldY,
+            BlockVisualLayer layer)
+        {
+            if (registry == null)
+                return;
+
+            int index =
+                localY * Chunk.SizeX +
+                localX;
+
+            if (!BlockRenderer.IsDynamic(blockId))
+            {
+                registry.Remove(index);
+                return;
+            }
+
+            registry[index] =
+                BlockRenderer.GetVisualKey(
+                    blockId,
+                    worldX,
+                    worldY,
+                    layer
+                );
+        }
+
+
+        /// <summary>
+        /// Redraws only cells whose visual can change with time/state.
+        /// Static terrain never enters this path.
+        /// </summary>
+        public void UpdateAnimatedVisuals()
+        {
+            if (world == null || renderedChunks.Count == 0)
+                return;
+
+            // The game can run at several hundred FPS. Visual animations do not
+            // need a 400 Hz scheduler, so cap checks at 60 Hz.
+            if (Time.time < nextDynamicVisualCheck)
+                return;
+
+            nextDynamicVisualCheck = Time.time + 1f / 60f;
+
+            foreach (KeyValuePair<UnityEngine.Vector2Int, ChunkRenderData> pair in renderedChunks)
+            {
+                Chunk chunk =
+                    world.GetChunk(
+                        pair.Key.x,
+                        pair.Key.y
+                    );
+
+                if (chunk == null)
+                    continue;
+
+                ChunkRenderData data = pair.Value;
+                bool foregroundDirty = UpdateDynamicLayer(
+                    chunk,
+                    data.ForegroundTexture,
+                    data.ForegroundDynamicVisuals,
+                    false
+                );
+
+                bool backgroundDirty = UpdateDynamicLayer(
+                    chunk,
+                    data.BackgroundTexture,
+                    data.BackgroundDynamicVisuals,
+                    true
+                );
+
+                if (foregroundDirty)
+                    data.ForegroundTexture.Apply(false, false);
+
+                if (backgroundDirty)
+                    data.BackgroundTexture.Apply(false, false);
+            }
+        }
+
+
+        private bool UpdateDynamicLayer(
+            Chunk chunk,
+            Texture2D texture,
+            Dictionary<int, string> registry,
+            bool background)
+        {
+            if (texture == null || registry == null || registry.Count == 0)
+                return false;
+
+            bool dirty = false;
+
+            dynamicCellScratch.Clear();
+            dynamicRemoveScratch.Clear();
+
+            foreach (int key in registry.Keys)
+                dynamicCellScratch.Add(key);
+
+            for (int i = 0; i < dynamicCellScratch.Count; i++)
+            {
+                int index = dynamicCellScratch[i];
+                int localX = index % Chunk.SizeX;
+                int localY = index / Chunk.SizeX;
+
+                ushort blockId =
+                    background
+                        ? chunk.GetBackground(localX, localY)
+                        : chunk.GetBlock(localX, localY);
+
+                if (!BlockRenderer.IsDynamic(blockId))
+                {
+                    dynamicRemoveScratch.Add(index);
+                    continue;
+                }
+
+                int worldX = chunk.X * Chunk.SizeX + localX;
+                int worldY = chunk.Y * Chunk.SizeY + localY;
+                BlockVisualLayer layer =
+                    background
+                        ? BlockVisualLayer.Background
+                        : BlockVisualLayer.Foreground;
+
+                string currentKey =
+                    BlockRenderer.GetVisualKey(
+                        blockId,
+                        worldX,
+                        worldY,
+                        layer
+                    );
+
+                registry.TryGetValue(index, out string oldKey);
+                if (string.Equals(oldKey, currentKey, System.StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                BlockRenderer.DrawBlock(
+                    texture,
+                    localX,
+                    localY,
+                    blockId,
+                    worldX,
+                    worldY,
+                    layer
+                );
+
+                if (background)
+                {
+                    Game.BlockTransforms.BackgroundBlockTransformRegistry.ApplyToCell(
+                        texture,
+                        localX,
+                        localY,
+                        BlockRenderer.BlockPixelSize,
+                        worldX,
+                        worldY
+                    );
+                }
+                else
+                {
+                    Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(
+                        texture,
+                        localX,
+                        localY,
+                        BlockRenderer.BlockPixelSize,
+                        worldX,
+                        worldY
+                    );
+                }
+
+                registry[index] = currentKey;
+                dirty = true;
+            }
+
+            for (int i = 0; i < dynamicRemoveScratch.Count; i++)
+                registry.Remove(dynamicRemoveScratch[i]);
+
+            return dirty;
+        }
+
+
+        public void RefreshVisualAt(
+            int worldX,
+            int worldY,
+            BlockVisualLayer layer)
+        {
+            if (world == null || layer == BlockVisualLayer.Furniture)
+                return;
+
+            int chunkX = Mathf.FloorToInt(worldX / (float)Chunk.SizeX);
+            int chunkY = Mathf.FloorToInt(worldY / (float)Chunk.SizeY);
+
+            Chunk chunk = world.GetChunk(chunkX, chunkY);
+            if (chunk == null)
+                return;
+
+            int localX = worldX - chunkX * Chunk.SizeX;
+            int localY = worldY - chunkY * Chunk.SizeY;
+
+            if (layer == BlockVisualLayer.Background)
+                UpdateBackgroundBlock(chunk, localX, localY);
+            else
+                UpdateBlock(chunk, localX, localY);
         }
 
 
@@ -569,14 +822,38 @@ namespace Game.World.Rendering
             }
 
 
+            ushort blockId =
+                chunk.GetBlock(
+                    localX,
+                    localY
+                );
+
+            int worldX =
+                chunk.X * Chunk.SizeX +
+                localX;
+
+            int worldY =
+                chunk.Y * Chunk.SizeY +
+                localY;
+
             BlockRenderer.DrawBlock(
                 data.ForegroundTexture,
                 localX,
                 localY,
-                chunk.GetBlock(
-                    localX,
-                    localY
-                )
+                blockId,
+                worldX,
+                worldY,
+                BlockVisualLayer.Foreground
+            );
+
+            TrackDynamicCell(
+                data.ForegroundDynamicVisuals,
+                localX,
+                localY,
+                blockId,
+                worldX,
+                worldY,
+                BlockVisualLayer.Foreground
             );
             // [BT-AUTO-RENDER] EXACT_V14
             Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(
@@ -633,14 +910,38 @@ namespace Game.World.Rendering
             }
 
 
+            ushort blockId =
+                chunk.GetBackground(
+                    localX,
+                    localY
+                );
+
+            int worldX =
+                chunk.X * Chunk.SizeX +
+                localX;
+
+            int worldY =
+                chunk.Y * Chunk.SizeY +
+                localY;
+
             BlockRenderer.DrawBlock(
                 data.BackgroundTexture,
                 localX,
                 localY,
-                chunk.GetBackground(
-                    localX,
-                    localY
-                )
+                blockId,
+                worldX,
+                worldY,
+                BlockVisualLayer.Background
+            );
+
+            TrackDynamicCell(
+                data.BackgroundDynamicVisuals,
+                localX,
+                localY,
+                blockId,
+                worldX,
+                worldY,
+                BlockVisualLayer.Background
             );
             // [STRUCTURE-LAYERS-BACKGROUND-TRANSFORM-V1]
             Game.BlockTransforms.BackgroundBlockTransformRegistry.ApplyToCell(
@@ -1210,6 +1511,18 @@ namespace Game.World.Rendering
 
             public MaterialPropertyBlock
                 BackgroundProperties;
+
+
+            // localCellIndex -> last resolved visual texture name.
+            // Only blocks that actually have Animation/States live here.
+            public readonly Dictionary<int, string>
+                ForegroundDynamicVisuals =
+                    new Dictionary<int, string>();
+
+
+            public readonly Dictionary<int, string>
+                BackgroundDynamicVisuals =
+                    new Dictionary<int, string>();
         }
 
 

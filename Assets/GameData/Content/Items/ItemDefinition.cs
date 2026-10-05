@@ -24,6 +24,12 @@ namespace Game.Items
         public float HungerRestore = 0f;
         public float HealthRestore = 0f;
 
+        [Header("Furnace")]
+        [Min(0f)] public float FuelBurnTime = 0f;
+        public string SmeltResult;
+        public int SmeltResultCount = 1;
+        [Min(0.05f)] public float SmeltTime = 5f;
+
         [Header("Crafting")]
         public List<CraftIngredientDefinition> CraftIngredients =
             new List<CraftIngredientDefinition>();

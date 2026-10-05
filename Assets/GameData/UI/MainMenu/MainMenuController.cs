@@ -17,6 +17,9 @@ namespace Game.UI.MainMenu
         [SerializeField]
         private GameObject settingsPanel;
 
+        [SerializeField]
+        private GameObject infoPanel;
+
 
         [SerializeField]
         private SaveSelectionController
@@ -101,7 +104,37 @@ namespace Game.UI.MainMenu
             }
         }
 
+        public void OpenInfo()
+        {
+            if (
+                homePanel != null
+            )
+            {
+                homePanel.SetActive(
+                    false
+                );
+            }
 
+
+            if (
+                saveSelectionPanel != null
+            )
+            {
+                saveSelectionPanel.SetActive(
+                    false
+                );
+            }
+
+
+            if (
+                infoPanel != null
+            )
+            {
+                infoPanel.SetActive(
+                    true
+                );
+            }
+        }
         public void ShowHome()
         {
             if (
@@ -129,6 +162,15 @@ namespace Game.UI.MainMenu
             )
             {
                 settingsPanel.SetActive(
+                    false
+                );
+            }
+
+            if (
+                infoPanel != null
+            )
+            {
+                infoPanel.SetActive(
                     false
                 );
             }

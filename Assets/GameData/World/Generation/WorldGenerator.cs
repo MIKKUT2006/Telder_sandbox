@@ -212,6 +212,31 @@ namespace Game.World.Generation
         }
 
 
+        /// <summary>
+        /// Used by procedural systems that run after structures. Returns true
+        /// only for the dominant surface biome's own terrain materials, so a
+        /// lake can carve dirt/stone without deleting a house or another
+        /// structure stamped into the same chunk.
+        /// </summary>
+        public bool IsNaturalSurfaceTerrainBlock(
+            int worldX,
+            ushort blockID
+        )
+        {
+            if (blockID == 0)
+                return false;
+
+            BiomeDefinition biome =
+                GetDominantBiome(worldX);
+
+            BiomeRuntimeData runtime =
+                biomeRuntime.Get(biome);
+
+            return runtime != null &&
+                   runtime.IsTerrainBlock(blockID);
+        }
+
+
         public ChunkData GenerateChunkData(
             int chunkX,
             int chunkY

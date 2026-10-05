@@ -279,6 +279,47 @@ namespace Game.World
             Chunk c = GetChunk(cx, cy); return c == null ? (byte)0 : c.GetLiquidAmount(lx, ly);
         }
 
+        public bool GetLiquidIsSource(int worldX, int worldY)
+        {
+            GetChunkCoordinates(worldX, worldY, out int cx, out int cy, out int lx, out int ly);
+            Chunk c = GetChunk(cx, cy); return c != null && c.GetLiquidIsSource(lx, ly);
+        }
+
+        public byte GetLiquidFlowDistance(int worldX, int worldY)
+        {
+            GetChunkCoordinates(worldX, worldY, out int cx, out int cy, out int lx, out int ly);
+            Chunk c = GetChunk(cx, cy); return c == null ? (byte)0 : c.GetLiquidFlowDistance(lx, ly);
+        }
+
+        public bool GetLiquidIsFalling(int worldX, int worldY)
+        {
+            GetChunkCoordinates(worldX, worldY, out int cx, out int cy, out int lx, out int ly);
+            Chunk c = GetChunk(cx, cy); return c != null && c.GetLiquidIsFalling(lx, ly);
+        }
+
+        public bool SetLiquidState(
+            int worldX,
+            int worldY,
+            ushort id,
+            byte amount,
+            bool isSource,
+            byte flowDistance,
+            bool isFalling
+        )
+        {
+            GetChunkCoordinates(worldX, worldY, out int cx, out int cy, out int lx, out int ly);
+            Chunk c = GetChunk(cx, cy);
+            if (c == null) return false;
+
+            c.SetLiquidState(lx, ly, id, amount, isSource, flowDistance, isFalling);
+            return true;
+        }
+
+        public bool SetLiquidSource(int worldX, int worldY, ushort id)
+        {
+            return SetLiquidState(worldX, worldY, id, 8, true, 0, false);
+        }
+
         public bool SetLiquid(int worldX, int worldY, ushort id, byte amount)
         {
             GetChunkCoordinates(worldX, worldY, out int cx, out int cy, out int lx, out int ly);

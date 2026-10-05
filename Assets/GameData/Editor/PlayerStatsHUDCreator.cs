@@ -20,6 +20,8 @@ namespace Game.EditorTools
         private const float MaxTotalWidth = 640f;
 
         private const float BarHeight = 18f;
+        private const float AirBarHeight = 8f;
+        private const float AirBarGap = 4f;
         private const float Gap = 8f;
         private const float FrameThickness = 2f;
         private const float DistanceAboveHotbar = 10f;
@@ -29,6 +31,9 @@ namespace Game.EditorTools
 
         private static readonly Color HungerColor =
             new Color32(226, 130, 91, 255); // #E2825B
+
+        private static readonly Color AirColor =
+            new Color32(52, 142, 230, 255);
 
         private static readonly Color FrameColor =
             new Color32(255, 255, 255, 255);
@@ -117,6 +122,12 @@ namespace Game.EditorTools
                     "HungerBar"
                 );
 
+            RectTransform airBar =
+                GetOrCreateRect(
+                    hudRect,
+                    "AirBar"
+                );
+
             SetupBarRect(
                 healthBar,
                 left: true,
@@ -127,6 +138,12 @@ namespace Game.EditorTools
                 hungerBar,
                 left: false,
                 barWidth: barWidth
+            );
+
+            SetupAirBarRect(
+                airBar,
+                hungerBar,
+                barWidth
             );
 
             Sprite defaultSprite =
@@ -163,6 +180,22 @@ namespace Game.EditorTools
                     HungerColor
                 );
 
+            Image airFrame =
+                SetupFrame(
+                    airBar,
+                    defaultSprite,
+                    FrameColor
+                );
+
+            Image airFill =
+                SetupFill(
+                    airBar,
+                    defaultSprite,
+                    AirColor
+                );
+
+            airBar.gameObject.SetActive(false);
+
             PlayerStatsComponent playerStats =
                 FindScenePlayerStats();
 
@@ -173,6 +206,9 @@ namespace Game.EditorTools
                 healthFrame,
                 hungerFill,
                 hungerFrame,
+                airBar,
+                airFill,
+                airFrame,
                 defaultSprite
             );
 
@@ -505,6 +541,21 @@ namespace Game.EditorTools
                 Vector2.zero;
         }
 
+        private static void SetupAirBarRect(
+            RectTransform rect,
+            RectTransform hungerBar,
+            float barWidth)
+        {
+            Undo.RecordObject(rect, "Setup Player Air Bar");
+
+            rect.anchorMin = new Vector2(1f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(1f, 0f);
+            rect.sizeDelta = new Vector2(barWidth, AirBarHeight);
+            rect.anchoredPosition = hungerBar.anchoredPosition +
+                new Vector2(0f, BarHeight + AirBarGap);
+        }
+
         private static Image SetupFrame(
             RectTransform bar,
             Sprite sprite,
@@ -654,6 +705,9 @@ namespace Game.EditorTools
             Image healthFrame,
             Image hungerFill,
             Image hungerFrame,
+            RectTransform airBarRoot,
+            Image airFill,
+            Image airFrame,
             Sprite defaultSprite)
         {
             SerializedObject so =
@@ -756,6 +810,20 @@ namespace Game.EditorTools
             if (hungerFrameColor != null)
                 hungerFrameColor.colorValue =
                     FrameColor;
+
+            SetObjectReference(so, "airBarRoot", airBarRoot);
+            SetObjectReference(so, "airFill", airFill);
+            SetObjectReference(so, "airFrame", airFrame);
+            SetObjectReference(so, "airFillTexture", defaultSprite);
+            SetObjectReference(so, "airFrameTexture", defaultSprite);
+
+            SerializedProperty airColor = so.FindProperty("airColor");
+            if (airColor != null)
+                airColor.colorValue = AirColor;
+
+            SerializedProperty airFrameColor = so.FindProperty("airFrameColor");
+            if (airFrameColor != null)
+                airFrameColor.colorValue = FrameColor;
 
             so.ApplyModifiedProperties();
 

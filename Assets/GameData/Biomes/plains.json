@@ -47,8 +47,12 @@
         "MinLakeSize": 30,
         "MaxLakeSize": 140,
         "MinDepth": 2,
-        "MaxDepth": 6
+        "MaxDepth": 6,
+        "FillAmount": 8
       }
-    ]
+    ],
+    "RegionSize": 48,
+    "MaxSurfaceVariation": 7,
+    "EdgeRoughness": 0.22
   }
 }

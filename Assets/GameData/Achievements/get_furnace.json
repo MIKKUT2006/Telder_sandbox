@@ -1,0 +1,16 @@
+{
+    "ID": "get_furnace",
+    "Title": "Мастер печник",
+    "Description": "Заполучите печь",
+    "Icon": "game:ancient_stone",
+    "Parent": "first_pickaxe",
+    "HiddenUntilUnlocked": false,
+    "SortOrder": 0,
+    "Conditions": [
+        {
+            "Type": 3,
+            "Target": "game:furnace",
+            "Count": 1
+        }
+    ]
+}

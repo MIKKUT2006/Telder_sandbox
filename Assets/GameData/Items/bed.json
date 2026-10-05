@@ -1,0 +1,7 @@
+{
+  "ID": "game:bed",
+  "Name": "Bed",
+  "Texture": "bed",
+  "Type": "Block",
+  "MaxStack": 100
+}

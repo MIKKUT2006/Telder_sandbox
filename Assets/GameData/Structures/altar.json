@@ -18,54 +18,6 @@
     "Biomes": [],
     "Cells": [
         {
-            "X": 2,
-            "Y": 2,
-            "ForegroundId": "game:dark_brickstone",
-            "BackgroundId": "",
-            "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 2,
-            "Y": 1,
-            "ForegroundId": "game:dark_brickstone",
-            "BackgroundId": "",
-            "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 2,
-            "Y": 0,
-            "ForegroundId": "game:dark_brickstone",
-            "BackgroundId": "",
-            "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 8,
-            "Y": 2,
-            "ForegroundId": "game:dark_brickstone",
-            "BackgroundId": "",
-            "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 8,
-            "Y": 1,
-            "ForegroundId": "game:dark_brickstone",
-            "BackgroundId": "",
-            "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 8,
-            "Y": 0,
-            "ForegroundId": "game:dark_brickstone",
-            "BackgroundId": "",
-            "Loot": [],
-            "Transform": 0
-        },
-        {
             "X": 4,
             "Y": 2,
             "ForegroundId": "",
@@ -130,27 +82,94 @@
             "Transform": 0
         },
         {
+            "X": 2,
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 2,
+            "Y": 0,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
             "X": 8,
-            "Y": 3,
-            "ForegroundId": "game:campfire",
-            "BackgroundId": "",
+            "Y": 2,
+            "ForegroundId": "",
+            "BackgroundId": "game:dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 1,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 0,
+            "ForegroundId": "",
+            "BackgroundId": "game:moss_dark_brickstone",
             "Loot": [],
             "Transform": 0
         },
         {
             "X": 2,
             "Y": 3,
-            "ForegroundId": "game:campfire",
-            "BackgroundId": "",
+            "ForegroundId": "",
+            "BackgroundId": "game:campfire",
+            "Loot": [],
+            "Transform": 0
+        },
+        {
+            "X": 8,
+            "Y": 3,
+            "ForegroundId": "",
+            "BackgroundId": "game:campfire",
             "Loot": [],
             "Transform": 0
         },
         {
             "X": 5,
             "Y": 0,
-            "ForegroundId": "game:oak_wood_fence",
+            "ForegroundId": "game:chest",
             "BackgroundId": "",
-            "Loot": [],
+            "Loot": [
+                {
+                    "ItemId": "game:iron_pickaxe",
+                    "Chance": 0.05000000074505806,
+                    "MinCount": 1,
+                    "MaxCount": 1
+                },
+                {
+                    "ItemId": "game:arrow",
+                    "Chance": 0.5,
+                    "MinCount": 1,
+                    "MaxCount": 10
+                },
+                {
+                    "ItemId": "game:torch",
+                    "Chance": 1.0,
+                    "MinCount": 1,
+                    "MaxCount": 8
+                }
+            ],
             "Transform": 0
         }
     ]

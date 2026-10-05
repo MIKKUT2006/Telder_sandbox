@@ -6,7 +6,9 @@
   "MaxY": -80,
   "TransitionHeight": 18,
   "Priority": 100,
-  "Dimensions": [ "crystalline" ],
+  "Dimensions": [
+    "crystalline"
+  ],
   "StoneBlockId": "game:porous_crystal",
   "BackgroundBlockId": "game:porous_crystal",
   "FloorBlockId": "",
@@ -14,5 +16,27 @@
   "ExtraCaves": true,
   "ExtraCaveScale": 0.018,
   "ExtraCaveDetailScale": 0.055,
-  "ExtraCaveThreshold": 0.79
+  "ExtraCaveThreshold": 0.79,
+  "LiquidGeneration": {
+    "Enabled": true,
+    "HorizontalRegionSize": 28,
+    "VerticalRegionSize": 18,
+    "EdgeRoughness": 0.2,
+    "RequireBackground": true,
+    "Liquids": [
+      {
+        "ID": "game:ice_water",
+        "Weight": 1.0,
+        "LakeChance": 0.0,
+        "PoolChance": 0.12,
+        "MinLakeSize": 12,
+        "MaxLakeSize": 42,
+        "MinWidth": 4,
+        "MaxWidth": 10,
+        "MinDepth": 1,
+        "MaxDepth": 2,
+        "FillAmount": 8
+      }
+    ]
+  }
 }

@@ -47,7 +47,8 @@
         "MinLakeSize": 18,
         "MaxLakeSize": 90,
         "MinDepth": 2,
-        "MaxDepth": 6
+        "MaxDepth": 6,
+        "FillAmount": 8
       },
       {
         "ID": "game:lava",
@@ -56,8 +57,12 @@
         "MinLakeSize": 12,
         "MaxLakeSize": 55,
         "MinDepth": 2,
-        "MaxDepth": 5
+        "MaxDepth": 5,
+        "FillAmount": 8
       }
-    ]
+    ],
+    "RegionSize": 48,
+    "MaxSurfaceVariation": 7,
+    "EdgeRoughness": 0.22
   }
 }

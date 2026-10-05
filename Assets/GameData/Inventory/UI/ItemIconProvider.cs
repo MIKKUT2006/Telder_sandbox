@@ -4,6 +4,8 @@ using System.IO;
 using UnityEngine;
 
 using Game.Content;
+using Game.Blocks;
+using Game.GameplaySystems.Multiblock;
 using Game.Items;
 using Game.World.Rendering;
 
@@ -108,6 +110,41 @@ namespace Game.Inventory.UI
                 ItemType.Block
             )
             {
+
+                // Multi-block furniture (for example a 2x1 bed) uses its full
+                // 32x16/48x16/etc visual in the inventory as well. Regular
+                // terrain blocks continue to use the 16x16 BlockRenderer path.
+                try
+                {
+                    ContentID contentID =
+                        ContentID.Parse(
+                            itemID
+                        );
+
+                    if (BlockRegistry.Contains(contentID))
+                    {
+                        BlockDefinition definition =
+                            BlockRegistry.Get(contentID);
+
+                        Sprite multiBlockSprite =
+                            MultiBlockVisualProvider.GetSprite(
+                                itemID,
+                                definition
+                            );
+
+                        if (multiBlockSprite != null)
+                        {
+                            // The sprite is owned/cached by MultiBlockVisualProvider.
+                            // Do not put it into this cache because ClearCache() destroys
+                            // sprites that ItemIconProvider itself created.
+                            return multiBlockSprite;
+                        }
+                    }
+                }
+                catch
+                {
+                }
+
 
                 Sprite blockSprite =
                     CreateBlockSprite(

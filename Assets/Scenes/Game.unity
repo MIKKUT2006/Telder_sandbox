@@ -4806,6 +4806,12 @@ MonoBehaviour:
   jumpForce: 12
   gravity: 45
   maxFallSpeed: 25
+  swimHorizontalMultiplier: 0.72
+  swimUpSpeed: 4.2
+  swimSinkSpeed: 1.15
+  swimAcceleration: 13
+  maxLiquidFallSpeed: 3.5
+  headProbeInset: 0.1
 --- !u!114 &248244849
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5033,6 +5039,10 @@ MonoBehaviour:
   regenerationHealthAmount: 0.7
   regenerationInterval: 0.5
   hungerCostPer10RegeneratedHealth: 5
+  maxAirSeconds: 25
+  airRecoveryPerSecond: 8
+  drowningDamage: 5
+  drowningDamageInterval: 1
 --- !u!114 &248244862
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20515,52 +20525,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1258042670}
   m_CullTransparentMesh: 1
---- !u!28 &1264089967
-Texture2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: MainMenuGradient
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 4
-  m_Width: 1
-  m_Height: 256
-  m_CompleteImageSize: 1024
-  m_MipsStripped: 0
-  m_TextureFormat: 4
-  m_MipCount: 1
-  m_IsReadable: 1
-  m_IsPreProcessed: 0
-  m_IgnoreMipmapLimit: 1
-  m_MipmapLimitGroupName: 
-  m_StreamingMipmaps: 0
-  m_StreamingMipmapsPriority: 0
-  m_VTOnly: 0
-  m_AlphaIsTransparency: 0
-  m_ImageCount: 1
-  m_TextureDimension: 2
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_LightmapFormat: 0
-  m_ColorSpace: 1
-  m_PlatformBlob: 
-  image data: 1024
-  _typelessdata: 000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff010104ff010204ff010204ff010204ff010204ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010307ff010307ff010307ff010307ff010307ff010307ff010307ff010307ff010307ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010309ff010309ff010309ff010309ff010409ff010409ff010409ff010409ff010409ff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040bff01040bff01040bff01040bff02040bff02040bff02050bff02050bff02050cff02050cff02050cff02050cff02050cff02050cff02050cff02050cff02050cff02050dff02050dff02050dff02050dff02050dff02050dff02050dff02050dff02050eff02060eff02060eff02060eff02060eff02060eff02060eff02060eff02060eff02060fff02060fff02060fff02060fff02060fff02060fff02060fff02060fff02060fff020610ff020610ff020610ff020610ff020710ff020710ff020710ff020710ff020710ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020712ff020712ff020712ff030712ff030712ff030712ff030712ff030712ff030812ff030812ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030815ff030815ff030815ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff
-  m_StreamData:
-    serializedVersion: 2
-    offset: 0
-    size: 0
-    path: 
 --- !u!1 &1276745212
 GameObject:
   m_ObjectHideFlags: 0
@@ -24312,6 +24276,36 @@ MonoBehaviour:
   selectedHotbarSlotSprite: {fileID: 21300000, guid: 27995097922cbd54193973277e4678cb,
     type: 3}
   selectedHotbarScale: 1.0628
+  furnaceAppearance:
+    PanelSprite: {fileID: 21300000, guid: 56cba9bdaa0590741a3c4665c33092aa, type: 3}
+    InputSlotSprite: {fileID: 21300000, guid: 56cba9bdaa0590741a3c4665c33092aa, type: 3}
+    FuelSlotSprite: {fileID: 21300000, guid: 56cba9bdaa0590741a3c4665c33092aa, type: 3}
+    OutputSlotSprite: {fileID: 21300000, guid: 56cba9bdaa0590741a3c4665c33092aa, type: 3}
+    BurnBorderSprite: {fileID: 0}
+    SmeltProgressBackgroundSprite: {fileID: 0}
+    SmeltProgressFillSprite: {fileID: 0}
+    PanelColor: {r: 1, g: 1, b: 1, a: 0.92}
+    InputSlotColor: {r: 1, g: 1, b: 1, a: 0.96}
+    FuelSlotColor: {r: 1, g: 1, b: 1, a: 0.96}
+    OutputSlotColor: {r: 1, g: 1, b: 1, a: 0.96}
+    SlotOutlineColor: {r: 1, g: 1, b: 1, a: 0.18}
+    BurnBorderColor: {r: 1, g: 0.47843137, b: 0.14901961, a: 1}
+    SmeltProgressBackgroundColor: {r: 1, g: 1, b: 1, a: 0.12}
+    SmeltProgressFillColor: {r: 0.73333335, g: 0.47843137, b: 0.34117648, a: 1}
+    IconColor: {r: 1, g: 1, b: 1, a: 1}
+    CountTextColor: {r: 1, g: 1, b: 1, a: 1}
+    PanelSize: {x: 190, y: 132}
+    SlotSize: 54
+    InventoryGap: 12
+    PanelOffset: {x: 0, y: 0}
+    InputSlotPosition: {x: -46, y: 31}
+    FuelSlotPosition: {x: -46, y: -31}
+    OutputSlotPosition: {x: 46, y: 0}
+    SmeltProgressPosition: {x: 0, y: 0}
+    SmeltProgressSize: {x: 28, y: 6}
+    SlotOutlineDistance: 1
+    BurnBorderThickness: 5
+    BurnBorderPadding: 3
   cursorItemRoot: {fileID: 2001557264}
   cursorIcon: {fileID: 1427045522}
   cursorCount: {fileID: 75073212}
@@ -27141,6 +27135,15 @@ MonoBehaviour:
   hungerFrameTexture: {fileID: 21300000, guid: 23497ac2e0824e84a91081b6125a4390, type: 3}
   hungerColor: {r: 0.8862745, g: 0.50980395, b: 0.35686275, a: 1}
   hungerFrameColor: {r: 1, g: 1, b: 1, a: 1}
+  airBarRoot: {fileID: 0}
+  airFill: {fileID: 0}
+  airFrame: {fileID: 0}
+  airFillTexture: {fileID: 0}
+  airFrameTexture: {fileID: 0}
+  airColor: {r: 0.20392157, g: 0.5568628, b: 0.9019608, a: 1}
+  airFrameColor: {r: 1, g: 1, b: 1, a: 1}
+  airBarHeight: 8
+  airBarGap: 4
 --- !u!1 &1759833347
 GameObject:
   m_ObjectHideFlags: 0
@@ -29934,11 +29937,11 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 1264089967}
+        m_Texture: {fileID: 2101794833}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 1264089967}
+        m_Texture: {fileID: 2101794833}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -32618,6 +32621,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2092666334}
   m_CullTransparentMesh: 1
+--- !u!28 &2101794833
+Texture2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MainMenuGradient
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 4
+  m_Width: 1
+  m_Height: 256
+  m_CompleteImageSize: 1024
+  m_MipsStripped: 0
+  m_TextureFormat: 4
+  m_MipCount: 1
+  m_IsReadable: 1
+  m_IsPreProcessed: 0
+  m_IgnoreMipmapLimit: 1
+  m_MipmapLimitGroupName: 
+  m_StreamingMipmaps: 0
+  m_StreamingMipmapsPriority: 0
+  m_VTOnly: 0
+  m_AlphaIsTransparency: 0
+  m_ImageCount: 1
+  m_TextureDimension: 2
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_LightmapFormat: 0
+  m_ColorSpace: 1
+  m_PlatformBlob: 
+  image data: 1024
+  _typelessdata: 000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000002ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000102ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000103ff000104ff000104ff000104ff000104ff000104ff000104ff000104ff010104ff010204ff010204ff010204ff010204ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010205ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010206ff010307ff010307ff010307ff010307ff010307ff010307ff010307ff010307ff010307ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010308ff010309ff010309ff010309ff010309ff010409ff010409ff010409ff010409ff010409ff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040aff01040bff01040bff01040bff01040bff02040bff02040bff02050bff02050bff02050cff02050cff02050cff02050cff02050cff02050cff02050cff02050cff02050cff02050dff02050dff02050dff02050dff02050dff02050dff02050dff02050dff02050eff02060eff02060eff02060eff02060eff02060eff02060eff02060eff02060eff02060fff02060fff02060fff02060fff02060fff02060fff02060fff02060fff02060fff020610ff020610ff020610ff020610ff020710ff020710ff020710ff020710ff020710ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020711ff020712ff020712ff020712ff030712ff030712ff030712ff030712ff030712ff030812ff030812ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030813ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030814ff030815ff030815ff030815ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030915ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff030916ff
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
 --- !u!1 &2105965796
 GameObject:
   m_ObjectHideFlags: 0

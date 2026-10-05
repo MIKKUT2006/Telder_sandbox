@@ -12,10 +12,12 @@
     "UseHeightRange": true,
     "MinY": 10,
     "MaxY": 90,
-    "RequireFreeSpace": true,
+    "RequireFreeSpace": false,
     "FreeSpacePadding": 1,
     "BiomeSource": 0,
-    "Biomes": [],
+    "Biomes": [
+        "game:mountains"
+    ],
     "Cells": [
         {
             "X": 3,

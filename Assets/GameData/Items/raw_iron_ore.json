@@ -2,6 +2,9 @@
   "ID": "game:raw_iron_ore",
   "Name": "Raw Iron ore",
   "Texture": "raw_iron_ore",
-  "Type": "items",
-  "MaxStack": 100
+  "Type": "Material",
+  "MaxStack": 100,
+  "SmeltResult": "game:iron_ingot",
+  "SmeltResultCount": 1,
+  "SmeltTime": 5.0
 }

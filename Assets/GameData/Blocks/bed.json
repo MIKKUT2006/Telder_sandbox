@@ -1,0 +1,51 @@
+{
+  "ID": "game:bed",
+  "Name": "Bed",
+  "Texture": "bed",
+
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+
+  "Solid": false,
+  "Transparent": true,
+  "BlocksLight": false,
+  "LightOpacity": 0,
+
+  "Drop": "game:bed",
+  "DropCount": 1,
+
+  "Tags": [
+    "bed",
+    "furniture"
+  ],
+
+  "VisualOffsetX": 0.0,
+  "VisualOffsetY": 0.0,
+  "VisualScale": 1.0,
+
+  "MultiBlock": {
+    "Width": 2,
+    "Height": 1,
+
+    "AnchorX": 0,
+    "AnchorY": 0,
+
+    "Kind": "bed",
+    "Texture": "bed",
+
+    "RequireFloor": true
+  },
+
+  "CollisionShape": "None",
+  "CollisionRects": [],
+
+
+  "CraftIngredients": [
+    {
+      "ItemId": "game:oak_trunk",
+      "Count": 3
+    }
+  ],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1
+}

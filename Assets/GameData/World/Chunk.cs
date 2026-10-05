@@ -37,6 +37,9 @@ namespace Game.World
 
         private ushort[,] liquidIDs;
         private byte[,] liquidAmounts;
+        private bool[,] liquidSources;
+        private byte[,] liquidFlowDistances;
+        private bool[,] liquidFalling;
 
 
         // =====================================================
@@ -83,6 +86,9 @@ namespace Game.World
 
             liquidIDs = new ushort[SizeX, SizeY];
             liquidAmounts = new byte[SizeX, SizeY];
+            liquidSources = new bool[SizeX, SizeY];
+            liquidFlowDistances = new byte[SizeX, SizeY];
+            liquidFalling = new bool[SizeX, SizeY];
 
 
             // =================================================
@@ -183,10 +189,56 @@ namespace Game.World
 
         public ushort GetLiquidID(int x, int y) { return liquidIDs[x, y]; }
         public byte GetLiquidAmount(int x, int y) { return liquidAmounts[x, y]; }
+        public bool GetLiquidIsSource(int x, int y) { return liquidSources[x, y]; }
+        public byte GetLiquidFlowDistance(int x, int y) { return liquidFlowDistances[x, y]; }
+        public bool GetLiquidIsFalling(int x, int y) { return liquidFalling[x, y]; }
+
+        public void SetLiquidSource(int x, int y, ushort id)
+        {
+            SetLiquidState(x, y, id, 8, true, 0, false);
+        }
+
+        public void SetLiquidState(
+            int x,
+            int y,
+            ushort id,
+            byte amount,
+            bool isSource,
+            byte flowDistance,
+            bool isFalling
+        )
+        {
+            amount = System.Math.Min((byte)8, amount);
+
+            if (id == 0 || amount == 0)
+            {
+                liquidIDs[x, y] = 0;
+                liquidAmounts[x, y] = 0;
+                liquidSources[x, y] = false;
+                liquidFlowDistances[x, y] = 0;
+                liquidFalling[x, y] = false;
+                return;
+            }
+
+            liquidIDs[x, y] = id;
+            liquidAmounts[x, y] = isSource ? (byte)8 : amount;
+            liquidSources[x, y] = isSource;
+            liquidFlowDistances[x, y] = isSource ? (byte)0 : flowDistance;
+            liquidFalling[x, y] = !isSource && isFalling;
+        }
+
         public void SetLiquid(int x, int y, ushort id, byte amount)
         {
-            liquidIDs[x, y] = amount == 0 ? (ushort)0 : id;
-            liquidAmounts[x, y] = (byte)System.Math.Min((byte)8, amount);
+            if (amount == 0 || id == 0)
+            {
+                SetLiquidState(x, y, 0, 0, false, 0, false);
+                return;
+            }
+
+            byte clamped = System.Math.Min((byte)8, amount);
+            bool source = clamped >= 8;
+            byte distance = source ? (byte)0 : (byte)System.Math.Max(1, 8 - clamped);
+            SetLiquidState(x, y, id, clamped, source, distance, false);
         }
 
         // =====================================================
@@ -246,7 +298,15 @@ namespace Game.World
                         )
                     );
 
-                    SetLiquid(x, y, data.GetLiquidID(x, y), data.GetLiquidAmount(x, y));
+                    SetLiquidState(
+                        x,
+                        y,
+                        data.GetLiquidID(x, y),
+                        data.GetLiquidAmount(x, y),
+                        data.GetLiquidIsSource(x, y),
+                        data.GetLiquidFlowDistance(x, y),
+                        data.GetLiquidIsFalling(x, y)
+                    );
                 }
             }
         }

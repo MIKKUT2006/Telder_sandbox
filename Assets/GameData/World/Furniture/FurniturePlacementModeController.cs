@@ -5,6 +5,8 @@ using Game.Blocks;
 using Game.Content;
 using Game.Inventory;
 using Game.Inventory.UI;
+using Game.GameplaySystems.Furnace;
+using Game.GameplaySystems.Multiblock;
 
 
 namespace Game.World.Furniture
@@ -177,6 +179,20 @@ namespace Game.World.Furniture
                 null
                 &&
                 InventoryUI.Instance.IsOpen
+            )
+            {
+
+                return;
+
+            }
+
+
+            // FurnaceRuntime executes before this controller. If RMB opened a
+            // furnace this frame, do not also place furniture behind the UI.
+            if (
+                FurnaceRuntime.Instance != null
+                &&
+                FurnaceRuntime.Instance.IsUIOpen
             )
             {
 
@@ -369,6 +385,11 @@ namespace Game.World.Furniture
                         x,
                         y
                     )
+                ||
+                MultiBlockStore.FindCell(
+                    x,
+                    y
+                ) != null
             )
             {
 
@@ -384,6 +405,22 @@ namespace Game.World.Furniture
             if (
                 string.IsNullOrWhiteSpace(
                     itemId
+                )
+            )
+            {
+
+                return;
+
+            }
+
+
+            // Multi-block furniture has its own atomic placement path. If this
+            // legacy 1x1 furniture controller ever receives the same click, do
+            // nothing instead of creating a second/partial object.
+            if (
+                MultiBlockMetadataRegistry.TryGet(
+                    itemId,
+                    out MultiBlockMetadata _
                 )
             )
             {

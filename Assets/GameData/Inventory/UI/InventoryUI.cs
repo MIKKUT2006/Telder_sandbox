@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using TMPro;
@@ -6,10 +7,114 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using Game.Chests.UI;
+using Game.GameplaySystems.Furnace;
 
 
 namespace Game.Inventory.UI
 {
+
+    [Serializable]
+    public sealed class FurnaceInventoryAppearance
+    {
+        [Header("Textures")]
+        [Tooltip("Optional furnace panel texture. Leave empty to use only Panel Color.")]
+        public Sprite PanelSprite;
+
+        [Tooltip("Optional input-slot texture. Falls back to the main inventory slot texture.")]
+        public Sprite InputSlotSprite;
+
+        [Tooltip("Optional fuel-slot texture. Falls back to the main inventory slot texture.")]
+        public Sprite FuelSlotSprite;
+
+        [Tooltip("Optional output-slot texture. Falls back to the main inventory slot texture.")]
+        public Sprite OutputSlotSprite;
+
+        [Tooltip("Optional full frame texture used as the burning-fuel progress outline. A transparent frame sprite works best.")]
+        public Sprite BurnBorderSprite;
+
+        [Tooltip("Optional background texture for the item smelting progress strip.")]
+        public Sprite SmeltProgressBackgroundSprite;
+
+        [Tooltip("Optional fill texture for the item smelting progress strip.")]
+        public Sprite SmeltProgressFillSprite;
+
+        [Header("Colors")]
+        public Color PanelColor =
+            new Color(0.025f, 0.025f, 0.035f, 0.92f);
+
+        public Color InputSlotColor =
+            new Color(0.07f, 0.07f, 0.085f, 0.96f);
+
+        public Color FuelSlotColor =
+            new Color(0.07f, 0.07f, 0.085f, 0.96f);
+
+        public Color OutputSlotColor =
+            new Color(0.07f, 0.07f, 0.085f, 0.96f);
+
+        public Color SlotOutlineColor =
+            new Color(1f, 1f, 1f, 0.18f);
+
+        public Color BurnBorderColor =
+            new Color32(255, 122, 38, 255);
+
+        public Color SmeltProgressBackgroundColor =
+            new Color(1f, 1f, 1f, 0.12f);
+
+        public Color SmeltProgressFillColor =
+            new Color32(187, 122, 87, 255);
+
+        public Color IconColor =
+            Color.white;
+
+        public Color CountTextColor =
+            Color.white;
+
+        [Header("Layout")]
+        [Tooltip("Compact furnace panel size shown above the normal inventory.")]
+        public Vector2 PanelSize =
+            new Vector2(190f, 132f);
+
+        [Range(36f, 96f)]
+        public float SlotSize =
+            54f;
+
+        [Tooltip("Distance between the top of the inventory panel and the furnace panel.")]
+        public float InventoryGap =
+            12f;
+
+        [Tooltip("Additional position offset for the whole furnace panel.")]
+        public Vector2 PanelOffset =
+            Vector2.zero;
+
+        public Vector2 InputSlotPosition =
+            new Vector2(-46f, 31f);
+
+        public Vector2 FuelSlotPosition =
+            new Vector2(-46f, -31f);
+
+        public Vector2 OutputSlotPosition =
+            new Vector2(46f, 0f);
+
+        public Vector2 SmeltProgressPosition =
+            new Vector2(0f, 0f);
+
+        public Vector2 SmeltProgressSize =
+            new Vector2(28f, 6f);
+
+        [Header("Outline")]
+        [Range(1f, 8f)]
+        public float SlotOutlineDistance =
+            1f;
+
+        [Range(1f, 12f)]
+        public float BurnBorderThickness =
+            5f;
+
+        [Range(0f, 12f)]
+        public float BurnBorderPadding =
+            3f;
+    }
+
 
     public class InventoryUI :
         MonoBehaviour
@@ -91,6 +196,17 @@ namespace Game.Inventory.UI
 
 
         // =====================================================
+        // FURNACE APPEARANCE
+        // =====================================================
+
+        [Header("Furnace UI Appearance")]
+        [Tooltip("All furnace-specific textures, colors and layout values. The furnace uses the normal inventory slot texture as fallback.")]
+        [SerializeField]
+        private FurnaceInventoryAppearance furnaceAppearance =
+            new FurnaceInventoryAppearance();
+
+
+        // =====================================================
         // CURSOR
         // =====================================================
 
@@ -144,6 +260,37 @@ namespace Game.Inventory.UI
 
         public PlayerInventory PlayerInventory =>
             inventory;
+
+
+        public RectTransform InventoryPanelRect =>
+            inventoryPanel != null
+                ? inventoryPanel.transform as RectTransform
+                : null;
+
+
+        public Sprite StorageSlotSprite =>
+            storageSlotSprite;
+
+
+        public TMP_FontAsset InterfaceFont =>
+            cursorCount != null
+                ? cursorCount.font
+                : null;
+
+
+        public FurnaceInventoryAppearance FurnaceAppearance
+        {
+            get
+            {
+                if (furnaceAppearance == null)
+                {
+                    furnaceAppearance =
+                        new FurnaceInventoryAppearance();
+                }
+
+                return furnaceAppearance;
+            }
+        }
 
 
         public void RefreshCursorExternal()
@@ -472,6 +619,16 @@ namespace Game.Inventory.UI
             }
 
 
+            if (
+                FurnaceRuntime.Instance != null
+                &&
+                FurnaceRuntime.Instance.IsUIOpen
+            )
+            {
+                FurnaceRuntime.Instance.CloseUI();
+            }
+
+
             IsOpen =
                 false;
 
@@ -637,6 +794,24 @@ namespace Game.Inventory.UI
                 cursorStack.IsEmpty
             )
             {
+
+                // Furnace has priority while its compact panel is open.
+                // Smeltable items go to the input slot, fuel goes to the
+                // fuel slot. Items rejected by the furnace keep the normal
+                // hotbar <-> storage quick-move behaviour.
+                if (
+                    FurnaceRuntime.Instance != null
+                    &&
+                    FurnaceRuntime.Instance.IsUIOpen
+                    &&
+                    FurnaceRuntime.Instance.QuickMoveFromPlayer(
+                        slotIndex
+                    )
+                )
+                {
+                    return;
+                }
+
 
                 // Когда открыт сундук, Shift + ЛКМ по любому
                 // слоту игрока переносит предметы именно

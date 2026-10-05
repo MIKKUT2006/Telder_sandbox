@@ -1,0 +1,8 @@
+{
+  "ID": "game:coal_block",
+  "MinDepth": 50,
+  "MaxDepth": 150,
+  "Rarity": 0.05,
+  "VeinSize": 2,
+  "MinVeinSize": 1
+}

@@ -1,0 +1,7 @@
+{
+  "ID": "game:coal_block",
+  "Name": "Coal block",
+  "Texture": "coal_block",
+  "Type": "Block",
+  "MaxStack": 100
+}

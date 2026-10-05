@@ -22,5 +22,5 @@
   "CollisionShape": "Full",
   "CollisionRects": [],
   "RequiredTool": "pickaxe",
-  "RequiredToolLevel": 1
+  "RequiredToolLevel": 2
 }

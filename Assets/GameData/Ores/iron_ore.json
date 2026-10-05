@@ -2,7 +2,7 @@
   "ID": "game:iron_ore",
   "MinDepth": 20,
   "MaxDepth": 150,
-  "Rarity": 0.15,
+  "Rarity": 0.05,
   "VeinSize": 3,
   "MinVeinSize": 1
 }

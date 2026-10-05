@@ -7,6 +7,8 @@ using Game.World;
 using Game.World.Effects;
 using Game.World.Items;
 using Game.World.Structures;
+using Game.GameplaySystems.Furnace;
+using Game.GameplaySystems.Multiblock;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -72,6 +74,13 @@ public class BlockInteraction :
     private Game.PlayerStats.PlayerStats playerStats;
     private void Start()
     {
+        // Attach the multi-block controller synchronously on the player.
+        // The global bootstrap also does this, but it can run a fraction of a
+        // second later on freshly spawned players. A bed must never fall back
+        // to normal foreground placement during that window.
+        if (GetComponent<MultiBlockPlayerController>() == null)
+            gameObject.AddComponent<MultiBlockPlayerController>();
+
         if (playerCamera == null)
             playerCamera = Camera.main;
 
@@ -138,6 +147,12 @@ public class BlockInteraction :
             InventoryUI.Instance != null &&
             InventoryUI.Instance.IsOpen
         )
+        {
+            ResetMining();
+            return;
+        }
+
+        if (FurnaceRuntime.Instance != null && FurnaceRuntime.Instance.IsUIOpen)
         {
             ResetMining();
             return;
@@ -794,6 +809,27 @@ public class BlockInteraction :
 
     private bool PlaceBlock()
     {
+        // A declared multi-block is owned exclusively by
+        // MultiBlockPlayerController/FurnitureLayerManager. Never place it into
+        // the foreground tile map as a normal 1x1 block, even if another input
+        // handler missed the RMB event. This is the final safety barrier that
+        // prevents intermittent half-beds and Texture missing: bed warnings.
+        string selectedItemId =
+            inventory != null
+                ? inventory.GetSelectedItemId()
+                : null;
+
+        if (
+            !string.IsNullOrWhiteSpace(selectedItemId) &&
+            MultiBlockMetadataRegistry.TryGet(
+                selectedItemId,
+                out MultiBlockMetadata _
+            )
+        )
+        {
+            return false;
+        }
+
         if (
             !TryGetSelectedBlockID(
                 out ushort selectedBlockID
@@ -814,6 +850,12 @@ public class BlockInteraction :
 
         int x = placePosition.x;
         int y = placePosition.y;
+
+        // Every cell of a multi-block is reserved, even though only the
+        // anchor owns the Furniture visual/save entry. Do not allow a normal
+        // foreground block to be placed through the second half of a bed.
+        if (MultiBlockStore.FindCell(x, y) != null)
+            return false;
 
         ushort foregroundID =
             world.GetBlock(

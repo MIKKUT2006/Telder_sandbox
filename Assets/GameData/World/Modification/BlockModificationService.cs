@@ -78,6 +78,20 @@ namespace Game.World.Modification
             }
 
 
+            if (blockID != 0)
+            {
+                Game.World.Fluids.LiquidRuntime.RemoveLiquidAt(
+                    worldX,
+                    worldY
+                );
+            }
+
+            Game.World.Fluids.LiquidRuntime.NotifyCellChanged(
+                worldX,
+                worldY
+            );
+
+
             RefreshChunk(
                 chunk
             );

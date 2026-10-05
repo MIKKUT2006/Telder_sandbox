@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 using Game.Save;
 using Game.UI.MainMenu;
+using Game.GameplaySystems.Respawn;
 
 
 namespace Game.UI.Pause
@@ -42,6 +43,18 @@ namespace Game.UI.Pause
         }
 
 
+        public GameObject PausePanel =>
+            pausePanel;
+
+
+        public TMP_FontAsset PixelFont =>
+            pixelFont;
+
+
+        public string MainMenuSceneName =>
+            mainMenuSceneName;
+
+
         private void Start()
         {
             Time.timeScale =
@@ -72,6 +85,14 @@ namespace Game.UI.Pause
 
         private void Update()
         {
+            // Death screen owns input while the player is dead. Esc must not
+            // open/close PausePanel behind it.
+            if (DeathScreenUI.IsVisible)
+            {
+                return;
+            }
+
+
             if (
                 !Input.GetKeyDown(
                     KeyCode.Escape

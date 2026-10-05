@@ -83,5 +83,11 @@ namespace Game.World.Biomes.Caves
 
         public float ExtraCaveThreshold =
             0.79f;
+
+
+        // Optional cave-biome liquid pools.
+        // Disabled by default so old cave biome JSON keeps identical behaviour.
+        public Game.World.Biomes.CaveBiomeLiquidSettings LiquidGeneration =
+            new Game.World.Biomes.CaveBiomeLiquidSettings();
     }
 }

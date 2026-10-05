@@ -1,5 +1,6 @@
 
 using Game.Blocks;
+using Game.Fluids;
 using Game.World.Furniture;
 
 using System.Collections.Generic;
@@ -215,6 +216,34 @@ namespace Game.World.Lighting
                 worldHeight
             );
 
+        }
+
+
+        // Liquids do not block sunlight, so emissive-liquid changes can be
+        // rebuilt in a local rectangle instead of rebuilding the whole Y column.
+        public void RebuildAfterLiquidRegionChanged(
+            int minX,
+            int minY,
+            int maxX,
+            int maxY,
+            int worldHeight
+        )
+        {
+            if (!TryGetLoadedBounds(out LightBounds loadedBounds))
+                return;
+
+            LightBounds bounds =
+                new LightBounds(
+                    Mathf.Max(loadedBounds.MinX, minX - LightSpreadRadius),
+                    Mathf.Max(loadedBounds.MinY, minY - LightSpreadRadius),
+                    Mathf.Min(loadedBounds.MaxX, maxX + LightSpreadRadius),
+                    Mathf.Min(loadedBounds.MaxY, maxY + LightSpreadRadius)
+                );
+
+            if (bounds.MinX > bounds.MaxX || bounds.MinY > bounds.MaxY)
+                return;
+
+            RebuildRegion(bounds, worldHeight);
         }
 
 
@@ -606,6 +635,8 @@ namespace Game.World.Lighting
             LightBounds bounds
         )
         {
+            Game.World.World concreteWorld =
+                world as Game.World.World;
 
             for (
                 int x = bounds.MinX;
@@ -750,6 +781,33 @@ namespace Game.World.Lighting
                                 )
                             );
 
+                    }
+
+
+                    // =============================================
+                    // LIQUID EMISSION
+                    // =============================================
+
+                    if (concreteWorld != null)
+                    {
+                        ushort liquidID =
+                            concreteWorld.GetLiquidID(x, y);
+
+                        if (liquidID != 0 &&
+                            concreteWorld.GetLiquidAmount(x, y) > 0)
+                        {
+                            string fluidKey =
+                                FluidIDRegistry.GetString(liquidID);
+
+                            if (!string.IsNullOrWhiteSpace(fluidKey) &&
+                                FluidRegistry.TryGet(fluidKey, out FluidDefinition fluid) &&
+                                fluid != null)
+                            {
+                                r = Max(r, ClampLight(fluid.LightEmissionR));
+                                g = Max(g, ClampLight(fluid.LightEmissionG));
+                                b = Max(b, ClampLight(fluid.LightEmissionB));
+                            }
+                        }
                     }
 
 

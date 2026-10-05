@@ -45,7 +45,7 @@
     "MaxAlive": 8,
     "Weight": 6.0,
     "MinLight": 0.0,
-    "MaxLight": 1.0,
+    "MaxLight": 0.3,
     "MinDistanceFromPlayer": 12.0,
     "MaxDistanceFromPlayer": 38.0,
     "RequiredWidth": 1,

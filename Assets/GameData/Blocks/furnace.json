@@ -1,0 +1,53 @@
+{
+  "ID": "game:furnace",
+  "Name": "Furnace",
+  "Texture": "furnace_burning",
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+  "CollisionShape": "HalfBottom",
+  "CollisionRects": [],
+  "Material": 0,
+  "Drop": "game:furnace",
+  "DropCount": 1,
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+  "Tags": [
+    "furniture",
+    "furnace"
+  ],
+  "closed": false,
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "MultiBlock": {
+    "Width": 1,
+    "Height": 2,
+
+    "AnchorX": 0,
+    "AnchorY": 0,
+
+    "Kind": "furnace_burning",
+    "Texture": "furnace_burning",
+
+    "RequireFloor": true
+  },
+  "CraftIngredients": [
+    {
+      "ItemId": "game:stone",
+      "Count": 8
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 1,
+  "States": [
+    {
+      "State": "burning",
+      "Texture": "furnace_burning"
+    }
+  ]
+}

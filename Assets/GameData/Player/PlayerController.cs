@@ -1,425 +1,207 @@
 using UnityEngine;
 using Game.World;
 using Game.World.Collision;
+using Game.World.Fluids;
+using PlayerStatsComponent = Game.PlayerStats.PlayerStats;
 
-
-public class PlayerController :
-    MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
-
-    // =====================================================
-    // MOVEMENT
-    // =====================================================
-
     [Header("Movement")]
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float jumpForce = 8f;
+    [SerializeField] private float gravity = 25f;
+    [SerializeField] private float maxFallSpeed = 20f;
 
-    [SerializeField]
-    private float moveSpeed =
-        5f;
-
-
-    [SerializeField]
-    private float jumpForce =
-        8f;
-
-
-    [SerializeField]
-    private float gravity =
-        25f;
-
-
-    [SerializeField]
-    private float maxFallSpeed =
-        20f;
-
-
-    // =====================================================
-    // REFERENCES
-    // =====================================================
+    [Header("Swimming")]
+    [Tooltip("Horizontal speed multiplier while the body is in liquid.")]
+    [SerializeField] private float swimHorizontalMultiplier = 0.72f;
+    [Tooltip("Upward speed approached while Jump is held in liquid.")]
+    [SerializeField] private float swimUpSpeed = 4.2f;
+    [Tooltip("Slow sinking speed when Jump is not held.")]
+    [SerializeField] private float swimSinkSpeed = 1.15f;
+    [SerializeField] private float swimAcceleration = 13f;
+    [SerializeField] private float maxLiquidFallSpeed = 3.5f;
+    [Tooltip("Distance below the top of the player collider used as the breathing point.")]
+    [SerializeField] private float headProbeInset = 0.10f;
 
     private PlayerCollision playerCollision;
-
     private WorldCollision worldCollision;
-
-
-    // =====================================================
-    // STATE
-    // =====================================================
+    private PlayerStatsComponent playerStats;
 
     private float verticalVelocity;
-
     private float horizontalInput;
-
+    private bool jumpHeld;
+    private bool inLiquid;
+    private bool headSubmerged;
     private bool initialized;
 
-
-    // =====================================================
-    // START
-    // =====================================================
+    public bool IsInLiquid => inLiquid;
+    public bool IsHeadSubmerged => headSubmerged;
 
     private void Start()
     {
+        playerCollision = GetComponent<PlayerCollision>();
+        playerStats = GetComponent<PlayerStatsComponent>();
 
-        // =================================================
-        // PLAYER COLLISION
-        // =================================================
-
-        playerCollision =
-            GetComponent<PlayerCollision>();
-
-
-        if (
-            playerCollision == null
-        )
+        if (playerCollision == null)
         {
-
-            Debug.LogError(
-                "PLAYER CONTROLLER: PlayerCollision not found."
-            );
-
+            Debug.LogError("PLAYER CONTROLLER: PlayerCollision not found.");
             return;
-
         }
 
-
-        // =================================================
-        // WORLD MANAGER
-        // =================================================
-
-        WorldManager worldManager =
-            WorldManager.Instance;
-
-
-        if (
-            worldManager == null
-        )
+        WorldManager worldManager = WorldManager.Instance;
+        if (worldManager == null)
         {
-
-            Debug.LogError(
-                "PLAYER CONTROLLER: WorldManager is null."
-            );
-
+            Debug.LogError("PLAYER CONTROLLER: WorldManager is null.");
             return;
-
         }
 
-
-        // =================================================
-        // WORLD COLLISION
-        // =================================================
-
-        worldCollision =
-            worldManager.GetWorldCollision();
-
-
-        if (
-            worldCollision == null
-        )
+        worldCollision = worldManager.GetWorldCollision();
+        if (worldCollision == null)
         {
-
-            Debug.LogError(
-                "PLAYER CONTROLLER: WorldCollision is null."
-            );
-
+            Debug.LogError("PLAYER CONTROLLER: WorldCollision is null.");
             return;
-
         }
 
-
-        // =================================================
-        // INITIALIZE COLLISION
-        // =================================================
-
-        playerCollision.Initialize(
-            worldCollision
-        );
-
-
-        // =================================================
-        // INITIAL GROUND CHECK
-        // =================================================
-
+        playerCollision.Initialize(worldCollision);
         playerCollision.ForceGroundCheck();
+        initialized = true;
 
-
-        initialized =
-            true;
-
-
-        Debug.Log(
-            "PLAYER CONTROLLER: INITIALIZED."
-        );
-
+        Debug.Log("PLAYER CONTROLLER: INITIALIZED.");
     }
-
-
-    // =====================================================
-    // UPDATE
-    // =====================================================
 
     private void Update()
     {
-
-        if (
-            !initialized
-        )
-        {
+        if (!initialized)
             return;
-        }
 
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        jumpHeld = Input.GetKey(KeyCode.Space);
 
-        // =================================================
-        // HORIZONTAL INPUT
-        // =================================================
-
-        horizontalInput =
-            Input.GetAxisRaw(
-                "Horizontal"
-            );
-
-
-        // =================================================
-        // JUMP
-        // =================================================
-
-        if (
-            Input.GetKeyDown(
-                KeyCode.Space
-            )
-        )
-        {
-
+        if (Input.GetKeyDown(KeyCode.Space))
             Jump();
-
-        }
-
     }
-
-
-    // =====================================================
-    // FIXED UPDATE
-    // =====================================================
 
     private void FixedUpdate()
     {
-
-        if (
-            !initialized
-        )
-        {
+        if (!initialized)
             return;
-        }
 
+        UpdateLiquidContact();
 
-        // =================================================
-        // HORIZONTAL MOVEMENT
-        // =================================================
-
+        float speedMultiplier = inLiquid ? swimHorizontalMultiplier : 1f;
         float horizontalMovement =
-            horizontalInput *
-            moveSpeed *
-            Time.fixedDeltaTime;
-
-
-        // =================================================
-        // GRAVITY
-        // =================================================
+            horizontalInput * moveSpeed * speedMultiplier * Time.fixedDeltaTime;
 
         ApplyGravity();
 
-
-        // =================================================
-        // TOTAL MOVEMENT
-        // =================================================
-
-        Vector2 movement =
-            new Vector2(
-                horizontalMovement,
-                verticalVelocity *
-                Time.fixedDeltaTime
-            );
-
-
-        // =================================================
-        // MOVE
-        // =================================================
-
-        playerCollision.Move(
-            movement
+        Vector2 movement = new Vector2(
+            horizontalMovement,
+            verticalVelocity * Time.fixedDeltaTime
         );
 
+        playerCollision.Move(movement);
 
-        // =================================================
-        // STOP VERTICAL VELOCITY
-        // =================================================
-
-        if (
-            playerCollision.IsGrounded &&
-            verticalVelocity < 0f
-        )
-        {
-
-            verticalVelocity =
-                0f;
-
-        }
-
+        if (!inLiquid && playerCollision.IsGrounded && verticalVelocity < 0f)
+            verticalVelocity = 0f;
     }
 
+    private void UpdateLiquidContact()
+    {
+        Vector2 size = playerCollision.GetColliderSize();
+        float halfHeight = size.y * 0.5f;
 
-    // =====================================================
-    // GRAVITY
-    // =====================================================
+        // Body probes: center and a point near the legs. This allows the player to
+        // begin swimming once a meaningful part of the body is underwater while
+        // ignoring tiny 1/8-flow layers touching only the feet.
+        Vector2 centerProbe = new Vector2(transform.position.x, transform.position.y);
+        Vector2 lowerProbe = new Vector2(
+            transform.position.x,
+            transform.position.y - halfHeight * 0.48f
+        );
+
+        inLiquid =
+            LiquidRuntime.IsPointSubmerged(centerProbe) ||
+            LiquidRuntime.IsPointSubmerged(lowerProbe);
+
+        Vector2 headProbe = new Vector2(
+            transform.position.x,
+            transform.position.y + halfHeight - Mathf.Max(0.02f, headProbeInset)
+        );
+
+        headSubmerged = LiquidRuntime.IsPointSubmerged(headProbe);
+
+        if (playerStats != null)
+            playerStats.SetHeadSubmerged(headSubmerged);
+    }
 
     private void ApplyGravity()
     {
-
-        if (
-            playerCollision.IsGrounded
-        )
+        if (inLiquid)
         {
+            float targetVerticalSpeed = jumpHeld
+                ? swimUpSpeed
+                : -swimSinkSpeed;
 
-            if (
-                verticalVelocity <
-                0f
-            )
-            {
+            verticalVelocity = Mathf.MoveTowards(
+                verticalVelocity,
+                targetVerticalSpeed,
+                Mathf.Max(0.1f, swimAcceleration) * Time.fixedDeltaTime
+            );
 
-                verticalVelocity =
-                    0f;
-
-            }
-
-
+            verticalVelocity = Mathf.Max(verticalVelocity, -maxLiquidFallSpeed);
             return;
-
         }
 
-
-        verticalVelocity -=
-            gravity *
-            Time.fixedDeltaTime;
-
-
-        if (
-            verticalVelocity <
-            -maxFallSpeed
-        )
+        if (playerCollision.IsGrounded)
         {
-
-            verticalVelocity =
-                -maxFallSpeed;
-
+            if (verticalVelocity < 0f)
+                verticalVelocity = 0f;
+            return;
         }
 
+        verticalVelocity -= gravity * Time.fixedDeltaTime;
+        if (verticalVelocity < -maxFallSpeed)
+            verticalVelocity = -maxFallSpeed;
     }
-
-
-    // =====================================================
-    // JUMP
-    // =====================================================
 
     private void Jump()
     {
-
-        if (
-            !playerCollision.IsGrounded
-        )
+        if (inLiquid)
         {
+            verticalVelocity = Mathf.Max(verticalVelocity, swimUpSpeed * 0.65f);
             return;
         }
 
+        if (!playerCollision.IsGrounded)
+            return;
 
-        verticalVelocity =
-            jumpForce;
-
+        verticalVelocity = jumpForce;
     }
-
-
-    // =====================================================
-    // WORLD BLOCK CHANGED
-    // =====================================================
 
     public void OnWorldBlockChanged()
     {
-
-        if (
-            !initialized ||
-            playerCollision == null
-        )
-        {
+        if (!initialized || playerCollision == null)
             return;
-        }
-
-
-        // =================================================
-        // ÎÁÍÎÂËßÅÌ ÑÎÑÒÎßÍÈÅ ÇÅÌËÈ
-        // =================================================
 
         playerCollision.RefreshAfterWorldChange();
 
-
-        // =================================================
-        // ÅÑËÈ ÇÅÌËÈ ÍÅÒ
-        // =================================================
-
-        if (
-            !playerCollision.IsGrounded
-        )
-        {
-
-            // Íå îñòàâëÿåì èãðîêà
-            // ñ îòðèöàòåëüíîé ñêîðîñòüþ,
-            // êîòîðàÿ ìîãëà áûòü ñáðîøåíà
-            // äî èçìåíåíèÿ áëîêà.
-
-            if (
-                verticalVelocity >=
-                0f
-            )
-            {
-
-                verticalVelocity =
-                    -0.01f;
-
-            }
-
-        }
-
+        if (!playerCollision.IsGrounded && verticalVelocity >= 0f)
+            verticalVelocity = -0.01f;
     }
-
-
-    // =====================================================
-    // GET PLAYER COLLISION
-    // =====================================================
 
     public PlayerCollision GetPlayerCollision()
     {
-
-        return
-            playerCollision;
-
+        return playerCollision;
     }
-
-
-    // =====================================================
-    // GET VERTICAL VELOCITY
-    // =====================================================
 
     public float GetVerticalVelocity()
     {
-
-        return
-            verticalVelocity;
-
+        return verticalVelocity;
     }
-    // =====================================================
-    // GET HORIZONTAL INPUT
-    // =====================================================
 
     public float GetHorizontalInput()
     {
         return horizontalInput;
     }
-
 }

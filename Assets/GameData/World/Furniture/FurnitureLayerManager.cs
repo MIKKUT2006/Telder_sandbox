@@ -11,6 +11,9 @@ using Game.Inventory.UI;
 using Game.Save;
 using Game.World.Dimensions;
 using Game.World.Items;
+using Game.GameplaySystems.Multiblock;
+using Game.GameplaySystems.Respawn;
+using Game.World.Rendering;
 
 
 namespace Game.World.Furniture
@@ -98,6 +101,21 @@ namespace Game.World.Furniture
                 long,
                 GameObject
             >();
+
+
+        private readonly HashSet<long> dynamicVisualKeys =
+            new HashSet<long>();
+
+
+        private readonly Dictionary<long, string> dynamicVisualTextureKeys =
+            new Dictionary<long, string>();
+
+
+        private readonly List<long> dynamicVisualScratch =
+            new List<long>(64);
+
+
+        private float nextDynamicVisualUpdate;
 
 
         // Active procedural furniture exists only while its chunk is loaded.
@@ -394,6 +412,14 @@ namespace Game.World.Furniture
                 return false;
 
             }
+
+
+            BlockVisualStateRuntime.ClearState(
+                x,
+                y,
+                BlockVisualLayer.Furniture,
+                false
+            );
 
 
             FurnitureSaveEntry entry =
@@ -749,9 +775,60 @@ namespace Game.World.Furniture
             }
 
 
+            MultiBlockRecord multiBlockRecord =
+                MultiBlockStore.FindAnchor(
+                    x,
+                    y
+                );
+
+
             data.Remove(
                 key
             );
+
+
+            if (
+                multiBlockRecord != null &&
+                (
+                    string.Equals(
+                        multiBlockRecord.Kind,
+                        "bed",
+                        StringComparison.OrdinalIgnoreCase
+                    ) ||
+                    MultiBlockMetadataRegistry.HasTag(
+                        multiBlockRecord.BlockId,
+                        "bed"
+                    )
+                )
+            )
+            {
+                RespawnPointService.InvalidateIfBedAnchor(
+                    x,
+                    y,
+                    entry.BlockId
+                );
+            }
+
+
+            // Keep multiblock occupancy persistence in lock-step with the real
+            // furniture anchor. This fixes ghost bed cells surviving a restart.
+            MultiBlockStore.RemoveAnchorAt(
+                x,
+                y,
+                entry.BlockId
+            );
+
+
+            BlockVisualStateRuntime.ClearState(
+                x,
+                y,
+                BlockVisualLayer.Furniture,
+                false
+            );
+
+
+            dynamicVisualKeys.Remove(key);
+            dynamicVisualTextureKeys.Remove(key);
 
 
             if (
@@ -980,6 +1057,10 @@ namespace Game.World.Furniture
                 );
 
 
+            dynamicVisualKeys.Remove(key);
+            dynamicVisualTextureKeys.Remove(key);
+
+
             if (
                 visuals.TryGetValue(
                     key,
@@ -1040,29 +1121,74 @@ namespace Game.World.Furniture
                 1;
 
 
-            spriteRenderer.sprite =
-                ItemIconProvider.GetIcon(
-                    entry.BlockId
+            BlockDefinition definition = null;
+            bool hasDefinition =
+                TryGetDefinition(
+                    entry.X,
+                    entry.Y,
+                    out definition
                 );
+
+
+            Sprite visualSprite = null;
+
+            if (hasDefinition)
+            {
+                visualSprite =
+                    MultiBlockVisualProvider.GetSprite(
+                        entry.BlockId,
+                        definition
+                    );
+
+                if (visualSprite == null)
+                {
+                    visualSprite =
+                        BlockVisualResolver.ResolveSprite(
+                            definition,
+                            entry.X,
+                            entry.Y,
+                            BlockVisualLayer.Furniture
+                        );
+                }
+
+                if (BlockVisualResolver.IsDynamic(definition))
+                {
+                    dynamicVisualKeys.Add(key);
+                    dynamicVisualTextureKeys[key] =
+                        BlockVisualResolver.ResolveTextureName(
+                            definition,
+                            entry.X,
+                            entry.Y,
+                            BlockVisualLayer.Furniture
+                        );
+                }
+            }
+
+
+            spriteRenderer.sprite =
+                visualSprite != null
+                    ? visualSprite
+                    : ItemIconProvider.GetIcon(
+                        entry.BlockId
+                    );
 
 
             spriteRenderer.color =
                 Color.white;
 
 
-            if (
-                TryGetDefinition(
-                    entry.X,
-                    entry.Y,
-                    out BlockDefinition definition
-                )
-            )
+            if (hasDefinition)
             {
+                Vector2 multiBlockOffset =
+                    MultiBlockVisualProvider.GetAnchorToCenterOffset(
+                        definition
+                    );
+
 
                 gameObject.transform.position +=
                     new Vector3(
-                        definition.VisualOffsetX,
-                        definition.VisualOffsetY,
+                        multiBlockOffset.x + definition.VisualOffsetX,
+                        multiBlockOffset.y + definition.VisualOffsetY,
                         0f
                     );
 
@@ -1108,6 +1234,121 @@ namespace Game.World.Furniture
             ] =
                 gameObject;
 
+        }
+
+
+        public void RefreshVisual(
+            int x,
+            int y
+        )
+        {
+            long key = Pack(x, y);
+
+            if (!data.TryGetValue(key, out FurnitureSaveEntry entry))
+                return;
+
+            if (!visuals.TryGetValue(key, out GameObject visual) || visual == null)
+                return;
+
+            if (!TryGetDefinition(x, y, out BlockDefinition definition) || definition == null)
+                return;
+
+            // Full-size multi-block visuals are handled by their dedicated provider.
+            Sprite sprite = MultiBlockVisualProvider.GetSprite(entry.BlockId, definition);
+            if (sprite == null)
+            {
+                sprite = BlockVisualResolver.ResolveSprite(
+                    definition,
+                    x,
+                    y,
+                    BlockVisualLayer.Furniture
+                );
+            }
+
+            SpriteRenderer renderer = visual.GetComponent<SpriteRenderer>();
+            if (renderer != null && sprite != null)
+                renderer.sprite = sprite;
+
+            if (BlockVisualResolver.IsDynamic(definition))
+            {
+                dynamicVisualKeys.Add(key);
+                dynamicVisualTextureKeys[key] =
+                    BlockVisualResolver.ResolveTextureName(
+                        definition,
+                        x,
+                        y,
+                        BlockVisualLayer.Furniture
+                    );
+            }
+            else
+            {
+                dynamicVisualKeys.Remove(key);
+                dynamicVisualTextureKeys.Remove(key);
+            }
+        }
+
+
+        private void Update()
+        {
+            if (dynamicVisualKeys.Count == 0 || Time.time < nextDynamicVisualUpdate)
+                return;
+
+            nextDynamicVisualUpdate = Time.time + 1f / 60f;
+
+            dynamicVisualScratch.Clear();
+            foreach (long key in dynamicVisualKeys)
+                dynamicVisualScratch.Add(key);
+
+            for (int i = 0; i < dynamicVisualScratch.Count; i++)
+            {
+                long key = dynamicVisualScratch[i];
+
+                if (
+                    !data.TryGetValue(key, out FurnitureSaveEntry entry) ||
+                    !visuals.TryGetValue(key, out GameObject visual) ||
+                    visual == null ||
+                    !TryGetDefinition(entry.X, entry.Y, out BlockDefinition definition) ||
+                    definition == null
+                )
+                {
+                    dynamicVisualKeys.Remove(key);
+                    dynamicVisualTextureKeys.Remove(key);
+                    continue;
+                }
+
+                if (!BlockVisualResolver.IsDynamic(definition))
+                {
+                    dynamicVisualKeys.Remove(key);
+                    dynamicVisualTextureKeys.Remove(key);
+                    continue;
+                }
+
+                string currentKey =
+                    BlockVisualResolver.ResolveTextureName(
+                        definition,
+                        entry.X,
+                        entry.Y,
+                        BlockVisualLayer.Furniture
+                    );
+
+                dynamicVisualTextureKeys.TryGetValue(key, out string previousKey);
+                if (string.Equals(previousKey, currentKey, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                Sprite sprite =
+                    BlockVisualResolver.ResolveSprite(
+                        definition,
+                        entry.X,
+                        entry.Y,
+                        BlockVisualLayer.Furniture
+                    );
+
+                SpriteRenderer renderer = visual.GetComponent<SpriteRenderer>();
+                if (renderer != null && sprite != null)
+                    renderer.sprite = sprite;
+
+                dynamicVisualTextureKeys[key] = currentKey;
+            }
         }
 
 
@@ -1632,6 +1873,9 @@ namespace Game.World.Furniture
 
             visuals.Clear();
 
+            dynamicVisualKeys.Clear();
+            dynamicVisualTextureKeys.Clear();
+
 
             string file =
                 GetFile();
@@ -1765,6 +2009,10 @@ namespace Game.World.Furniture
                     );
 
                 }
+
+                // Remove occupancy records whose real furniture anchor no longer
+                // exists. Older builds could leave these behind after a bed was broken.
+                MultiBlockStore.PruneAgainstFurniture(this);
 
             }
             catch (

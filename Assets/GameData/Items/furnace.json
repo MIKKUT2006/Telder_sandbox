@@ -1,0 +1,7 @@
+{
+  "ID": "game:furnace",
+  "Name": "Furnace",
+  "Texture": "furnace_burning",
+  "Type": "Block",
+  "MaxStack": 100
+}

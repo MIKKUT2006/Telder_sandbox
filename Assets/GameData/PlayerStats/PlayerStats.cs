@@ -26,29 +26,36 @@ namespace Game.PlayerStats
         [SerializeField] private float starvationDamageInterval = 5f;
 
         [Header("Regeneration")]
-        [SerializeField]
-        private float regenerationHungerThreshold = 70f;
+        [SerializeField] private float regenerationHungerThreshold = 70f;
+        [SerializeField] private float regenerationHealthAmount = 10f;
+        [SerializeField] private float regenerationInterval = 7f;
+        [SerializeField] private float hungerCostPer10RegeneratedHealth = 5f;
 
-        [SerializeField]
-        private float regenerationHealthAmount = 10f;
-
-        [SerializeField]
-        private float regenerationInterval = 7f;
-
-        [SerializeField]
-        private float hungerCostPer10RegeneratedHealth = 5f;
+        [Header("Breathing underwater")]
+        [Tooltip("How many seconds the player can stay fully submerged before drowning.")]
+        [SerializeField] private float maxAirSeconds = 25f;
+        [Tooltip("How quickly air returns after the player's head leaves liquid, in seconds of air per real second.")]
+        [SerializeField] private float airRecoveryPerSecond = 8f;
+        [SerializeField] private float drowningDamage = 5f;
+        [SerializeField] private float drowningDamageInterval = 1f;
 
         private float health;
         private float hunger;
+        private float airSeconds;
 
         private float passiveHungerTimer;
         private float starvationTimer;
         private float regenerationTimer;
+        private float drowningTimer;
+        private bool headSubmerged;
 
         public float Health => health;
         public float Hunger => hunger;
         public float MaxHealth => maxHealth;
         public float MaxHunger => maxHunger;
+        public float AirSeconds => airSeconds;
+        public float MaxAirSeconds => maxAirSeconds;
+        public bool IsHeadSubmerged => headSubmerged;
 
         public float HealthNormalized =>
             maxHealth <= 0f ? 0f : Mathf.Clamp01(health / maxHealth);
@@ -56,10 +63,17 @@ namespace Game.PlayerStats
         public float HungerNormalized =>
             maxHunger <= 0f ? 0f : Mathf.Clamp01(hunger / maxHunger);
 
+        public float AirNormalized =>
+            maxAirSeconds <= 0f ? 0f : Mathf.Clamp01(airSeconds / maxAirSeconds);
+
+        public bool ShouldShowAir =>
+            headSubmerged || airSeconds < maxAirSeconds - 0.001f;
+
         public bool IsDead => health <= 0f;
 
         public event Action<float, float> HealthChanged;
         public event Action<float, float> HungerChanged;
+        public event Action<float, float, bool> AirChanged;
         public event Action<float> Damaged;
         public event Action<float> Healed;
         public event Action Died;
@@ -68,9 +82,11 @@ namespace Game.PlayerStats
         {
             maxHealth = Mathf.Max(1f, maxHealth);
             maxHunger = Mathf.Max(1f, maxHunger);
+            maxAirSeconds = Mathf.Max(1f, maxAirSeconds);
 
             health = Mathf.Clamp(startHealth, 0f, maxHealth);
             hunger = Mathf.Clamp(startHunger, 0f, maxHunger);
+            airSeconds = maxAirSeconds;
         }
 
         private void Start()
@@ -83,9 +99,65 @@ namespace Game.PlayerStats
             if (IsDead)
                 return;
 
+            UpdateBreathing();
             UpdatePassiveHunger();
             UpdateStarvation();
             UpdateRegeneration();
+        }
+
+        private void UpdateBreathing()
+        {
+            float before = airSeconds;
+            bool wasVisible = ShouldShowAir;
+
+            if (headSubmerged)
+            {
+                airSeconds = Mathf.Max(0f, airSeconds - Time.deltaTime);
+
+                if (airSeconds <= 0f)
+                {
+                    // First drowning hit happens exactly when the 25-second air
+                    // reserve reaches zero; later hits use the configured interval.
+                    if (before > 0f)
+                    {
+                        drowningTimer = 0f;
+                        TakeDamage(drowningDamage);
+                    }
+                    else
+                    {
+                        float interval = Mathf.Max(0.05f, drowningDamageInterval);
+                        drowningTimer += Time.deltaTime;
+
+                        while (drowningTimer >= interval)
+                        {
+                            drowningTimer -= interval;
+                            TakeDamage(drowningDamage);
+
+                            if (IsDead)
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    drowningTimer = 0f;
+                }
+            }
+            else
+            {
+                drowningTimer = 0f;
+
+                if (airSeconds < maxAirSeconds)
+                {
+                    airSeconds = Mathf.Min(
+                        maxAirSeconds,
+                        airSeconds + Mathf.Max(0.01f, airRecoveryPerSecond) * Time.deltaTime
+                    );
+                }
+            }
+
+            if (!Mathf.Approximately(before, airSeconds) || wasVisible != ShouldShowAir)
+                RaiseAirChanged();
         }
 
         private void UpdatePassiveHunger()
@@ -127,8 +199,7 @@ namespace Game.PlayerStats
 
         private void UpdateRegeneration()
         {
-            if (hunger <= regenerationHungerThreshold ||
-                health >= maxHealth)
+            if (hunger <= regenerationHungerThreshold || health >= maxHealth)
             {
                 regenerationTimer = 0f;
                 return;
@@ -143,48 +214,37 @@ namespace Game.PlayerStats
             {
                 regenerationTimer -= regenerationInterval;
 
-                float healthBefore =
-                    health;
-
-                Heal(
-                    regenerationHealthAmount
-                );
-
-                float actuallyHealed =
-                    health -
-                    healthBefore;
-
+                float healthBefore = health;
+                Heal(regenerationHealthAmount);
+                float actuallyHealed = health - healthBefore;
 
                 if (actuallyHealed > 0f)
                 {
-                    // 10 HP = 5 hunger by default.
                     float hungerCost =
-                        actuallyHealed /
-                        10f *
-                        hungerCostPer10RegeneratedHealth;
-
-                    SpendHunger(
-                        hungerCost
-                    );
+                        actuallyHealed / 10f * hungerCostPer10RegeneratedHealth;
+                    SpendHunger(hungerCost);
                 }
 
-
-                if (health >= maxHealth)
-                {
-                    regenerationTimer = 0f;
-                    break;
-                }
-
-
-                // Regeneration must immediately stop
-                // if its own hunger cost pushed hunger
-                // down to the regeneration threshold.
-                if (hunger <= regenerationHungerThreshold)
+                if (health >= maxHealth || hunger <= regenerationHungerThreshold)
                 {
                     regenerationTimer = 0f;
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Called by PlayerController. Drowning only starts when the head point is
+        /// below the actual liquid surface, not merely when the player's feet touch water.
+        /// </summary>
+        public void SetHeadSubmerged(bool submerged)
+        {
+            if (headSubmerged == submerged)
+                return;
+
+            headSubmerged = submerged;
+            drowningTimer = 0f;
+            RaiseAirChanged();
         }
 
         public void TakeDamage(float amount)
@@ -194,7 +254,6 @@ namespace Game.PlayerStats
 
             float oldHealth = health;
             health = Mathf.Clamp(health - amount, 0f, maxHealth);
-
             float realDamage = oldHealth - health;
 
             if (realDamage <= 0f)
@@ -214,7 +273,6 @@ namespace Game.PlayerStats
 
             float oldHealth = health;
             health = Mathf.Clamp(health + amount, 0f, maxHealth);
-
             float realHeal = health - oldHealth;
 
             if (realHeal <= 0f)
@@ -226,18 +284,14 @@ namespace Game.PlayerStats
 
         public void SpendHunger(float amount)
         {
-            if (amount <= 0f)
-                return;
-
-            SetHunger(hunger - amount);
+            if (amount > 0f)
+                SetHunger(hunger - amount);
         }
 
         public void RestoreHunger(float amount)
         {
-            if (amount <= 0f)
-                return;
-
-            SetHunger(hunger + amount);
+            if (amount > 0f)
+                SetHunger(hunger + amount);
         }
 
         public void NotifyBlockBroken()
@@ -280,18 +334,27 @@ namespace Game.PlayerStats
         {
             health = Mathf.Clamp(savedHealth, 0f, maxHealth);
             hunger = Mathf.Clamp(savedHunger, 0f, maxHunger);
+            airSeconds = maxAirSeconds;
+            headSubmerged = false;
 
             passiveHungerTimer = 0f;
             starvationTimer = 0f;
             regenerationTimer = 0f;
+            drowningTimer = 0f;
 
             RaiseAllChanged();
+        }
+
+        private void RaiseAirChanged()
+        {
+            AirChanged?.Invoke(airSeconds, maxAirSeconds, ShouldShowAir);
         }
 
         private void RaiseAllChanged()
         {
             HealthChanged?.Invoke(health, maxHealth);
             HungerChanged?.Invoke(hunger, maxHunger);
+            RaiseAirChanged();
         }
     }
 }

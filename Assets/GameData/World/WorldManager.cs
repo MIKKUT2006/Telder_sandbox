@@ -9,6 +9,8 @@ using Game.World.Rendering;
 using System.Collections;
 using Game.World.Effects;
 using Game.Save;
+using Game.GameplaySystems;
+using Game.GameplaySystems.Furnace;
 using Game.World.Weather;
 using UnityEngine;
 
@@ -81,6 +83,13 @@ namespace Game.World
         private void Awake()
         {
             Instance = this;
+
+            BlockVisualStateRuntime.SetContext(
+                GameplayContextKey.Get()
+            );
+
+            BlockVisualStateRuntime.StateChanged +=
+                HandleBlockVisualStateChanged;
 
 
             if (GetComponent<Game.Entities.Spawn.EntitySpawnManager>() == null)
@@ -288,7 +297,39 @@ namespace Game.World
             if (renderer != null)
             {
                 renderer.UpdateDirtyLighting(6);
+                renderer.UpdateAnimatedVisuals();
             }
+        }
+
+
+        private void OnDestroy()
+        {
+            BlockVisualStateRuntime.StateChanged -=
+                HandleBlockVisualStateChanged;
+
+            if (Instance == this)
+                Instance = null;
+        }
+
+
+        private void HandleBlockVisualStateChanged(
+            int worldX,
+            int worldY,
+            BlockVisualLayer layer,
+            string state)
+        {
+            if (layer == BlockVisualLayer.Furniture)
+            {
+                if (Game.World.Furniture.FurnitureLayerManager.Instance != null)
+                {
+                    Game.World.Furniture.FurnitureLayerManager.Instance
+                        .RefreshVisual(worldX, worldY);
+                }
+                return;
+            }
+
+            if (renderer != null)
+                renderer.RefreshVisualAt(worldX, worldY, layer);
         }
 
 
@@ -780,6 +821,29 @@ namespace Game.World
 
 
         // =====================================================
+        // DEFAULT RESPAWN POINT
+        // =====================================================
+
+        public bool TryGetDefaultSpawnFeetPosition(
+            out Vector2 feetPosition
+        )
+        {
+            feetPosition = Vector2.zero;
+
+            const int spawnX = 0;
+            if (!TryFindSurface(spawnX, out int surfaceY))
+                return false;
+
+            feetPosition = new Vector2(
+                spawnX + 0.5f,
+                surfaceY + 1f
+            );
+
+            return true;
+        }
+
+
+        // =====================================================
         // SET FOREGROUND BLOCK
         // =====================================================
 
@@ -872,6 +936,28 @@ namespace Game.World
                 return false;
             }
 
+            BlockVisualStateRuntime.ClearState(
+                worldX,
+                worldY,
+                BlockVisualLayer.Foreground,
+                false
+            );
+
+            // Central removal hook: explosions, falling-block replacements,
+            // structure edits and normal mining all pass through SetBlock().
+            if (
+                oldBlockID != 0 &&
+                oldBlockID != blockID &&
+                FurnaceRuntime.Instance != null
+            )
+            {
+                FurnaceRuntime.Instance.NotifyForegroundBlockRemoved(
+                    worldX,
+                    worldY,
+                    oldBlockID
+                );
+            }
+
             // =============================================
             // BREAK DEBRIS
             // =============================================
@@ -925,7 +1011,7 @@ namespace Game.World
             else if (oldBlockID == 0 && blockID != 0)
             {
                 try { Game.Achievements.AchievementRuntime.NotifyBlockPlace(Game.Content.BlockIDRegistry.GetContentID(blockID).ToString()); } catch { }
-                world.SetLiquid(worldX, worldY, 0, 0);
+                Game.World.Fluids.LiquidRuntime.RemoveLiquidAt(worldX, worldY);
             }
             Game.World.Fluids.LiquidRuntime.NotifyCellChanged(worldX, worldY);
             // [TELDER-V34-FALLING-NOTIFY]
@@ -984,11 +1070,24 @@ namespace Game.World
             // �� ����� ����� ����������� �������� world data.
             if (chunk == null)
             {
-                return world.SetBackground(
-                    worldX,
-                    worldY,
-                    blockID
-                );
+                bool changedWithoutChunk =
+                    world.SetBackground(
+                        worldX,
+                        worldY,
+                        blockID
+                    );
+
+                if (changedWithoutChunk)
+                {
+                    BlockVisualStateRuntime.ClearState(
+                        worldX,
+                        worldY,
+                        BlockVisualLayer.Background,
+                        false
+                    );
+                }
+
+                return changedWithoutChunk;
             }
 
 
@@ -1047,11 +1146,17 @@ namespace Game.World
             if (!changed)
             {
                 return false;
+            }
+
+            BlockVisualStateRuntime.ClearState(
+                worldX,
+                worldY,
+                BlockVisualLayer.Background,
+                false
+            );
 
             // [STRUCTURE-LAYERS-CLEAR-BACKGROUND-TRANSFORM-V1]
             Game.BlockTransforms.BackgroundBlockTransformRegistry.Clear(worldX, worldY);
-
-            }
 
 
             // =====================================================

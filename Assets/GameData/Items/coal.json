@@ -1,0 +1,12 @@
+{
+  "ID": "game:coal",
+  "Name": "Coal",
+  "Texture": "coal",
+  "Type": "Material",
+  "MaxStack": 100,
+  "Tags": [
+    "fuel",
+    "burnable"
+  ],
+  "FuelBurnTime": 20.0
+}

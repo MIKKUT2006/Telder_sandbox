@@ -9,7 +9,7 @@
   "BlocksLight": true,
   "LightLevel": 0,
   "DropCount": 1,
-  "Drop": "game:coal_ore",
+  "Drop": "game:coal",
   "Tags": [],
 
   "LightOpacity": 15,

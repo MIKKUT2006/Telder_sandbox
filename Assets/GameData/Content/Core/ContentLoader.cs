@@ -88,19 +88,46 @@ namespace Game.Content
 
         private static void LoadFluids()
         {
-            RegisterFluid("game:water", "Water", "#3C8DFFB8", 5f, 1f, 0f, false);
-            RegisterFluid("game:lava", "Lava", "#FF6A1AD9", 2f, 3f, 10f, true);
-            RegisterFluid("game:acid", "Acid", "#77FF39C8", 4f, 1.4f, 7f, false);
-            RegisterFluid("game:ice_water", "Ice Water", "#9DE9FFE0", 4f, 1.25f, 3f, false);
+            RegisterFluid("game:water", "Water", "#3C8DFFB8", 3f, 1f, 0f, false, 8, 10, true, 0, 0, 0);
+            RegisterFluid("game:lava", "Lava", "#FF6A1AD9", 3f, 3f, 10f, true, 8, 10, false, 15, 8, 2);
+            RegisterFluid("game:acid", "Acid", "#77FF39C8", 3f, 1.4f, 7f, false, 8, 10, false, 0, 0, 0);
+            RegisterFluid("game:ice_water", "Ice Water", "#9DE9FFE0", 3f, 1.25f, 3f, false, 8, 10, true, 0, 0, 0);
             FluidIDRegistry.RegisterLoadedFluids();
         }
 
-        private static void RegisterFluid(string id, string name, string color, float speed, float viscosity, float damage, bool hot)
+        private static void RegisterFluid(
+            string id,
+            string name,
+            string color,
+            float speed,
+            float viscosity,
+            float damage,
+            bool hot,
+            int horizontalFlowDistance,
+            int waterfallHorizontalFlowDistance,
+            bool waterfallFoam,
+            byte emissionR,
+            byte emissionG,
+            byte emissionB
+        )
         {
             FluidRegistry.Register(new FluidDefinition
             {
-                ID = ContentID.Parse(id), Name = name, Color = color, FlowSpeed = speed,
-                Viscosity = viscosity, Damage = damage, DamageInterval = 1f, IsHot = hot, IsLiquid = true
+                ID = ContentID.Parse(id),
+                Name = name,
+                Color = color,
+                FlowSpeed = speed,
+                Viscosity = viscosity,
+                Damage = damage,
+                DamageInterval = 1f,
+                HorizontalFlowDistance = horizontalFlowDistance,
+                WaterfallHorizontalFlowDistance = waterfallHorizontalFlowDistance,
+                WaterfallFoam = waterfallFoam,
+                LightEmissionR = emissionR,
+                LightEmissionG = emissionG,
+                LightEmissionB = emissionB,
+                IsHot = hot,
+                IsLiquid = true
             });
         }
 
