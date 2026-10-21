@@ -1,0 +1,32 @@
+{
+  "ID": "game:wooden_hatch",
+  "Name": "Wooden Hatch",
+  "Texture": "wooden_hatch",
+
+  "Behavior": "Hatch",
+
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+
+  "Solid": true,
+  "Transparent": true,
+  "BlocksLight": false,
+  "LightOpacity": 0,
+
+  "CollisionShape": "HalfBottom",
+  "CollisionRects": [],
+
+  "Drop": "game:wooden_hatch",
+  "DropCount": 1,
+
+  "Tags": [
+    "hatch"
+  ],
+
+  "States": [
+    {
+      "State": "open",
+      "Texture": "wooden_hatch_open"
+    }
+  ]
+}

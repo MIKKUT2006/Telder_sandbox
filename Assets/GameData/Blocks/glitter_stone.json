@@ -1,0 +1,28 @@
+{
+  "ID": "game:glitter_stone",
+  "Name": "glitter stone",
+  "Texture": "glitter_stone",
+  "Hardness": 0.25,
+  "ExplosionResistance": 0.25,
+  "Solid": false,
+  "Transparent": true,
+  "BlocksLight": false,
+  "Material": 0,
+  "Drop": "game:glitter_stone",
+  "DropCount": 1,
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "pickaxe",
+  "Tags": [
+    "light"
+  ],
+  "closed": false,
+  "LightOpacity": 0,
+  "LightEmissionR": 6,
+  "LightEmissionG": 8,
+  "LightEmissionB": 8,
+  
+  "CollisionShape": "Full",
+  "CollisionRects": []
+  
+}

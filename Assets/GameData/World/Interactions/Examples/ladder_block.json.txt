@@ -1,0 +1,25 @@
+{
+  "ID": "game:wooden_ladder",
+  "Name": "Wooden Ladder",
+  "Texture": "wooden_ladder",
+
+  "Behavior": "Ladder",
+
+  "Hardness": 0.6,
+  "ExplosionResistance": 0.5,
+
+  "Solid": false,
+  "Transparent": true,
+  "BlocksLight": false,
+  "LightOpacity": 0,
+
+  "CollisionShape": "None",
+  "CollisionRects": [],
+
+  "Drop": "game:wooden_ladder",
+  "DropCount": 1,
+
+  "Tags": [
+    "ladder"
+  ]
+}

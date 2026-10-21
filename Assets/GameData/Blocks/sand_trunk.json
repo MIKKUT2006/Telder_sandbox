@@ -1,0 +1,25 @@
+{
+  "ID": "game:sand_trunk",
+
+  "Name": "Sand trunk",
+
+  "Texture": "sand_trunk",
+
+  "Hardness": 1,
+  "Tags": [
+    "wood"
+  ],
+  "Solid": true,
+  "Drop": "game:sand_trunk",
+  "DropCount": 1,
+  "RequiredTool": "axe",
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

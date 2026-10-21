@@ -1,0 +1,15 @@
+{
+  "ID": "game:yellow_tree_sapling",
+  "Name": "Саженец жёлтого дерева",
+  "Texture": "sapling_stage_0",
+  "Type": "Block",
+  "MaxStack": 100,
+  "CraftIngredients": [
+    {
+      "ItemId": "game:yellow_leaves",
+      "Count": 2
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 1
+}

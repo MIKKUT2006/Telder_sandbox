@@ -1,0 +1,25 @@
+{
+  "ID": "game:herb",
+  "Name": "Лесная зелень",
+  "Texture": "crop_stage_3",
+  "Type": "Food",
+  "MaxStack": 100,
+  "Tags": [
+    "eat"
+  ],
+  "EatTime": 1.4,
+  "HungerRestore": 12,
+  "HealthRestore": 2,
+  "Effects": [
+    {
+      "Type": "Speed",
+      "Duration": 45,
+      "Level": 1
+    },
+    {
+      "Type": "HighJump",
+      "Duration": 30,
+      "Level": 1
+    }
+  ]
+}

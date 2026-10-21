@@ -1,6 +1,7 @@
-﻿
+
 using UnityEngine;
 
+using Game.BlockTransforms;
 using Game.Chests;
 using Game.Content;
 using Game.World.Dimensions;
@@ -121,13 +122,15 @@ namespace Game.World.Structures
                         );
 
                     if (id != 0 &&
-                        manager.SetBlock(
-                            worldX,
-                            worldY,
-                            id
-                        ))
+                        manager.SetBlock(worldX, worldY, id))
                     {
                         changed = true;
+                        byte rotation = ToRuntimeTransform(cell.ForegroundTransform != 0
+                            ? cell.ForegroundTransform : cell.Transform);
+                        BlockTransformRegistry.SetRaw(worldX, worldY, rotation, false);
+                        if (rotation != 0)
+                            StructurePlacementRuntimeBridge.QueueForegroundTransform(
+                                worldX, worldY, rotation);
 
                         if (StructureGenerationRuntime
                             .IsChestBlock(id))
@@ -153,18 +156,32 @@ namespace Game.World.Structures
                         );
 
                     if (id != 0 &&
-                        manager.SetBackground(
-                            worldX,
-                            worldY,
-                            id
-                        ))
+                        manager.SetBackground(worldX, worldY, id))
                     {
                         changed = true;
+                        byte rotation = ToRuntimeTransform(cell.BackgroundTransform);
+                        BackgroundBlockTransformRegistry.SetRaw(worldX, worldY, rotation);
+                        if (rotation != 0)
+                            StructurePlacementRuntimeBridge.QueueBackgroundTransform(
+                                worldX, worldY, rotation);
                     }
+                }
+
+                if (!string.IsNullOrWhiteSpace(cell.FurnitureId))
+                {
+                    StructurePlacementRuntimeBridge.QueueFurniture(
+                        worldX, worldY, cell.FurnitureId,
+                        ToRuntimeTransform(cell.FurnitureTransform));
+                    changed = true;
                 }
             }
 
             return changed;
+        }
+
+        private static byte ToRuntimeTransform(byte editor)
+        {
+            return (byte)(((4 - (editor & 0x03)) & 0x03) | (editor & 0x04));
         }
 
         private static System.Collections.Generic.List<

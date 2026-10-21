@@ -1,0 +1,28 @@
+{
+  "ID": "game:sand_brick",
+
+  "Name": "Sand brick",
+
+  "Texture": "sand_brick",
+
+  "Hardness": 1,
+
+  "Solid": true,
+  "Drop": "game:sand_brick",
+  "DropCount": 1,
+  
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [
+    {
+      "ItemId": "game:sand",
+      "Count": 2
+    }
+  ],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

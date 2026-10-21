@@ -1,0 +1,7 @@
+{
+  "ID": "game:sand_brick",
+  "Name": "Sand brick",
+  "Texture": "sand_brick",
+  "Type": "Block",
+  "MaxStack": 100
+}

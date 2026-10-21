@@ -46,30 +46,48 @@ namespace Game.UI.MainMenu
 
         private void Awake()
         {
-
+            if (!IsMenuScene(SceneManager.GetActiveScene().name))
+            {
+                Destroy(gameObject);
+                return;
+            }
             Cleanup();
-
         }
-
 
         private void OnEnable()
         {
-
-            SceneManager.sceneLoaded +=
-                OnSceneLoaded;
-
-
-            Cleanup();
-
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            if (IsMenuScene(SceneManager.GetActiveScene().name))
+                Cleanup();
         }
-
 
         private void OnDisable()
         {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
 
-            SceneManager.sceneLoaded -=
-                OnSceneLoaded;
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (!IsMenuScene(scene.name))
+            {
+                Destroy(gameObject);   // <-- ключевая строка, убираем cleanup из игры
+                return;
+            }
+            Cleanup();
+        }
 
+        private void LateUpdate()
+        {
+            if (!IsMenuScene(SceneManager.GetActiveScene().name))
+                return;                // <-- не работаем вне меню
+            Cleanup();
+        }
+
+        private static bool IsMenuScene(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return false;
+            string n = name.ToLowerInvariant();
+            return n.Contains("menu");
         }
 
 
@@ -81,30 +99,17 @@ namespace Game.UI.MainMenu
         }
 
 
-        private void LateUpdate()
+        private bool IsMainMenuScene()
         {
-
-            // BiomeSky manager может создать фон
-            // уже через кадр после загрузки MainMenu.
-            //
-            // Поэтому пока мы в MainMenu,
-            // проверяем наличие объекта каждый кадр.
-            Cleanup();
-
+            return IsMainMenuSceneName(SceneManager.GetActiveScene().name);
         }
 
-
-        private void OnSceneLoaded(
-            Scene scene,
-            LoadSceneMode mode
-        )
+        private static bool IsMainMenuSceneName(string name)
         {
-
-            Cleanup();
-
+            if (string.IsNullOrEmpty(name)) return false;
+            string lower = name.ToLowerInvariant();
+            return lower.Contains("menu") || lower.Contains("mainmenu") || lower.Contains("main_menu");
         }
-
-
         // =====================================================
         // CLEANUP
         // =====================================================

@@ -1,3 +1,4 @@
+using Game.InputSupport;
 
 using UnityEngine;
 
@@ -133,9 +134,7 @@ namespace Game.Chests
 
 
             if (
-                !Input.GetMouseButtonDown(
-                    1
-                )
+                !(GameInput.Pressed(GameAction.Use) || GameInput.Pressed(GameAction.Interact))
             )
             {
 
@@ -187,7 +186,7 @@ namespace Game.Chests
 
             Vector3 mouse =
                 worldCamera.ScreenToWorldPoint(
-                    Input.mousePosition
+                    GameInput.PointerPosition
                 );
 
 

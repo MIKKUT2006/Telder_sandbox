@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -196,8 +196,7 @@ namespace Game.Mining
 
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Items"
                 );
 
@@ -312,8 +311,7 @@ namespace Game.Mining
 
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Blocks"
                 );
 

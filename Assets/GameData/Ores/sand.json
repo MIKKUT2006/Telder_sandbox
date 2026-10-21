@@ -1,0 +1,8 @@
+{
+  "ID": "game:sand",
+  "MinDepth": 0,
+  "MaxDepth": 50,
+  "Rarity": 0.05,
+  "VeinSize": 5,
+  "MinVeinSize": 2
+}

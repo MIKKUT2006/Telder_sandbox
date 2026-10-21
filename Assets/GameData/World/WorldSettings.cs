@@ -1,5 +1,6 @@
 using Game.Save;
 using Game.World.Dimensions;
+using UnityEngine;
 
 
 namespace Game.World
@@ -95,10 +96,25 @@ namespace Game.World
                 DimensionTravelRuntime.Current;
 
 
-            Seed =
+            int resolvedSeed =
                 dimension != null
                     ? dimension.Seed
                     : 0;
+
+
+            // ---------------------------------------------------------
+            // If the seed field is empty (0 / no dimension), generate
+            // a random 9-digit seed instead of falling back to 0.
+            // ---------------------------------------------------------
+            if (resolvedSeed == 0)
+            {
+                resolvedSeed =
+                    GenerateRandomNineDigitSeed();
+            }
+
+
+            Seed =
+                resolvedSeed;
 
 
             WorldName =
@@ -183,6 +199,20 @@ namespace Game.World
             CaveMaxDepth =
                 WorldHeight -
                 20;
+        }
+
+
+        // =========================================================
+        // 9-digit seed: 100_000_000 .. 999_999_999
+        // Uses Unity's global RNG state (fine for constructor use).
+        // =========================================================
+        private static int GenerateRandomNineDigitSeed()
+        {
+            return
+                UnityEngine.Random.Range(
+                    100_000_000,
+                    1_000_000_000
+                );
         }
     }
 }

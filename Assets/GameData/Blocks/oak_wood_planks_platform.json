@@ -1,0 +1,48 @@
+{
+  "ID": "game:oak_wood_planks_platform",
+  "Name": "oak wood planks platform",
+  "Texture": "oak_wood_planks_platform",
+
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+
+  "CollisionShape": "Custom",
+  "CollisionRects": [
+    {
+      "X": 0,
+      "Y": 0,
+      "Width": 1,
+      "Height": 0.25
+    }
+  ],
+
+  "Material": 0,
+  "Behavior": "Platform",
+  "Tags": ["platform"],
+  "Drop": "game:oak_wood_planks_platform",
+  "DropCount": 1,
+
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+
+  "closed": false,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+
+  "CraftIngredients": [
+    {
+      "ItemId": "game:oak_wood_planks",
+      "Count": 1
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 2
+}

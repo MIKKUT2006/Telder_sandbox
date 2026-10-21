@@ -1,0 +1,30 @@
+{
+    "Version": 2,
+    "StructureId": "cactus",
+    "Cells": [
+        {
+            "X": 0,
+            "Y": 2,
+            "FurnitureId": "game:cactus",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 0,
+            "Y": 1,
+            "FurnitureId": "game:cactus",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 0,
+            "Y": 0,
+            "FurnitureId": "game:cactus",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        }
+    ]
+}

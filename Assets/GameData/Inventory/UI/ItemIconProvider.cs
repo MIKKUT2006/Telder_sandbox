@@ -219,6 +219,9 @@ namespace Game.Inventory.UI
             }
 
 
+            var fallback = Game.Gameplay.PixelFoodAssets.Sprite(item.Texture);
+            if (fallback != null) return fallback;
+
             Debug.LogWarning(
                 "ITEM ICON: Sprite not found for " +
                 itemID
@@ -229,6 +232,20 @@ namespace Game.Inventory.UI
 
         }
 
+
+        // Variant textures are requested by held-item visuals, never by
+        // inventory slot ID. Both the sprite and its Texture2D are cached.
+        public static Sprite GetItemTextureSprite(string textureName)
+        {
+            if (string.IsNullOrWhiteSpace(textureName)) return null;
+            string clean = Path.GetFileNameWithoutExtension(textureName.Trim());
+            if (string.IsNullOrWhiteSpace(clean)) return null;
+            string key = "__held_texture__:" + clean;
+            if (spriteCache.TryGetValue(key, out Sprite cached)) return cached;
+            Sprite result = LoadItemSpriteFromDefaultPack(key, clean);
+            if (result != null) spriteCache[key] = result;
+            return result;
+        }
 
         // =====================================================
         // ITEM TEXTURE FROM RESOURCE PACK
@@ -264,8 +281,7 @@ namespace Game.Inventory.UI
 
             string texturePath =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "ResourcePacks",
                     "Default",
                     "textures",
@@ -281,6 +297,9 @@ namespace Game.Inventory.UI
                 )
             )
             {
+
+                var placeholder = Game.Gameplay.PixelFoodAssets.Sprite(cleanTextureName);
+                if (placeholder != null) return placeholder;
 
                 Debug.LogWarning(
                     "ITEM ICON: Item texture file not found:\n" +

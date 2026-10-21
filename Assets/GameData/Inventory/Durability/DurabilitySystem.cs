@@ -496,17 +496,21 @@ namespace Game.Items.Durability
             }
 
 
-            if (
-                !string.Equals(
-                    data.UpgradeType,
-                    "DurabilityFlat",
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-            {
-                reason =
-                    "Пока поддерживается UpgradeType = DurabilityFlat.";
+            bool isDurabilityUpgrade = string.Equals(
+    data.UpgradeType,
+    "DurabilityFlat",
+    StringComparison.OrdinalIgnoreCase
+);
 
+            bool isToolLevelUpgrade = string.Equals(
+                data.UpgradeType,
+                "ToolLevel",
+                StringComparison.OrdinalIgnoreCase
+            );
+
+            if (!isDurabilityUpgrade && !isToolLevelUpgrade)
+            {
+                reason = "Поддерживаются UpgradeType = DurabilityFlat или ToolLevel.";
                 return false;
             }
 
@@ -526,6 +530,22 @@ namespace Game.Items.Durability
             return true;
         }
 
+        public static int GetToolLevel(ItemStack stack)
+        {
+            if (stack == null || stack.IsEmpty)
+                return 0;
+
+            int baseLevel = 1;
+
+            if (ItemDurabilityMetadata.TryGet(
+                stack.ItemId,
+                out ItemDurabilityMetadataData data))
+            {
+                baseLevel = Mathf.Max(1, data.ToolLevel);
+            }
+
+            return baseLevel + stack.BonusToolLevel;
+        }
 
         public static bool ApplyUpgrade(
             ItemStack tool,
@@ -562,13 +582,36 @@ namespace Game.Items.Durability
                     data.UpgradeValue
                 );
 
+            if (string.Equals(
+                data.UpgradeType,
+                "DurabilityFlat",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                EnsureInitialized(tool);
 
-            tool.BonusMaxDurability +=
-                value;
+                tool.BonusMaxDurability += value;
+                tool.CurrentDurability += value;
+            }
+            else if (string.Equals(
+                data.UpgradeType,
+                "ToolLevel",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                tool.BonusToolLevel += value;
+            }
+            else
+            {
+                reason = "Неизвестный тип улучшения.";
+                return false;
+            }
 
+            tool.InstalledUpgradeId = artifact.ItemId;
 
-            tool.CurrentDurability +=
-                value;
+            artifact.Count -= 1;
+
+            reason = "Улучшение установлено.";
+
+            return true;
 
 
             tool.InstalledUpgradeId =

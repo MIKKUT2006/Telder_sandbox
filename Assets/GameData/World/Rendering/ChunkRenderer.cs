@@ -1,8 +1,11 @@
+using Game.InputSupport;
 using System.Collections.Generic;
 
 using UnityEngine;
 
 using Game.World.Lighting;
+using Game.Content;
+using Game.Blocks;
 
 namespace Game.World.Rendering
 {
@@ -18,9 +21,42 @@ namespace Game.World.Rendering
             >();
 
 
+        // Assignable by ChunkLoader. Off-camera chunks keep CPU data but do not
+        // allocate expensive sprite textures until they enter the viewport.
+        public System.Func<int, int, bool> RenderEligibility;
+
+        public bool HasChunkVisual(int x, int y)
+        {
+            return renderedChunks.TryGetValue(new UnityEngine.Vector2Int(x,y),out var data)&&data.Ready;
+        }
+
+        public bool IsChunkVisualEnabled(int x, int y)
+        {
+            return renderedChunks.TryGetValue(new UnityEngine.Vector2Int(x, y),
+                out ChunkRenderData data) && data.Ready && data.Root != null && data.Root.activeSelf;
+        }
+
+        public void SetChunkVisible(int x, int y, bool visible)
+        {
+            if (renderedChunks.TryGetValue(new UnityEngine.Vector2Int(x, y),
+                out ChunkRenderData data) && data.Root != null &&
+                data.Ready && data.Root.activeSelf != visible)
+                data.Root.SetActive(visible);
+        }
+
+        private readonly Queue<UnityEngine.Vector2Int> buildQueue=new Queue<UnityEngine.Vector2Int>();
+        private readonly Dictionary<UnityEngine.Vector2Int,int> buildRows=new Dictionary<UnityEngine.Vector2Int,int>();
+        private readonly Queue<UnityEngine.Vector2Int> uploadQueue=new Queue<UnityEngine.Vector2Int>();
+        private readonly HashSet<UnityEngine.Vector2Int> pendingUploads=new HashSet<UnityEngine.Vector2Int>();
+        private readonly System.Diagnostics.Stopwatch buildClock=new System.Diagnostics.Stopwatch();
+
         private Game.World.World world;
 
         private Material lightingMaterial;
+        private Material windMaterial;
+
+        private readonly Dictionary<ushort, bool> waveTagCache =
+            new Dictionary<ushort, bool>();
 
         private readonly List<int> dynamicCellScratch =
             new List<int>(128);
@@ -29,6 +65,18 @@ namespace Game.World.Rendering
             new List<int>(32);
 
         private float nextDynamicVisualCheck;
+
+        private int lightingDetail = 2;
+        public void SetLightingDetail(int value)
+        {
+            lightingDetail = Mathf.Clamp(value, 0, 2);
+            foreach (var pair in renderedChunks)
+            {
+                if (pair.Value.LightTexture != null)
+                    pair.Value.LightTexture.filterMode = lightingDetail == 0 ? FilterMode.Point : FilterMode.Bilinear;
+            }
+        }
+
 
 
         // =========================================================
@@ -67,6 +115,7 @@ namespace Game.World.Rendering
 
         public ChunkRenderer()
         {
+            lightingDetail = GameInput.Settings.LightingQuality;
             CreateMaterial();
         }
 
@@ -79,6 +128,7 @@ namespace Game.World.Rendering
                 world;
 
 
+            lightingDetail = GameInput.Settings.LightingQuality;
             CreateMaterial();
         }
 
@@ -99,9 +149,7 @@ namespace Game.World.Rendering
         private void CreateMaterial()
         {
             Shader shader =
-                Shader.Find(
-                    "Game/ChunkLitSprite"
-                );
+                ChunkLightingShaderProvider.Get();
 
 
             if (
@@ -127,12 +175,80 @@ namespace Game.World.Rendering
 
             lightingMaterial.name =
                 "Runtime Chunk Lighting";
+
+            Shader windShader = UnityEngine.Resources.Load<Shader>(
+                "Shaders/PixelatedWaveLitSprite");
+            if (windShader == null)
+                windShader = Shader.Find("Game/PixelatedWaveLitSprite");
+
+            if (windShader != null)
+            {
+                windMaterial = new Material(windShader);
+                windMaterial.name = "Runtime Pixelated Wave Wind";
+                windMaterial.SetFloat("_WindStrength", 2.0f);
+                windMaterial.SetFloat("_WindSpeed", 1.0f);
+                windMaterial.SetFloat("_WindFrequency", 1.1f);
+                windMaterial.SetFloat("_BlockPixelSize", BlockRenderer.BlockPixelSize);
+            }
+            else
+            {
+                Debug.LogError(
+                    "Pixelated wind shader not found. Expected Resources/Shaders/PixelatedWaveLitSprite. " +
+                    "Blocks tagged 'wave' will remain static.");
+            }
         }
 
 
         // =========================================================
         // RENDER WHOLE CHUNK
         // =========================================================
+
+        public void QueueRender(Chunk chunk,bool refresh=false)
+        {
+            if(chunk==null||RenderEligibility!=null&&!RenderEligibility(chunk.X,chunk.Y))return;
+            var key=new UnityEngine.Vector2Int(chunk.X,chunk.Y);
+            if(renderedChunks.TryGetValue(key,out var existing)&&existing.Ready&&!refresh)return;
+            if(buildRows.ContainsKey(key))return;
+            buildRows[key]=-1;buildQueue.Enqueue(key);
+        }
+        public void ProcessQueuedRenders(double budgetMilliseconds=1.0)
+        {
+            buildClock.Restart();int attempts=buildQueue.Count;
+            while(attempts-->0&&buildQueue.Count>0&&buildClock.Elapsed.TotalMilliseconds<budgetMilliseconds)
+            {
+                var key=buildQueue.Dequeue();if(!buildRows.TryGetValue(key,out int row))continue;
+                Chunk chunk=world?.GetChunk(key.x,key.y);
+                if(chunk==null){buildRows.Remove(key);continue;}
+                if(RenderEligibility!=null&&!RenderEligibility(key.x,key.y)){buildQueue.Enqueue(key);continue;}
+                if(!renderedChunks.TryGetValue(key,out var data))
+                {data=CreateChunkRenderData(chunk);data.Root.SetActive(false);renderedChunks.Add(key,data);buildRows[key]=0;buildQueue.Enqueue(key);continue;}
+                if(row<0)row=0;
+                int end=Mathf.Min(Chunk.SizeY,row+2);DrawRows(chunk,data,row,end);
+                if(end<Chunk.SizeY){buildRows[key]=end;buildQueue.Enqueue(key);continue;}
+                UploadLayers(data);UpdateLightTexture(chunk,data);data.Ready=true;data.Root.SetActive(true);buildRows.Remove(key);
+                break; // At most one cold chunk's texture set is uploaded per frame.
+            }
+            buildClock.Stop();
+        }
+        private void QueueUpload(UnityEngine.Vector2Int key,ChunkRenderData data,bool background)
+        {
+            if(background)data.BackgroundDirty=true;else data.ForegroundDirty=true;
+            if(pendingUploads.Add(key))uploadQueue.Enqueue(key);
+        }
+        public void FlushVisualEdits(int maxChunks=2)
+        {
+            int attempts=uploadQueue.Count,done=0;
+            while(attempts-->0&&uploadQueue.Count>0&&done<maxChunks)
+            {
+                var key=uploadQueue.Dequeue();pendingUploads.Remove(key);
+                if(!renderedChunks.TryGetValue(key,out var data))continue;
+                if(!data.Ready||data.Root==null||!data.Root.activeSelf)
+                {if(pendingUploads.Add(key))uploadQueue.Enqueue(key);continue;}
+                if(data.BackgroundDirty){data.BackgroundTexture.Apply(false,false);data.BackgroundWaveTexture.Apply(false,false);data.BackgroundWaveModes.Apply(false,false);data.BackgroundDirty=false;}
+                if(data.ForegroundDirty){data.ForegroundTexture.Apply(false,false);data.ForegroundWaveTexture.Apply(false,false);data.ForegroundWaveModes.Apply(false,false);data.ForegroundDirty=false;}
+                done++;
+            }
+        }
 
         public void Render(
             Chunk chunk
@@ -146,6 +262,9 @@ namespace Game.World.Rendering
                 return;
             }
 
+
+            if (RenderEligibility != null && !RenderEligibility(chunk.X, chunk.Y))
+                return;
 
             UnityEngine.Vector2Int key =
                 new UnityEngine.Vector2Int(
@@ -180,10 +299,8 @@ namespace Game.World.Rendering
             );
 
 
-            UpdateLightTexture(
-                chunk,
-                data
-            );
+            UpdateLightTexture(chunk,data);data.Ready=true;buildRows.Remove(key);
+            data.Root.SetActive(true);
         }
 
 
@@ -305,6 +422,21 @@ namespace Game.World.Rendering
             data.ForegroundRenderer =
                 foregroundRenderer;
 
+            GameObject backgroundWaveObject = new GameObject("Background_Wave");
+            backgroundWaveObject.transform.SetParent(root.transform, false);
+            SpriteRenderer backgroundWaveRenderer = backgroundWaveObject.AddComponent<SpriteRenderer>();
+            backgroundWaveRenderer.sortingOrder = 0;
+            backgroundWaveRenderer.color = new Color(
+                BackgroundSpriteBrightness, BackgroundSpriteBrightness, BackgroundSpriteBrightness, 1f);
+            data.BackgroundWaveRenderer = backgroundWaveRenderer;
+
+            GameObject foregroundWaveObject = new GameObject("Foreground_Wave");
+            foregroundWaveObject.transform.SetParent(root.transform, false);
+            SpriteRenderer foregroundWaveRenderer = foregroundWaveObject.AddComponent<SpriteRenderer>();
+            foregroundWaveRenderer.sortingOrder = 2;
+            foregroundWaveRenderer.color = Color.white;
+            data.ForegroundWaveRenderer = foregroundWaveRenderer;
+
 
             // -------------------------
             // TILE TEXTURES
@@ -333,6 +465,11 @@ namespace Game.World.Rendering
                     textureHeight
                 );
 
+            data.ForegroundWaveModes = CreateBlockTexture(Chunk.SizeX, Chunk.SizeY);
+            data.BackgroundWaveModes = CreateBlockTexture(Chunk.SizeX, Chunk.SizeY);
+            data.BackgroundWaveTexture = CreateBlockTexture(textureWidth, textureHeight);
+            data.ForegroundWaveTexture = CreateBlockTexture(textureWidth, textureHeight);
+
 
             data.BackgroundRenderer.sprite =
                 CreateSprite(
@@ -345,6 +482,9 @@ namespace Game.World.Rendering
                     data.ForegroundTexture
                 );
 
+            data.BackgroundWaveRenderer.sprite = CreateSprite(data.BackgroundWaveTexture);
+            data.ForegroundWaveRenderer.sprite = CreateSprite(data.ForegroundWaveTexture);
+
 
             // -------------------------
             // LIGHT TEXTURE
@@ -354,7 +494,7 @@ namespace Game.World.Rendering
                 new Texture2D(
                     LightTextureWidth,
                     LightTextureHeight,
-                    TextureFormat.RGB24,
+                    TextureFormat.RGBA32,
                     false
                 );
 
@@ -367,7 +507,7 @@ namespace Game.World.Rendering
 
 
             data.LightTexture.filterMode =
-                FilterMode.Bilinear;
+                lightingDetail == 0 ? FilterMode.Point : FilterMode.Bilinear;
 
 
             data.LightTexture.wrapMode =
@@ -381,26 +521,24 @@ namespace Game.World.Rendering
                 ];
 
 
-            if (
-                lightingMaterial !=
-                null
-            )
+            if (lightingMaterial != null)
             {
-                data.BackgroundRenderer.sharedMaterial =
-                    lightingMaterial;
+                data.BackgroundRenderer.sharedMaterial = lightingMaterial;
+                data.ForegroundRenderer.sharedMaterial = lightingMaterial;
+            }
 
-
-                data.ForegroundRenderer.sharedMaterial =
-                    lightingMaterial;
+            Material overlayMaterial = windMaterial != null ? windMaterial : lightingMaterial;
+            if (overlayMaterial != null)
+            {
+                data.BackgroundWaveRenderer.sharedMaterial = overlayMaterial;
+                data.ForegroundWaveRenderer.sharedMaterial = overlayMaterial;
             }
 
 
-            data.BackgroundProperties =
-                new MaterialPropertyBlock();
-
-
-            data.ForegroundProperties =
-                new MaterialPropertyBlock();
+            data.BackgroundProperties = new MaterialPropertyBlock();
+            data.ForegroundProperties = new MaterialPropertyBlock();
+            data.BackgroundWaveProperties = new MaterialPropertyBlock();
+            data.ForegroundWaveProperties = new MaterialPropertyBlock();
 
 
             ApplyMaterialProperties(
@@ -464,14 +602,17 @@ namespace Game.World.Rendering
         // DRAW BLOCKS
         // =========================================================
 
-        private void DrawBlocks(
+        private void DrawBlocks(Chunk chunk,ChunkRenderData data)
+        {DrawRows(chunk,data,0,Chunk.SizeY);UploadLayers(data);}
+
+        private void DrawRows(
             Chunk chunk,
-            ChunkRenderData data
+            ChunkRenderData data,int rowStart,int rowEnd
         )
         {
             for (
-                int y = 0;
-                y < Chunk.SizeY;
+                int y = rowStart;
+                y < rowEnd;
                 y++
             )
             {
@@ -495,15 +636,9 @@ namespace Game.World.Rendering
                         chunk.Y * Chunk.SizeY +
                         y;
 
-                    BlockRenderer.DrawBlock(
-                        data.BackgroundTexture,
-                        x,
-                        y,
-                        backgroundId,
-                        worldX,
-                        worldY,
-                        BlockVisualLayer.Background
-                    );
+                    DrawCellToStaticAndWaveLayers(
+                        data, x, y, backgroundId, worldX, worldY,
+                        BlockVisualLayer.Background);
 
                     TrackDynamicCell(
                         data.BackgroundDynamicVisuals,
@@ -514,32 +649,15 @@ namespace Game.World.Rendering
                         worldY,
                         BlockVisualLayer.Background
                     );
-                    // [STRUCTURE-LAYERS-BACKGROUND-TRANSFORM-V1]
-                    Game.BlockTransforms.BackgroundBlockTransformRegistry.ApplyToCell(
-                        data.BackgroundTexture,
-                        x,
-                        y,
-                        BlockRenderer.BlockPixelSize,
-                        chunk.X * Chunk.SizeX + x,
-                        chunk.Y * Chunk.SizeY + y);
-
-
-
                     ushort foregroundId =
                         chunk.GetBlock(
                             x,
                             y
                         );
 
-                    BlockRenderer.DrawBlock(
-                        data.ForegroundTexture,
-                        x,
-                        y,
-                        foregroundId,
-                        worldX,
-                        worldY,
-                        BlockVisualLayer.Foreground
-                    );
+                    DrawCellToStaticAndWaveLayers(
+                        data, x, y, foregroundId, worldX, worldY,
+                        BlockVisualLayer.Foreground);
 
                     TrackDynamicCell(
                         data.ForegroundDynamicVisuals,
@@ -550,28 +668,99 @@ namespace Game.World.Rendering
                         worldY,
                         BlockVisualLayer.Foreground
                     );
-                    // [BT-AUTO-RENDER] EXACT_V14
-                    Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(
-                        data.ForegroundTexture,
-                        x,
-                        y,
-                        BlockRenderer.BlockPixelSize,
-                        chunk.X * Chunk.SizeX + x,
-                        chunk.Y * Chunk.SizeY + y);
                 }
             }
 
 
-            data.BackgroundTexture.Apply(
-                false,
-                false
-            );
+        }
+        private void UploadLayers(ChunkRenderData data)
+        {
+            data.BackgroundTexture.Apply(false,false);data.BackgroundWaveTexture.Apply(false,false);data.BackgroundWaveModes.Apply(false,false);
+            data.ForegroundTexture.Apply(false,false);data.ForegroundWaveTexture.Apply(false,false);data.ForegroundWaveModes.Apply(false,false);
+            data.ForegroundDirty=data.BackgroundDirty=false;
+        }
 
 
-            data.ForegroundTexture.Apply(
-                false,
-                false
-            );
+
+        private bool IsWaveBlock(ushort blockId)
+        {
+            if (blockId == 0)
+                return false;
+
+            bool cached;
+            if (waveTagCache.TryGetValue(blockId, out cached))
+                return cached;
+
+            ContentID contentId = BlockIDRegistry.GetContentID(blockId);
+            if (!BlockRegistry.Contains(contentId))
+            {
+                waveTagCache[blockId] = false;
+                return false;
+            }
+
+            BlockDefinition definition = BlockRegistry.Get(contentId);
+            bool hasWaveTag = false;
+
+            if (definition != null && definition.Tags != null)
+            {
+                for (int i = 0; i < definition.Tags.Count; i++)
+                {
+                    if (string.Equals(definition.Tags[i], "wave",
+                        System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        hasWaveTag = true;
+                        break;
+                    }
+                }
+            }
+            waveTagCache[blockId] = hasWaveTag;
+            return hasWaveTag;
+        }
+
+
+        private void DrawCellToStaticAndWaveLayers(
+            ChunkRenderData data,
+            int localX,
+            int localY,
+            ushort blockId,
+            int worldX,
+            int worldY,
+            BlockVisualLayer layer)
+        {
+            bool background = layer == BlockVisualLayer.Background;
+            bool wave = IsWaveBlock(blockId);
+            var modes = background ? data.BackgroundWaveModes : data.ForegroundWaveModes;
+            var definition = blockId != 0 ? world.GetBlockDefinition(blockId) : null;
+            bool groundGrass = definition != null && definition.Solid &&
+                Game.Visuals.PixelEffects.PixelWorldOcclusion.HasTag(definition, "grass") &&
+                Game.Visuals.PixelEffects.PixelWorldOcclusion.HasTag(definition, "dirt");
+            modes.SetPixel(localX, localY, groundGrass ? Color.white : Color.clear);
+
+            Texture2D staticTexture = background ? data.BackgroundTexture : data.ForegroundTexture;
+            Texture2D waveTexture = background ? data.BackgroundWaveTexture : data.ForegroundWaveTexture;
+
+            // Keep only one copy: static terrain OR animated overlay.
+            BlockRenderer.DrawBlock(
+                staticTexture, localX, localY, wave ? (ushort)0 : blockId,
+                worldX, worldY, layer);
+            BlockRenderer.DrawBlock(
+                waveTexture, localX, localY, wave ? blockId : (ushort)0,
+                worldX, worldY, layer);
+
+            if (background)
+            {
+                Game.BlockTransforms.BackgroundBlockTransformRegistry.ApplyToCell(
+                    staticTexture, localX, localY, BlockRenderer.BlockPixelSize, worldX, worldY);
+                Game.BlockTransforms.BackgroundBlockTransformRegistry.ApplyToCell(
+                    waveTexture, localX, localY, BlockRenderer.BlockPixelSize, worldX, worldY);
+            }
+            else
+            {
+                Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(
+                    staticTexture, localX, localY, BlockRenderer.BlockPixelSize, worldX, worldY);
+                Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(
+                    waveTexture, localX, localY, BlockRenderer.BlockPixelSize, worldX, worldY);
+            }
         }
 
 
@@ -625,6 +814,7 @@ namespace Game.World.Rendering
 
             foreach (KeyValuePair<UnityEngine.Vector2Int, ChunkRenderData> pair in renderedChunks)
             {
+                if (pair.Value.Root == null || !pair.Value.Root.activeSelf) continue;
                 Chunk chunk =
                     world.GetChunk(
                         pair.Key.x,
@@ -649,11 +839,8 @@ namespace Game.World.Rendering
                     true
                 );
 
-                if (foregroundDirty)
-                    data.ForegroundTexture.Apply(false, false);
-
-                if (backgroundDirty)
-                    data.BackgroundTexture.Apply(false, false);
+                if(foregroundDirty)QueueUpload(pair.Key,data,false);
+                if(backgroundDirty)QueueUpload(pair.Key,data,true);
             }
         }
 
@@ -711,38 +898,10 @@ namespace Game.World.Rendering
                 if (string.Equals(oldKey, currentKey, System.StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                BlockRenderer.DrawBlock(
-                    texture,
-                    localX,
-                    localY,
-                    blockId,
-                    worldX,
-                    worldY,
-                    layer
-                );
-
-                if (background)
-                {
-                    Game.BlockTransforms.BackgroundBlockTransformRegistry.ApplyToCell(
-                        texture,
-                        localX,
-                        localY,
-                        BlockRenderer.BlockPixelSize,
-                        worldX,
-                        worldY
-                    );
-                }
-                else
-                {
-                    Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(
-                        texture,
-                        localX,
-                        localY,
-                        BlockRenderer.BlockPixelSize,
-                        worldX,
-                        worldY
-                    );
-                }
+                ChunkRenderData renderData =
+                    renderedChunks[new UnityEngine.Vector2Int(chunk.X, chunk.Y)];
+                DrawCellToStaticAndWaveLayers(
+                    renderData, localX, localY, blockId, worldX, worldY, layer);
 
                 registry[index] = currentKey;
                 dirty = true;
@@ -813,9 +972,7 @@ namespace Game.World.Rendering
                 )
             )
             {
-                Render(
-                    chunk
-                );
+                QueueRender(chunk);
 
 
                 return;
@@ -836,15 +993,9 @@ namespace Game.World.Rendering
                 chunk.Y * Chunk.SizeY +
                 localY;
 
-            BlockRenderer.DrawBlock(
-                data.ForegroundTexture,
-                localX,
-                localY,
-                blockId,
-                worldX,
-                worldY,
-                BlockVisualLayer.Foreground
-            );
+            DrawCellToStaticAndWaveLayers(
+                data, localX, localY, blockId, worldX, worldY,
+                BlockVisualLayer.Foreground);
 
             TrackDynamicCell(
                 data.ForegroundDynamicVisuals,
@@ -853,22 +1004,9 @@ namespace Game.World.Rendering
                 blockId,
                 worldX,
                 worldY,
-                BlockVisualLayer.Foreground
-            );
-            // [BT-AUTO-RENDER] EXACT_V14
-            Game.BlockTransforms.BlockTransformRenderBridge.ApplyToCell(
-                data.ForegroundTexture,
-                localX,
-                localY,
-                BlockRenderer.BlockPixelSize,
-                chunk.X * Chunk.SizeX + localX,
-                chunk.Y * Chunk.SizeY + localY);
+                BlockVisualLayer.Foreground);
 
-
-            data.ForegroundTexture.Apply(
-                false,
-                false
-            );
+            QueueUpload(key,data,false);
         }
 
 
@@ -901,9 +1039,7 @@ namespace Game.World.Rendering
                 )
             )
             {
-                Render(
-                    chunk
-                );
+                QueueRender(chunk);
 
 
                 return;
@@ -924,15 +1060,9 @@ namespace Game.World.Rendering
                 chunk.Y * Chunk.SizeY +
                 localY;
 
-            BlockRenderer.DrawBlock(
-                data.BackgroundTexture,
-                localX,
-                localY,
-                blockId,
-                worldX,
-                worldY,
-                BlockVisualLayer.Background
-            );
+            DrawCellToStaticAndWaveLayers(
+                data, localX, localY, blockId, worldX, worldY,
+                BlockVisualLayer.Background);
 
             TrackDynamicCell(
                 data.BackgroundDynamicVisuals,
@@ -941,23 +1071,9 @@ namespace Game.World.Rendering
                 blockId,
                 worldX,
                 worldY,
-                BlockVisualLayer.Background
-            );
-            // [STRUCTURE-LAYERS-BACKGROUND-TRANSFORM-V1]
-            Game.BlockTransforms.BackgroundBlockTransformRegistry.ApplyToCell(
-                data.BackgroundTexture,
-                localX,
-                localY,
-                BlockRenderer.BlockPixelSize,
-                chunk.X * Chunk.SizeX + localX,
-                chunk.Y * Chunk.SizeY + localY);
+                BlockVisualLayer.Background);
 
-
-
-            data.BackgroundTexture.Apply(
-                false,
-                false
-            );
+            QueueUpload(key,data,true);
         }
 
 
@@ -965,91 +1081,18 @@ namespace Game.World.Rendering
         // LIGHT UPDATES
         // =========================================================
 
-        public void UpdateDirtyLighting(
-            int maxChunksPerFrame =
-                6
-        )
+        public void UpdateDirtyLighting(int maxChunksPerFrame=6)
         {
-            if (
-                world ==
-                null
-            )
+            if(world==null)return;
+            maxChunksPerFrame=Mathf.Min(maxChunksPerFrame,lightingDetail==0?2:lightingDetail==1?4:6);
+            int done=0;
+            foreach(var pair in renderedChunks)
             {
-                return;
-            }
-
-
-            int updated =
-                0;
-
-
-            foreach (
-                var pair
-                in world.GetLoadedChunks()
-            )
-            {
-                if (
-                    updated >=
-                    maxChunksPerFrame
-                )
-                {
-                    break;
-                }
-
-
-                Chunk chunk =
-                    pair.Value;
-
-
-                if (
-                    chunk ==
-                    null
-                )
-                {
-                    continue;
-                }
-
-
-                ChunkLightData lightData =
-                    chunk.GetLightData();
-
-
-                if (
-                    lightData ==
-                    null
-                    ||
-                    !lightData.IsDirty
-                )
-                {
-                    continue;
-                }
-
-
-                UnityEngine.Vector2Int key =
-                    new UnityEngine.Vector2Int(
-                        chunk.X,
-                        chunk.Y
-                    );
-
-
-                if (
-                    !renderedChunks.TryGetValue(
-                        key,
-                        out ChunkRenderData data
-                    )
-                )
-                {
-                    continue;
-                }
-
-
-                UpdateLightTexture(
-                    chunk,
-                    data
-                );
-
-
-                updated++;
+                if(done>=maxChunksPerFrame)break;var data=pair.Value;
+                if(!data.Ready||data.Root==null||!data.Root.activeSelf)continue;
+                Chunk chunk=world.GetChunk(pair.Key.x,pair.Key.y);var light=chunk?.GetLightData();
+                if(light==null||!light.IsDirty||!light.IsInitialized)continue;
+                UpdateLightTexture(chunk,data);done++;
             }
         }
 
@@ -1105,44 +1148,15 @@ namespace Game.World.Rendering
                         );
 
 
-                    float sunlight =
-                        node.Sun /
-                        15f;
-
-
-                    float red =
-                        Mathf.Max(
-                            sunlight,
-                            node.R /
-                            15f
-                        );
-
-
-                    float green =
-                        Mathf.Max(
-                            sunlight,
-                            node.G /
-                            15f
-                        );
-
-
-                    float blue =
-                        Mathf.Max(
-                            sunlight,
-                            node.B /
-                            15f
-                        );
-
-
-                    data.LightPixels[
-                        index++
-                    ] =
-                        new Color(
-                            red,
-                            green,
-                            blue,
-                            1f
-                        );
+                    // Store artificial light independently from sunlight.
+                    // RGB = torches/lava/other emissive blocks; A = daylight.
+                    // The shader attenuates only A at night; lamp RGB never dims.
+                    data.LightPixels[index++] = new Color32(
+                        node.R == 0 ? (byte)0 : (byte)Mathf.RoundToInt(node.R * (255f / 15f)),
+                        node.G == 0 ? (byte)0 : (byte)Mathf.RoundToInt(node.G * (255f / 15f)),
+                        node.B == 0 ? (byte)0 : (byte)Mathf.RoundToInt(node.B * (255f / 15f)),
+                        node.Sun == 0 ? (byte)0 : (byte)Mathf.RoundToInt(node.Sun * (255f / 15f))
+                    );
                 }
             }
 
@@ -1213,6 +1227,25 @@ namespace Game.World.Rendering
                 LightNode.None;
         }
 
+
+        /// <summary>
+        /// Read-only handle to the same updated RGBA light texture used by the
+        /// foreground and background renderers. Never allocate/copy its pixels.
+        /// Returning false is normal while a chunk is still streaming.
+        /// </summary>
+        public bool TryGetChunkLightTexture(
+            int chunkX, int chunkY, out Texture2D texture)
+        {
+            texture = null;
+            ChunkRenderData renderData;
+            if (!renderedChunks.TryGetValue(
+                    new UnityEngine.Vector2Int(chunkX, chunkY), out renderData) ||
+                renderData == null || renderData.LightTexture == null)
+                return false;
+
+            texture = renderData.LightTexture;
+            return true;
+        }
 
         // =========================================================
         // SHADER PROPERTIES
@@ -1329,9 +1362,27 @@ namespace Game.World.Rendering
             );
 
 
-            data.BackgroundRenderer.SetPropertyBlock(
-                data.BackgroundProperties
-            );
+            data.BackgroundRenderer.SetPropertyBlock(data.BackgroundProperties);
+
+            data.ForegroundWaveProperties.SetTexture("_PlantModeTex", data.ForegroundWaveModes);
+            data.ForegroundWaveProperties.SetTexture("_LightTex", data.LightTexture);
+            data.ForegroundWaveProperties.SetVector("_LightUVScaleOffset", lightUV);
+            data.ForegroundWaveProperties.SetFloat("_LayerBrightness", 1f);
+            data.ForegroundWaveProperties.SetFloat("_Ambient", 0f);
+            data.ForegroundWaveProperties.SetFloat("_LightGamma", 0.72f);
+            data.ForegroundWaveProperties.SetVector("_WindWorldOffset",
+                new Vector4(data.Root.transform.position.x, data.Root.transform.position.y, 0f, 0f));
+            data.ForegroundWaveRenderer.SetPropertyBlock(data.ForegroundWaveProperties);
+
+            data.BackgroundWaveProperties.SetTexture("_PlantModeTex", data.BackgroundWaveModes);
+            data.BackgroundWaveProperties.SetTexture("_LightTex", data.LightTexture);
+            data.BackgroundWaveProperties.SetVector("_LightUVScaleOffset", lightUV);
+            data.BackgroundWaveProperties.SetFloat("_LayerBrightness", 1f);
+            data.BackgroundWaveProperties.SetFloat("_Ambient", 0f);
+            data.BackgroundWaveProperties.SetFloat("_LightGamma", 0.72f);
+            data.BackgroundWaveProperties.SetVector("_WindWorldOffset",
+                new Vector4(data.Root.transform.position.x, data.Root.transform.position.y, 0f, 0f));
+            data.BackgroundWaveRenderer.SetPropertyBlock(data.BackgroundWaveProperties);
         }
 
 
@@ -1344,6 +1395,9 @@ namespace Game.World.Rendering
             int chunkY
         )
         {
+            var removedKey=new UnityEngine.Vector2Int(chunkX,chunkY);
+            buildRows.Remove(removedKey);pendingUploads.Remove(removedKey);
+
             UnityEngine.Vector2Int key =
                 new UnityEngine.Vector2Int(
                     chunkX,
@@ -1409,11 +1463,20 @@ namespace Game.World.Rendering
                     data.LightTexture
                 );
             }
+
+            if (data.BackgroundWaveModes != null) Object.Destroy(data.BackgroundWaveModes);
+            if (data.BackgroundWaveTexture != null)
+                Object.Destroy(data.BackgroundWaveTexture);
+            if (data.ForegroundWaveModes != null) Object.Destroy(data.ForegroundWaveModes);
+            if (data.ForegroundWaveTexture != null)
+                Object.Destroy(data.ForegroundWaveTexture);
         }
 
 
         public void Clear()
         {
+            buildQueue.Clear();buildRows.Clear();uploadQueue.Clear();pendingUploads.Clear();
+
             foreach (
                 var pair
                 in renderedChunks
@@ -1465,6 +1528,13 @@ namespace Game.World.Rendering
                         data.LightTexture
                     );
                 }
+
+                if (data.BackgroundWaveModes != null) Object.Destroy(data.BackgroundWaveModes);
+                if (data.BackgroundWaveTexture != null)
+                    Object.Destroy(data.BackgroundWaveTexture);
+                if (data.ForegroundWaveModes != null) Object.Destroy(data.ForegroundWaveModes);
+                if (data.ForegroundWaveTexture != null)
+                    Object.Destroy(data.ForegroundWaveTexture);
             }
 
 
@@ -1479,22 +1549,23 @@ namespace Game.World.Rendering
         private sealed class ChunkRenderData
         {
             public GameObject Root;
+            public bool Ready,ForegroundDirty,BackgroundDirty;
 
 
             public SpriteRenderer
                 ForegroundRenderer;
 
 
-            public SpriteRenderer
-                BackgroundRenderer;
+            public SpriteRenderer BackgroundRenderer;
+            public SpriteRenderer ForegroundWaveRenderer;
+            public SpriteRenderer BackgroundWaveRenderer;
 
-
-            public Texture2D
-                ForegroundTexture;
-
-
-            public Texture2D
-                BackgroundTexture;
+            public Texture2D ForegroundTexture;
+            public Texture2D BackgroundTexture;
+            public Texture2D ForegroundWaveTexture;
+            public Texture2D ForegroundWaveModes;
+            public Texture2D BackgroundWaveTexture;
+            public Texture2D BackgroundWaveModes;
 
 
             public Texture2D
@@ -1509,8 +1580,9 @@ namespace Game.World.Rendering
                 ForegroundProperties;
 
 
-            public MaterialPropertyBlock
-                BackgroundProperties;
+            public MaterialPropertyBlock BackgroundProperties;
+            public MaterialPropertyBlock ForegroundWaveProperties;
+            public MaterialPropertyBlock BackgroundWaveProperties;
 
 
             // localCellIndex -> last resolved visual texture name.
@@ -1561,9 +1633,8 @@ namespace Game.World.Rendering
                 }
 
 
-                Render(
-                    chunk
-                );
+                if (RenderEligibility == null || RenderEligibility(chunk.X, chunk.Y))
+                    QueueRender(chunk,true);
             }
         }
     }

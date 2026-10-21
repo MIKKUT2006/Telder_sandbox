@@ -1,0 +1,494 @@
+{
+    "Version": 2,
+    "StructureId": "oak_tree_2",
+    "Cells": [
+        {
+            "X": 8,
+            "Y": 7,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 6,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 4,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 5,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 6,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 7,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 7,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 7,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 6,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 10,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 9,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 8,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 8,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 3,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 10,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 11,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 12,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 12,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 11,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 11,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 10,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 10,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 11,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 11,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 12,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 13,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 12,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 13,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 13,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 14,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 14,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 13,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 14,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 12,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 12,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 11,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 11,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 10,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 10,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 9,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 9,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 8,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 8,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 9,
+            "Y": 8,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 9,
+            "Y": 9,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 9,
+            "Y": 7,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 6,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 6,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 8,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 8,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 7,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 8,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 7,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 6,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 7,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 5,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 5,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 9,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 9,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 9,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 10,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 6,
+            "FurnitureId": "game:leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 5,
+            "FurnitureId": "game:oak_branch",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        }
+    ]
+}

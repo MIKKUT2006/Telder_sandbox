@@ -399,6 +399,13 @@ namespace Game.World.Parallax
 
         private void TryAutoDetectSurfaceSpawn()
         {
+            // Provisional preloading position must not reveal the world before
+            // the actual spawn cell and nearby colliders are ready.
+            if (worldManager == null || !worldManager.InitialSpawnReady)
+            {
+                validSurfaceFrames = 0;
+                return;
+            }
             Transform player =
                 ResolvePlayer();
 

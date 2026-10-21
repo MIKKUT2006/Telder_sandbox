@@ -7,7 +7,10 @@
   "TransitionHeight": 18,
   "Priority": 100,
   "Dimensions": [
-    "volcanic"
+    "volcanic",
+    "toxic",
+    "oceanic",
+    "frozen"
   ],
   "StoneBlockId": "game:ancient_stone",
   "BackgroundBlockId": "game:ancient_stone",

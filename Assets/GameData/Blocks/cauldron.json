@@ -1,0 +1,61 @@
+{
+  "ID": "game:cauldron",
+  "Name": "cauldron",
+  "Texture": "cauldron_0",
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+  "CollisionShape": "HalfBottom",
+  "CollisionRects": [],
+  "Material": 0,
+  "Drop": "game:cauldron",
+  "DropCount": 1,
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+  "Tags": [
+    "furniture",
+    "cauldron"
+  ],
+  "closed": false,
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "MultiBlock": {
+    "Width": 1,
+    "Height": 2,
+    "AnchorX": 0,
+    "AnchorY": 0,
+    "Kind": "cauldron",
+    "Texture": "cauldron_0",
+    "RequireFloor": true
+  },
+  "Animation": {
+    "Frames": [
+      "cauldron_0",
+      "cauldron_1",
+      "cauldron_2",
+      "cauldron_3",
+      "cauldron_4",
+      "cauldron_5",
+      "cauldron_6"
+    ],
+    "FPS": 6.0,
+    "PingPong": false,
+    "RandomStart": true
+  },
+  "CraftIngredients": [
+    {
+      "ItemId": "game:stone",
+      "Count": 8
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 1,
+  "Cauldron": {
+    "CookSeconds": 60
+  }
+}

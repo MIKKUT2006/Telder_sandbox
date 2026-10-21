@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -32,7 +32,7 @@ namespace Game.Entities
             loaded = true;
             Data.Clear();
 
-            string folder = Path.Combine(Application.dataPath, "GameData", "Entities", "Definitions");
+            string folder = Path.Combine(Game.Content.DataPaths.GameDataFolder, "Entities", "Definitions");
             if (!Directory.Exists(folder))
             {
                 Debug.LogWarning("ENTITIES: Definition folder not found: " + folder);

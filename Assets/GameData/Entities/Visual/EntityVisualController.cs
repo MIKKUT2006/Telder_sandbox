@@ -1,8 +1,10 @@
+using Game.Combat;
+using Game.Items;
+using Game.World.Lighting;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using Game.Combat;
 
 namespace Game.Entities.Visual
 {
@@ -45,6 +47,8 @@ namespace Game.Entities.Visual
         private float stateStartTime;
         private Sprite fallbackSprite;
         private float facing = 1f;
+        private float heldBaseRotation;
+
 
         public EntityVisualController(Transform root, EntityDefinition definition, int stars)
         {
@@ -149,6 +153,7 @@ namespace Game.Entities.Visual
             if (visualTransform == null)
                 return null;
 
+            // 1) Явный путь из JSON (если указан).
             if (!string.IsNullOrWhiteSpace(definition.Visual.HeldItemAnchorPath))
             {
                 Transform byPath = visualTransform.Find(definition.Visual.HeldItemAnchorPath.Trim());
@@ -156,7 +161,24 @@ namespace Game.Entities.Visual
                     return byPath;
             }
 
-            return FindRecursiveByName(visualTransform, "HeldItemAnchor");
+            // 2) Общие имена анкоров в риг-префабах.
+            //    Порядок важен: сначала специфичное, потом универсальное.
+            string[] candidates =
+            {
+        "HeldItemAnchor",
+        "HandPoint",
+        "Hand",
+        "ItemAnchor"
+    };
+
+            for (int i = 0; i < candidates.Length; i++)
+            {
+                Transform found = FindRecursiveByName(visualTransform, candidates[i]);
+                if (found != null)
+                    return found;
+            }
+
+            return null;
         }
 
         private static Transform FindRecursiveByName(Transform parent, string wantedName)
@@ -180,6 +202,15 @@ namespace Game.Entities.Visual
 
         private void CreateStars(int stars)
         {
+            Debug.Log($"[Stars] entity={definition.ID} stars={stars}");
+
+            int count = Mathf.Max(0, stars);
+            if (count == 0) return;
+
+            // Если звёзд нет — вообще не создаём объект.
+            if (count == 0)
+                return;
+
             GameObject starGo = new GameObject("Stars");
             starGo.transform.SetParent(root, false);
             starGo.transform.localPosition = new Vector3(
@@ -188,10 +219,10 @@ namespace Game.Entities.Visual
                 0f);
 
             starsText = starGo.AddComponent<TextMesh>();
-            starsText.text = new string('★', Mathf.Clamp(stars, 1, 5));
+            starsText.text = new string('▪', count);
             starsText.anchor = TextAnchor.MiddleCenter;
             starsText.alignment = TextAlignment.Center;
-            starsText.fontSize = 28;
+            starsText.fontSize = 45;
             starsText.characterSize = 0.065f;
             starsText.color = new Color(1f, 0.87f, 0.28f, 1f);
 
@@ -219,14 +250,59 @@ namespace Game.Entities.Visual
             if (heldRenderer.sprite == null)
                 return;
 
+            // ---- Значения по умолчанию — из EntityDefinition ----
+            float itemScale = 1f;
+            float itemRotationDeg = definition.Visual.HeldItemRotation;
+            float itemOffsetX = definition.Visual.HeldItemOffsetX;
+            float itemOffsetY = definition.Visual.HeldItemOffsetY;
+
+            // ---- Переопределения из JSON предмета ----
+            if (definition.Visual.UseItemHeldPose && ItemRegistry.TryGet(itemId, out ItemDefinition item) && item != null)
+            {
+                if (item.HeldScale > 0.0001f)
+                    itemScale = item.HeldScale;
+
+                itemRotationDeg = item.HeldRotation;
+
+                // Смещения в руке: если предмет что-то задал — берём его,
+                // иначе остаётся значение из EntityDefinition.
+                if (Mathf.Abs(item.HeldOffsetX) > 0.0001f)
+                    itemOffsetX = item.HeldOffsetX;
+
+                if (Mathf.Abs(item.HeldOffsetY) > 0.0001f)
+                    itemOffsetY = item.HeldOffsetY;
+            }
+
+            // ---- Размер: fit по длинной стороне спрайта ----
             float longest = Mathf.Max(
                 heldRenderer.sprite.bounds.size.x,
                 heldRenderer.sprite.bounds.size.y);
+
             if (longest <= 0.0001f)
                 longest = 1f;
 
-            float worldSize = Mathf.Max(0.01f, definition.Visual.HeldItemWorldSize);
-            heldTransform.localScale = Vector3.one * (worldSize / longest);
+            float desiredWorldSize =
+                Mathf.Max(0.01f, definition.Visual.HeldItemWorldSize) * itemScale;
+
+            // В префаб-режиме рука имеет накопленный масштаб (PrefabScale и
+            // цепочка костей). Компенсируем его, чтобы предмет в мире был
+            // ровно desiredWorldSize, а не «раздутым» на этот множитель.
+            Vector3 parentLossy = heldTransform.parent != null
+                ? heldTransform.parent.lossyScale
+                : Vector3.one;
+
+            float parentScaleFactor = Mathf.Max(
+                0.0001f,
+                Mathf.Max(Mathf.Abs(parentLossy.x), Mathf.Abs(parentLossy.y)));
+
+            float localScale = (desiredWorldSize / longest) / parentScaleFactor;
+            heldTransform.localScale = Vector3.one * localScale;
+
+            // Локальный поворот: pickup садится в руку под нужным углом.
+            // Ranged-оружие потом переопределит world rotation в AimHeldItem.
+            heldBaseRotation = itemRotationDeg;
+            heldTransform.localRotation = Quaternion.Euler(0f, 0f, itemRotationDeg);
+            heldTransform.localPosition = new Vector3(itemOffsetX, itemOffsetY, 0f);
         }
 
         public void SetFacing(float horizontalDirection)
@@ -254,7 +330,7 @@ namespace Game.Entities.Visual
             }
         }
 
-        public void AimHeldItem(Vector2 worldDirection, float attackPhase)
+        public void AimHeldItem(Vector2 worldDirection, float attackPhase, WeaponMetadata weapon = null)
         {
             if (heldRenderer == null || heldRenderer.sprite == null ||
                 worldDirection.sqrMagnitude < 0.0001f)
@@ -263,7 +339,17 @@ namespace Game.Entities.Visual
             }
 
             float angle = Mathf.Atan2(worldDirection.y, worldDirection.x) * Mathf.Rad2Deg;
-            if (state == EntityVisualState.Attack)
+            if (state == EntityVisualState.Attack && weapon != null && weapon.GetKind() == WeaponKind.Sword)
+            {
+                float phase = attackPhase;
+                float relative = MeleeAttackMotion.SwingAngle(weapon, phase);
+                Vector2 direction = PixelSwordTrail.SwingDirection(worldDirection, facing >= 0f, relative);
+                angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+                PixelSwordTrail.Record(root, heldTransform.position, direction,
+                    Mathf.Max(.4f, weapon.SwingReach), phase, false,
+                    definition.Visual.SortingLayer, definition.Visual.SortingOrder + 1);
+            }
+            else if (state == EntityVisualState.Attack)
             {
                 float kick = Mathf.Sin(Mathf.Clamp01(attackPhase) * Mathf.PI) * 16f;
                 angle -= kick;
@@ -280,6 +366,9 @@ namespace Game.Entities.Visual
             if (!force && state == newState)
                 return;
 
+            if (state == EntityVisualState.Attack && newState != EntityVisualState.Attack && heldTransform != null)
+                heldTransform.localRotation = Quaternion.Euler(0f, 0f, heldBaseRotation);
+
             state = newState;
             stateStartTime = Time.time;
 
@@ -289,6 +378,7 @@ namespace Game.Entities.Visual
 
         public void Tick()
         {
+
             if (prefabMode)
                 return;
 

@@ -13,9 +13,9 @@
     "BackgroundBlock": "game:stone",
     "SoilDepth": 4,
     "HeightOffset": 9.0,
-    "HillHeightMultiplier": 2.15,
-    "HillScaleMultiplier": 0.72,
-    "TerrainVariationMultiplier": 1.65,
+    "HillHeightMultiplier": 5,
+    "HillScaleMultiplier": 4,
+    "TerrainVariationMultiplier": 3,
     "TerrainScaleMultiplier": 0.78,
     "DetailMultiplier": 1.15,
     "DetailScaleMultiplier": 0.85,
@@ -27,6 +27,9 @@
     "WaveScale": 0.024
   },
   "Caves": {
+    "EnableSurfaceEntrances": true,
+    "SurfaceEntranceChance": 0.4,
+    "PreferSlopeEntrances": true,
     "FrequencyMultiplier": 1.1,
     "SizeMultiplier": 1.15,
     "ChamberMultiplier": 1.1,
@@ -36,5 +39,9 @@
     "Temperature": 0.32,
     "Humidity": 0.42,
     "Weirdness": 0.4
+  },
+  "Weather":{
+    "Precipitation": "Rain",
+    "FogChance": "0.15"
   }
 }

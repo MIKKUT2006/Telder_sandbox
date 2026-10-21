@@ -47,6 +47,7 @@ namespace Game.World.Items
         private float magnetAcceleration =
             35f;
 
+        public static bool isActive = true;
 
         // =====================================================
         // UNITY
@@ -100,6 +101,7 @@ namespace Game.World.Items
                 inventory == null
                 ||
                 pickupPoint == null
+                || isActive == false
             )
             {
 

@@ -132,6 +132,10 @@ namespace Game.World.Biomes.Surface
                     surfaceY -
                     chunkMinY;
 
+                // The supporting cell can belong to the chunk below this one.
+                if (localSurfaceY == -1 && generator.IsSurfaceCaveEntrance(worldX, surfaceY))
+                    continue;
+
 
                 if (
                     localSurfaceY >= 0 &&

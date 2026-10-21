@@ -77,7 +77,7 @@ namespace Game.World.Projectiles
             destroyBlocks = weapon.BombDestroyBlocks;
             destroyBackground = weapon.BombDestroyBackground;
             destroyFurniture = weapon.BombDestroyFurniture;
-            entityDamage = (weapon.Damage + Mathf.Max(0f, flatDamageBonus)) * Mathf.Max(0f, damageMultiplier);
+            entityDamage = (weapon.Damage + Mathf.Max(0f, flatDamageBonus)) * Game.Gameplay.Effects.PlayerFoodEffects.Strength(owner) * Mathf.Max(0f, damageMultiplier);
             knockback = Mathf.Max(0f, weapon.BombKnockback);
 
             string spriteItem = string.IsNullOrWhiteSpace(weapon.ProjectileItem)

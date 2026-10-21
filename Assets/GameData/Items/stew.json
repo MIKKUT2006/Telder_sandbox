@@ -1,0 +1,14 @@
+{
+  "ID": "game:stew",
+  "Name": "Похлёбка",
+  "Texture": "stew",
+  "Type": "Food",
+  "MaxStack": 15,
+  "Tags": [
+    "eat"
+  ],
+  "EatTime": 5,
+  "HungerRestore": 0,
+  "HealthRestore": 0,
+  "Effects": []
+}

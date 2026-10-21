@@ -1,0 +1,23 @@
+{
+  "ID": "game:sheep_meat",
+  "Name": "Sheep meat",
+  "Texture": "sheep_meat",
+  "Type": "Item",
+  "MaxStack": 100,
+  "Tags": [
+    "eat"
+  ],
+  "EatTime": 1.0,
+  "HungerRestore": 15.0,
+  "HealthRestore": 10.0,
+  "SmeltResult": "game:cooked_sheep_meat",
+  "SmeltResultCount": 1,
+  "SmeltTime": 7.0,
+  "Effects": [
+    {
+      "Type": "Poison",
+      "Duration": 8,
+      "Level": 1
+    }
+  ]
+}

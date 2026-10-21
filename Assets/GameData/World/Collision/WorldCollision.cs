@@ -1,10 +1,10 @@
 
-using System.Collections.Generic;
-
-using UnityEngine;
-
 using Game.Blocks;
+using Game.BlockTransforms;
 using Game.Content;
+using Game.GameplaySystems.Interactions;
+using System.Collections.Generic;
+using UnityEngine;
 
 
 namespace Game.World.Collision
@@ -14,6 +14,9 @@ namespace Game.World.Collision
     {
 
         private readonly World world;
+        // Collision is queried from the main thread. Reuse this buffer to
+        // avoid allocation in every PlayerCollision.OverlapsAny call.
+        private readonly List<Rect> transformedCollisionRects = new List<Rect>(4);
 
 
         private const float CellEpsilon =
@@ -144,15 +147,42 @@ namespace Game.World.Collision
             int worldY
         )
         {
-
-            return
-                GetCollisionShape(
-                    GetBlock(
-                        worldX,
-                        worldY
-                    )
+            ushort blockID =
+                GetBlock(
+                    worldX,
+                    worldY
                 );
 
+            if (
+                !TryGetBlockDefinition(
+                    blockID,
+                    out BlockDefinition block
+                )
+            )
+            {
+                return BlockCollisionShape.None;
+            }
+
+            if (!block.Solid || InteractiveBlockRuntime.IsPlatform(block)
+                || InteractiveBlockRuntime.DisablesForegroundCollision(worldX, worldY, block))
+            {
+                return BlockCollisionShape.None;
+            }
+
+            BlockCollisionShape shape =
+                BlockCollisionShapeParser.Parse(
+                    block.CollisionShape
+                );
+
+            if (
+                shape == BlockCollisionShape.Custom &&
+                (block.CollisionRects == null || block.CollisionRects.Count == 0)
+            )
+            {
+                return BlockCollisionShape.None;
+            }
+
+            return shape;
         }
 
 
@@ -176,7 +206,9 @@ namespace Game.World.Collision
 
 
             if (
-                !block.Solid
+                !block.Solid ||
+                InteractiveBlockRuntime.IsLadder(block) ||
+                InteractiveBlockRuntime.IsPlatform(block)
             )
             {
 
@@ -282,6 +314,9 @@ namespace Game.World.Collision
                 )
                 ||
                 !block.Solid
+                ||
+                InteractiveBlockRuntime.IsLadder(block) ||
+                InteractiveBlockRuntime.IsPlatform(block)
             )
             {
 
@@ -422,6 +457,68 @@ namespace Game.World.Collision
         }
 
 
+        public void GetLocalCollisionRects(
+            int worldX,
+            int worldY,
+            List<Rect> results
+        )
+        {
+            if (results == null)
+                return;
+
+            results.Clear();
+
+            ushort blockID =
+                GetBlock(
+                    worldX,
+                    worldY
+                );
+
+            if (
+                !TryGetBlockDefinition(
+                    blockID,
+                    out BlockDefinition block
+                )
+                ||
+                !block.Solid
+                ||
+                InteractiveBlockRuntime.DisablesForegroundCollision(
+                    worldX,
+                    worldY,
+                    block
+                )
+            )
+            {
+                return;
+            }
+
+            GetLocalCollisionRects(
+                blockID,
+                results
+            );
+            byte transform = BlockTransformRegistry.GetRaw(worldX, worldY);
+            if (transform == 0 || results.Count == 0) return;
+            var state = new BlockTransformState(transform);
+            for (int i = 0; i < results.Count; i++)
+            {
+                Rect r = results[i];
+                Vector2 a = BlockTransformRenderBridge.TransformPoint01(
+                    new Vector2(r.xMin, r.yMin), state);
+                Vector2 b = BlockTransformRenderBridge.TransformPoint01(
+                    new Vector2(r.xMax, r.yMin), state);
+                Vector2 c = BlockTransformRenderBridge.TransformPoint01(
+                    new Vector2(r.xMin, r.yMax), state);
+                Vector2 d = BlockTransformRenderBridge.TransformPoint01(
+                    new Vector2(r.xMax, r.yMax), state);
+                float minX = Mathf.Min(Mathf.Min(a.x, b.x), Mathf.Min(c.x, d.x));
+                float maxX = Mathf.Max(Mathf.Max(a.x, b.x), Mathf.Max(c.x, d.x));
+                float minY = Mathf.Min(Mathf.Min(a.y, b.y), Mathf.Min(c.y, d.y));
+                float maxY = Mathf.Max(Mathf.Max(a.y, b.y), Mathf.Max(c.y, d.y));
+                results[i] = Rect.MinMaxRect(minX, minY, maxX, maxY);
+            }
+        }
+
+
         private void AppendCustomRects(
             BlockDefinition block,
             List<Rect> results
@@ -530,6 +627,10 @@ namespace Game.World.Collision
             Rect worldBounds
         )
         {
+            // Creatures and pathfinding use this query; furniture doors are not tiles.
+            if (InteractiveBlockRuntime.IntersectsClosedFurniture(worldBounds))
+                return true;
+
 
             int minBlockX =
                 Mathf.FloorToInt(
@@ -609,18 +710,25 @@ namespace Game.World.Collision
 
 
             if (
-                !TryGetBlockDefinition(
-                    blockID,
-                    out BlockDefinition block
-                )
-                ||
-                !block.Solid
-            )
+     !TryGetBlockDefinition(
+         blockID,
+         out BlockDefinition block
+     )
+     ||
+     !block.Solid
+     ||
+     InteractiveBlockRuntime.IsPlatform(block)
+     ||
+     InteractiveBlockRuntime.DisablesForegroundCollision(
+         worldX,
+         worldY,
+         block
+     )
+ )
             {
-
                 return false;
-
             }
+
 
 
             BlockCollisionShape shape =
@@ -628,6 +736,20 @@ namespace Game.World.Collision
                     block.CollisionShape
                 );
 
+
+            if (shape != BlockCollisionShape.Full &&
+                BlockTransformRegistry.GetRaw(worldX, worldY) != 0)
+            {
+                GetLocalCollisionRects(worldX, worldY, transformedCollisionRects);
+                for (int i = 0; i < transformedCollisionRects.Count; i++)
+                {
+                    Rect r = transformedCollisionRects[i];
+                    if (Intersects(worldBounds,
+                        new Rect(worldX + r.x, worldY + r.y, r.width, r.height)))
+                        return true;
+                }
+                return false;
+            }
 
             switch (
                 shape
@@ -892,6 +1014,98 @@ namespace Game.World.Collision
                 a.yMin <
                 b.yMax;
 
+        }
+
+
+        public bool TryGetPlatformTop(
+            Rect horizontalBounds,
+            float previousBottom,
+            float nextBottom,
+            int ignoredPlatformY,
+            out float platformTop)
+        {
+            platformTop = 0f;
+
+            if (world == null || nextBottom >= previousBottom)
+                return false;
+
+            const float epsilon = 0.0001f;
+
+            int minX = Mathf.FloorToInt(horizontalBounds.xMin + epsilon);
+            int maxX = Mathf.FloorToInt(horizontalBounds.xMax - epsilon);
+            int minY = Mathf.FloorToInt(nextBottom) - 1;
+            int maxY = Mathf.FloorToInt(previousBottom);
+
+            bool found = false;
+            float bestTop = float.NegativeInfinity;
+
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int y = maxY; y >= minY; y--)
+                {
+                    if (y == ignoredPlatformY)
+                        continue;
+
+                    ushort id = world.GetBlock(x, y);
+
+                    if (!TryGetBlockDefinition(id, out BlockDefinition definition))
+                        continue;
+
+                    if (!definition.Solid ||
+                        !InteractiveBlockRuntime.IsPlatform(definition))
+                        continue;
+
+                    if (BlockCollisionShapeParser.Parse(definition.CollisionShape)
+                        != BlockCollisionShape.Custom)
+                        continue;
+
+                    if (definition.CollisionRects == null)
+                        continue;
+
+                    for (int i = 0; i < definition.CollisionRects.Count; i++)
+                    {
+                        BlockCollisionRectDefinition rect = definition.CollisionRects[i];
+
+                        if (rect == null)
+                            continue;
+
+                        float rx = Mathf.Clamp01(rect.X);
+                        float ry = Mathf.Clamp01(rect.Y);
+                        float rw = Mathf.Clamp(rect.Width, 0f, 1f - rx);
+                        float rh = Mathf.Clamp(rect.Height, 0f, 1f - ry);
+
+                        if (rw <= epsilon || rh <= epsilon)
+                            continue;
+
+                        // Проверяем горизонтальное пересечение игрока с прямоугольником.
+                        float rectMinX = x + rx;
+                        float rectMaxX = rectMinX + rw;
+
+                        if (horizontalBounds.xMax <= rectMinX + epsilon ||
+                            horizontalBounds.xMin >= rectMaxX - epsilon)
+                            continue;
+
+                        // Верхняя поверхность именно коллизионного прямоугольника.
+                        float top = y + ry + rh;
+
+                        // Игрок должен пересечь эту поверхность сверху вниз.
+                        if (top > previousBottom + epsilon ||
+                            top < nextBottom - epsilon)
+                            continue;
+
+                        if (!found || top > bestTop)
+                        {
+                            found = true;
+                            bestTop = top;
+                        }
+                    }
+                }
+            }
+
+            if (found)
+                platformTop = bestTop;
+
+            return found;
         }
 
     }

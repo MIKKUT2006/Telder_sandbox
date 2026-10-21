@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using UnityEngine;
 
@@ -32,7 +32,7 @@ namespace Game.Entities.Spawn
         private static EntitySpawnSettingsData Load()
         {
             EntitySpawnSettingsData result = new EntitySpawnSettingsData();
-            string path = Path.Combine(Application.dataPath, "GameData", "Entities", "entity_spawn_settings.json");
+            string path = Path.Combine(Game.Content.DataPaths.GameDataFolder, "Entities", "entity_spawn_settings.json");
 
             if (!File.Exists(path))
                 return result;

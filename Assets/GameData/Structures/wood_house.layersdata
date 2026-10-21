@@ -1,5 +1,110 @@
 {
     "Version": 2,
     "StructureId": "wood_house",
-    "Cells": []
+    "Cells": [
+        {
+            "X": 1,
+            "Y": 1,
+            "FurnitureId": "game:oak_door",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 9,
+            "Y": 1,
+            "FurnitureId": "game:oak_door",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 1,
+            "Y": 0,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 0,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 0,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 0,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 0,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 0,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 0,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 9,
+            "Y": 0,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 0,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 4,
+            "FurnitureId": "game:small_clay_pot",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 3,
+            "FurnitureId": "game:oak_wood_planks_platform",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 2
+        }
+    ]
 }

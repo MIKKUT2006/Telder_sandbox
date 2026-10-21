@@ -81,6 +81,7 @@ namespace Game.World.Vegetation.Caves
 
         public static void Reload()
         {
+            CaveVineGenerator.Reload();
             loaded = false;
 
             plants.Clear();
@@ -108,7 +109,7 @@ namespace Game.World.Vegetation.Caves
 
 
             EnsureLoaded();
-
+            CaveVineGenerator.Apply(generator, settings, data, chunkX, chunkY);
 
             if (
                 plants.Count == 0
@@ -423,8 +424,7 @@ namespace Game.World.Vegetation.Caves
         {
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Vegetation",
                     "Cave"
                 );
@@ -592,8 +592,7 @@ namespace Game.World.Vegetation.Caves
         {
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "SurfaceFlora"
                 );
 

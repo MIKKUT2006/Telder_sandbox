@@ -1,0 +1,35 @@
+{
+  "ID": "game:portal_gun",
+  "Name": "Portal gun",
+  "Texture": "portal_gun",
+  "Type": "Tool",
+  "MaxStack": 1,
+  "ToolType": "portal_gun",
+  "ToolLevel": 1,
+  "HeldOffsetX": 0.4,
+  "HeldOffsetY": -0.8,
+  "HeldScale": 3,
+  "HeldRotation": -9,
+  "CraftIngredients": [
+    {
+      "ItemId": "game:iron_ingot",
+      "Count": 4
+    },
+    {
+      "ItemId": "game:portal_crystal",
+      "Count": 1
+    }
+  ],
+  "PortalGun": {
+    "CrystalItemId": "game:portal_crystal",
+    "CrystalCost": 1,
+    "BeamSpeed": 28.0,
+    "BeamWidth": 5.0,
+    "BeamDistortion": 6.0,
+    "BeamStrength": 1.0,
+    "BeamColor": "#62E9FF"
+  },
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "Durability": 450
+}

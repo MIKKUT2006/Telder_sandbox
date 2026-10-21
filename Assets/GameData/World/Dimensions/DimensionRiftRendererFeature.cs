@@ -112,8 +112,9 @@ namespace Game.World.Dimensions
                 DimensionPortalManager.Instance;
 
             if (
-                manager == null ||
-                manager.CurrentPortal == null
+                (manager == null ||
+                (manager.CurrentPortal == null && !manager.HasActivePortalGunBeam)) &&
+                !Game.Entities.Boss.BossVoidOrb.HasActiveOrbs && !Game.UI.MainMenu.PixelPlanetRings.HasActiveRings
             )
             {
                 return;
@@ -155,6 +156,17 @@ namespace Game.World.Dimensions
             }
         }
 
+
+        private static void ResetPortalVisuals(Material material)
+        {
+            material.SetFloat("_RiftOpen", 0f);
+            material.SetFloat("_RiftCollapse", 0f);
+            material.SetFloat("_PortalBeamActive", 0f);
+            material.SetVector("_RiftCenter", new Vector4(-10f, -10f, 0f, 0f));
+            material.SetVector("_RiftRadius", new Vector4(.0001f, .0001f, 0f, 0f));
+            material.SetVector("_RiftVisualRadius", new Vector4(.0001f, .0001f, 0f, 0f));
+            material.SetInt("_RiftParticleCount", 0);
+        }
 
         private sealed class RiftPass :
             ScriptableRenderPass
@@ -256,8 +268,9 @@ namespace Game.World.Dimensions
                     DimensionPortalManager.Instance;
 
                 if (
-                    manager == null ||
-                    manager.CurrentPortal == null ||
+                    ((manager == null ||
+                    (manager.CurrentPortal == null && !manager.HasActivePortalGunBeam)) &&
+                    !Game.Entities.Boss.BossVoidOrb.HasActiveOrbs && !Game.UI.MainMenu.PixelPlanetRings.HasActiveRings) ||
                     material == null ||
                     temporaryColor == null
                 )
@@ -282,12 +295,15 @@ namespace Game.World.Dimensions
                  * - состояние схлопывания
                  * - частицы
                  */
-                manager.CurrentPortal
-                    .ApplyVisualToMaterial(
-                        material,
-                        camera
-                    );
+                if (manager != null && manager.CurrentPortal != null)
+                {
+                    manager.CurrentPortal.ApplyVisualToMaterial(material, camera);
+                }
 
+                if (manager != null) manager.ApplyPortalGunBeamToMaterial(material, camera);
+                else ResetPortalVisuals(material);
+                Game.Entities.Boss.BossVoidOrb.ApplyToMaterial(material, camera);
+                Game.UI.MainMenu.PixelPlanetRings.ApplyToMaterial(material, camera);
 
                 RTHandle cameraColor =
                     renderingData
@@ -368,8 +384,9 @@ namespace Game.World.Dimensions
                     DimensionPortalManager.Instance;
 
                 if (
-                    manager == null ||
-                    manager.CurrentPortal == null ||
+                    ((manager == null ||
+                    (manager.CurrentPortal == null && !manager.HasActivePortalGunBeam)) &&
+                    !Game.Entities.Boss.BossVoidOrb.HasActiveOrbs && !Game.UI.MainMenu.PixelPlanetRings.HasActiveRings) ||
                     material == null
                 )
                 {
@@ -415,11 +432,15 @@ namespace Game.World.Dimensions
                 }
 
 
-                manager.CurrentPortal
-                    .ApplyVisualToMaterial(
-                        material,
-                        camera
-                    );
+                if (manager != null && manager.CurrentPortal != null)
+                {
+                    manager.CurrentPortal.ApplyVisualToMaterial(material, camera);
+                }
+
+                if (manager != null) manager.ApplyPortalGunBeamToMaterial(material, camera);
+                else ResetPortalVisuals(material);
+                Game.Entities.Boss.BossVoidOrb.ApplyToMaterial(material, camera);
+                Game.UI.MainMenu.PixelPlanetRings.ApplyToMaterial(material, camera);
 
 
                 TextureHandle source =

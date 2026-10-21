@@ -1,0 +1,86 @@
+{
+    "Version": 2,
+    "StructureId": "garden",
+    "Cells": [
+        {
+            "X": 6,
+            "Y": 0,
+            "FurnitureId": "game:lavender_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 0,
+            "FurnitureId": "game:rose",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 0,
+            "FurnitureId": "game:iris",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 0,
+            "FurnitureId": "game:iris",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 0,
+            "FurnitureId": "game:rose",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 11,
+            "Y": 0,
+            "FurnitureId": "",
+            "ForegroundTransform": 4,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 12,
+            "Y": 1,
+            "FurnitureId": "game:oak_door",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 20,
+            "Y": 1,
+            "FurnitureId": "game:oak_door",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 13,
+            "Y": 3,
+            "FurnitureId": "game:torch",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 19,
+            "Y": 3,
+            "FurnitureId": "game:torch",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        }
+    ]
+}

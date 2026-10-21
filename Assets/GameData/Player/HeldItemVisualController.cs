@@ -66,6 +66,31 @@ public class HeldItemVisualController :
 
 
     private string currentItemId;
+    private bool harpoonDeployed;
+    private string harpoonDeployedTexture;
+
+    private static bool IsHarpoonItem(string itemId)
+    {
+        Game.Combat.WeaponMetadata weapon;
+        return !string.IsNullOrWhiteSpace(itemId) &&
+            Game.Combat.WeaponMetadataRegistry.TryGet(itemId, out weapon) &&
+            weapon != null && weapon.GetKind() == Game.Combat.WeaponKind.Harpoon;
+    }
+
+    // Called by HarpoonController2D; inventory icon is not modified.
+    public void SetHarpoonDeployed(bool deployed, string textureName = null)
+    {
+        harpoonDeployed = deployed;
+        harpoonDeployedTexture = textureName;
+        if (inventory == null || !IsHarpoonItem(inventory.GetSelectedItemId())) return;
+        if (heldRenderer == null) EnsureHeldRenderer();
+        if (heldRenderer == null) return;
+        Sprite variant = deployed
+            ? ItemIconProvider.GetItemTextureSprite(textureName) : null;
+        heldRenderer.sprite = variant != null
+            ? variant : ItemIconProvider.GetIcon(inventory.GetSelectedItemId());
+        heldRenderer.enabled = heldRenderer.sprite != null;
+    }
 
 
     private HeldItemPoseMetadata currentPose;
@@ -184,6 +209,25 @@ public class HeldItemVisualController :
 
     private void LateUpdate()
     {
+
+        // Inventory is restored asynchronously after loading a save or
+        // reloading the scene for dimension travel. Do not rely only on the
+        // Changed event: if the rig or held SpriteRenderer was rebuilt one
+        // frame later, reconcile the selected item here as a cheap safety net.
+        if (inventory != null)
+        {
+            string selectedItemId = inventory.GetSelectedItemId();
+            bool selectedChanged = selectedItemId != currentItemId;
+            bool visualMissing =
+                !string.IsNullOrWhiteSpace(selectedItemId) &&
+                (heldRenderer == null || heldRenderer.sprite == null || !heldRenderer.enabled);
+
+            if (selectedChanged || visualMissing)
+            {
+                RefreshHeldItem();
+            }
+        }
+
 
         if (
             handPoint ==
@@ -470,6 +514,8 @@ public class HeldItemVisualController :
             &&
             heldRenderer.sprite !=
             null
+            &&
+            heldRenderer.enabled
         )
         {
 
@@ -478,6 +524,11 @@ public class HeldItemVisualController :
         }
 
 
+        if (itemId != currentItemId && !IsHarpoonItem(itemId))
+        {
+            harpoonDeployed = false;
+            harpoonDeployedTexture = null;
+        }
         currentItemId =
             itemId;
 
@@ -528,7 +579,19 @@ public class HeldItemVisualController :
 
 
         ApplyPose();
+        if (harpoonDeployed && IsHarpoonItem(itemId))
+            SetHarpoonDeployed(true, harpoonDeployedTexture);
 
+    }
+
+
+    public void ForceRefresh()
+    {
+        currentItemId = null;
+        currentPose = null;
+        AutoFindRig();
+        EnsureHeldRenderer();
+        RefreshHeldItem();
     }
 
 

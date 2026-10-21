@@ -23,6 +23,7 @@ namespace Game.World.Parallax
             LoadSceneMode mode
         )
         {
+            if(Game.World.Dimensions.DimensionTravelRuntime.Current.Is3D)return;
             WorldManager manager =
                 Object.FindFirstObjectByType<
                     WorldManager

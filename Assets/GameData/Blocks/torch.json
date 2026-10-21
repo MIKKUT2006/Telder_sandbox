@@ -15,7 +15,8 @@
   "RequiredTool": "",
   "Tags": [
     "torch",
-    "light"
+    "light",
+    "held_light"
   ],
   "closed": false,
   "LightOpacity": 0,
@@ -24,7 +25,11 @@
   "LightEmissionB": 6,
   "CraftIngredients": [
     {
-      "ItemId": "game:stone",
+      "Tag": "planks",
+      "Count": 1
+    },
+    {
+      "ItemId": "game:coal",
       "Count": 1
     }
   ],

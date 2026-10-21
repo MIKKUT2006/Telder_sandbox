@@ -1,0 +1,7 @@
+{
+  "ID": "game:wooden_hatch",
+  "Name": "Wooden Hatch",
+  "Texture": "wooden_hatch",
+  "Type": "Block",
+  "MaxStack": 50
+}

@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 using UnityEngine;
 
 using Game.BlockTransforms;
 using Game.World.Furniture;
+using Game.GameplaySystems.Multiblock;
 
 
 namespace Game.World.Structures
@@ -310,12 +311,33 @@ namespace Game.World.Structures
                     }
 
 
+                    // Full-size furniture is stored only at its anchor.
+                    // Register the occupied footprint as well, so doors,
+                    // beds, clicks, collisions and respawn work in structures.
                     furniture.SetGeneratedFurniture(
-                        operation.X,
-                        operation.Y,
-                        operation.Id,
-                        operation.Transform
-                    );
+                        operation.X, operation.Y,
+                        operation.Id, operation.Transform);
+
+                    if (string.Equals(
+                            furniture.GetFurniture(operation.X, operation.Y),
+                            operation.Id,
+                            StringComparison.OrdinalIgnoreCase) &&
+                        MultiBlockMetadataRegistry.TryGet(
+                            operation.Id, out MultiBlockMetadata multi) &&
+                        MultiBlockStore.FindAnchor(operation.X, operation.Y) == null)
+                    {
+                        MultiBlockStore.Add(new MultiBlockRecord
+                        {
+                            X = operation.X,
+                            Y = operation.Y,
+                            Width = multi.Width,
+                            Height = multi.Height,
+                            AnchorX = multi.AnchorX,
+                            AnchorY = multi.AnchorY,
+                            BlockId = operation.Id,
+                            Kind = multi.Kind
+                        }, false);
+                    }
                     return true;
             }
 

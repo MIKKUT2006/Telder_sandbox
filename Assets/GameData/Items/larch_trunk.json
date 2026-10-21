@@ -3,5 +3,10 @@
   "Name": "Larch trunk",
   "Texture": "larch_trunk",
   "Type": "Block",
-  "MaxStack": 100
+  "MaxStack": 100,
+  "Tags": [
+    "fuel",
+    "burnable"
+  ],
+  "FuelBurnTime": 10.0
 }

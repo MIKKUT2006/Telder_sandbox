@@ -115,6 +115,24 @@ namespace Game.Combat
 
 
             ApplyRequestedPose();
+            AlignMeleeSprite();
+        }
+
+        private void AlignMeleeSprite()
+        {
+            if (GetComponent<Game.PlayerStats.FoodUseController>()?.IsEating == true) return;
+            PlayerWeaponController weaponController = GetComponent<PlayerWeaponController>();
+            if (runtimeHeldItem == null || runtimeHeldItem.parent == null || weaponController == null ||
+                !weaponController.TryGetArmPoseRequest(out PlayerWeaponPoseRequest request)) return;
+            if(request.Kind!=WeaponKind.Sword&&request.Kind!=WeaponKind.Spear)
+            {var other=runtimeHeldItem.GetComponent<SpriteRenderer>();if(other!=null)other.flipX=false;return;}
+            // Look at the rendered basis, not Quaternion.eulerAngles: a negative
+            // parent scale is a reflection and cannot be described by a rotation.
+            Vector3 x = runtimeHeldItem.parent.TransformVector(Vector3.right);
+            Vector3 y = runtimeHeldItem.parent.TransformVector(Vector3.up);
+            bool reflected = x.x * y.y - x.y * y.x < 0f;
+            SpriteRenderer sprite = runtimeHeldItem.GetComponent<SpriteRenderer>();
+            if (sprite != null) sprite.flipX = reflected != !request.FacingRight;
         }
 
 
@@ -700,6 +718,16 @@ namespace Game.Combat
 
         private void ApplyRequestedPose()
         {
+            var eating = GetComponent<Game.PlayerStats.FoodUseController>();
+            if (eating != null && eating.IsEating && calibration != null && frontVisual != null)
+            {
+                var animation = GetComponent<PlayerAnimationController>();
+                float side = animation == null || animation.IsFacingRight() ? 1 : -1;
+                AimVisualFist(frontVisual, calibration.FrontShoulderParentLocal,
+                    calibration.FrontFistArmLocal, new Vector2(side, .12f + .08f * Mathf.Sin(Time.time * 18)));
+                return;
+            }
+
             PlayerWeaponController weapon =
                 GetComponent<
                     PlayerWeaponController
@@ -806,14 +834,7 @@ namespace Game.Combat
                     SwordAttackKind.Swing
                 )
                 {
-                    float relative =
-                        Mathf.LerpAngle(
-                            data.SwordSwingStartAngle,
-                            data.SwordSwingEndAngle,
-                            Smooth01(
-                                request.Phase
-                            )
-                        );
+                    float relative = MeleeAttackMotion.SwingAngle(data, request.Phase);
 
 
                     // Build the authored RIGHT-facing swing first,
@@ -872,7 +893,7 @@ namespace Game.Combat
 
                 AimFrontFist(
                     aimAngle +
-                    data.ArmAimOffset
+                    (request.FacingRight ? data.ArmAimOffset : -data.ArmAimOffset)
                 );
 
 
@@ -880,7 +901,7 @@ namespace Game.Combat
                 {
                     AimBackFist(
                         aimAngle +
-                        data.BackArmAimOffset
+                        (request.FacingRight ? data.BackArmAimOffset : -data.BackArmAimOffset)
                     );
                 }
 
@@ -888,9 +909,7 @@ namespace Game.Combat
                 ApplyHeldItemWorldOffset(
                     aim *
                     (
-                        ThrustEnvelope(
-                            request.Phase
-                        )
+                        MeleeAttackMotion.Thrust(request.Phase)
                         *
                         data.ThrustDistance
                     )
@@ -908,7 +927,7 @@ namespace Game.Combat
             {
                 AimFrontFist(
                     aimAngle +
-                    data.ArmAimOffset
+                    (request.FacingRight ? data.ArmAimOffset : -data.ArmAimOffset)
                 );
 
 
@@ -916,7 +935,7 @@ namespace Game.Combat
                 {
                     AimBackFist(
                         aimAngle +
-                        data.BackArmAimOffset
+                        (request.FacingRight ? data.BackArmAimOffset : -data.BackArmAimOffset)
                     );
                 }
 
@@ -924,11 +943,9 @@ namespace Game.Combat
                 ApplyHeldItemWorldOffset(
                     aim *
                     (
-                        ThrustEnvelope(
-                            request.Phase
-                        )
+                        MeleeAttackMotion.Thrust(request.Phase)
                         *
-                        data.SpearThrustDistance
+                        data.SpearThrustDistance * (request.PowerThrust ? data.SpearPowerReachMultiplier : 1f)
                     )
                 );
 
@@ -1014,7 +1031,7 @@ namespace Game.Combat
             {
                 AimFrontFist(
                     aimAngle +
-                    data.ArmAimOffset
+                    (request.FacingRight ? data.ArmAimOffset : -data.ArmAimOffset)
                 );
 
 
@@ -1022,7 +1039,7 @@ namespace Game.Combat
                 {
                     AimBackFist(
                         aimAngle +
-                        data.BackArmAimOffset
+                        (request.FacingRight ? data.BackArmAimOffset : -data.BackArmAimOffset)
                     );
                 }
             }
@@ -1263,6 +1280,24 @@ namespace Game.Combat
         public Transform GetRuntimeHandPoint()
         {
             return runtimeHandPoint;
+        }
+
+        // Applied AFTER SyncVisualTree() by HarpoonController2D.LateUpdate.
+        // This rotates the actual visible arm around its calibrated shoulder,
+        // without modifying the source rig or accumulating pose drift.
+        public void AimHarpoonRope(Vector2 worldTarget)
+        {
+            if (!built || frontVisual == null || calibration == null ||
+                runtimeHandPoint == null) return;
+
+            Vector2 shoulder = GetFrontShoulderWorldPosition();
+            Vector2 current = (Vector2)runtimeHandPoint.position - shoulder;
+            Vector2 desired = worldTarget - shoulder;
+            if (current.sqrMagnitude < 0.00001f || desired.sqrMagnitude < 0.00001f)
+                return;
+
+            AimVisualFist(frontVisual, calibration.FrontShoulderParentLocal,
+                calibration.FrontFistArmLocal, desired.normalized);
         }
 
 

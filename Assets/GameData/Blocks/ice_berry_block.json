@@ -15,9 +15,11 @@
   "BreakSound": "",
   "RequiredTool": "",
   "Tags": [
-    "berry"
+    "berry",
+    "grass",
+    "wave"
   ],
-
+  "alwaysFurniture": true,
   "LightOpacity": 15,
   "LightEmissionR": 0,
   "LightEmissionG": 0,

@@ -1,0 +1,31 @@
+{
+  "ID": "game:ladder",
+
+  "Name": "Ladder",
+
+  "Texture": "ladder",
+
+  "Hardness": 1,
+  "Behavior": "Ladder",
+  "Solid": false,
+  "Drop": "game:ladder",
+  "DropCount": 1,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [
+    {
+      "Tag": "planks",
+      "Count": 4
+    }
+  ],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 4,
+  "CollisionShape": "Full",
+  "CollisionRects": [],
+  "Tags": [
+    "ladder"
+  ]
+}

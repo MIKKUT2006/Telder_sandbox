@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 
@@ -18,6 +18,12 @@ namespace Game.World.Structures
     }
 
 
+    public enum StructureGeometryMode
+    {
+        TwoD = 0,
+        Voxel3D = 1
+    }
+
     public enum StructureBiomeSource
     {
         Surface = 0,
@@ -33,9 +39,13 @@ namespace Game.World.Structures
 
         public int Width = 12;
         public int Height = 8;
+        public int Depth = 1;
 
         public int OriginX = 0;
         public int OriginY = 0;
+        public int OriginZ = 0;
+
+        public StructureGeometryMode GeometryMode = StructureGeometryMode.TwoD;
 
         // Special runtime behaviour.
         //
@@ -88,6 +98,7 @@ namespace Game.World.Structures
     {
         public int X;
         public int Y;
+        public int Z;
 
         public string ForegroundId;
         public string BackgroundId;
@@ -97,6 +108,13 @@ namespace Game.World.Structures
     
         // [BT-AUTO-STRUCTURE-DATA]
         public byte Transform;
+
+        // Runtime-authoritative layer state, written into the structure JSON.
+        // .layersdata remains supported for old saved structures.
+        public byte ForegroundTransform;
+        public byte BackgroundTransform;
+        public string FurnitureId;
+        public byte FurnitureTransform;
 }
 
     [Serializable]

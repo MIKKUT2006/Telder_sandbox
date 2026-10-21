@@ -13,7 +13,9 @@ using Game.World.Dimensions;
 using Game.World.Items;
 using Game.GameplaySystems.Multiblock;
 using Game.GameplaySystems.Respawn;
+using Game.GameplaySystems.Interactions;
 using Game.World.Rendering;
+using Game.World.Lighting;
 
 
 namespace Game.World.Furniture
@@ -116,6 +118,26 @@ namespace Game.World.Furniture
 
 
         private float nextDynamicVisualUpdate;
+        private float nextFurnitureLightingUpdate;
+        private Camera furnitureCamera;
+
+        // Reuse the exact chunk-light material instead of repeatedly tinting the
+        // SpriteRenderer on the CPU. Each visual owns only a tiny property block.
+        private sealed class FurnitureLightingBinding
+        {
+            public SpriteRenderer Renderer;
+            public MaterialPropertyBlock Properties;
+            public Texture2D BoundLightTexture;
+            public bool BoundFallback;
+            public int BoundVineRootY;
+        }
+        private readonly Dictionary<long, FurnitureLightingBinding>
+            furnitureLightingBindings = new Dictionary<long, FurnitureLightingBinding>();
+        private Material furnitureLightingMaterial;
+        private Material furnitureWindMaterial;
+        private bool furnitureWindShaderMissingLogged;
+        private bool furnitureShaderMissingLogged;
+
 
 
         // Active procedural furniture exists only while its chunk is loaded.
@@ -132,8 +154,7 @@ namespace Game.World.Furniture
 
         // RGB block light has a maximum level of 15.
         // +2 matches the lighting propagation safety radius.
-        private const int LightVisualRefreshRadius =
-            17;
+
 
 
         [RuntimeInitializeOnLoadMethod(
@@ -223,18 +244,19 @@ namespace Game.World.Furniture
 
         private void OnDestroy()
         {
-
-            if (
-                Instance ==
-                this
-            )
+            furnitureLightingBindings.Clear();
+            if (furnitureLightingMaterial != null)
             {
-
-                Instance =
-                    null;
-
+                Destroy(furnitureLightingMaterial);
+                furnitureLightingMaterial = null;
             }
-
+            if (furnitureWindMaterial != null)
+            {
+                Destroy(furnitureWindMaterial);
+                furnitureWindMaterial = null;
+            }
+            if (Instance == this)
+                Instance = null;
         }
 
 
@@ -389,11 +411,17 @@ namespace Game.World.Furniture
         }
 
 
+        public bool SetFurniture(int x, int y, string blockId, byte transform)
+        {
+            return SetFurniture(x, y, blockId, transform, false);
+        }
+
         public bool SetFurniture(
             int x,
             int y,
             string blockId,
-            byte transform
+            byte transform,
+            bool structurePlacement
         )
         {
 
@@ -414,11 +442,14 @@ namespace Game.World.Furniture
             }
 
 
-            BlockVisualStateRuntime.ClearState(
+            if (!structurePlacement && FurnitureSupportRuntime.IsFurnitureOnlyBlock(blockId) &&
+                !FurnitureSupportRuntime.HasSupport(x, y, blockId)) return false;
+
+            InteractiveBlockRuntime.ClearStateAt(
                 x,
                 y,
                 BlockVisualLayer.Furniture,
-                false
+                true
             );
 
 
@@ -720,6 +751,7 @@ namespace Game.World.Furniture
                 visuals.Remove(
                     key
                 );
+                furnitureLightingBindings.Remove(key);
 
             }
 
@@ -733,6 +765,20 @@ namespace Game.World.Furniture
         public bool RemoveFurniture(
             int x,
             int y
+        )
+        {
+            return RemoveFurnitureInternal(
+                x,
+                y,
+                false
+            );
+        }
+
+
+        private bool RemoveFurnitureInternal(
+            int x,
+            int y,
+            bool deferExpensiveWork
         )
         {
 
@@ -810,8 +856,6 @@ namespace Game.World.Furniture
             }
 
 
-            // Keep multiblock occupancy persistence in lock-step with the real
-            // furniture anchor. This fixes ghost bed cells surviving a restart.
             MultiBlockStore.RemoveAnchorAt(
                 x,
                 y,
@@ -819,11 +863,11 @@ namespace Game.World.Furniture
             );
 
 
-            BlockVisualStateRuntime.ClearState(
+            InteractiveBlockRuntime.ClearStateAt(
                 x,
                 y,
                 BlockVisualLayer.Furniture,
-                false
+                true
             );
 
 
@@ -835,10 +879,8 @@ namespace Game.World.Furniture
                 visuals.TryGetValue(
                     key,
                     out GameObject visual
-                )
-                &&
-                visual !=
-                null
+                ) &&
+                visual != null
             )
             {
 
@@ -852,24 +894,33 @@ namespace Game.World.Furniture
             visuals.Remove(
                 key
             );
+            furnitureLightingBindings.Remove(key);
 
 
-            Save();
+            if (!deferExpensiveWork)
+            {
+                Save();
+            }
 
 
-            // ChestManager listens to this event and drops chest
-            // CONTENTS before/alongside the furniture block item.
+            // Events stay immediate even in batch mode. Systems such as chests,
+            // furnaces and multiblocks still see the removal on the exact frame
+            // where the visual disappears.
             FurnitureRemoved?.Invoke(
                 x,
                 y,
                 entry.BlockId
             );
+            FurnitureSupportRuntime.SupportChanged(x, y);
 
 
-            RebuildLightingAndVisuals(
-                x,
-                y
-            );
+            if (!deferExpensiveWork)
+            {
+                RebuildLightingAndVisuals(
+                    x,
+                    y
+                );
+            }
 
 
             return true;
@@ -884,6 +935,36 @@ namespace Game.World.Furniture
         public bool BreakFurniture(
             int x,
             int y
+        )
+        {
+            return BreakFurnitureInternal(
+                x,
+                y,
+                false
+            );
+        }
+
+
+        // Tree cascade fast path. Saving and light-texture refresh are deferred
+        // until the collapse job finishes, instead of writing the same furniture
+        // save file and rebuilding lighting once for every leaf/branch cell.
+        public bool BreakFurnitureDeferred(
+            int x,
+            int y
+        )
+        {
+            return BreakFurnitureInternal(
+                x,
+                y,
+                true
+            );
+        }
+
+
+        private bool BreakFurnitureInternal(
+            int x,
+            int y,
+            bool deferExpensiveWork
         )
         {
 
@@ -906,65 +987,16 @@ namespace Game.World.Furniture
             }
 
 
-            string dropId =
-                blockId;
+            BlockDefinition definition = null;
+            TryGetDefinition(x, y, out definition);
 
-
-            int dropCount =
-                1;
-
+            var plantDrops = Game.Gameplay.Plants.PlantRuntime.Harvest(definition,x,y);
 
             if (
-                TryGetDefinition(
+                !RemoveFurnitureInternal(
                     x,
                     y,
-                    out BlockDefinition definition
-                )
-                &&
-                definition !=
-                null
-            )
-            {
-
-                dropCount =
-                    Mathf.Max(
-                        0,
-                        definition.DropCount
-                    );
-
-
-                try
-                {
-
-                    string configuredDrop =
-                        definition.Drop
-                            .ToString();
-
-
-                    if (
-                        !string.IsNullOrWhiteSpace(
-                            configuredDrop
-                        )
-                    )
-                    {
-
-                        dropId =
-                            configuredDrop;
-
-                    }
-
-                }
-                catch
-                {
-                }
-
-            }
-
-
-            if (
-                !RemoveFurniture(
-                    x,
-                    y
+                    deferExpensiveWork
                 )
             )
             {
@@ -974,70 +1006,70 @@ namespace Game.World.Furniture
             }
 
 
-            if (
-                dropCount <=
-                0
-            )
-            {
-
-                return true;
-
-            }
-
-
-            if (
-                ItemDropSpawner.Instance ==
-                null
-            )
-            {
-
-                Debug.LogError(
-                    "FURNITURE: ItemDropSpawner.Instance is null. " +
-                    "Furniture was removed but its block item could not be spawned."
-                );
-
-
-                return true;
-
-            }
-
-
-            Vector2 dropPosition =
-                new Vector2(
-                    x +
-                    0.5f,
-
-                    y +
-                    0.65f
-                );
-
-
-            bool spawned =
-                ItemDropSpawner.Instance
-                    .SpawnFromBlock(
-                        dropId,
-                        dropCount,
-                        dropPosition
-                    );
-
-
-            if (
-                !spawned
-            )
-            {
-
-                Debug.LogWarning(
-                    "FURNITURE: Failed to spawn drop " +
-                    dropId +
-                    " x" +
-                    dropCount
-                );
-
-            }
-
+            Vector2 dropPosition = new Vector2(x + 0.5f, y + 0.65f);
+            if (plantDrops == null) BlockLootDropper.SpawnDrops(definition, blockId, dropPosition);
+            else foreach (var drop in plantDrops) ItemDropSpawner.EnsureInstance().SpawnFromBlock(drop.ItemId,drop.Count,dropPosition);
 
             return true;
 
+        }
+
+
+        /// <summary>
+        /// Completes a deferred tree-furniture batch. The save file is written once
+        /// and lighting is sampled across the affected bounds instead of being fully
+        /// rebuilt for every single destroyed furniture cell.
+        /// </summary>
+        public void FlushDeferredTreeChanges(
+            int minX,
+            int minY,
+            int maxX,
+            int maxY
+        )
+        {
+            Save();
+
+            if (
+                minX > maxX ||
+                minY > maxY
+            )
+            {
+                return;
+            }
+
+            const int LightingSampleStep = 12;
+
+            for (
+                int y = minY;
+                y <= maxY;
+                y += LightingSampleStep
+            )
+            {
+                for (
+                    int x = minX;
+                    x <= maxX;
+                    x += LightingSampleStep
+                )
+                {
+                    RebuildLightingAndVisuals(
+                        x,
+                        y
+                    );
+                }
+            }
+
+            // Always include the far corner when bounds are not exact multiples
+            // of the sample step. This keeps large authored trees correct too.
+            if (
+                maxX != minX ||
+                maxY != minY
+            )
+            {
+                RebuildLightingAndVisuals(
+                    maxX,
+                    maxY
+                );
+            }
         }
 
 
@@ -1135,31 +1167,21 @@ namespace Game.World.Furniture
             if (hasDefinition)
             {
                 visualSprite =
-                    MultiBlockVisualProvider.GetSprite(
+                    ResolveFurnitureSprite(
                         entry.BlockId,
-                        definition
+                        definition,
+                        entry.X,
+                        entry.Y
                     );
-
-                if (visualSprite == null)
-                {
-                    visualSprite =
-                        BlockVisualResolver.ResolveSprite(
-                            definition,
-                            entry.X,
-                            entry.Y,
-                            BlockVisualLayer.Furniture
-                        );
-                }
 
                 if (BlockVisualResolver.IsDynamic(definition))
                 {
                     dynamicVisualKeys.Add(key);
                     dynamicVisualTextureKeys[key] =
-                        BlockVisualResolver.ResolveTextureName(
+                        ResolveFurnitureTextureName(
                             definition,
                             entry.X,
-                            entry.Y,
-                            BlockVisualLayer.Furniture
+                            entry.Y
                         );
                 }
             }
@@ -1173,8 +1195,9 @@ namespace Game.World.Furniture
                     );
 
 
-            spriteRenderer.color =
-                Color.white;
+            // The base sprite tint must remain white: the shared chunk-light
+            // shader applies world lighting on the GPU, including day/night.
+            spriteRenderer.color = Color.white;
 
 
             if (hasDefinition)
@@ -1234,6 +1257,7 @@ namespace Game.World.Furniture
             ] =
                 gameObject;
 
+            InitializeFurnitureLighting(key, entry, spriteRenderer);
         }
 
 
@@ -1253,17 +1277,16 @@ namespace Game.World.Furniture
             if (!TryGetDefinition(x, y, out BlockDefinition definition) || definition == null)
                 return;
 
-            // Full-size multi-block visuals are handled by their dedicated provider.
-            Sprite sprite = MultiBlockVisualProvider.GetSprite(entry.BlockId, definition);
-            if (sprite == null)
-            {
-                sprite = BlockVisualResolver.ResolveSprite(
-                    definition,
-                    x,
-                    y,
-                    BlockVisualLayer.Furniture
-                );
-            }
+            // Resolve the CURRENT state/frame. The previous implementation always
+            // returned the base multi-block sprite here, so StateChanged("burning")
+            // immediately re-applied furnace.png and then incorrectly marked the
+            // burning texture key as already rendered.
+            Sprite sprite = ResolveFurnitureSprite(
+                entry.BlockId,
+                definition,
+                x,
+                y
+            );
 
             SpriteRenderer renderer = visual.GetComponent<SpriteRenderer>();
             if (renderer != null && sprite != null)
@@ -1273,11 +1296,10 @@ namespace Game.World.Furniture
             {
                 dynamicVisualKeys.Add(key);
                 dynamicVisualTextureKeys[key] =
-                    BlockVisualResolver.ResolveTextureName(
+                    ResolveFurnitureTextureName(
                         definition,
                         x,
-                        y,
-                        BlockVisualLayer.Furniture
+                        y
                     );
             }
             else
@@ -1290,6 +1312,7 @@ namespace Game.World.Furniture
 
         private void Update()
         {
+            RefreshDayNightFurnitureLighting();
             if (dynamicVisualKeys.Count == 0 || Time.time < nextDynamicVisualUpdate)
                 return;
 
@@ -1324,11 +1347,10 @@ namespace Game.World.Furniture
                 }
 
                 string currentKey =
-                    BlockVisualResolver.ResolveTextureName(
+                    ResolveFurnitureTextureName(
                         definition,
                         entry.X,
-                        entry.Y,
-                        BlockVisualLayer.Furniture
+                        entry.Y
                     );
 
                 dynamicVisualTextureKeys.TryGetValue(key, out string previousKey);
@@ -1336,11 +1358,11 @@ namespace Game.World.Furniture
                     continue;
 
                 Sprite sprite =
-                    BlockVisualResolver.ResolveSprite(
+                    ResolveFurnitureSprite(
+                        entry.BlockId,
                         definition,
                         entry.X,
-                        entry.Y,
-                        BlockVisualLayer.Furniture
+                        entry.Y
                     );
 
                 SpriteRenderer renderer = visual.GetComponent<SpriteRenderer>();
@@ -1349,6 +1371,262 @@ namespace Game.World.Furniture
 
                 dynamicVisualTextureKeys[key] = currentKey;
             }
+        }
+
+
+        private bool EnsureFurnitureWindMaterial()
+        {
+            if (furnitureWindMaterial != null)
+                return true;
+
+            Shader shader = UnityEngine.Resources.Load<Shader>(
+                "Shaders/PixelatedWaveLitSprite"
+            );
+
+            if (shader == null)
+                shader = Shader.Find("Game/PixelatedWaveLitSprite");
+
+            if (shader == null)
+            {
+                if (!furnitureWindShaderMissingLogged)
+                {
+                    furnitureWindShaderMissingLogged = true;
+                    Debug.LogWarning(
+                        "FURNITURE WIND: Game/PixelatedWaveLitSprite shader missing. " +
+                        "Wave furniture will use the regular lighting material."
+                    );
+                }
+
+                return false;
+            }
+
+            furnitureWindMaterial = new Material(shader);
+            furnitureWindMaterial.name = "Runtime Furniture Wind Lighting";
+
+            furnitureWindMaterial.SetFloat("_WindStrength", 5f);
+            furnitureWindMaterial.SetFloat("_WindSpeed", 1f);
+            furnitureWindMaterial.SetFloat("_WindFrequency", 1.1f);
+            furnitureWindMaterial.SetFloat("_BlockPixelSize", 16f);
+
+            return true;
+        }
+
+        private bool EnsureFurnitureLightingMaterial()
+        {
+            if (furnitureLightingMaterial != null)
+                return true;
+            Shader shader = Shader.Find("Game/ChunkLitSprite");
+            if (shader == null)
+            {
+                if (!furnitureShaderMissingLogged)
+                {
+                    furnitureShaderMissingLogged = true;
+                    Debug.LogWarning("FURNITURE: Game/ChunkLitSprite shader missing; " +
+                        "using unlit sprites until the shader is available.");
+                }
+                return false;
+            }
+            furnitureLightingMaterial = new Material(shader);
+            furnitureLightingMaterial.name = "Runtime Furniture Chunk Lighting";
+            return true;
+        }
+
+
+        private void InitializeFurnitureLighting(
+            long key,
+            FurnitureSaveEntry entry,
+            SpriteRenderer renderer)
+        {
+            if (renderer == null)
+                return;
+
+            bool hasDefinition = TryGetDefinition(
+                entry.X,
+                entry.Y,
+                out BlockDefinition definition
+            );
+
+            bool hasWaveTag = hasDefinition && HasTag(definition, "wave");
+
+            if (hasWaveTag && EnsureFurnitureWindMaterial())
+            {
+                renderer.sharedMaterial = furnitureWindMaterial;
+            }
+            else
+            {
+                if (!EnsureFurnitureLightingMaterial())
+                    return;
+
+                renderer.sharedMaterial = furnitureLightingMaterial;
+            }
+
+            renderer.color = Color.white;
+
+            FurnitureLightingBinding binding = new FurnitureLightingBinding
+            {
+                Renderer = renderer,
+                Properties = new MaterialPropertyBlock(),
+                BoundLightTexture = null,
+                BoundFallback = false
+            };
+
+            furnitureLightingBindings[key] = binding;
+            BindFurnitureLight(entry, binding, true);
+        }
+
+
+        private void BindFurnitureLight(
+            FurnitureSaveEntry entry, FurnitureLightingBinding binding, bool force)
+        {
+            if (entry == null || binding == null || binding.Renderer == null)
+                return;
+
+            WorldManager manager = WorldManager.Instance;
+            ChunkRenderer chunkRenderer = manager != null ? manager.GetChunkRenderer() : null;
+
+            // The anchor of a multi-block uses its own chunk; a one-block border
+            // in the texture covers adjacent edge pixels as well.
+            int chunkX = Mathf.FloorToInt(entry.X / (float)Chunk.SizeX);
+            int chunkY = Mathf.FloorToInt(entry.Y / (float)Chunk.SizeY);
+            Texture2D texture = null;
+            bool hasTexture = chunkRenderer != null &&
+                chunkRenderer.TryGetChunkLightTexture(chunkX, chunkY, out texture);
+            if (!hasTexture)
+                texture = Texture2D.whiteTexture;
+
+            bool hanging = FurnitureSupportRuntime.IsHanging(entry.BlockId);
+            int rootY = entry.Y + 1;
+            if (hanging)
+                for (int up = 1; up < 9 && FurnitureSupportRuntime.IsHanging(GetFurniture(entry.X, entry.Y + up)); up++)
+                    rootY++;
+            bool fallback = !hasTexture;
+            if (!force && binding.BoundLightTexture == texture &&
+                binding.BoundFallback == fallback && binding.BoundVineRootY == rootY)
+                return;
+
+            // A single full-screen shader also uses the same scale and border
+            // as ChunkRenderer: 32 playable cells + one texel of border each side.
+            float width = Chunk.SizeX + 2f;
+            float height = Chunk.SizeY + 2f;
+            Vector4 worldUV = new Vector4(
+                1f / width, 1f / height,
+                (1f - chunkX * Chunk.SizeX) / width,
+                (1f - chunkY * Chunk.SizeY) / height);
+
+
+            binding.Properties.Clear();
+            binding.Properties.SetTexture("_LightTex", texture);
+            binding.Properties.SetVector("_FurnitureWorldLightUV", worldUV);
+            binding.Properties.SetFloat("_FurnitureWorldLightMode", 1f);
+            binding.Properties.SetFloat("_FurnitureFallbackMode", fallback ? 1f : 0f);
+            binding.Properties.SetFloat("_Ambient", .05f);
+            binding.Properties.SetFloat("_LayerBrightness", 1f);
+            binding.Properties.SetFloat("_LightGamma", .72f);
+
+            // Stable wind phase: neighbouring furniture uses world coordinates,
+            // not its position in the hierarchy.
+            binding.Properties.SetVector(
+                "_WindWorldOffset",
+                new Vector4(entry.X, entry.Y, 0f, 0f)
+            );
+
+            binding.Properties.SetFloat("_WindHanging", hanging ? 1f : 0f);
+            binding.Properties.SetFloat("_WindRootY", rootY);
+            binding.Properties.SetFloat("_WindPlantMode", 1f);
+            binding.Renderer.SetPropertyBlock(binding.Properties);
+
+            binding.BoundLightTexture = texture;
+            binding.BoundFallback = fallback;
+            binding.BoundVineRootY = rootY;
+        }
+
+        // 5Hz only checks for replacement/unloaded chunk textures. Light intensity,
+        // day/night, torch emission and moving light changes render directly on the
+        // GPU from the live light texture; there is no CPU color sampling at all.
+        private void RefreshDayNightFurnitureLighting()
+        {
+            if (Time.time < nextFurnitureLightingUpdate) return;
+            nextFurnitureLightingUpdate = Time.time + .20f;
+            if (
+    furnitureLightingMaterial == null &&
+    furnitureWindMaterial == null
+)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<long, FurnitureLightingBinding> pair
+                in furnitureLightingBindings)
+            {
+                FurnitureLightingBinding binding = pair.Value;
+                if (binding.Renderer == null || !binding.Renderer.isVisible)
+                    continue;
+                FurnitureSaveEntry entry;
+                if (!data.TryGetValue(pair.Key, out entry))
+                    continue;
+                BindFurnitureLight(entry, binding, false);
+            }
+        }
+
+        private static Sprite ResolveFurnitureSprite(
+            string blockId,
+            BlockDefinition definition,
+            int x,
+            int y
+        )
+        {
+            if (MultiBlockVisualProvider.IsMultiBlock(definition))
+            {
+                Sprite multiBlockSprite =
+                    MultiBlockVisualProvider.ResolveSprite(
+                        blockId,
+                        definition,
+                        x,
+                        y,
+                        BlockVisualLayer.Furniture
+                    );
+
+                if (multiBlockSprite != null)
+                    return multiBlockSprite;
+            }
+
+            return BlockVisualResolver.ResolveSprite(
+                definition,
+                x,
+                y,
+                BlockVisualLayer.Furniture
+            );
+        }
+
+
+        private static string ResolveFurnitureTextureName(
+            BlockDefinition definition,
+            int x,
+            int y
+        )
+        {
+            if (MultiBlockVisualProvider.IsMultiBlock(definition))
+            {
+                string multiBlockName =
+                    MultiBlockVisualProvider.ResolveTextureName(
+                        definition,
+                        x,
+                        y,
+                        BlockVisualLayer.Furniture
+                    );
+
+                if (!string.IsNullOrWhiteSpace(multiBlockName))
+                    return "multiblock:" + multiBlockName;
+            }
+
+            return "block:" + (
+                BlockVisualResolver.ResolveTextureName(
+                    definition,
+                    x,
+                    y,
+                    BlockVisualLayer.Furniture
+                ) ?? string.Empty
+            );
         }
 
 
@@ -1410,158 +1688,10 @@ namespace Game.World.Furniture
         }
 
 
-        private void CreateFireParticles(
-            Transform parent
-        )
+        private void CreateFireParticles(Transform parent)
         {
-
-            GameObject gameObject =
-                new GameObject(
-                    "FireParticles"
-                );
-
-
-            gameObject.transform.SetParent(
-                parent,
-                false
-            );
-
-
-            gameObject.transform.localPosition =
-                new Vector3(
-                    0f,
-                    0.28f,
-                    -0.01f
-                );
-
-
-            ParticleSystem particleSystem =
-                gameObject.AddComponent<
-                    ParticleSystem
-                >();
-
-
-            ParticleSystem.MainModule main =
-                particleSystem.main;
-
-
-            main.loop =
-                true;
-
-
-            main.startLifetime =
-                new ParticleSystem.MinMaxCurve(
-                    0.28f,
-                    0.55f
-                );
-
-
-            main.startSpeed =
-                new ParticleSystem.MinMaxCurve(
-                    0.15f,
-                    0.45f
-                );
-
-
-            main.startSize =
-                new ParticleSystem.MinMaxCurve(
-                    0.035f,
-                    0.075f
-                );
-
-
-            main.maxParticles =
-                24;
-
-
-            main.simulationSpace =
-                ParticleSystemSimulationSpace.World;
-
-
-            ParticleSystem.EmissionModule emission =
-                particleSystem.emission;
-
-
-            emission.rateOverTime =
-                10f;
-
-
-            ParticleSystem.ShapeModule shape =
-                particleSystem.shape;
-
-
-            shape.shapeType =
-                ParticleSystemShapeType.Circle;
-
-
-            shape.radius =
-                0.06f;
-
-
-            ParticleSystem.ColorOverLifetimeModule color =
-                particleSystem.colorOverLifetime;
-
-
-            color.enabled =
-                true;
-
-
-            Gradient gradient =
-                new Gradient();
-
-
-            gradient.SetKeys(
-                new[]
-                {
-                    new GradientColorKey(
-                        new Color(
-                            1f,
-                            0.75f,
-                            0.18f
-                        ),
-                        0f
-                    ),
-
-                    new GradientColorKey(
-                        new Color(
-                            1f,
-                            0.18f,
-                            0.04f
-                        ),
-                        1f
-                    )
-                },
-
-                new[]
-                {
-                    new GradientAlphaKey(
-                        0.95f,
-                        0f
-                    ),
-
-                    new GradientAlphaKey(
-                        0f,
-                        1f
-                    )
-                }
-            );
-
-
-            color.color =
-                new ParticleSystem.MinMaxGradient(
-                    gradient
-                );
-
-
-            ParticleSystemRenderer renderer =
-                gameObject.GetComponent<
-                    ParticleSystemRenderer
-                >();
-
-
-            renderer.sortingOrder =
-                1000;
-
+            // PixelWorldEffects owns one bounded particle buffer for all visible fires.
+            // Leave this hook for older furniture callers; avoid a duplicate emitter per torch.
         }
 
 
@@ -1617,185 +1747,19 @@ namespace Game.World.Furniture
         // LIGHTING
         // =====================================================
 
-        private void RebuildLightingAndVisuals(
-            int x,
-            int y
-        )
+        private void RebuildLightingAndVisuals(int x,int y)
         {
-
-            WorldManager worldManager =
-                WorldManager.Instance;
-
-
-            if (
-                worldManager ==
-                null
-                ||
-                worldManager.GetWorld() ==
-                null
-                ||
-                worldManager.GetSettings() ==
-                null
-            )
-            {
-
-                return;
-
-            }
-
-
-            // First update the actual light data.
-            worldManager
-                .GetWorld()
-                .GetLightEngine()
-                .RebuildAfterBlockChanged(
-                    x,
-                    y,
-                    worldManager
-                        .GetSettings()
-                        .WorldHeight
-                );
-
-
-            // IMPORTANT:
-            //
-            // Furniture is rendered separately, therefore placing it
-            // does NOT call WorldManager.SetBlock(), which normally
-            // redraws a chunk.
-            //
-            // The light data could already be correct while the
-            // chunk's light texture still showed the OLD values.
-            // That is why a deep torch could appear to "turn on"
-            // only after the player moved and caused chunks to
-            // render again.
-            //
-            // Redraw only chunks touched by the block-light radius.
-            RefreshLightTexturesAround(
-                worldManager,
-                x,
-                y
-            );
-
+            var manager=WorldManager.Instance;
+            if(manager==null||manager.GetWorld()==null||manager.GetSettings()==null)return;
+            // Furniture has its own sprite layer. Only the light needs rebuilding;
+            // the engine publishes dirty tiles and WorldManager uploads their light
+            // textures after completion, without redrawing surrounding terrain.
+            manager.GetWorld().GetLightEngine().RebuildAfterBlockChanged(
+                x,y,manager.GetSettings().WorldHeight,false);
         }
 
 
-        private void RefreshLightTexturesAround(
-            WorldManager worldManager,
-            int worldX,
-            int worldY
-        )
-        {
 
-            if (
-                worldManager ==
-                null
-                ||
-                worldManager.GetWorld() ==
-                null
-                ||
-                worldManager.GetChunkRenderer() ==
-                null
-            )
-            {
-
-                return;
-
-            }
-
-
-            World world =
-                worldManager.GetWorld();
-
-
-            var renderer =
-                worldManager.GetChunkRenderer();
-
-
-            int minChunkX =
-                Mathf.FloorToInt(
-                    (
-                        worldX -
-                        LightVisualRefreshRadius
-                    )
-                    /
-                    (float)Chunk.SizeX
-                );
-
-
-            int maxChunkX =
-                Mathf.FloorToInt(
-                    (
-                        worldX +
-                        LightVisualRefreshRadius
-                    )
-                    /
-                    (float)Chunk.SizeX
-                );
-
-
-            int minChunkY =
-                Mathf.FloorToInt(
-                    (
-                        worldY -
-                        LightVisualRefreshRadius
-                    )
-                    /
-                    (float)Chunk.SizeY
-                );
-
-
-            int maxChunkY =
-                Mathf.FloorToInt(
-                    (
-                        worldY +
-                        LightVisualRefreshRadius
-                    )
-                    /
-                    (float)Chunk.SizeY
-                );
-
-
-            for (
-                int chunkX = minChunkX;
-                chunkX <= maxChunkX;
-                chunkX++
-            )
-            {
-
-                for (
-                    int chunkY = minChunkY;
-                    chunkY <= maxChunkY;
-                    chunkY++
-                )
-                {
-
-                    Chunk chunk =
-                        world.GetChunk(
-                            chunkX,
-                            chunkY
-                        );
-
-
-                    if (
-                        chunk ==
-                        null
-                    )
-                    {
-
-                        continue;
-
-                    }
-
-
-                    renderer.Render(
-                        chunk
-                    );
-
-                }
-
-            }
-
-        }
 
 
         // =====================================================
@@ -1872,6 +1836,7 @@ namespace Game.World.Furniture
 
 
             visuals.Clear();
+            furnitureLightingBindings.Clear();
 
             dynamicVisualKeys.Clear();
             dynamicVisualTextureKeys.Clear();
@@ -2027,6 +1992,12 @@ namespace Game.World.Furniture
 
             }
 
+        }
+
+
+        public void Flush()
+        {
+            Save();
         }
 
 

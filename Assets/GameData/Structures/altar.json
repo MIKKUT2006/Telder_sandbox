@@ -3,8 +3,11 @@
     "DisplayName": "altar",
     "Width": 12,
     "Height": 8,
+    "Depth": 1,
     "OriginX": 0,
     "OriginY": 0,
+    "OriginZ": 0,
+    "GeometryMode": 0,
     "Type": 0,
     "SpawnType": 1,
     "SpawnChance": 0.10000000149011612,
@@ -15,139 +18,170 @@
     "RequireFreeSpace": true,
     "FreeSpacePadding": 1,
     "BiomeSource": 0,
-    "Biomes": [],
+    "Biomes": [
+        "game:plains"
+    ],
     "Cells": [
         {
             "X": 4,
             "Y": 2,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:dark_brickstone",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 1,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:dark_brickstone",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 0,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:dark_brickstone",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 2,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:dark_brickstone",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 1,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:dark_brickstone",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 0,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:dark_brickstone",
             "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 4,
-            "Y": 3,
-            "ForegroundId": "",
-            "BackgroundId": "game:campfire",
-            "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 6,
-            "Y": 3,
-            "ForegroundId": "",
-            "BackgroundId": "game:campfire",
-            "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 2,
             "Y": 2,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:moss_dark_brickstone",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 2,
             "Y": 1,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:dark_brickstone",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 2,
             "Y": 0,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:dark_brickstone",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 2,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:dark_brickstone",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 1,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:moss_dark_brickstone",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 0,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:moss_dark_brickstone",
             "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 2,
-            "Y": 3,
-            "ForegroundId": "",
-            "BackgroundId": "game:campfire",
-            "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 8,
-            "Y": 3,
-            "ForegroundId": "",
-            "BackgroundId": "game:campfire",
-            "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 0,
+            "Z": 0,
             "ForegroundId": "game:chest",
             "BackgroundId": "",
             "Loot": [
@@ -170,7 +204,63 @@
                     "MaxCount": 8
                 }
             ],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 3,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 3,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         }
     ]
 }

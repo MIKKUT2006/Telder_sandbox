@@ -1,0 +1,7 @@
+{
+  "ID": "game:dead_bush",
+  "Name": "Dead bush",
+  "Texture": "dead_bush",
+  "Type": "Block",
+  "MaxStack": 100
+}

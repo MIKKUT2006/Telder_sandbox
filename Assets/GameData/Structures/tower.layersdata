@@ -1,0 +1,62 @@
+{
+    "Version": 2,
+    "StructureId": "tower",
+    "Cells": [
+        {
+            "X": 5,
+            "Y": 8,
+            "FurnitureId": "game:green_lantern",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 5,
+            "FurnitureId": "game:workbench",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 1,
+            "FurnitureId": "game:furnace",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 2,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 1,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 4,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+{
+  "ID": "game:needle",
+  "Name": "Needle",
+  "Texture": "needle",
+  "Type": "Misc",
+  "MaxStack": 100
+}

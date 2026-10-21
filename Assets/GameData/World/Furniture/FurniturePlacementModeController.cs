@@ -1,3 +1,4 @@
+using Game.InputSupport;
 
 using UnityEngine;
 
@@ -7,6 +8,8 @@ using Game.Inventory;
 using Game.Inventory.UI;
 using Game.GameplaySystems.Furnace;
 using Game.GameplaySystems.Multiblock;
+using Game.GameplaySystems.Interactions;
+using Game.World.Structures;
 
 
 namespace Game.World.Furniture
@@ -40,12 +43,17 @@ namespace Game.World.Furniture
 
 
         private ExtendedMode mode;
+        public bool FurniturePlacementActive => mode == ExtendedMode.Furniture;
+        public bool BackgroundPlacementActive => mode == ExtendedMode.Background;
 
 
         private MonoBehaviour existingBlockInteraction;
 
 
         private PlayerInventory inventory;
+
+
+        private PlayerCollision playerCollision;
 
 
         private Camera worldCamera;
@@ -60,6 +68,12 @@ namespace Game.World.Furniture
             inventory =
                 GetComponent<
                     PlayerInventory
+                >();
+
+
+            playerCollision =
+                GetComponent<
+                    PlayerCollision
                 >();
 
 
@@ -115,9 +129,9 @@ namespace Game.World.Furniture
         {
 
             if (
-                Input.GetKeyDown(
-                    KeyCode.X
-                )
+                (Game.Inventory.UI.InventoryUI.Instance == null || !Game.Inventory.UI.InventoryUI.Instance.IsOpen) &&
+                !Game.UI.Settings.SettingsTabsController.IsOpen &&
+                GameInput.Pressed(GameAction.SwitchLayer)
             )
             {
 
@@ -141,9 +155,7 @@ namespace Game.World.Furniture
                 )
                 {
 
-                    existingBlockInteraction.enabled =
-                        mode !=
-                        ExtendedMode.Furniture;
+                    existingBlockInteraction.enabled = true;
 
                 }
 
@@ -230,30 +242,11 @@ namespace Game.World.Furniture
             }
 
 
-            if (
-                Input.GetMouseButton(
-                    0
-                )
-                &&
-                Time.time >=
-                nextAction
-            )
-            {
-
-                BreakFurniture();
-
-
-                nextAction =
-                    Time.time +
-                    placeInterval;
-
-            }
-
+            // Mining is exclusively handled by BlockInteraction in every placement mode.
+            // Keeping two left-click handlers caused double drops and layer-dependent mining.
 
             if (
-                Input.GetMouseButton(
-                    1
-                )
+                GameInput.Held(GameAction.Use)
                 &&
                 Time.time >=
                 nextAction
@@ -312,7 +305,7 @@ namespace Game.World.Furniture
 
             Vector3 worldPoint =
                 worldCamera.ScreenToWorldPoint(
-                    Input.mousePosition
+                    GameInput.PointerPosition
                 );
 
 
@@ -362,11 +355,77 @@ namespace Game.World.Furniture
             }
 
 
-            FurnitureLayerManager.Instance
-                .BreakFurniture(
+            FurnitureLayerManager furniture =
+                FurnitureLayerManager.Instance;
+
+
+            if (furniture == null)
+            {
+
+                return;
+
+            }
+
+
+            string furnitureId =
+                furniture.GetFurniture(
                     x,
                     y
                 );
+
+
+            if (
+                !string.IsNullOrWhiteSpace(
+                    furnitureId
+                )
+            )
+            {
+
+                WorldManager manager =
+                    WorldManager.Instance;
+
+
+                World currentWorld =
+                    manager != null
+                        ? manager.GetWorld()
+                        : null;
+
+
+                if (
+                    manager != null
+                    &&
+                    currentWorld != null
+                    &&
+                    StructureCascadeBreakRuntime
+                        .TryBreakTreeFromFurnitureTrunk(
+                            manager,
+                            currentWorld,
+                            x,
+                            y,
+                            furnitureId
+                        )
+                )
+                {
+
+                    if (playerCollision != null)
+                    {
+
+                        playerCollision.RefreshAfterWorldChange();
+
+                    }
+
+
+                    return;
+
+                }
+
+            }
+
+
+            furniture.BreakFurniture(
+                x,
+                y
+            );
 
         }
 
@@ -379,7 +438,67 @@ namespace Game.World.Furniture
                     out int x,
                     out int y
                 )
-                ||
+            )
+            {
+
+                return;
+
+            }
+
+
+            if (Input.GetMouseButtonDown(1))
+            {
+                Vector2 colliderSize =
+                    playerCollision != null
+                        ? playerCollision.GetColliderSize()
+                        : new Vector2(0.8f, 1.8f);
+
+                Rect playerBounds =
+                    InteractiveBlockRuntime.GetPlayerBounds(
+                        transform,
+                        colliderSize
+                    );
+
+                WorldManager worldManager =
+                    WorldManager.Instance;
+
+                if (
+                    worldManager != null &&
+                    InteractiveBlockRuntime.TryToggleForeground(
+                        worldManager.GetWorld(),
+                        x,
+                        y,
+                        playerBounds
+                    )
+                )
+                {
+                    if (playerCollision != null)
+                    {
+                        playerCollision.RefreshAfterWorldChange();
+                    }
+
+                    return;
+                }
+
+                if (
+                    InteractiveBlockRuntime.TryToggleFurniture(
+                        x,
+                        y,
+                        playerBounds
+                    )
+                )
+                {
+                    if (playerCollision != null)
+                    {
+                        playerCollision.RefreshAfterWorldChange();
+                    }
+
+                    return;
+                }
+            }
+
+
+            if (
                 FurnitureLayerManager.Instance
                     .HasFurniture(
                         x,
@@ -392,9 +511,7 @@ namespace Game.World.Furniture
                 ) != null
             )
             {
-
                 return;
-
             }
 
 

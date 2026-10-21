@@ -42,7 +42,11 @@
 
   "CraftIngredients": [
     {
-      "ItemId": "game:oak_trunk",
+      "Tag": "wood",
+      "Count": 3
+    },
+     {
+      "ItemId": "game:wool",
       "Count": 3
     }
   ],

@@ -396,6 +396,10 @@ public partial class HeldItemPoseEditorWindow :
             case WeaponKind.Bomb:
                 DrawBombWeaponEditor();
                 break;
+
+            case WeaponKind.Harpoon:
+                DrawHarpoonWeaponEditor();
+                break;
         }
 
 
@@ -859,6 +863,50 @@ private void DrawBowWeaponEditor()
         );
     }
 
+
+    private void DrawHarpoonWeaponEditor()
+    {
+        EditorGUILayout.Space(8f);
+        EditorGUILayout.LabelField("Гарпун / верёвка", EditorStyles.boldLabel);
+        weapon.HarpoonThrowSpeed = Mathf.Max(1f,
+            EditorGUILayout.FloatField("Скорость крюка", weapon.HarpoonThrowSpeed));
+        weapon.HarpoonThrowGravity = Mathf.Max(0f,
+            EditorGUILayout.FloatField("Гравитация крюка", weapon.HarpoonThrowGravity));
+        weapon.HarpoonArcLift = EditorGUILayout.Slider(
+            "Высота дуги", weapon.HarpoonArcLift, 0f, 0.8f);
+        weapon.HarpoonMaxRange = Mathf.Max(1f,
+            EditorGUILayout.FloatField("Дальность, блоки", weapon.HarpoonMaxRange));
+        weapon.HarpoonMaxFlightTime = Mathf.Max(0.1f,
+            EditorGUILayout.FloatField("Макс. полёт, сек", weapon.HarpoonMaxFlightTime));
+        weapon.HarpoonMinRopeLength = Mathf.Clamp(
+            EditorGUILayout.FloatField("Мин. длина верёвки", weapon.HarpoonMinRopeLength),
+            0.8f, weapon.HarpoonMaxRange);
+
+        EditorGUILayout.Space(6f);
+        EditorGUILayout.LabelField("Раскачивание", EditorStyles.boldLabel);
+        weapon.HarpoonSwingGravity = Mathf.Max(0f,
+            EditorGUILayout.FloatField("Гравитация игрока", weapon.HarpoonSwingGravity));
+        weapon.HarpoonSwingAcceleration = Mathf.Max(0f,
+            EditorGUILayout.FloatField("Ускорение A/D", weapon.HarpoonSwingAcceleration));
+        weapon.HarpoonMaxSwingSpeed = Mathf.Max(1f,
+            EditorGUILayout.FloatField("Макс. скорость", weapon.HarpoonMaxSwingSpeed));
+        weapon.HarpoonSwingDrag = Mathf.Max(0f,
+            EditorGUILayout.FloatField("Сопротивление", weapon.HarpoonSwingDrag));
+        weapon.HarpoonWinchSpeed = Mathf.Max(0f,
+            EditorGUILayout.FloatField("Скорость W/S", weapon.HarpoonWinchSpeed));
+
+        EditorGUILayout.Space(6f);
+        EditorGUILayout.LabelField("Отцепление и прочность", EditorStyles.boldLabel);
+        weapon.HarpoonJumpUpBoost = Mathf.Max(0f,
+            EditorGUILayout.FloatField("Сила прыжка", weapon.HarpoonJumpUpBoost));
+        weapon.HarpoonJumpOutBoost = Mathf.Max(0f,
+            EditorGUILayout.FloatField("Толчок в сторону", weapon.HarpoonJumpOutBoost));
+        weapon.HarpoonDurabilityCost = Mathf.Max(1,
+            EditorGUILayout.IntField("Прочность за выстрел", weapon.HarpoonDurabilityCost));
+        EditorGUILayout.HelpBox(
+            "ЛКМ — бросить; A/D — качаться; W/S — менять длину; Пробел — отпустить и подпрыгнуть. " +
+            "Общую прочность настрой в JSON предмета (Durability).", MessageType.Info);
+    }
 
     private void DrawProjectileWeaponEditor()
     {

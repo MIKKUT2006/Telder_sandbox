@@ -1,0 +1,7 @@
+{
+  "ID": "game:dense_leaves",
+  "Name": "dense Leaves",
+  "Texture": "leaves",
+  "Type": "Block",
+  "MaxStack": 100
+}

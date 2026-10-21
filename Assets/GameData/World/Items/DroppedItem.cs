@@ -5,6 +5,7 @@ using UnityEngine;
 using Game.Inventory;
 using Game.Inventory.UI;
 using Game.World.Collision;
+using Game.Fluids;
 
 
 namespace Game.World.Items
@@ -137,6 +138,8 @@ namespace Game.World.Items
 
         private float pickupAllowedTime;
 
+        private float destructiveLiquidTimer;
+
 
         // =====================================================
         // MOVEMENT
@@ -146,6 +149,26 @@ namespace Game.World.Items
 
 
         private bool isGrounded;
+        private bool isEmbedded;
+        private Vector2 embeddedTip;
+
+        public bool IsEmbedded => isEmbedded;
+        public Vector2 EmbeddedTip => embeddedTip;
+
+        // Embedded arrows are normal collectable drops, but keep their flight
+        // rotation and do not fall until the supporting tile disappears.
+        public void SetEmbedded(Vector2 tip, Quaternion flightRotation)
+        {
+            isEmbedded = true;
+            embeddedTip = tip;
+            velocity = Vector2.zero;
+            // Show the rear of the arrow outside the wall instead of burying
+            // the entire dropped-item sprite inside a solid tile.
+            Vector2 direction = flightRotation * Vector2.right;
+            transform.position = tip - direction * 0.22f;
+            transform.rotation = flightRotation;
+            isGrounded = true;
+        }
 
 
         public string ItemId =>
@@ -239,10 +262,10 @@ namespace Game.World.Items
 
             if (
                 legacyBody != null
-            )
+            ) 
             {
 
-                legacyBody.velocity =
+                legacyBody.linearVelocity =
                     Vector2.zero;
 
 
@@ -292,8 +315,31 @@ namespace Game.World.Items
         }
 
 
+        private bool IsTerrainLoadedHere()
+        {
+            WorldManager manager = WorldManager.Instance;
+            if (manager == null || manager.GetSettings() == null || manager.GetLoader() == null)
+                return false;
+
+            int size = Mathf.Max(1, manager.GetSettings().ChunkSize);
+            int minX = Mathf.FloorToInt((transform.position.x - collisionSize.x * 0.5f) / size);
+            int maxX = Mathf.FloorToInt((transform.position.x + collisionSize.x * 0.5f) / size);
+            int minY = Mathf.FloorToInt((transform.position.y - collisionSize.y * 0.5f - 0.1f) / size);
+            int maxY = Mathf.FloorToInt((transform.position.y + collisionSize.y * 0.5f) / size);
+            var loader = manager.GetLoader();
+            for (int x = minX; x <= maxX; x++)
+                for (int y = minY; y <= maxY; y++)
+                    if (!loader.IsChunkLoaded(x, y))
+                        return false;
+            return true;
+        }
+
         private void FixedUpdate()
         {
+            // An unloaded chunk returns air from World.GetBlock. Never advance
+            // gravity/magnet through terrain that has not been generated yet.
+            if (!IsTerrainLoadedHere())
+                return;
 
             if (
                 worldCollision == null
@@ -315,8 +361,27 @@ namespace Game.World.Items
             }
 
 
+            if (isEmbedded)
+            {
+                // Keep arrows stuck only while the wall still exists.
+                int tileX = Mathf.FloorToInt(embeddedTip.x);
+                int tileY = Mathf.FloorToInt(embeddedTip.y);
+                if (worldCollision.IsSolid(tileX, tileY) ||
+                    Game.GameplaySystems.Interactions.InteractiveBlockRuntime.IntersectsClosedFurniture(
+                        new Rect(tileX + 0.01f, tileY + 0.01f, 0.98f, 0.98f)))
+                    return;
+                isEmbedded = false;
+                transform.rotation = Quaternion.identity;
+            }
+
             float deltaTime =
                 Time.fixedDeltaTime;
+
+
+            if (UpdateDestructiveLiquid(deltaTime))
+            {
+                return;
+            }
 
 
             bool magnetized =
@@ -424,6 +489,57 @@ namespace Game.World.Items
 
             CheckGround();
 
+        }
+
+
+        private bool UpdateDestructiveLiquid(float deltaTime)
+        {
+            WorldManager manager = WorldManager.Instance;
+            World queryWorld = manager != null ? manager.GetWorld() : null;
+
+            if (queryWorld == null)
+            {
+                destructiveLiquidTimer = 0f;
+                return false;
+            }
+
+            Vector2 p = transform.position;
+            int x = Mathf.FloorToInt(p.x);
+            int y = Mathf.FloorToInt(p.y);
+
+            if (queryWorld.GetLiquidAmount(x, y) == 0)
+            {
+                destructiveLiquidTimer = 0f;
+                return false;
+            }
+
+            ushort liquidId = queryWorld.GetLiquidID(x, y);
+            if (liquidId == 0)
+            {
+                destructiveLiquidTimer = 0f;
+                return false;
+            }
+
+            string fluidId = FluidIDRegistry.GetString(liquidId);
+            bool destroysItems =
+                string.Equals(fluidId, "game:lava", System.StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(fluidId, "game:acid", System.StringComparison.OrdinalIgnoreCase);
+
+            if (!destroysItems)
+            {
+                destructiveLiquidTimer = 0f;
+                return false;
+            }
+
+            destructiveLiquidTimer += Mathf.Max(0f, deltaTime);
+
+            // A short grace period makes the item visibly enter the liquid before
+            // being destroyed and prevents one-frame edge contacts from deleting it.
+            if (destructiveLiquidTimer < 0.18f)
+                return false;
+
+            Destroy(gameObject);
+            return true;
         }
 
 
@@ -568,6 +684,12 @@ namespace Game.World.Items
             }
 
 
+            if (isEmbedded)
+            {
+                isEmbedded = false;
+                transform.rotation = Quaternion.identity;
+            }
+
             magnetTarget =
                 target;
 
@@ -598,6 +720,8 @@ namespace Game.World.Items
         // =====================================================
         // SET VELOCITY
         // =====================================================
+
+        public Vector2 CurrentVelocity => velocity;
 
         public void SetVelocity(
             Vector2 newVelocity
@@ -1067,6 +1191,9 @@ namespace Game.World.Items
 
             }
 
+
+            // Fire only after some items were actually transferred.
+            Game.Audio.TelderAudioSystem.PlayAt("item.pickup", inventory.transform.position, inventory.GetInstanceID());
 
             count =
                 remaining;

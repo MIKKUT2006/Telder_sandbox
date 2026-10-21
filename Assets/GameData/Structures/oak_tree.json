@@ -3,8 +3,11 @@
     "DisplayName": "Oak  tree",
     "Width": 16,
     "Height": 16,
+    "Depth": 1,
     "OriginX": 5,
     "OriginY": 0,
+    "OriginZ": 0,
+    "GeometryMode": 0,
     "Type": 1,
     "SpawnType": 1,
     "SpawnChance": 1.0,
@@ -22,746 +25,1211 @@
         {
             "X": 5,
             "Y": 0,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 1,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 2,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 3,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "game:hive_oak_trunk",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 7,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 5,
-            "Y": 7,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 8,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 8,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 7,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 6,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 6,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 7,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 4,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 5,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 5,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_branch",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 6,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 7,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 3,
             "Y": 13,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 2,
             "Y": 12,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 3,
-            "Y": 11,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 13,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 13,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 14,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 14,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 14,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 13,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 13,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 9,
             "Y": 12,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 9,
             "Y": 11,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 9,
             "Y": 10,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 10,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 3,
             "Y": 9,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 9,
             "Y": 9,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 8,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 6,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 3,
-            "Y": 8,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
-            "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 3,
-            "Y": 7,
-            "ForegroundId": "",
-            "BackgroundId": "game:oak_trunk",
-            "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 3,
             "Y": 12,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 12,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 11,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 9,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "game:oak_branch",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 10,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 9,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 10,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 9,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 10,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 9,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "game:oak_branch",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 9,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 8,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 8,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 12,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 11,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 13,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 12,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 11,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 12,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 11,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 12,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 11,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 2,
             "Y": 8,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 2,
             "Y": 9,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 10,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "game:oak_trunk",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 2,
             "Y": 11,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 3,
-            "Y": 10,
-            "ForegroundId": "",
-            "BackgroundId": "game:leaves",
-            "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 1,
             "Y": 11,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 1,
             "Y": 10,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 2,
             "Y": 10,
+            "Z": 0,
             "ForegroundId": "",
-            "BackgroundId": "game:leaves",
+            "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 4,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_branch",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 3,
             "Y": 6,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_branch",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 1,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk_slab",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 0,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk_slab",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 0,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:oak_trunk_slab",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 5,
             "Y": 15,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 6,
             "Y": 15,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 15,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 14,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 4,
             "Y": 14,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 3,
             "Y": 14,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 2,
             "Y": 13,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 1,
             "Y": 12,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 0,
             "Y": 11,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 0,
             "Y": 10,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 1,
             "Y": 9,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 1,
             "Y": 8,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 2,
             "Y": 7,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 7,
             "Y": 5,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 7,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 8,
             "Y": 6,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 9,
             "Y": 8,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 10,
             "Y": 9,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 10,
             "Y": 10,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 10,
             "Y": 11,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 10,
             "Y": 12,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 9,
             "Y": 13,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "game:leaves_layer",
             "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 8,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 7,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 11,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 10,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "game:oak_trunk",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         }
     ]
 }

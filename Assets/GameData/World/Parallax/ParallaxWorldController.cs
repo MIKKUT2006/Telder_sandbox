@@ -87,6 +87,7 @@ namespace Game.World.Parallax
 
         private void TryInitialize()
         {
+            if(Game.World.Dimensions.DimensionTravelRuntime.Current.Is3D){enabled=false;return;}
             if (initialized)
                 return;
 

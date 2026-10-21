@@ -63,6 +63,7 @@ namespace Game.World.Dimensions
         {
             if (
                 traveling ||
+                SaveGameRuntime.IsInventoryTransferPending ||
                 string.IsNullOrWhiteSpace(
                     dimensionName
                 )
@@ -74,11 +75,16 @@ namespace Game.World.Dimensions
 
             EnsureInitialized();
 
+            Game.Audio.TelderAudioSystem.Play("portal.teleport");
 
             // Сохраняем инвентарь, позицию
             // и изменения текущего измерения.
             SaveGameRuntime
                 .SaveCurrentScene();
+
+            // Snapshot inventory BEFORE the dimension name changes and before
+            // SceneManager creates the destination player instance.
+            SaveGameRuntime.BeginInventoryTransfer();
 
 
             string targetName =
@@ -121,6 +127,7 @@ namespace Game.World.Dimensions
                 current == null
             )
             {
+                SaveGameRuntime.CompleteInventoryTransfer();
                 return;
             }
 
@@ -355,6 +362,7 @@ namespace Game.World.Dimensions
                 operation == null
             )
             {
+                SaveGameRuntime.CompleteInventoryTransfer();
                 DimensionTravelRuntime
                     .FinishTravel();
 

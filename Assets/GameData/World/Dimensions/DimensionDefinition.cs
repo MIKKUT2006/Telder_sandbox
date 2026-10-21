@@ -35,6 +35,12 @@ namespace Game.World.Dimensions
         }
 
 
+        public bool Is3D
+        {
+            get { return Type != null && Type.Is3D; }
+        }
+
+
         public bool HasModifier(
             string modifierId
         )

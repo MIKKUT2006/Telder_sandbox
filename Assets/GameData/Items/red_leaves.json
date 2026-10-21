@@ -1,0 +1,7 @@
+{
+  "ID": "game:red_leaves",
+  "Name": "Red Leaves",
+  "Texture": "red_leaves",
+  "Type": "Block",
+  "MaxStack": 100
+}

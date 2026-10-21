@@ -1,0 +1,20 @@
+{
+  "Id": "badlands3d",
+  "DisplayName": "Voxel Badlands",
+  "TerrainBaseHeight": 48,
+  "HillStrength": 21,
+  "HillScale": 0.007,
+  "MountainStrength": 38,
+  "MountainScale": 0.0048,
+  "DetailStrength": 6,
+  "DetailScale": 0.035,
+  "CaveScale": 0.037,
+  "CaveThreshold": 0.62,
+  "CaveStrength": 0.95,
+  "SurfaceBlock": "game:sand",
+  "SubsurfaceBlock": "game:sand",
+  "StoneBlock": "game:stone",
+  "SkyR": 0.78, "SkyG": 0.61, "SkyB": 0.48,
+  "GroundR": 0.46, "GroundG": 0.31, "GroundB": 0.24,
+  "FogR": 0.72, "FogG": 0.54, "FogB": 0.42
+}

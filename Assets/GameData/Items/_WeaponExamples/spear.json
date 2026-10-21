@@ -1,5 +1,5 @@
 {
-  "ID": "game:iron_spear",
+  "ID": "game:test_spear",
   "Name": "Iron Spear",
   "Texture": "iron_spear",
   "Type": "Weapon",
@@ -10,8 +10,16 @@
     "AttackSpeed": 1.7,
     "Knockback": 3.5,
     "ArmAimOffset": -90,
-    "SpearBaseReach": 1.55,
-    "SpearThrustDistance": 1.7,
-    "SpearHitRadius": 0.26
+    "SpearBaseReach": 2.1,
+    "SpearThrustDistance": 1.8,
+    "SpearHitRadius": 0.26,
+    "SpearPattern": [
+      "Thrust",
+      "PowerThrust"
+    ],
+    "TrackCursorDuringAttack": true,
+    "MeleeComboResetTime": 1.2,
+    "SpearPowerReachMultiplier": 1.2,
+    "SpearPowerDamageMultiplier": 1.2
   }
 }

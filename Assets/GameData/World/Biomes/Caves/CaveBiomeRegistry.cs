@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,7 +52,8 @@ namespace Game.World.Biomes.Caves
             int worldX,
             int worldY,
             int worldSeed,
-            string[] dimensionKeys
+            string[] dimensionKeys,
+            string surfaceBiomeId = null
         )
         {
             EnsureLoaded();
@@ -104,6 +105,9 @@ namespace Game.World.Biomes.Caves
                     continue;
                 }
 
+
+                if (!SurfaceBiomeAllowed(definition, surfaceBiomeId))
+                    continue;
 
                 int minY =
                     Mathf.Min(
@@ -192,13 +196,16 @@ namespace Game.World.Biomes.Caves
             int worldSeed
         )
         {
+            WorldManager manager = WorldManager.Instance;
+            var generator = manager != null ? manager.GetGenerator() : null;
+            var surface = generator != null ? generator.GetDominantBiome(worldX) : null;
             CaveBiomeRuntimeData biome =
                 FindAt(
                     worldX,
                     worldY,
                     worldSeed,
-                    CaveBiomeDimensionRuntime
-                        .GetCurrentKeys()
+                    CaveBiomeDimensionRuntime.GetCurrentKeys(),
+                    surface != null ? surface.ID : null
                 );
 
 
@@ -238,8 +245,7 @@ namespace Game.World.Biomes.Caves
 
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "CaveBiomes"
                 );
 
@@ -483,6 +489,23 @@ namespace Game.World.Biomes.Caves
                 );
         }
 
+
+        private static bool SurfaceBiomeAllowed(CaveBiomeDefinition definition, string surfaceId)
+        {
+            if (definition.SurfaceBiomes == null || definition.SurfaceBiomes.Count == 0)
+                return true;
+            // A caller without the column's surface biome cannot choose a restricted
+            // cave biome. Do not accidentally generate it everywhere.
+            if (string.IsNullOrWhiteSpace(surfaceId)) return false;
+            for (int i = 0; i < definition.SurfaceBiomes.Count; i++)
+            {
+                string requested = definition.SurfaceBiomes[i];
+                if (string.IsNullOrWhiteSpace(requested) || requested == "*") return true;
+                if (string.Equals(requested.Trim(), surfaceId.Trim(), StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
 
         private static bool DimensionAllowed(
             CaveBiomeDefinition definition,

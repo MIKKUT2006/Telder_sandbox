@@ -49,6 +49,7 @@ namespace Game.World.Structures
                 StructureDefinition structure = structures[s];
 
                 if (structure == null ||
+                    structure.GeometryMode == StructureGeometryMode.Voxel3D ||
                     structure.Cells == null ||
                     structure.Cells.Count == 0)
                     continue;
@@ -273,6 +274,13 @@ namespace Game.World.Structures
                 return false;
             }
 
+
+            // Deterministic lake check: generated ponds carve away grass after
+            // structures are stamped. Trees must not be rooted in that area.
+            if (structure.Type == StructureType.Tree && anchorY >= surface &&
+                Game.World.Fluids.LiquidLakeGenerator.IntersectsSurfaceLake(
+                    generator, settings, anchorX, 2))
+                return false;
 
             if (
                 structure.RequireFreeSpace
@@ -1166,12 +1174,14 @@ namespace Game.World.Structures
                     continue;
 
 
-                StructureLayerCellMetadata cellLayerMetadata =
-                    StructureLayerMetadataStore.GetCell(
-                        structure.ID,
-                        cell.X,
-                        cell.Y
-                    );
+                // The structure registry merges old .layersdata when loading.
+                // Only immutable in-memory cell data is accessed here, which
+                // is safe for the generator worker and avoids disk I/O.
+                byte foregroundTransform = cell.ForegroundTransform != 0
+                    ? cell.ForegroundTransform : cell.Transform;
+                byte backgroundTransform = cell.BackgroundTransform;
+                byte furnitureTransform = cell.FurnitureTransform;
+                string furnitureId = cell.FurnitureId;
 
 
                 if (!string.IsNullOrWhiteSpace(
@@ -1204,13 +1214,18 @@ namespace Game.World.Structures
                             worldX,
                             worldY,
                             ConvertEditorTransformToRuntime(
-                                cellLayerMetadata != null
-                                    ? cellLayerMetadata.ForegroundTransform
-                                    : (byte)0
+                                foregroundTransform
                             ),
                             false
                         );
 
+
+                        if (foregroundTransform != 0)
+                        {
+                            StructurePlacementRuntimeBridge.QueueForegroundTransform(
+                                worldX, worldY,
+                                ConvertEditorTransformToRuntime(foregroundTransform));
+                        }
 
                         if (IsChestBlock(id))
                         {
@@ -1248,35 +1263,23 @@ namespace Game.World.Structures
                          * the first chunk render.
                          */
                         BackgroundBlockTransformRegistry.SetRaw(
-                            worldX,
-                            worldY,
-                            ConvertEditorTransformToRuntime(
-                                cellLayerMetadata != null
-                                    ? cellLayerMetadata.BackgroundTransform
-                                    : (byte)0
-                            )
-                        );
+                            worldX, worldY,
+                            ConvertEditorTransformToRuntime(backgroundTransform));
+                        if (backgroundTransform != 0)
+                        {
+                            StructurePlacementRuntimeBridge.QueueBackgroundTransform(
+                                worldX, worldY,
+                                ConvertEditorTransformToRuntime(backgroundTransform));
+                        }
                     }
                 }
 
 
-                if (
-                    cellLayerMetadata !=
-                    null
-                    &&
-                    !string.IsNullOrWhiteSpace(
-                        cellLayerMetadata.FurnitureId
-                    )
-                )
+                if (!string.IsNullOrWhiteSpace(furnitureId))
                 {
                     StructurePlacementRuntimeBridge.QueueFurniture(
-                        worldX,
-                        worldY,
-                        cellLayerMetadata.FurnitureId,
-                        ConvertEditorTransformToRuntime(
-                            cellLayerMetadata.FurnitureTransform
-                        )
-                    );
+                        worldX, worldY, furnitureId,
+                        ConvertEditorTransformToRuntime(furnitureTransform));
                 }
             }
         }

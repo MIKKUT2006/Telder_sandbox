@@ -30,6 +30,8 @@ namespace Game.World.Rendering
             if (block == null)
                 return false;
 
+            if (block.Plant != null) return true;
+
             if (HasFrames(block.Animation))
                 return true;
 
@@ -44,6 +46,8 @@ namespace Game.World.Rendering
         {
             if (block == null)
                 return null;
+
+            if (block.Plant != null) return Game.Gameplay.Plants.PlantRuntime.Texture(block,worldX,worldY);
 
             string state = BlockVisualStateRuntime.GetState(worldX, worldY, layer);
             BlockVisualStateDefinition stateVisual = FindState(block, state);

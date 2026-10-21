@@ -92,6 +92,12 @@ namespace Game.World.Generation
 
         public bool EnableSurfaceEntrances;
 
+        // Extra exits begin on mountain slopes and bend into the hillside.
+        public bool EnableMountainEntrances = true;
+        public float MountainEntranceChance = 0.4f;
+        public float MountainEntranceMinSlope = 0.3f;
+        public int MountainEntranceLength = 96;
+
         // Вероятность выхода в каждом регионе.
         public float SurfaceEntranceChance;
 
@@ -212,13 +218,13 @@ namespace Game.World.Generation
                 true;
 
             SurfaceEntranceChance =
-                0.025f;
+                0.045f;
 
             EntranceRegionSize =
                 140;
 
             EntranceLength =
-                65;
+                82;
 
             EntranceRadius =
                 2.5f;

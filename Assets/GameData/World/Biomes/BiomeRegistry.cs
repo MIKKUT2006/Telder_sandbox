@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -37,8 +37,7 @@ namespace Game.World.Biomes
 
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Biomes"
                 );
 

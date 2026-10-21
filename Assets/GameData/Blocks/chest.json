@@ -21,17 +21,21 @@
   "RequiredTool": "",
 
   "Tags": [
-    "chest",
-    "wood"
+    "chest"
   ],
 
   "LightOpacity": 15,
   "LightEmissionR": 0,
   "LightEmissionG": 0,
   "LightEmissionB": 0,
-  "CraftIngredients": [],
-  "CraftWithoutWorkbench": false,
-  "CraftResultCount": 1,
   "CollisionShape": "Full",
-  "CollisionRects": []
+  "CollisionRects": [],
+  "CraftIngredients": [
+    {
+      "ItemId": "game:oak_wood_planks",
+      "Count": 4
+    }
+  ],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1
 }

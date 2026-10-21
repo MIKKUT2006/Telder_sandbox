@@ -1,0 +1,7 @@
+{
+  "ID": "game:glass",
+  "Name": "Glass",
+  "Texture": "glass",
+  "Type": "Block",
+  "MaxStack": 100
+}

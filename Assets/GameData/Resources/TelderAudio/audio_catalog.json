@@ -1,0 +1,398 @@
+{
+  "Events": [
+    {
+      "Id": "item.pickup",
+      "Clips": [
+        "TelderAudio/Clips/pickup_1",
+        "TelderAudio/Clips/pickup_2"
+      ],
+      "Volume": 0.8,
+      "PitchMin": 0.96,
+      "PitchMax": 1.12,
+      "Cooldown": 0.075,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "player.hurt",
+      "Clips": [
+        "TelderAudio/Clips/player_hurt"
+      ],
+      "Volume": 0.85,
+      "PitchMin": 0.96,
+      "PitchMax": 1.04,
+      "Cooldown": 0.15,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "player.death",
+      "Clips": [
+        "TelderAudio/Clips/player_death"
+      ],
+      "Volume": 1,
+      "PitchMin": 1,
+      "PitchMax": 1,
+      "Cooldown": 0.3,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "player.jump",
+      "Clips": [
+        "TelderAudio/Clips/jump"
+      ],
+      "Volume": 0.46,
+      "PitchMin": 0.97,
+      "PitchMax": 1.05,
+      "Cooldown": 0.12,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "player.land",
+      "Clips": [
+        "TelderAudio/Clips/land"
+      ],
+      "Volume": 0.46,
+      "PitchMin": 0.92,
+      "PitchMax": 1.07,
+      "Cooldown": 0.12,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "player.step",
+      "Clips": [
+        "TelderAudio/Clips/footstep_1",
+        "TelderAudio/Clips/footstep_2"
+      ],
+      "Volume": 0.26,
+      "PitchMin": 0.92,
+      "PitchMax": 1.06,
+      "Cooldown": 0.12,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "player.eat",
+      "Clips": [
+        "TelderAudio/Clips/eat"
+      ],
+      "Volume": 0.48,
+      "PitchMin": 0.93,
+      "PitchMax": 1.05,
+      "Cooldown": 0.1,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "weapon.swing",
+      "Clips": [
+        "TelderAudio/Clips/swing_1",
+        "TelderAudio/Clips/swing_2"
+      ],
+      "Volume": 0.58,
+      "PitchMin": 0.91,
+      "PitchMax": 1.09,
+      "Cooldown": 0.09,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "weapon.bow.draw",
+      "Clips": [
+        "TelderAudio/Clips/bow_draw"
+      ],
+      "Volume": 0.65,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.09,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "weapon.gun",
+      "Clips": [
+        "TelderAudio/Clips/gun"
+      ],
+      "Volume": 0.85,
+      "PitchMin": 0.93,
+      "PitchMax": 1.05,
+      "Cooldown": 0.1,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "block.hit",
+      "Clips": [
+        "TelderAudio/Clips/block_hit_1",
+        "TelderAudio/Clips/block_hit_2"
+      ],
+      "Volume": 0.55,
+      "PitchMin": 0.92,
+      "PitchMax": 1.12,
+      "Cooldown": 0.09,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "block.break",
+      "Clips": [
+        "TelderAudio/Clips/block_break"
+      ],
+      "Volume": 0.75,
+      "PitchMin": 0.87,
+      "PitchMax": 1.12,
+      "Cooldown": 0.035,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "block.place",
+      "Clips": [
+        "TelderAudio/Clips/block_place"
+      ],
+      "Volume": 0.42,
+      "PitchMin": 0.97,
+      "PitchMax": 1.07,
+      "Cooldown": 0.05,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "harpoon.fire",
+      "Clips": [
+        "TelderAudio/Clips/harpoon_fire"
+      ],
+      "Volume": 0.85,
+      "PitchMin": 0.96,
+      "PitchMax": 1.05,
+      "Cooldown": 0.12,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "harpoon.reel.in",
+      "Clips": [
+        "TelderAudio/Clips/rope_reel"
+      ],
+      "Volume": 0.32,
+      "PitchMin": 1.05,
+      "PitchMax": 1.14,
+      "Cooldown": 0.18,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "harpoon.reel.out",
+      "Clips": [
+        "TelderAudio/Clips/rope_reel"
+      ],
+      "Volume": 0.32,
+      "PitchMin": 0.8,
+      "PitchMax": 0.95,
+      "Cooldown": 0.18,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "mob.hurt",
+      "Clips": [
+        "TelderAudio/Clips/mob_hurt"
+      ],
+      "Volume": 0.8,
+      "PitchMin": 0.89,
+      "PitchMax": 1.11,
+      "Cooldown": 0.12,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "mob.attack",
+      "Clips": [
+        "TelderAudio/Clips/mob_attack"
+      ],
+      "Volume": 0.72,
+      "PitchMin": 0.95,
+      "PitchMax": 1.07,
+      "Cooldown": 0.15,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "mob.death",
+      "Clips": [
+        "TelderAudio/Clips/mob_death"
+      ],
+      "Volume": 0.9,
+      "PitchMin": 0.93,
+      "PitchMax": 1.08,
+      "Cooldown": 0.11,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "portal.loop",
+      "Clips": [
+        "TelderAudio/Clips/portal_loop"
+      ],
+      "Volume": 0.42,
+      "PitchMin": 1,
+      "PitchMax": 1,
+      "Cooldown": 0,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "portal.open",
+      "Clips": [
+        "TelderAudio/Clips/portal_open"
+      ],
+      "Volume": 0.88,
+      "PitchMin": 0.98,
+      "PitchMax": 1.03,
+      "Cooldown": 0.2,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "portal.teleport",
+      "Clips": [
+        "TelderAudio/Clips/teleport"
+      ],
+      "Volume": 1,
+      "PitchMin": 1,
+      "PitchMax": 1,
+      "Cooldown": 0.5,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "portal.close",
+      "Clips": [
+        "TelderAudio/Clips/portal_close"
+      ],
+      "Volume": 0.7,
+      "PitchMin": 1,
+      "PitchMax": 1,
+      "Cooldown": 0.2,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "ui.inventory.open",
+      "Clips": [
+        "TelderAudio/Clips/ui_open"
+      ],
+      "Volume": 0.45,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.11,
+      "MaxDistance": 22
+    },
+    {
+      "Id": "ui.inventory.close",
+      "Clips": [
+        "TelderAudio/Clips/ui_close"
+      ],
+      "Volume": 0.4,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.11,
+      "MaxDistance": 22
+    },
+    {
+      "Id": "ui.craft",
+      "Clips": [
+        "TelderAudio/Clips/craft"
+      ],
+      "Volume": 0.6,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.11,
+      "MaxDistance": 22
+    },
+    {
+      "Id": "chest.open",
+      "Clips": [
+        "TelderAudio/Clips/chest_open"
+      ],
+      "Volume": 0.62,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.11,
+      "MaxDistance": 22
+    },
+    {
+      "Id": "chest.close",
+      "Clips": [
+        "TelderAudio/Clips/chest_close"
+      ],
+      "Volume": 0.55,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.11,
+      "MaxDistance": 22
+    },
+    {
+      "Id": "door.toggle",
+      "Clips": [
+        "TelderAudio/Clips/door"
+      ],
+      "Volume": 0.5,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.11,
+      "MaxDistance": 22
+    },
+    {
+      "Id": "bed.respawn",
+      "Clips": [
+        "TelderAudio/Clips/bed"
+      ],
+      "Volume": 0.65,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.11,
+      "MaxDistance": 22
+    },
+    {
+      "Id": "boss.ancient_golem.slam.windup",
+      "Clips": [
+        "TelderAudio/Clips/ancient_golem_slam_windup"
+      ],
+      "Volume": 0.95,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.1,
+      "MaxDistance": 36
+    },
+    {
+      "Id": "boss.ancient_golem.orb.fire",
+      "Clips": [
+        "TelderAudio/Clips/ancient_golem_orb_fire"
+      ],
+      "Volume": 0.95,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.1,
+      "MaxDistance": 36
+    },
+    {
+      "Id": "boss.ancient_golem.orb.fly",
+      "Clips": [
+        "TelderAudio/Clips/ancient_golem_orb_fly"
+      ],
+      "Volume": 0.52,
+      "PitchMin": 1,
+      "PitchMax": 1,
+      "Cooldown": 0,
+      "MaxDistance": 28
+    },
+    {
+      "Id": "boss.ancient_golem.dash.warning",
+      "Clips": [
+        "TelderAudio/Clips/ancient_golem_dash_warning"
+      ],
+      "Volume": 0.9,
+      "PitchMin": 0.98,
+      "PitchMax": 1.02,
+      "Cooldown": 0.1,
+      "MaxDistance": 36
+    },
+    {
+      "Id": "boss.ancient_golem.slam.impact",
+      "Clips": [
+        "TelderAudio/Clips/ancient_golem_slam_impact"
+      ],
+      "Volume": 1,
+      "PitchMin": 0.97,
+      "PitchMax": 1.03,
+      "Cooldown": 0.1,
+      "MaxDistance": 38
+    }
+  ],
+  "Music": [
+    "TelderAudio/Clips/music_explore_01",
+    "TelderAudio/Clips/music_explore_02"
+  ],
+  "MusicFadeSeconds": 2.0
+}

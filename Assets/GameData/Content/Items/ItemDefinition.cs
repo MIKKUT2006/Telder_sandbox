@@ -11,16 +11,34 @@ namespace Game.Items
     {
         public ContentID ID;
         public string Name;
+        // Optional tooltip description. Localized text can override this via language JSON.
+        public string Description;
         public string Texture;
         public ItemType Type;
         public int MaxStack = 100;
+        [Header("Tool")]
+        [Min(1)]
+        public int ToolLevel = 1;
+
+        [Header("Held in hand")]
+        public float HeldScale = 1f;
+        public float HeldRotation = 0f;
+        public float HeldOffsetX = 0f;
+        public float HeldOffsetY = 0f;
 
         [Header("Food")]
         public string[] Tags;
 
+        // Used while selected in the hotbar when Tags contains "held_light".
+        // Block items can inherit these values from their block definition.
+        public byte LightEmissionR;
+        public byte LightEmissionG;
+        public byte LightEmissionB;
+
         [Min(0f)]
         public float EatTime = 1f;
 
+        public Game.Gameplay.Effects.FoodEffectDefinition[] Effects;
         public float HungerRestore = 0f;
         public float HealthRestore = 0f;
 

@@ -495,6 +495,18 @@ namespace Game.Debugging
                 "Current: " +
                 weather.CurrentWeather
             );
+            GUILayout.Label((weather.CurrentWeather == WeatherType.Clear ? "Next event in: " : "Event ends in: ") + weather.SecondsUntilWeatherChange.ToString("0") + " s");
+            GUILayout.Label("Day time: " + (weather.NormalizedDayTime * 24f).ToString("0.0") + " h  |  FPS ~ " + Mathf.RoundToInt(1f / Mathf.Max(Time.smoothDeltaTime, .0001f)));
+            float day = GUILayout.HorizontalSlider(weather.NormalizedDayTime, 0f, 1f);
+            if (!Mathf.Approximately(day, weather.NormalizedDayTime)) weather.SetDayTime(day);
+            if (GUILayout.Button("NEXT WEATHER NOW")) weather.ForceNextWeather();
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("DAWN")) weather.SetDayTime(.25f);
+            if (GUILayout.Button("NOON")) weather.SetDayTime(.5f);
+            if (GUILayout.Button("MIDNIGHT")) weather.SetDayTime(0f);
+            GUILayout.EndHorizontal();
+            bool pauseDay = GUILayout.Toggle(weather.FreezeDayTime, "Freeze daytime");
+            if (pauseDay != weather.FreezeDayTime) weather.SetFreezeDayTime(pauseDay);
 
             if (
                 weather.CurrentWeather ==
@@ -533,6 +545,8 @@ namespace Game.Debugging
                     WeatherControlMode.Rain
                 );
             }
+
+            if (GUILayout.Button("FOG")) weather.SetControlMode(WeatherControlMode.Fog);
 
             if (GUILayout.Button("SNOW"))
             {
@@ -960,7 +974,7 @@ namespace Game.Debugging
 
 
             int radius =
-                24;
+                1000;
 
 
             if (
@@ -970,12 +984,12 @@ namespace Game.Debugging
                 )
             )
             {
-                radius =
-                    Mathf.Clamp(
-                        parsedRadius,
-                        0,
-                        256
-                    );
+                //radius =
+                //    Mathf.Clamp(
+                //        parsedRadius,
+                //        0,
+                //        256
+                //    );
             }
 
 
@@ -1235,10 +1249,118 @@ namespace Game.Debugging
 
             GUILayout.EndHorizontal();
 
+            GUILayout.BeginHorizontal();
+            if (
+                GUILayout.Button(
+                    "PGun",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:portal_gun"
+                );
+            }
+            if (
+                GUILayout.Button(
+                    "Лестница",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:ladder"
+                );
+            }
+            if (
+                GUILayout.Button(
+                    "Каменный топор",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:stone_axe"
+                );
+            }
+            if (
+                GUILayout.Button(
+                    "Железная кирка",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:iron_pickaxe"
+                );
+            }
+            if (
+                GUILayout.Button(
+                    "Железный меч",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:iron_sword"
+                );
+            }
+            if (
+                GUILayout.Button(
+                    "Апгрейдер",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:portal_gun_upgrader"
+                );
+            }
+            GUILayout.EndHorizontal();
+
+
+            
 
             GUILayout.BeginHorizontal();
 
-
+            if (
+                GUILayout.Button(
+                    "Кристалл",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:portal_crystal"
+                );
+            }
+            if (
+                GUILayout.Button(
+                    "Бомба",
+                    GUILayout.Height(
+                        30f
+                    )
+                )
+            )
+            {
+                GiveItem(
+                    "game:bomb"
+                );
+            }
             if (
                 GUILayout.Button(
                     "Кирка I",

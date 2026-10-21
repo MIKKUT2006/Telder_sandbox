@@ -1,0 +1,349 @@
+{
+  "ID": "grown_oak_3d",
+  "DisplayName": "Посаженный дуб",
+  "Width": 5,
+  "Height": 7,
+  "Depth": 5,
+  "OriginX": 2,
+  "OriginY": 0,
+  "OriginZ": 2,
+  "GeometryMode": 1,
+  "Type": 1,
+  "SpawnChance": 0,
+  "UseHeightRange": false,
+  "Cells": [
+    {
+      "X": 2,
+      "Y": 0,
+      "Z": 2,
+      "ForegroundId": "game:oak_trunk"
+    },
+    {
+      "X": 2,
+      "Y": 1,
+      "Z": 2,
+      "ForegroundId": "game:oak_trunk"
+    },
+    {
+      "X": 2,
+      "Y": 2,
+      "Z": 2,
+      "ForegroundId": "game:oak_trunk"
+    },
+    {
+      "X": 2,
+      "Y": 3,
+      "Z": 2,
+      "ForegroundId": "game:oak_trunk"
+    },
+    {
+      "X": 2,
+      "Y": 4,
+      "Z": 2,
+      "ForegroundId": "game:oak_trunk"
+    },
+    {
+      "X": 0,
+      "Y": 3,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 0,
+      "Y": 3,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 0,
+      "Y": 3,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 3,
+      "Z": 0,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 3,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 3,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 3,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 3,
+      "Z": 4,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 3,
+      "Z": 0,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 3,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 3,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 3,
+      "Z": 4,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 3,
+      "Z": 0,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 3,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 3,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 3,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 3,
+      "Z": 4,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 4,
+      "Y": 3,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 4,
+      "Y": 3,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 4,
+      "Y": 3,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 0,
+      "Y": 4,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 0,
+      "Y": 4,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 0,
+      "Y": 4,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 4,
+      "Z": 0,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 4,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 4,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 4,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 4,
+      "Z": 4,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 4,
+      "Z": 0,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 4,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 4,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 4,
+      "Z": 4,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 4,
+      "Z": 0,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 4,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 4,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 4,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 4,
+      "Z": 4,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 4,
+      "Y": 4,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 4,
+      "Y": 4,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 4,
+      "Y": 4,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 5,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 5,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 1,
+      "Y": 5,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 5,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 5,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 5,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 5,
+      "Z": 1,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 5,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 3,
+      "Y": 5,
+      "Z": 3,
+      "ForegroundId": "game:leaves"
+    },
+    {
+      "X": 2,
+      "Y": 6,
+      "Z": 2,
+      "ForegroundId": "game:leaves"
+    }
+  ],
+  "Biomes": [
+    "__planted_only__"
+  ]
+}

@@ -1,534 +1,129 @@
-
 using System.Collections.Generic;
-
 using UnityEngine;
-
+using Game.UI.Character;
 
 namespace Game.World.Lighting
 {
     /// <summary>
-    /// Applies world tile lighting to every SpriteRenderer below this object.
-    ///
-    /// This does NOT create Unity lights.
-    /// It reads the same Game.World.LightNode data that terrain uses and
-    /// multiplies the sprite colors by that light.
+    /// The ONLY world-light tint writer for player, enemy and dropped-item sprites.
+    /// Shares daylight / RGB light sampling with the rest of the 2D world.
     /// </summary>
+    [DisallowMultipleComponent]
     [DefaultExecutionOrder(32500)]
-    public class WorldLightSpriteReceiver :
-        MonoBehaviour
+    public sealed class WorldLightSpriteReceiver : MonoBehaviour
     {
-        // =====================================================
-        // LIGHT LOOK
-        // =====================================================
+        [SerializeField] private Vector2 sampleOffset = Vector2.zero;
+        [SerializeField, Range(1f, 40f)] private float transitionSpeed = 16f;
+        [SerializeField] private float lightUpdateInterval = 0.08f;
+        [SerializeField] private float rendererRefreshInterval = 1f;
 
-        [Header("World Light")]
-
-        [SerializeField]
-        [Range(0f, 0.3f)]
-        private float ambient =
-            0.055f;
-
-
-        [SerializeField]
-        [Range(0.1f, 2f)]
-        private float lightGamma =
-            0.72f;
-
-
-        [SerializeField]
-        [Range(1f, 40f)]
-        private float transitionSpeed =
-            20f;
-
-
-        [SerializeField]
-        private Vector2 sampleOffset =
-            Vector2.zero;
-
-
-        // =====================================================
-        // RENDERERS
-        // =====================================================
-
-        private readonly List<SpriteRenderer>
-            renderers =
-            new List<SpriteRenderer>();
-
-
-        private readonly Dictionary<
-            int,
-            Color
-        > baseColors =
-            new Dictionary<
-                int,
-                Color
-            >();
-
-
-        private float nextRendererRefreshTime;
-
-
-        private Color currentLightColor =
-            Color.white;
-
-
-        private bool initializedLight;
-
-
-        // =====================================================
-        // UNITY
-        // =====================================================
+        private readonly List<SpriteRenderer> renderers = new List<SpriteRenderer>(12);
+        private readonly Dictionary<int, Color> baseColors = new Dictionary<int, Color>(12);
+        private Color currentLight = Color.white;
+        private bool hasLight;
+        private float nextLightUpdate;
+        private float nextRendererRefresh;
 
         private void Awake()
         {
             RefreshRenderers();
-
-            nextRendererRefreshTime =
-                Time.unscaledTime +
-                0.25f;
         }
-
 
         private void OnEnable()
         {
-            initializedLight =
-                false;
-
-
+            hasLight = false;
+            nextLightUpdate = 0f;
+            nextRendererRefresh = 0f;
             RefreshRenderers();
         }
 
+        public void Configure(Vector2 offset)
+        {
+            sampleOffset = offset;
+            hasLight = false;
+            nextLightUpdate = 0f;
+            RefreshRenderers();
+        }
 
         private void LateUpdate()
         {
-            if (
-                Time.unscaledTime >=
-                nextRendererRefreshTime
-            )
+            float now = Time.unscaledTime;
+            if (now >= nextRendererRefresh)
             {
                 RefreshRenderers();
-
-
-                nextRendererRefreshTime =
-                    Time.unscaledTime +
-                    0.25f;
+                nextRendererRefresh = now + Mathf.Max(.2f, rendererRefreshInterval);
             }
 
-
-            WorldManager manager =
-                WorldManager.Instance;
-
-
-            if (
-                manager ==
-                null
-            )
-            {
+            if (now < nextLightUpdate)
                 return;
-            }
 
+            float interval = Mathf.Max(.03f, lightUpdateInterval);
+            nextLightUpdate = now + interval;
 
-            World world =
-                manager.GetWorld();
-
-
-            if (
-                world ==
-                null
-            )
-            {
+            WorldManager manager = WorldManager.Instance;
+            if (manager == null || manager.GetWorld() == null)
                 return;
-            }
 
+            Vector2 p = (Vector2)transform.position + sampleOffset;
+            int x = Mathf.FloorToInt(p.x);
+            int y = Mathf.FloorToInt(p.y);
 
-            Vector2 position =
-                (Vector2)
-                transform.position +
-                sampleOffset;
-
-
-            Color targetLight =
-                SampleSmoothWorldLight(
-                    world,
-                    position
-                );
-
-
-            if (
-                !initializedLight
-            )
+            // Sample slightly above the feet / body centre: sprites standing on
+            // top of a solid block should see the light in the air, not underground.
+            Color target = WorldVisualLightSampler.SampleAveraged(manager.GetWorld(), x, y + 1);
+            if (!hasLight)
             {
-                currentLightColor =
-                    targetLight;
-
-
-                initializedLight =
-                    true;
+                currentLight = target;
+                hasLight = true;
             }
             else
             {
-                float t =
-                    1f -
-                    Mathf.Exp(
-                        -transitionSpeed *
-                        Time.deltaTime
-                    );
-
-
-                currentLightColor =
-                    Color.Lerp(
-                        currentLightColor,
-                        targetLight,
-                        t
-                    );
+                float t = 1f - Mathf.Exp(-Mathf.Max(1f, transitionSpeed) * interval);
+                currentLight = Color.Lerp(currentLight, target, t);
             }
 
-
-            ApplyLight(
-                currentLightColor
-            );
+            ApplyLighting();
         }
-
-
-        // =====================================================
-        // CONFIGURE
-        // =====================================================
-
-        public void Configure(
-            Vector2 newSampleOffset
-        )
-        {
-            sampleOffset =
-                newSampleOffset;
-
-
-            initializedLight =
-                false;
-
-
-            RefreshRenderers();
-        }
-
-
-        // =====================================================
-        // RENDERER CACHE
-        // =====================================================
 
         private void RefreshRenderers()
         {
-            SpriteRenderer[] found =
-                GetComponentsInChildren<
-                    SpriteRenderer
-                >(
-                    true
-                );
-
-
+            SpriteRenderer[] found = GetComponentsInChildren<SpriteRenderer>(true);
             renderers.Clear();
-
-
-            for (
-                int i = 0;
-                i < found.Length;
-                i++
-            )
+            for (int i = 0; i < found.Length; i++)
             {
-                SpriteRenderer renderer =
-                    found[i];
-
-
-                if (
-                    renderer ==
-                    null
-                )
-                {
-                    continue;
-                }
-
-
-                renderers.Add(
-                    renderer
-                );
-
-
-                int id =
-                    renderer.GetInstanceID();
-
-
-                if (
-                    !baseColors.ContainsKey(
-                        id
-                    )
-                )
-                {
-                    baseColors.Add(
-                        id,
-                        renderer.color
-                    );
-                }
+                SpriteRenderer renderer = found[i];
+                if (renderer == null) continue;
+                renderers.Add(renderer);
+                int id = renderer.GetInstanceID();
+                // Capture a new sprite's authored tint only once. Never cache an
+                // already-darkened color as its base tint on subsequent refreshes.
+                if (!baseColors.ContainsKey(id))
+                    baseColors.Add(id, renderer.color);
             }
         }
 
-
-        private void ApplyLight(
-            Color lightColor
-        )
+        private void ApplyLighting()
         {
-            for (
-                int i = renderers.Count - 1;
-                i >= 0;
-                i--
-            )
+            for (int i = 0; i < renderers.Count; i++)
             {
-                SpriteRenderer renderer =
-                    renderers[i];
-
-
-                if (
-                    renderer ==
-                    null
-                )
-                {
-                    renderers.RemoveAt(
-                        i
-                    );
-
-
+                SpriteRenderer renderer = renderers[i];
+                if (renderer == null) continue;
+                if (!baseColors.TryGetValue(renderer.GetInstanceID(), out Color baseColor))
                     continue;
-                }
 
+                // Appearance tint is independent from the sampled world light. Read it
+                // every update so palette changes never fight the lighting writer and do
+                // not flicker between the authored and tinted colors.
+                Color appearanceTint = Color.white;
+                AppearanceTintData tintData = renderer.GetComponent<AppearanceTintData>();
+                if (tintData != null) appearanceTint = tintData.Tint;
 
-                int id =
-                    renderer.GetInstanceID();
-
-
-                if (
-                    !baseColors.TryGetValue(
-                        id,
-                        out Color baseColor
-                    )
-                )
-                {
-                    baseColor =
-                        renderer.color;
-
-
-                    baseColors[
-                        id
-                    ] =
-                        baseColor;
-                }
-
-
-                renderer.color =
-                    new Color(
-                        baseColor.r *
-                        lightColor.r,
-
-                        baseColor.g *
-                        lightColor.g,
-
-                        baseColor.b *
-                        lightColor.b,
-
-                        baseColor.a
-                    );
+                renderer.color = new Color(
+                    baseColor.r * appearanceTint.r * currentLight.r,
+                    baseColor.g * appearanceTint.g * currentLight.g,
+                    baseColor.b * appearanceTint.b * currentLight.b,
+                    baseColor.a * appearanceTint.a);
             }
-        }
-
-
-        // =====================================================
-        // WORLD LIGHT SAMPLE
-        // =====================================================
-
-        private Color SampleSmoothWorldLight(
-            World world,
-            Vector2 position
-        )
-        {
-            int x0 =
-                Mathf.FloorToInt(
-                    position.x
-                );
-
-
-            int y0 =
-                Mathf.FloorToInt(
-                    position.y
-                );
-
-
-            int x1 =
-                x0 +
-                1;
-
-
-            int y1 =
-                y0 +
-                1;
-
-
-            float tx =
-                Mathf.Clamp01(
-                    position.x -
-                    x0
-                );
-
-
-            float ty =
-                Mathf.Clamp01(
-                    position.y -
-                    y0
-                );
-
-
-            Color c00 =
-                NodeToColor(
-                    world.GetLight(
-                        x0,
-                        y0
-                    )
-                );
-
-
-            Color c10 =
-                NodeToColor(
-                    world.GetLight(
-                        x1,
-                        y0
-                    )
-                );
-
-
-            Color c01 =
-                NodeToColor(
-                    world.GetLight(
-                        x0,
-                        y1
-                    )
-                );
-
-
-            Color c11 =
-                NodeToColor(
-                    world.GetLight(
-                        x1,
-                        y1
-                    )
-                );
-
-
-            Color bottom =
-                Color.Lerp(
-                    c00,
-                    c10,
-                    tx
-                );
-
-
-            Color top =
-                Color.Lerp(
-                    c01,
-                    c11,
-                    tx
-                );
-
-
-            return
-                Color.Lerp(
-                    bottom,
-                    top,
-                    ty
-                );
-        }
-
-
-        private Color NodeToColor(
-            LightNode node
-        )
-        {
-            float sunlight =
-                node.Sun /
-                15f;
-
-
-            float red =
-                Mathf.Max(
-                    sunlight,
-                    node.R /
-                    15f
-                );
-
-
-            float green =
-                Mathf.Max(
-                    sunlight,
-                    node.G /
-                    15f
-                );
-
-
-            float blue =
-                Mathf.Max(
-                    sunlight,
-                    node.B /
-                    15f
-                );
-
-
-            red =
-                ApplyLightCurve(
-                    red
-                );
-
-
-            green =
-                ApplyLightCurve(
-                    green
-                );
-
-
-            blue =
-                ApplyLightCurve(
-                    blue
-                );
-
-
-            return
-                new Color(
-                    red,
-                    green,
-                    blue,
-                    1f
-                );
-        }
-
-
-        private float ApplyLightCurve(
-            float value
-        )
-        {
-            value =
-                Mathf.Clamp01(
-                    value
-                );
-
-
-            float curved =
-                Mathf.Pow(
-                    value,
-                    lightGamma
-                );
-
-
-            // Same idea as terrain ambient:
-            // complete darkness stays visible, but very dark.
-            return
-                Mathf.Lerp(
-                    ambient,
-                    1f,
-                    curved
-                );
         }
     }
 }

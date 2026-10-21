@@ -24,15 +24,20 @@ namespace Game.Items
         {
             public string ID;
             public string Name;
+            public string Description;
             public string Texture;
             public string Type;
             public int MaxStack;
 
             // Food / generic item tags.
             public string[] Tags;
+            public byte LightEmissionR;
+            public byte LightEmissionG;
+            public byte LightEmissionB;
             public float EatTime;
             public float HungerRestore;
             public float HealthRestore;
+            public Game.Gameplay.Effects.FoodEffectDefinition[] Effects;
 
             // Furnace.
             public float FuelBurnTime;
@@ -50,8 +55,7 @@ namespace Game.Items
         {
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Items"
                 );
 
@@ -128,12 +132,16 @@ namespace Game.Items
                                 ? data.ID
                                 : data.Name,
                         Texture = data.Texture,
+                        Description = data.Description,
                         Type = itemType,
                         MaxStack =
                             data.MaxStack > 0
                                 ? data.MaxStack
                                 : 100,
 
+                        LightEmissionR = data.LightEmissionR,
+                        LightEmissionG = data.LightEmissionG,
+                        LightEmissionB = data.LightEmissionB,
                         Tags =
                             data.Tags != null
                                 ? data.Tags
@@ -145,6 +153,7 @@ namespace Game.Items
                                 : 1f,
                         HungerRestore = data.HungerRestore,
                         HealthRestore = data.HealthRestore,
+                        Effects = data.Effects,
 
                         FuelBurnTime =
                             Mathf.Max(0f, data.FuelBurnTime),

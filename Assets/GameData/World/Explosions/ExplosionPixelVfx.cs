@@ -64,6 +64,8 @@ namespace Game.World.Explosions
 
         public static void Spawn(Vector2 center, float radius)
         {
+            // Shared by terrain-breaking bombs, harmless blasts and debug explosions.
+            ExplosionSmokeVfx.Spawn(center, radius);
             EnsureInstance();
 
             if (instance == null)

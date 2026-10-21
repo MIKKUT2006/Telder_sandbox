@@ -10,7 +10,6 @@
   "LightLevel": 0,
   "DropCount": 1,
   "Tags": [],
-
   "LightOpacity": 15,
   "LightEmissionR": 0,
   "LightEmissionG": 0,
@@ -21,5 +20,6 @@
   "CollisionShape": "Full",
   "CollisionRects": [],
   "RequiredTool": "pickaxe",
-  "RequiredToolLevel": 3
+  "RequiredToolLevel": 2,
+  "Drop": "game:portal_crystal"
 }

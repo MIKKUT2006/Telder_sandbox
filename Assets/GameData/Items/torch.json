@@ -3,7 +3,11 @@
   "Name": "Torch",
   "Texture": "torch_01",
   "Type": "Block",
-  "MaxStack": 100
-
-  
+  "MaxStack": 100,
+  "Tags": [
+    "held_light"
+  ],
+  "LightEmissionR": 15,
+  "LightEmissionG": 11,
+  "LightEmissionB": 6
 }

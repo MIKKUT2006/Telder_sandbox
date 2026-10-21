@@ -14,8 +14,8 @@ namespace Game.World.Explosions
     /// Grid-aware block explosion system.
     ///
     /// Foreground blocks inside the radius are removed, each block produces
-    /// its normal Drop/DropCount item, block debris is emitted and falling
-    /// blocks above the crater are woken up.
+    /// its configured Loot table (or legacy Drop/DropCount), block debris is
+    /// emitted and falling blocks above the crater are woken up.
     /// </summary>
     public static class ExplosionSystem
     {
@@ -293,57 +293,28 @@ namespace Game.World.Explosions
             int worldX,
             int worldY)
         {
-            if (blockId == 0 ||
-                ItemDropSpawner.Instance == null)
-            {
+            if (blockId == 0)
                 return;
-            }
 
             try
             {
-                ContentID contentId =
-                    BlockIDRegistry.GetContentID(blockId);
-
+                ContentID contentId = BlockIDRegistry.GetContentID(blockId);
                 if (!BlockRegistry.Contains(contentId))
                     return;
 
-                BlockDefinition block =
-                    BlockRegistry.Get(contentId);
-
+                BlockDefinition block = BlockRegistry.Get(contentId);
                 if (block == null)
                     return;
 
-                int count =
-                    Mathf.Max(0, block.DropCount);
-
-                if (count <= 0)
-                    return;
-
-                string dropId = null;
-
-                try
-                {
-                    dropId = block.Drop.ToString();
-                }
-                catch
-                {
-                }
-
-                if (string.IsNullOrWhiteSpace(dropId))
-                    dropId = contentId.ToString();
-
-                ItemDropSpawner.Instance.SpawnFromBlock(
-                    dropId,
-                    count,
-                    new Vector2(
-                        worldX + 0.5f,
-                        worldY + 0.55f
-                    )
-                );
+                BlockLootDropper.SpawnDrops(
+                    block,
+                    contentId.ToString(),
+                    new Vector2(worldX + 0.5f, worldY + 0.55f));
             }
-            catch (Exception)
+            catch (System.Exception exception)
             {
                 // One invalid block definition must not abort the full blast.
+                Debug.LogWarning("EXPLOSION: Could not resolve block loot: " + exception.Message);
             }
         }
     }

@@ -1,3 +1,4 @@
+using Game.InputSupport;
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Inventory;
@@ -75,7 +76,7 @@ namespace Game.ToolBench
         {
             if (!isOpen) return;
 
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (GameInput.Pressed(GameAction.UiCancel))
             {
                 TryClose(true);
                 return;

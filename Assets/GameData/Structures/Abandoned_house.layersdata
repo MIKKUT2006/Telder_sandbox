@@ -9,6 +9,150 @@
             "ForegroundTransform": 0,
             "BackgroundTransform": 0,
             "FurnitureTransform": 0
+        },
+        {
+            "X": 12,
+            "Y": 14,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 12,
+            "Y": 13,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 10,
+            "Y": 13,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 10,
+            "Y": 12,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 10,
+            "Y": 11,
+            "FurnitureId": "",
+            "ForegroundTransform": 2,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 9,
+            "Y": 10,
+            "FurnitureId": "",
+            "ForegroundTransform": 2,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 8,
+            "FurnitureId": "game:lavender",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 7,
+            "FurnitureId": "",
+            "ForegroundTransform": 2,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 6,
+            "FurnitureId": "",
+            "ForegroundTransform": 2,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 6,
+            "FurnitureId": "",
+            "ForegroundTransform": 2,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 7,
+            "FurnitureId": "",
+            "ForegroundTransform": 3,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 16,
+            "Y": 11,
+            "FurnitureId": "",
+            "ForegroundTransform": 2,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 14,
+            "Y": 12,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 14,
+            "Y": 13,
+            "FurnitureId": "",
+            "ForegroundTransform": 2,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 9,
+            "FurnitureId": "game:lavender_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 16,
+            "Y": 12,
+            "FurnitureId": "game:lavender_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 10,
+            "Y": 14,
+            "FurnitureId": "game:iris",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 15,
+            "Y": 13,
+            "FurnitureId": "game:iris",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
         }
     ]
 }

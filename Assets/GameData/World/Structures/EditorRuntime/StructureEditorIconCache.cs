@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -213,6 +213,13 @@ namespace Game.World.Structures.EditorRuntime
                     directPath
                 );
 
+
+            if (texture == null && info.IsMultiBlock)
+            {
+                texture = AssetDatabase.LoadAssetAtPath<Texture2D>(
+                    "Assets/GameData/ResourcePacks/Default/textures/multiblocks/" +
+                    key.Replace("\\", "/") + ".png");
+            }
 
             if (
                 texture ==

@@ -1,0 +1,32 @@
+{
+  "ID": "game:dense_leaves",
+
+  "Name": "Dense Leaves",
+
+  "Texture": "leaves",
+
+  "Hardness": 1,
+
+  "Solid": true,
+  "Drop": "game:dense_leaves",
+  "DropCount": 1,
+
+  "VisualOffsetX": 0.0,
+  "VisualOffsetY": 0.0,
+  "VisualScale": 1.0,
+  "Tags": ["wave"],
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [
+    {
+      "ItemId": "game:leaves",
+      "Count": 2
+    }
+  ],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

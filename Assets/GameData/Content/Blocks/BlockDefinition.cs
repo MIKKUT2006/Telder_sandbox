@@ -9,12 +9,25 @@ namespace Game.Blocks
 {
 
     [Serializable]
+    public class BlockLootEntryDefinition
+    {
+        public string ItemId;
+        public int Min = 1;
+        public int Max = 1;
+        public float Chance = 1f;
+    }
+
+
+    [Serializable]
     public class BlockDefinition
     {
 
         public string ID;
 
         public string Name;
+
+        // Optional inventory tooltip description for blocks.
+        public string Description;
 
         public string Texture;
 
@@ -43,9 +56,19 @@ namespace Game.Blocks
         public BlockMaterial Material;
 
 
+        // Legacy single-item drop. Kept for backward compatibility.
         public ContentID Drop;
 
         public int DropCount;
+
+        // Optional multi-entry drop table. Each entry is rolled independently.
+        // If a Loot array is explicitly present in JSON, it takes precedence
+        // over legacy Drop/DropCount (including an explicitly empty array).
+        public List<BlockLootEntryDefinition> Loot =
+            new List<BlockLootEntryDefinition>();
+
+        [NonSerialized]
+        public bool HasLootTable;
 
 
         public string PlaceSound;
@@ -56,6 +79,18 @@ namespace Game.Blocks
 
 
         public List<string> Tags;
+
+
+        // =====================================================
+        // GAMEPLAY BEHAVIOR
+        // =====================================================
+        // Optional friendly JSON value for special interactive blocks:
+        // "Ladder", "Door", "Hatch" or "Trapdoor".
+        // Tags with the same lowercase names are also supported.
+        public Game.Gameplay.Plants.PlantDefinition Plant;
+        public Game.Gameplay.Cooking.CauldronDefinition Cauldron;
+
+        public string Behavior;
 
 
         // =====================================================
@@ -85,6 +120,11 @@ namespace Game.Blocks
         // =====================================================
         // VISUAL / FURNITURE
         // =====================================================
+
+        // Set in block JSON: "alwaysFurniture": true.
+        // Cannot be placed into foreground/background and requires solid ground
+        // (or the lower furniture segment of a tall plant) beneath it.
+        public bool alwaysFurniture = false;
 
         // Used by the separate furniture SpriteRenderer layer.
         // This makes 17x17, narrow jars, ladders and overhanging sprites possible.
@@ -210,6 +250,12 @@ namespace Game.Blocks
             DropCount =
                 1;
 
+            Loot =
+                new List<BlockLootEntryDefinition>();
+
+            HasLootTable =
+                false;
+
 
             Tags =
                 new List<string>();
@@ -325,15 +371,23 @@ namespace Game.Blocks
 
 
     [Serializable]
-    public class CraftIngredientDefinition
+    public sealed class CraftIngredientDefinition
     {
-
+        // Либо ItemId, либо Tag.
         public string ItemId;
 
+        // Если ItemId пустой — ингредиент считается заданным по тегу.
+        public string Tag;
 
-        public int Count =
-            1;
+        public int Count = 1;
 
+        // JsonUtility сериализует только поля, свойство безопасно.
+        public bool IsTag =>
+            string.IsNullOrWhiteSpace(ItemId)
+            && !string.IsNullOrWhiteSpace(Tag);
+
+        public string EffectiveKey =>
+            IsTag ? "#" + Tag.Trim() : ItemId?.Trim();
     }
 
 }

@@ -83,7 +83,7 @@
       "Chance": 0.5
     },
     {
-      "ItemId": "game:tnt",
+      "ItemId": "game:bomb",
       "Chance": 0.5
     }
   ],

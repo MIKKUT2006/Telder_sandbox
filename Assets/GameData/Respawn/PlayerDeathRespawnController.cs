@@ -47,6 +47,12 @@ namespace Game.GameplaySystems.Respawn
 
             dead = true;
 
+            // Ensure the drop service exists before InventoryUI closes: a stack
+            // currently held by the mouse cursor is dropped by CloseInventory().
+            // Without a spawner that cursor stack could stay outside the normal
+            // inventory loop and survive/disappear incorrectly on death.
+            ItemDropSpawner.EnsureInstance();
+
             // Death must replace any open inventory/container UI cleanly.
             // Closing first also safely drops a cursor-held stack before the
             // remaining inventory is dropped at the death position.
@@ -58,6 +64,7 @@ namespace Game.GameplaySystems.Respawn
 
             DropAllItems();
             DisablePlayerControl();
+            PlayerItemCollector.isActive = false;
 
             Rigidbody2D rb = GetComponent<Rigidbody2D>();
             if (rb != null)
@@ -65,13 +72,10 @@ namespace Game.GameplaySystems.Respawn
                 rb.linearVelocity = Vector2.zero;
                 rb.angularVelocity = 0f;
             }
-
-            previousTimeScale = Time.timeScale;
-            //Time.timeScale = 0f;
-            previousCursorLock = UnityEngine.Cursor.lockState;
-            previousCursorVisible = UnityEngine.Cursor.visible;
-            UnityEngine.Cursor.lockState = CursorLockMode.None;
-            UnityEngine.Cursor.visible = true;
+            previousCursorLock = Cursor.lockState;
+            previousCursorVisible = Cursor.visible;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
 
             DeathScreenUI.Show(this, Respawn, GoMenu);
         }
@@ -81,7 +85,7 @@ namespace Game.GameplaySystems.Respawn
             if (inventory == null)
                 return;
 
-            ItemDropSpawner spawner = ItemDropSpawner.Instance;
+            ItemDropSpawner spawner = ItemDropSpawner.EnsureInstance();
             if (spawner == null)
             {
                 Debug.LogWarning("RESPAWN: ItemDropSpawner is unavailable; inventory was kept to prevent item loss.");
@@ -97,7 +101,7 @@ namespace Game.GameplaySystems.Respawn
                 if (stack == null || stack.IsEmpty)
                     continue;
 
-                if (spawner.SpawnFromPlayer(stack.ItemId, stack.Count, position))
+                if (Game.World.Voxel3D.VoxelWorld3DRuntime.Instance!=null ? Game.World.Voxel3D.VoxelItemDrop3D.Spawn(stack.Clone(),transform.position) : spawner.SpawnFromPlayer(stack.ItemId, stack.Count, position))
                 {
                     stack.Clear();
                     changed = true;
@@ -135,6 +139,14 @@ namespace Game.GameplaySystems.Respawn
 
         private void Respawn()
         {
+            var voxel=Game.World.Voxel3D.VoxelWorld3DRuntime.Instance;
+            if(voxel!=null)
+            {
+                voxel.Respawn();if(stats!=null)stats.RestoreState(stats.MaxHealth,stats.MaxHunger);
+                foreach(var component in disabled)if(component!=null)component.enabled=true;
+                disabled.Clear();dead=false;PlayerItemCollector.isActive=true;DeathScreenUI.Hide();
+                Time.timeScale=1;return;
+            }
             Vector2 feetPoint;
             if (!RespawnPointService.TryGet(out feetPoint))
             {
@@ -171,8 +183,8 @@ namespace Game.GameplaySystems.Respawn
             disabled.Clear();
 
             dead = false;
+            PlayerItemCollector.isActive = true;
             DeathScreenUI.Hide();
-            RestorePauseAndCursor();
 
             if (collision != null)
                 collision.RefreshAfterWorldChange();
@@ -208,8 +220,8 @@ namespace Game.GameplaySystems.Respawn
         private void RestorePauseAndCursor()
         {
             Time.timeScale = previousTimeScale <= 0f ? 1f : previousTimeScale;
-            UnityEngine.Cursor.lockState = previousCursorLock;
-            UnityEngine.Cursor.visible = previousCursorVisible;
+            Cursor.lockState = previousCursorLock;
+            Cursor.visible = previousCursorVisible;
         }
     }
 }

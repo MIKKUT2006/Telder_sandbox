@@ -1,0 +1,14 @@
+{
+  "ID": "game:glitter_stone_vegetation",
+  "SpawnType": "Cave",
+  "BlockId": "game:glitter_stone",
+  "Biomes": [
+    "mossy_caves"
+  ],
+  "Chance": 0.1,
+  "MinY": -1000000,
+  "MaxY": 1000000,
+  "Floor": false,
+  "Ceiling": true,
+  "Walls": false
+}

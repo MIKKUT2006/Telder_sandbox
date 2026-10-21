@@ -1,3 +1,4 @@
+using Game.InputSupport;
 using System;
 
 using UnityEngine;
@@ -156,7 +157,7 @@ namespace Game.ToolBench
 
             Vector3 mouse =
                 worldCamera.ScreenToWorldPoint(
-                    Input.mousePosition
+                    GameInput.PointerPosition
                 );
 
 
@@ -282,9 +283,7 @@ namespace Game.ToolBench
             // =================================================
 
             if (
-                !Input.GetMouseButtonDown(
-                    1
-                )
+                !(GameInput.Pressed(GameAction.Use) || GameInput.Pressed(GameAction.Interact))
             )
             {
 

@@ -1,10 +1,11 @@
+using Game.Items;
+using Game.Items.Durability;
+using Game.World.Items;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using Game.Items;
-using Game.World.Items;
-using Game.Items.Durability;
 
 namespace Game.Inventory
 {
@@ -360,7 +361,10 @@ namespace Game.Inventory
             ItemStack slot = GetSlot(index);
             if (slot == null || slot.IsEmpty || ItemDropSpawner.Instance == null) return false;
 
-            bool spawned = ItemDropSpawner.Instance.SpawnFromPlayer(slot.ItemId, 1, GetDropPosition());
+            bool spawned;
+            if(Game.World.Voxel3D.VoxelWorld3DRuntime.Instance!=null)
+            {var copy=slot.Clone();copy.Count=1;spawned=Game.World.Voxel3D.VoxelItemDrop3D.Spawn(copy,transform.position);}
+            else spawned = ItemDropSpawner.Instance.SpawnFromPlayer(slot.ItemId, 1, GetDropPosition());
             if (!spawned) return false;
 
             slot.Count--;
@@ -373,7 +377,10 @@ namespace Game.Inventory
             if (cursor == null || cursor.IsEmpty) return true;
             if (ItemDropSpawner.Instance == null) return false;
 
-            bool spawned = ItemDropSpawner.Instance.SpawnFromPlayer(cursor.ItemId, cursor.Count, GetDropPosition());
+            bool spawned;
+            if(Game.World.Voxel3D.VoxelWorld3DRuntime.Instance!=null)
+            {var copy=cursor.Clone();copy.Count=cursor.Count;spawned=Game.World.Voxel3D.VoxelItemDrop3D.Spawn(copy,transform.position);}
+            else spawned = ItemDropSpawner.Instance.SpawnFromPlayer(cursor.ItemId, cursor.Count, GetDropPosition());
             if (!spawned) return false;
 
             cursor.Clear();
@@ -1535,7 +1542,33 @@ namespace Game.Inventory
             return "";
         }
 
+        // Возвращает снимок инвентаря: itemId -> суммарное количество во всех слотах.
+        // Возвращает снимок инвентаря: itemId -> суммарное количество во всех слотах.
+        public Dictionary<string, int> GetItemCountsSnapshot()
+        {
+            Dictionary<string, int> result =
+                new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
+            if (slots == null)
+                return result;
+
+            for (int i = 0; i < slots.Length; i++)
+            {
+                ItemStack slot = slots[i];
+
+                if (slot == null) continue;
+                if (slot.IsEmpty) continue;
+                if (string.IsNullOrWhiteSpace(slot.ItemId)) continue;
+                if (slot.Count <= 0) continue;
+
+                if (result.TryGetValue(slot.ItemId, out int existing))
+                    result[slot.ItemId] = existing + slot.Count;
+                else
+                    result[slot.ItemId] = slot.Count;
+            }
+
+            return result;
+        }
 
         public void NotifyExternalChange() => NotifyChanged();
 

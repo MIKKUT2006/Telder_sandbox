@@ -1,0 +1,14 @@
+{
+  "ID": "game:stalactite",
+  "SpawnType": "Cave",
+  "BlockId": "game:stalactite",
+  "Biomes": [
+    "standart_caves"
+  ],
+  "Chance": 0.1,
+  "MinY": -1000000,
+  "MaxY": 1000000,
+  "Floor": false,
+  "Ceiling": true,
+  "Walls": false
+}

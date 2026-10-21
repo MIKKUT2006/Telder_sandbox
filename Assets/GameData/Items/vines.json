@@ -1,0 +1,7 @@
+{
+  "ID": "game:vines",
+  "Name": "Vines",
+  "Texture": "vines",
+  "Type": "Block",
+  "MaxStack": 100
+}

@@ -6,7 +6,9 @@
   "Texture": "oak_trunk",
 
   "Hardness": 1,
-
+  "Tags": [
+    "wood"
+  ],
   "Solid": true,
   "Drop": "game:oak_trunk",
   "DropCount": 1,

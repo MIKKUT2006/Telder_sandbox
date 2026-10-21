@@ -3,7 +3,7 @@
 
   "Name": "Leaves",
 
-  "Texture": "leaves",
+  "Texture": "leaves_2",
 
   "Hardness": 1,
 
@@ -14,7 +14,7 @@
   "VisualOffsetX": 0.0,
   "VisualOffsetY": 0.0,
   "VisualScale": 1.0,
-
+  "Tags": ["wave"],
   "LightOpacity": 15,
   "LightEmissionR": 0,
   "LightEmissionG": 0,

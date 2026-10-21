@@ -1,4 +1,4 @@
-using Game.Achievements;
+﻿using Game.Achievements;
 using Game.Blocks;
 using Game.Fluids;
 using Game.Items;
@@ -111,9 +111,15 @@ namespace Game.Content
             byte emissionB
         )
         {
+            // A previous failed startup may already have registered the built-in
+            // fluids. Retrying GameData initialization must not crash on water.
+            ContentID fluidId = ContentID.Parse(id);
+            if (FluidRegistry.Contains(fluidId))
+                return;
+
             FluidRegistry.Register(new FluidDefinition
             {
-                ID = ContentID.Parse(id),
+                ID = fluidId,
                 Name = name,
                 Color = color,
                 FlowSpeed = speed,

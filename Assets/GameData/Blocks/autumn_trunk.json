@@ -1,0 +1,22 @@
+{
+  "ID": "game:autumn_trunk",
+  "Name": "autumn_trunk",
+  "Texture": "autumn_trunk",
+  "Hardness": 1,
+  "Solid": true,
+  "Drop": "game:autumn_trunk",
+  "Tags": [
+    "wood"
+  ],
+  "DropCount": 1,
+  "RequiredTool": "axe",
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

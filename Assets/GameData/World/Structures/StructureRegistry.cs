@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -79,6 +79,7 @@ namespace Game.World.Structures
                         continue;
 
                     Normalize(definition);
+                    MergeLegacyLayerMetadata(definition);
                     structures.Add(definition);
                 }
                 catch (Exception exception)
@@ -98,12 +99,35 @@ namespace Game.World.Structures
             );
         }
 
+        private static void MergeLegacyLayerMetadata(StructureDefinition structure)
+        {
+            // Legacy .layersdata entries override the equivalent JSON fields.
+            // All data is materialized when definitions load, so background
+            // generation never performs sidecar disk I/O per chunk/cell.
+            StructureLayerMetadata layers = StructureLayerMetadataStore.Load(structure.ID);
+            for (int i = 0; i < structure.Cells.Count; i++)
+            {
+                StructureCellDefinition cell = structure.Cells[i];
+                if (cell == null)
+                    continue;
+                StructureLayerCellMetadata layer = layers.Get(cell.X, cell.Y);
+                if (layer == null)
+                    continue;
+                cell.ForegroundTransform = layer.ForegroundTransform;
+                cell.BackgroundTransform = layer.BackgroundTransform;
+                cell.FurnitureTransform = layer.FurnitureTransform;
+                cell.FurnitureId = layer.FurnitureId;
+                cell.Transform = layer.ForegroundTransform;
+            }
+        }
+
         private static void Normalize(
             StructureDefinition structure
         )
         {
             structure.Width = Mathf.Max(1, structure.Width);
             structure.Height = Mathf.Max(1, structure.Height);
+            structure.Depth = Mathf.Max(1, structure.Depth);
             structure.RegionSize = Mathf.Max(8, structure.RegionSize);
             structure.SpawnChance =
                 Mathf.Clamp01(structure.SpawnChance);

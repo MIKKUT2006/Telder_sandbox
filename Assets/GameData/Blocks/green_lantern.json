@@ -1,0 +1,28 @@
+{
+  "ID": "game:green_lantern",
+  "Name": "green lantern",
+  "Texture": "green_lantern",
+  "Hardness": 0.25,
+  "ExplosionResistance": 0.25,
+  "Solid": false,
+  "Transparent": true,
+  "BlocksLight": false,
+  "Material": 0,
+  "Drop": "game:green_lantern",
+  "DropCount": 1,
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "pickaxe",
+  "Tags": [
+    "light"
+  ],
+  "closed": false,
+  "LightOpacity": 0,
+  "LightEmissionR": 0,
+  "LightEmissionG": 14,
+  "LightEmissionB": 0,
+  
+  "CollisionShape": "Full",
+  "CollisionRects": []
+  
+}

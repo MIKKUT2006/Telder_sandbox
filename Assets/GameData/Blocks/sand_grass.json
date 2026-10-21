@@ -16,9 +16,9 @@
   "RequiredTool": "",
   "Tags": [
     "grass",
-    "dirt"
+    "wave"
   ],
-
+  "alwaysFurniture": true,
   "LightOpacity": 15,
   "LightEmissionR": 0,
   "LightEmissionG": 0,

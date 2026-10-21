@@ -69,6 +69,12 @@ namespace Game.PlayerStats
         private float previousY;
 
         private bool initialized;
+        private Game.Harpoon.HarpoonController2D harpoon;
+        private bool ropeWasAttached;
+        private float safeDetachUntil;
+        // Ignore descent on a taut rope and a short settling window following release.
+        [SerializeField] private float ropeReleaseGraceSeconds = 0.28f;
+
 
 
         // =====================================================
@@ -82,6 +88,7 @@ namespace Game.PlayerStats
 
             playerStats =
                 GetComponent<PlayerStats>();
+            harpoon = GetComponent<Game.Harpoon.HarpoonController2D>();
         }
 
 
@@ -104,6 +111,12 @@ namespace Game.PlayerStats
         {
             if (!initialized)
                 return;
+            if (Game.World.WorldManager.Instance != null &&
+                !Game.World.WorldManager.Instance.InitialSpawnReady)
+            {
+                ResetTracking();
+                return;
+            }
 
 
             if (playerStats == null ||
@@ -126,6 +139,27 @@ namespace Game.PlayerStats
 
             float currentY =
                 transform.position.y;
+
+            if (harpoon == null)
+                harpoon = GetComponent<Game.Harpoon.HarpoonController2D>();
+
+            bool attached = harpoon != null && harpoon.IsAttached;
+            if (attached || ropeWasAttached)
+            {
+                if (ropeWasAttached && !attached)
+                    safeDetachUntil = Time.time + Mathf.Max(0f, ropeReleaseGraceSeconds);
+                ropeWasAttached = attached;
+                ResetTracking();
+                previousY = currentY;
+                // Never interpret rope-controlled movement as a free fall.
+                return;
+            }
+            if (Time.time < safeDetachUntil)
+            {
+                ResetTracking();
+                previousY = currentY;
+                return;
+            }
 
 
             // -------------------------------------------------

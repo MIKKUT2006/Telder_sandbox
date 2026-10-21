@@ -1,7 +1,7 @@
 {
   "ID": "game:furnace",
   "Name": "Furnace",
-  "Texture": "furnace_burning",
+  "Texture": "furnace",
   "Hardness": 1.0,
   "ExplosionResistance": 1.0,
   "Solid": true,
@@ -27,15 +27,30 @@
   "MultiBlock": {
     "Width": 1,
     "Height": 2,
-
     "AnchorX": 0,
     "AnchorY": 0,
-
-    "Kind": "furnace_burning",
-    "Texture": "furnace_burning",
-
+    "Kind": "furnace",
+    "Texture": "furnace",
     "RequireFloor": true
   },
+  "States": [
+    {
+      "State": "burning",
+      "Texture": null,
+      "Animation": {
+        "Frames": [
+          "furnace_burning",
+          "furnace_burning_02",
+          "furnace_burning_03",
+          "furnace_burning_04",
+          "furnace_burning_05"
+        ],
+        "FPS": 6.0,
+        "PingPong": false,
+        "RandomStart": true
+      }
+    }
+  ],
   "CraftIngredients": [
     {
       "ItemId": "game:stone",
@@ -44,10 +59,5 @@
   ],
   "CraftWithoutWorkbench": true,
   "CraftResultCount": 1,
-  "States": [
-    {
-      "State": "burning",
-      "Texture": "furnace_burning"
-    }
-  ]
+  "alwaysFurniture": true
 }

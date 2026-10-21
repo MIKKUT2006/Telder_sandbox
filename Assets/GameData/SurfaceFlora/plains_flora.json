@@ -25,6 +25,18 @@
       "NoiseThreshold": 0
     },
     {
+      "BlockId": "game:rose",
+      "Chance": 0.1,
+      "NoiseScale": 0.08,
+      "NoiseThreshold": 0
+    },
+    {
+      "BlockId": "game:iris",
+      "Chance": 0.05,
+      "NoiseScale": 0.08,
+      "NoiseThreshold": 0
+    },
+    {
       "BlockId": "game:lying_stone",
       "Chance": 0.2,
       "NoiseScale": 0.15,
@@ -34,6 +46,12 @@
       "BlockId": "game:lying_stone_02",
       "Chance": 0.3,
       "NoiseScale": 0.17,
+      "NoiseThreshold": 0
+    },
+    {
+      "BlockId": "game:dead_bush",
+      "Chance": 0.05,
+      "NoiseScale": 0.15,
       "NoiseThreshold": 0
     }
   ]

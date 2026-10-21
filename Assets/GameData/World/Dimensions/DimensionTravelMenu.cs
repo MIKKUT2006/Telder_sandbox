@@ -1,3 +1,5 @@
+using Game.InputSupport;
+using Game.Inventory;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -78,8 +80,22 @@ namespace Game.World.Dimensions
 
 
         private bool open;
+        private int gamepadVisitedIndex;
+        private float gamepadNextMove;
+        private float nextControllerSearch;
+        private PortalGunController2D portalGunController;
+        private PortalGunController2D portalGunOwner;
+        private string statusMessage = string.Empty;
+
+        public bool IsOpen => open;
+
 
         private string newDimensionName =
+            string.Empty;
+
+        // Пустая строка означает случайный сид.
+        // Можно вводить числа ИЛИ текст — текст хешируется.
+        private string newDimensionSeed =
             string.Empty;
 
         private Vector2 scroll;
@@ -104,6 +120,7 @@ namespace Game.World.Dimensions
         private GUIStyle inputStyle;
         private GUIStyle buttonStyle;
         private GUIStyle typeStyle;
+        private GUIStyle statusStyle;
 
 
         private readonly List<Star> stars =
@@ -133,28 +150,87 @@ namespace Game.World.Dimensions
 
             CreateTextures();
             CreateStars();
+            EnsurePortalGunController();
         }
 
 
         private void Update()
         {
-            if (!Input.GetKeyDown(menuKey))
-                return;
-
-
-            if (open)
+            if (portalGunController == null && Time.unscaledTime >= nextControllerSearch)
             {
-                open = false;
-                return;
+                nextControllerSearch = Time.unscaledTime + 1f;
+                EnsurePortalGunController();
             }
 
-
-            if (!CapturePortalPosition())
+            if (!open)
                 return;
 
+            if (GameInput.GamepadConnected)
+            {
+                var visited = (Game.Save.SaveGameRuntime.HasActiveSave
+                    ? SaveScopedDimensionList.GetVisited()
+                    : DimensionDatabase.Visited);
+                Vector2 direction = GameInput.Navigation;
+                if (Mathf.Abs(direction.y) > .55f && Time.unscaledTime >= gamepadNextMove)
+                {
+                    gamepadVisitedIndex = Mathf.Clamp(gamepadVisitedIndex + (direction.y < 0 ? 1 : -1),
+                        0, Mathf.Max(0, visited.Count));
+                    gamepadNextMove = Time.unscaledTime + .2f;
+                    scroll.y = Mathf.Max(0f, gamepadVisitedIndex * 118f - 80f);
+                }
+                if (GameInput.Pressed(GameAction.UiConfirm))
+                {
+                    if (gamepadVisitedIndex < visited.Count)
+                        OpenExistingRift(visited[gamepadVisitedIndex].Name);
+                    else CreateRiftFromInput();
+                }
+            }
 
+            if (Input.GetKeyDown(KeyCode.Escape) || GameInput.Pressed(GameAction.UiCancel))
+                CloseMenu();
+        }
+
+
+        private void EnsurePortalGunController()
+        {
+            PlayerInventory playerInventory = FindFirstObjectByType<PlayerInventory>();
+            if (playerInventory == null)
+                return;
+
+            portalGunController = playerInventory.GetComponent<PortalGunController2D>();
+            if (portalGunController == null)
+                portalGunController = playerInventory.gameObject.AddComponent<PortalGunController2D>();
+
+            portalGunController.BindMenu(this);
+        }
+
+
+        public bool OpenForPortalGun(PortalGunController2D owner)
+        {
+            if (owner == null || !owner.IsHoldingPortalGun() || open || !CapturePortalPosition())
+                return false;
+
+            portalGunOwner = owner;
+            statusMessage = string.Empty;
+            gamepadVisitedIndex = 0;
             open = true;
-            //Cursor.visible = true;
+            return true;
+        }
+
+
+        public void SetStatusMessage(string message)
+        {
+            statusMessage = message ?? string.Empty;
+        }
+
+
+        public void CloseMenu()
+        {
+            open = false;
+            statusMessage = string.Empty;
+            if (portalGunOwner != null)
+                portalGunOwner.NotifyMenuClosed();
+            portalGunOwner = null;
         }
 
 
@@ -181,7 +257,7 @@ namespace Game.World.Dimensions
             Ray ray =
                 portalManager.WorldCamera
                     .ScreenPointToRay(
-                        Input.mousePosition
+                        GameInput.PointerPosition
                     );
 
 
@@ -245,6 +321,32 @@ namespace Game.World.Dimensions
             DrawStars();
             DrawHeader();
             DrawPanel();
+
+            if (!string.IsNullOrWhiteSpace(statusMessage))
+            {
+                float boxWidth = Mathf.Min(Screen.width - 32f, 1000f);
+                const float boxHeight = 68f;
+                Rect messageRect = new Rect(
+                    (Screen.width - boxWidth) * 0.5f,
+                    Screen.height - boxHeight - 22f,
+                    boxWidth,
+                    boxHeight
+                );
+
+                Color oldColor = GUI.color;
+                GUI.color = new Color(0.035f, 0.025f, 0.04f, 0.94f);
+                GUI.DrawTexture(messageRect, whiteTex);
+
+                GUI.color = new Color(0f, 0f, 0f, 0.95f);
+                Rect shadowRect = messageRect;
+                shadowRect.x += 2f;
+                shadowRect.y += 2f;
+                GUI.Label(shadowRect, statusMessage, statusStyle);
+
+                GUI.color = new Color(1f, 0.36f, 0.40f, 1f);
+                GUI.Label(messageRect, statusMessage, statusStyle);
+                GUI.color = oldColor;
+            }
         }
 
 
@@ -416,7 +518,9 @@ namespace Game.World.Dimensions
 
 
             IReadOnlyList<DimensionDefinition> visited =
-                DimensionDatabase.Visited;
+                (Game.Save.SaveGameRuntime.HasActiveSave
+                    ? SaveScopedDimensionList.GetVisited()
+                    : DimensionDatabase.Visited);
 
 
             const float itemHeight =
@@ -474,7 +578,7 @@ namespace Game.World.Dimensions
 
                 GUI.DrawTexture(
                     card,
-                    hover
+                    (hover || (GameInput.GamepadConnected && gamepadVisitedIndex == i))
                         ? hoverTex
                         : cardTex
                 );
@@ -563,73 +667,65 @@ namespace Game.World.Dimensions
             Rect rect
         )
         {
-            GUI.Label(
-                new Rect(
-                    rect.x,
-                    rect.y,
-                    rect.width,
-                    24f
-                ),
-                "Новое измерение",
-                sectionStyle
-            );
-
 
             GUI.Label(
+                new Rect(rect.x, rect.y + 42f, rect.width, 20f),
+                "ИМЯ ИЗМЕРЕНИЯ",
+                captionStyle
+            );
+
+            Rect inputBack = new Rect(
+                rect.x, rect.y + 66f, rect.width, 42f);
+
+            GUI.DrawTexture(inputBack, cardTex);
+            DrawBorder(inputBack, 0.12f);
+
+            newDimensionName = GUI.TextField(
                 new Rect(
-                    rect.x,
-                    rect.y + 42f,
-                    rect.width,
-                    44f
-                ),
-                "Имя определяет сид. Оставьте поле пустым, чтобы создать абсолютно случайное значение сида.",
-                smallStyle
+                    inputBack.x + 12f,
+                    inputBack.y + 5f,
+                    inputBack.width - 24f,
+                    inputBack.height - 10f),
+                newDimensionName,
+                48,
+                inputStyle
             );
 
+            GUI.Label(
+                new Rect(rect.x, rect.y + 116f, rect.width, 20f),
+                "СИД — ЦИФРЫ ИЛИ ТЕКСТ (НЕОБЯЗАТЕЛЬНО)",
+                captionStyle
+            );
 
-            Rect inputBack =
+            Rect seedBack = new Rect(
+                rect.x, rect.y + 140f, rect.width, 42f);
+
+            GUI.DrawTexture(seedBack, cardTex);
+            DrawBorder(seedBack, 0.12f);
+
+            newDimensionSeed = GUI.TextField(
                 new Rect(
-                    rect.x,
-                    rect.y + 106f,
-                    rect.width,
-                    48f
-                );
-
-
-            GUI.DrawTexture(
-                inputBack,
-                cardTex
+                    seedBack.x + 12f,
+                    seedBack.y + 5f,
+                    seedBack.width - 24f,
+                    seedBack.height - 10f),
+                newDimensionSeed,
+                32,
+                inputStyle
             );
 
-
-            DrawBorder(
-                inputBack,
-                0.12f
-            );
-
-
-            newDimensionName =
-                GUI.TextField(
-                    new Rect(
-                        inputBack.x + 14f,
-                        inputBack.y + 6f,
-                        inputBack.width - 28f,
-                        inputBack.height - 12f
-                    ),
-                    newDimensionName,
-                    48,
-                    inputStyle
-                );
-
-
+            // Превью зависит ТОЛЬКО от поля сида.
+            // Имя измерения в сид не подмешивается.
             DimensionDefinition preview =
                 DimensionDatabase.PreviewNamed(
-                    newDimensionName
+                    newDimensionName,
+                    newDimensionSeed
                 );
+
 
 
             float y =
-                rect.y + 174f;
+                rect.y + 210f;
 
 
             GUI.Label(
@@ -723,11 +819,11 @@ namespace Game.World.Dimensions
             DrawFilledButton(
                 new Rect(
                     rect.x,
-                    rect.y + 402f,
+                    rect.y + 438f,
                     rect.width,
                     46f
                 ),
-                preview == null
+                string.IsNullOrWhiteSpace(newDimensionName)
                     ? "СОЗДАТЬ СЛУЧАЙНЫЙ РАЗЛОМ"
                     : "СОЗДАТЬ РАЗЛОМ",
                 CreateRiftFromInput
@@ -773,10 +869,7 @@ namespace Game.World.Dimensions
                     34f
                 ),
                 "CLOSE",
-                () =>
-                {
-                    open = false;
-                }
+                CloseMenu
             );
         }
 
@@ -786,81 +879,119 @@ namespace Game.World.Dimensions
             if (!hasCapturedPosition)
                 return;
 
+            // Проверяем тип до сохранения нового измерения.
+            // Превью строится по полю сида, а не по имени.
+            DimensionDefinition preview =
+                DimensionDatabase.PreviewNamed(
+                    newDimensionName,
+                    newDimensionSeed
+                );
+
+            if (portalGunOwner != null && preview != null &&
+                !portalGunOwner.CanAccessDimensionTier(
+                    preview.Type != null ? preview.Type.Tier : 1,
+                    out statusMessage))
+                return;
+
+            if (portalGunOwner != null &&
+                !portalGunOwner.CanAffordPortal(out statusMessage))
+                return;
+
+            if (portalManager == null)
+                portalManager = FindFirstObjectByType<DimensionPortalManager>();
 
             if (portalManager == null)
             {
-                portalManager =
-                    FindFirstObjectByType<
-                        DimensionPortalManager
-                    >();
+                statusMessage = "Система порталов не найдена.";
+                return;
             }
 
+            DimensionDefinition dimension;
 
-            if (portalManager == null)
+            int gunLevel = portalGunOwner != null
+                ? portalGunOwner.GetCurrentPortalGunLevel()
+                : 0;
+
+            try
+            {
+                dimension = DimensionDatabase.CreateFromInput(
+                    newDimensionName,
+                    newDimensionSeed,
+                    gunLevel
+                );
+            }
+            catch (ArgumentException exception)
+            {
+                statusMessage = exception.Message;
+                return;
+            }
+
+            if (!CommitPortal(dimension))
                 return;
 
-
-            /*
-             * НОВОЕ:
-             *
-             * Пустое имя не блокирует кнопку.
-             * Database сама создаёт случайный seed и техническое имя.
-             */
-            DimensionDefinition dimension =
-                DimensionDatabase.CreateFromInput(
-                    newDimensionName
-                );
-
-
-            portalManager.OpenPortal(
-                capturedPortalPosition,
-                dimension.Name
-            );
-
-
-            newDimensionName =
-                string.Empty;
-
-            open =
-                false;
+            newDimensionName = string.Empty;
+            newDimensionSeed = string.Empty;
+            CloseMenu();
         }
 
 
-        private void OpenExistingRift(
-            string dimensionName
-        )
+        private bool CommitPortal(DimensionDefinition dimension)
+        {
+            if (dimension == null)
+            {
+                statusMessage = "Не удалось выбрать измерение.";
+                return false;
+            }
+
+            if (portalGunOwner != null)
+            {
+                if (!portalGunOwner.TryFireToDimension(capturedPortalPosition, dimension.Name))
+                {
+                    statusMessage = portalGunOwner.LastStatusMessage;
+                    return false;
+                }
+                statusMessage = string.Empty;
+                return true;
+            }
+
+            portalManager.OpenPortal(capturedPortalPosition, dimension.Name);
+            return true;
+        }
+
+
+        private void OpenExistingRift(string dimensionName)
         {
             if (!hasCapturedPosition)
                 return;
 
+            if (portalGunOwner != null &&
+                !portalGunOwner.CanAffordPortal(out statusMessage))
+                return;
+
+            if (portalManager == null)
+                portalManager = FindFirstObjectByType<DimensionPortalManager>();
 
             if (portalManager == null)
             {
-                portalManager =
-                    FindFirstObjectByType<
-                        DimensionPortalManager
-                    >();
+                statusMessage = "Система порталов не найдена.";
+                return;
             }
 
+            // Найти существующее измерение по имени (сид берётся из базы).
+            DimensionDefinition preview =
+                DimensionDatabase.LookupByName(dimensionName);
 
-            if (portalManager == null)
+            if (portalGunOwner != null && preview != null &&
+                !portalGunOwner.CanAccessDimensionTier(
+                    preview.Type != null ? preview.Type.Tier : 1,
+                    out statusMessage))
                 return;
 
+            DimensionDefinition dimension = DimensionDatabase.GetOrCreate(dimensionName);
+            if (!CommitPortal(dimension))
+                return;
 
-            DimensionDefinition dimension =
-                DimensionDatabase.GetOrCreate(
-                    dimensionName
-                );
-
-
-            portalManager.OpenPortal(
-                capturedPortalPosition,
-                dimension.Name
-            );
-
-
-            open =
-                false;
+            CloseMenu();
         }
 
 
@@ -1313,6 +1444,18 @@ namespace Game.World.Dimensions
                         1f
                     )
                 );
+
+
+            statusStyle =
+                NewStyle(
+                    26,
+                    FontStyle.Bold,
+                    TextAnchor.MiddleCenter,
+                    Color.white
+                );
+            statusStyle.wordWrap = true;
+            statusStyle.clipping = TextClipping.Clip;
+            statusStyle.padding = new RectOffset(18, 18, 6, 6);
         }
 
 

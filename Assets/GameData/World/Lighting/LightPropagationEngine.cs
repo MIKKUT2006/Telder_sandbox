@@ -1,1751 +1,218 @@
-
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Game.Blocks;
 using Game.Fluids;
 using Game.World.Furniture;
-
-using System.Collections.Generic;
-
 using UnityEngine;
-
+using ChunkKey = UnityEngine.Vector2Int;
 
 namespace Game.World.Lighting
 {
-
+    // Relight independent chunk tiles with a light-radius halo. World light is
+    // published only after a complete tile has converged; rendering never sees
+    // the temporary cleared buffer while work is spread across frames.
     public class LightPropagationEngine
     {
-
-        public const byte MaxLight =
-            15;
-
-
-        private const int LightSpreadRadius =
-            MaxLight +
-            2;
-
-
+        public const byte MaxLight = 15;
+        private const int Halo = MaxLight + 2;
+        private const int Width = Chunk.SizeX + Halo * 2;
+        private const int Height = Chunk.SizeY + Halo * 2;
+        private const int StepCells = 32;
         private readonly ILightWorld world;
-
-
-        private readonly Queue<LightPoint>
-            propagationQueue =
-            new Queue<LightPoint>(
-                4096
-            );
-
-
-        private static readonly int[] DirectionX =
+        private readonly HashSet<ChunkKey> pending = new HashSet<ChunkKey>();
+        private readonly Dictionary<int,int> shadowColumns = new Dictionary<int,int>();
+        private readonly Dictionary<ushort,BlockLightInfo> blockInfo = new Dictionary<ushort,BlockLightInfo>();
+        private readonly Queue<int> flood = new Queue<int>(8192);
+        private readonly LightNode[] values = new LightNode[Width * Height];
+        private readonly byte[] opacity = new byte[Width * Height];
+        private readonly bool[] loaded = new bool[Width * Height];
+        private readonly bool[] queued = new bool[Width * Height];
+        private readonly Stopwatch clock = new Stopwatch();
+        private Func<int,int,byte> unloadedSkyOpacity;
+        private ChunkKey priority, active;
+        private bool working;
+        private int stage,cursor,minX,minY,skyX,skyY,opaqueDepth,skyTop,requestedHeight=256;
+        private byte directSun;
+        public int PendingChunkCount => pending.Count + (working ? 1 : 0) + shadowColumns.Count;
+        public long CompletedTiles {get;private set;}
+        public int LastProcessSteps {get;private set;}
+        public LightPropagationEngine(ILightWorld world){this.world=world;}
+        public void SetPriority(int chunkX,int chunkY){priority=new ChunkKey(chunkX,chunkY);}
+        public void SetUnloadedSkyOpacityResolver(Func<int,int,byte> resolver){unloadedSkyOpacity=resolver;}
+        public bool IsChunkPending(int x,int y)=>pending.Contains(new ChunkKey(x,y)) || working&&active==new ChunkKey(x,y) ||
+            shadowColumns.TryGetValue(x,out int highest)&&y*Chunk.SizeY<=highest+Halo;
+        private bool HasChunk(int x,int y)
+        {return world!=null&&world.IsLoaded(x*Chunk.SizeX,y*Chunk.SizeY);}
+        public void ForgetChunk(int x,int y)
+        {var key=new ChunkKey(x,y);pending.Remove(key);if(working&&active==key)working=false;}
+        public void RequestChunk(int chunkX,int chunkY,bool force=false)
+        {var key=new ChunkKey(chunkX,chunkY);if(!force&&working&&active==key)return;if(HasChunk(chunkX,chunkY))pending.Add(key);}
+        public void RebuildLoadedWorld(int worldHeight)
         {
-            -1,
-            1,
-            0,
-            0
-        };
-
-
-        private static readonly int[] DirectionY =
-        {
-            0,
-            0,
-            -1,
-            1
-        };
-
-
-        public LightPropagationEngine(
-            ILightWorld world
-        )
-        {
-
-            this.world =
-                world;
-
+            if(world is Game.World.World movingWorld)movingWorld.HandheldLight.Invalidate();
+            requestedHeight=Mathf.Max(1,worldHeight);
+            blockInfo.Clear();
+            if(world is Game.World.World concrete)
+                foreach(var pair in concrete.GetLoadedChunks())RequestChunk(pair.Key.x,pair.Key.y,true);
         }
-
-
-        // =========================================================
-        // PUBLIC API
-        // =========================================================
-
-        public void RebuildLoadedWorld(
-            int worldHeight
-        )
+        public void RebuildAfterChunkGenerated(int chunkX,int chunkY,int worldHeight)
         {
-
-            if (
-                !TryGetLoadedBounds(
-                    out LightBounds loadedBounds
-                )
-            )
+            if(world is Game.World.World movingWorld)movingWorld.HandheldLight.Invalidate();
+            requestedHeight=Mathf.Max(1,worldHeight);
+            for(int x=chunkX-1;x<=chunkX+1;x++)for(int y=chunkY-1;y<=chunkY+1;y++)RequestChunk(x,y,true);
+            // A newly loaded roof can correct sunlight in an already visible
+            // cave. An old "lit once" flag must not suppress that correction.
+            for(int x=chunkX-1;x<=chunkX+1;x++)QueueShadowColumn(x,(chunkY+1)*Chunk.SizeY-1);
+        }
+        public void RebuildAfterBlockChanged(int x,int y,int worldHeight)
+        {RebuildAfterBlockChanged(x,y,worldHeight,true);}
+        public void RebuildAfterBlockChanged(int x,int y,int worldHeight,bool sunlightChanged)
+        {
+            if(world is Game.World.World movingWorld)movingWorld.HandheldLight.Invalidate();
+            requestedHeight=Mathf.Max(1,worldHeight);
+            RequestRectangle(x-Halo,y-Halo,x+Halo,y+Halo);
+            if(sunlightChanged)
+                for(int cx=FloorDiv(x-MaxLight,Chunk.SizeX);cx<=FloorDiv(x+MaxLight,Chunk.SizeX);cx++)QueueShadowColumn(cx,y);
+        }
+        public void RebuildAfterLiquidRegionChanged(int minX,int minY,int maxX,int maxY,int worldHeight)
+        {requestedHeight=Mathf.Max(1,worldHeight);RequestRectangle(minX-Halo,minY-Halo,maxX+Halo,maxY+Halo);}
+        public void GenerateSunlightForChunk(int chunkX,int chunkY)
+        {RebuildAfterChunkGenerated(chunkX,chunkY,requestedHeight);}
+        private void QueueShadowColumn(int chunkX,int y)
+        {if(!shadowColumns.TryGetValue(chunkX,out int old)||y>old)shadowColumns[chunkX]=y;}
+        private void RequestRectangle(int minX,int minY,int maxX,int maxY)
+        {
+            for(int x=FloorDiv(minX,Chunk.SizeX);x<=FloorDiv(maxX,Chunk.SizeX);x++)
+                for(int y=FloorDiv(minY,Chunk.SizeY);y<=FloorDiv(maxY,Chunk.SizeY);y++)RequestChunk(x,y,true);
+        }
+        private void FlushShadowColumns()
+        {
+            if(shadowColumns.Count==0)return;
+            if(world is Game.World.World concrete)
+                foreach(var pair in concrete.GetLoadedChunks())
+                    if(shadowColumns.TryGetValue(pair.Key.x,out int highest)&&pair.Key.y*Chunk.SizeY<=highest+Halo)RequestChunk(pair.Key.x,pair.Key.y,true);
+            shadowColumns.Clear();
+        }
+        public void ProcessPending(double budgetMilliseconds=1.25,int maxSteps=256)
+        {
+            LastProcessSteps=0;if(world==null)return;clock.Restart();FlushShadowColumns();
+            while(LastProcessSteps<maxSteps && (LastProcessSteps==0||clock.Elapsed.TotalMilliseconds<budgetMilliseconds))
             {
-
-                return;
-
+                if(!working&&!BeginNext())break;
+                Advance();LastProcessSteps++;
             }
-
-
-            RebuildRegion(
-                loadedBounds,
-                worldHeight
-            );
-
+            clock.Stop();
         }
-
-
-        public void RebuildAfterChunkGenerated(
-            int chunkX,
-            int chunkY,
-            int worldHeight
-        )
+        private bool BeginNext()
         {
-
-            if (
-                !TryGetLoadedBounds(
-                    out LightBounds loadedBounds
-                )
-            )
+            bool found=false;ChunkKey next=default;long best=long.MaxValue;
+            foreach(var p in pending)
             {
-
-                return;
-
+                long dx=(long)p.x-priority.x,dy=(long)p.y-priority.y;long score=dx*dx+dy*dy;
+                if(!found||score<best){next=p;best=score;found=true;}
             }
-
-
-            int chunkMinX =
-                chunkX *
-                Chunk.SizeX;
-
-
-            int chunkMaxX =
-                chunkMinX +
-                Chunk.SizeX -
-                1;
-
-
-            LightBounds bounds =
-                new LightBounds(
-                    Mathf.Max(
-                        loadedBounds.MinX,
-                        chunkMinX -
-                        LightSpreadRadius
-                    ),
-
-                    loadedBounds.MinY,
-
-                    Mathf.Min(
-                        loadedBounds.MaxX,
-                        chunkMaxX +
-                        LightSpreadRadius
-                    ),
-
-                    loadedBounds.MaxY
-                );
-
-
-            RebuildRegion(
-                bounds,
-                worldHeight
-            );
-
+            if(!found)return false;pending.Remove(next);
+            if(!HasChunk(next.x,next.y))return BeginNext();
+            active=next;working=true;stage=0;cursor=0;minX=active.x*Chunk.SizeX-Halo;minY=active.y*Chunk.SizeY-Halo;
+            flood.Clear();skyX=0;skyTop=Mathf.Max(requestedHeight-1,minY+Height-1);
+            if(world is Game.World.World concrete)
+                foreach(var pair in concrete.GetLoadedChunks())skyTop=Mathf.Max(skyTop,(pair.Key.y+1)*Chunk.SizeY-1);
+            skyY=skyTop;directSun=MaxLight;opaqueDepth=0;return true;
         }
-
-
-        public void RebuildAfterBlockChanged(
-            int worldX,
-            int worldY,
-            int worldHeight
-        )
+        private void Advance()
         {
-
-            if (
-                !TryGetLoadedBounds(
-                    out LightBounds loadedBounds
-                )
-            )
+            if(!HasChunk(active.x,active.y)){working=false;return;}
+            if(stage==0)
             {
-
-                return;
-
+                int end=Mathf.Min(values.Length,cursor+StepCells);
+                for(;cursor<end;cursor++)Snapshot(cursor);
+                if(cursor==values.Length){stage=1;cursor=0;}return;
             }
-
-
-            int minX =
-                Mathf.Max(
-                    loadedBounds.MinX,
-                    worldX -
-                    LightSpreadRadius
-                );
-
-
-            int maxX =
-                Mathf.Min(
-                    loadedBounds.MaxX,
-                    worldX +
-                    LightSpreadRadius
-                );
-
-
-            if (
-                minX >
-                maxX
-            )
+            if(stage==1)
             {
-
-                return;
-
+                int steps=StepCells;
+                while(steps-->0&&skyX<Width)SeedSkyCell();
+                if(skyX==Width)stage=2;return;
             }
-
-
-            // IMPORTANT:
-            //
-            // Do NOT clamp MinY to 0.
-            //
-            // Negative chunk/world Y is valid in this world,
-            // therefore a torch at Y=-20 must participate in
-            // exactly the same rebuild as a torch at Y=20.
-            LightBounds bounds =
-                new LightBounds(
-                    minX,
-                    loadedBounds.MinY,
-                    maxX,
-                    loadedBounds.MaxY
-                );
-
-
-            RebuildRegion(
-                bounds,
-                worldHeight
-            );
-
-        }
-
-
-        // Liquids do not block sunlight, so emissive-liquid changes can be
-        // rebuilt in a local rectangle instead of rebuilding the whole Y column.
-        public void RebuildAfterLiquidRegionChanged(
-            int minX,
-            int minY,
-            int maxX,
-            int maxY,
-            int worldHeight
-        )
-        {
-            if (!TryGetLoadedBounds(out LightBounds loadedBounds))
-                return;
-
-            LightBounds bounds =
-                new LightBounds(
-                    Mathf.Max(loadedBounds.MinX, minX - LightSpreadRadius),
-                    Mathf.Max(loadedBounds.MinY, minY - LightSpreadRadius),
-                    Mathf.Min(loadedBounds.MaxX, maxX + LightSpreadRadius),
-                    Mathf.Min(loadedBounds.MaxY, maxY + LightSpreadRadius)
-                );
-
-            if (bounds.MinX > bounds.MaxX || bounds.MinY > bounds.MaxY)
-                return;
-
-            RebuildRegion(bounds, worldHeight);
-        }
-
-
-        public void GenerateSunlightForChunk(
-            int chunkX,
-            int chunkY
-        )
-        {
-
-            RebuildAfterChunkGenerated(
-                chunkX,
-                chunkY,
-                256
-            );
-
-        }
-
-
-        // =========================================================
-        // REGION REBUILD — MAIN IMPLEMENTATION
-        // =========================================================
-        //
-        // The project previously contained TWO incomplete lighting
-        // implementations in this class:
-        //
-        // RebuildRegion(int,int,int,int)
-        //
-        // and a newer bounds-based pipeline whose public methods
-        // called:
-        //
-        // RebuildRegion(LightBounds,int)
-        //
-        // but that overload did not exist.
-        //
-        // This is the missing canonical overload.
-        //
-        // =========================================================
-
-        private void RebuildRegion(
-            LightBounds bounds,
-            int worldHeight
-        )
-        {
-
-            if (
-                world ==
-                null
-            )
+            if(stage==2)
             {
-
-                return;
-
-            }
-
-
-            if (
-                bounds.MinX >
-                bounds.MaxX
-                ||
-                bounds.MinY >
-                bounds.MaxY
-            )
-            {
-
-                return;
-
-            }
-
-
-            propagationQueue.Clear();
-
-
-            // 1. Remove stale light from the rebuild region.
-            ClearRegion(
-                bounds
-            );
-
-
-            // 2. Re-seed sunlight.
-            SeedSunlight(
-                bounds,
-                worldHeight
-            );
-
-
-            // 3. Re-seed foreground + Furniture RGB emitters.
-            SeedEmissiveBlocks(
-                bounds
-            );
-
-
-            // 4. Keep light coming from immediately outside the
-            // rebuilt X region.
-            SeedExistingBoundaryLight(
-                bounds
-            );
-
-
-            // 5. Propagate all channels.
-            Propagate(
-                bounds
-            );
-
-
-            // 6. Renderer light textures must know their data changed.
-            MarkRegionDirty(
-                bounds
-            );
-
-        }
-
-
-        // =========================================================
-        // COMPATIBILITY OVERLOAD
-        // =========================================================
-        //
-        // Keep this signature because older project code and old
-        // patchers may still call it.
-        //
-        // =========================================================
-
-        private void RebuildRegion(
-            int minX,
-            int maxX,
-            int minY,
-            int maxY
-        )
-        {
-
-            RebuildRegion(
-                new LightBounds(
-                    minX,
-                    minY,
-                    maxX,
-                    maxY
-                ),
-
-                Mathf.Max(
-                    1,
-                    maxY +
-                    1
-                )
-            );
-
-        }
-
-
-        // =========================================================
-        // CLEAR
-        // =========================================================
-
-        private void ClearRegion(
-            LightBounds bounds
-        )
-        {
-
-            for (
-                int x = bounds.MinX;
-                x <= bounds.MaxX;
-                x++
-            )
-            {
-
-                for (
-                    int y = bounds.MinY;
-                    y <= bounds.MaxY;
-                    y++
-                )
+                int budget=StepCells;
+                while(budget-->0&&flood.Count>0)
                 {
-
-                    if (
-                        !world.IsLoaded(
-                            x,
-                            y
-                        )
-                    )
-                    {
-
-                        continue;
-
-                    }
-
-
-                    world.SetLight(
-                        x,
-                        y,
-                        0,
-                        0,
-                        0,
-                        0
-                    );
-
+                    int source=flood.Dequeue();queued[source]=false;int x=source%Width,y=source/Width;
+                    if(x>0)Spread(source,source-1);if(x+1<Width)Spread(source,source+1);
+                    if(y>0)Spread(source,source-Width);if(y+1<Height)Spread(source,source+Width);
                 }
-
+                if(flood.Count==0)stage=3;return;
             }
-
+            Publish();working=false;CompletedTiles++;
         }
-
-
-        // =========================================================
-        // SUNLIGHT
-        // =========================================================
-
-        private void SeedSunlight(
-            LightBounds bounds,
-            int worldHeight
-        )
+        private BlockLightInfo Info(ushort id)
         {
-            int skyTop =
-                worldHeight - 1;
-
-            for (
-                int x = bounds.MinX;
-                x <= bounds.MaxX;
-                x++
-            )
-            {
-                byte directSun =
-                    MaxLight;
-
-                int opaqueDepth =
-                    0; // TELDER_TWO_BLOCK_SUN_BOUNDS
-
-                for (
-                    int y = skyTop;
-                    y >= bounds.MinY;
-                    y--
-                )
-                {
-                    if (directSun == 0)
-                        break;
-
-                    ushort blockID =
-                        world.GetBlock(x, y);
-
-                    int opacity =
-                        GetOpacity(blockID);
-
-                    bool insideRegion =
-                        y <= bounds.MaxY;
-
-                    if (blockID == 0)
-                    {
-                        // Once sunlight entered solid terrain, a cave/air
-                        // cell below it must be completely dark.
-                        if (opaqueDepth > 0)
-                            break;
-
-                        if (insideRegion &&
-                            world.IsLoaded(x, y))
-                        {
-                            SetSunlightSource(
-                                x,
-                                y,
-                                directSun,
-                                true
-                            );
-                        }
-
-                        continue;
-                    }
-
-                    if (opacity >= MaxLight)
-                    {
-                        opaqueDepth++;
-
-                        if (opaqueDepth > 2)
-                            break;
-
-                        byte penetration =
-                            opaqueDepth == 1
-                                ? (byte)10
-                                : (byte)5;
-
-                        if (insideRegion &&
-                            world.IsLoaded(x, y))
-                        {
-                            SetSunlightSource(
-                                x,
-                                y,
-                                penetration,
-                                false
-                            );
-                        }
-
-                        continue;
-                    }
-
-                    // Do not let light reappear below the two solid
-                    // surface cells through semi-transparent material.
-                    if (opaqueDepth > 0)
-                        break;
-
-                    directSun =
-                        SubtractLight(
-                            directSun,
-                            opacity
-                        );
-
-                    if (insideRegion &&
-                        world.IsLoaded(x, y))
-                    {
-                        SetSunlightSource(
-                            x,
-                            y,
-                            directSun,
-                            true
-                        );
-                    }
-                }
-            }
+            if(id==0)return default;
+            if(blockInfo.TryGetValue(id,out var info))return info;
+            var def=world.GetBlockDefinition(id);info=def==null?new BlockLightInfo{Opacity=MaxLight}:new BlockLightInfo
+            {Opacity=(byte)Mathf.Clamp(def.LightOpacity,0,MaxLight),R=(byte)Mathf.Min(MaxLight,def.LightEmissionR),G=(byte)Mathf.Min(MaxLight,def.LightEmissionG),B=(byte)Mathf.Min(MaxLight,def.LightEmissionB)};
+            blockInfo[id]=info;return info;
         }
-
-
-
-        private void SetSunlightSource(
-            int x,
-            int y,
-            byte sunlight,
-            bool propagate
-        )
+        private void Snapshot(int index)
         {
-
-            if (
-                sunlight ==
-                0
-            )
+            int x=minX+index%Width,y=minY+index/Width;queued[index]=false;values[index]=default;
+            loaded[index]=world.IsLoaded(x,y);opacity[index]=0;if(!loaded[index])return;
+            BlockLightInfo info=Info(world.GetBlock(x,y));opacity[index]=info.Opacity;
+            byte r=info.R,g=info.G,b=info.B;
+            var furniture=FurnitureLayerManager.Instance;
+            if(furniture!=null&&furniture.TryGetDefinition(x,y,out BlockDefinition f)&&f!=null)
+            {r=(byte)Mathf.Max(r,Mathf.Min(MaxLight,f.LightEmissionR));g=(byte)Mathf.Max(g,Mathf.Min(MaxLight,f.LightEmissionG));b=(byte)Mathf.Max(b,Mathf.Min(MaxLight,f.LightEmissionB));}
+            if(world is Game.World.World concrete)
             {
-
-                return;
-
+                ushort liquid=concrete.GetLiquidID(x,y);
+                if(liquid!=0&&concrete.GetLiquidAmount(x,y)>0&&FluidRegistry.TryGet(FluidIDRegistry.GetString(liquid),out FluidDefinition fluid))
+                {r=(byte)Mathf.Max(r,Mathf.Min(MaxLight,fluid.LightEmissionR));g=(byte)Mathf.Max(g,Mathf.Min(MaxLight,fluid.LightEmissionG));b=(byte)Mathf.Max(b,Mathf.Min(MaxLight,fluid.LightEmissionB));}
             }
-
-
-            LightNode current =
-                world.GetLight(
-                    x,
-                    y
-                );
-
-
-            if (
-                sunlight <=
-                current.Sun
-            )
-            {
-
-                return;
-
-            }
-
-
-            current.Sun =
-                sunlight;
-
-
-            world.SetLight(
-                x,
-                y,
-                current.Sun,
-                current.R,
-                current.G,
-                current.B
-            );
-
-
-            if (
-                propagate
-            )
-            {
-
-                propagationQueue.Enqueue(
-                    new LightPoint(
-                        x,
-                        y
-                    )
-                );
-
-            }
-
+            values[index]=new LightNode(0,r,g,b);if(r+g+b>0)Enqueue(index);
         }
-
-
-        // =========================================================
-        // BLOCK LIGHT
-        // =========================================================
-
-        private void SeedEmissiveBlocks(
-            LightBounds bounds
-        )
+        private void NextSkyColumn(){skyX++;skyY=skyTop;directSun=MaxLight;opaqueDepth=0;}
+        private void SeedSkyCell()
         {
-            Game.World.World concreteWorld =
-                world as Game.World.World;
-
-            for (
-                int x = bounds.MinX;
-                x <= bounds.MaxX;
-                x++
-            )
+            if(skyY<minY||directSun==0){NextSkyColumn();return;}
+            int x=minX+skyX,y=skyY--;
+            bool inside=y<minY+Height;int index=inside?(y-minY)*Width+skyX:-1;
+            int op;
+            if(inside&&loaded[index])op=opacity[index];
+            else if(world.IsLoaded(x,y))op=Info(world.GetBlock(x,y)).Opacity;
+            else op=unloadedSkyOpacity!=null?Mathf.Clamp(unloadedSkyOpacity(x,y),0,MaxLight):MaxLight;
+            // Unknown cells are conservative when no generation resolver exists.
+            // Missing chunk data is never proof of an open skylight.
+            byte amount=directSun;bool propagate=true;
+            if(op>=MaxLight){opaqueDepth++;if(opaqueDepth>2){NextSkyColumn();return;}amount=opaqueDepth==1?(byte)10:(byte)5;propagate=false;}
+            else
             {
-
-                for (
-                    int y = bounds.MinY;
-                    y <= bounds.MaxY;
-                    y++
-                )
-                {
-
-                    if (
-                        !world.IsLoaded(
-                            x,
-                            y
-                        )
-                    )
-                    {
-
-                        continue;
-
-                    }
-
-
-                    byte r =
-                        0;
-
-
-                    byte g =
-                        0;
-
-
-                    byte b =
-                        0;
-
-
-                    // =============================================
-                    // FOREGROUND
-                    // =============================================
-
-                    ushort blockID =
-                        world.GetBlock(
-                            x,
-                            y
-                        );
-
-
-                    if (
-                        blockID !=
-                        0
-                    )
-                    {
-
-                        BlockDefinition definition =
-                            world.GetBlockDefinition(
-                                blockID
-                            );
-
-
-                        if (
-                            definition !=
-                            null
-                        )
-                        {
-
-                            r =
-                                ClampLight(
-                                    definition
-                                        .LightEmissionR
-                                );
-
-
-                            g =
-                                ClampLight(
-                                    definition
-                                        .LightEmissionG
-                                );
-
-
-                            b =
-                                ClampLight(
-                                    definition
-                                        .LightEmissionB
-                                );
-
-                        }
-
-                    }
-
-
-                    // =============================================
-                    // FURNITURE
-                    // =============================================
-
-                    if (
-                        FurnitureLayerManager.Instance !=
-                        null
-                        &&
-                        FurnitureLayerManager.Instance
-                            .TryGetDefinition(
-                                x,
-                                y,
-                                out BlockDefinition
-                                    furniture
-                            )
-                        &&
-                        furniture !=
-                        null
-                    )
-                    {
-
-                        r =
-                            Max(
-                                r,
-                                ClampLight(
-                                    furniture
-                                        .LightEmissionR
-                                )
-                            );
-
-
-                        g =
-                            Max(
-                                g,
-                                ClampLight(
-                                    furniture
-                                        .LightEmissionG
-                                )
-                            );
-
-
-                        b =
-                            Max(
-                                b,
-                                ClampLight(
-                                    furniture
-                                        .LightEmissionB
-                                )
-                            );
-
-                    }
-
-
-                    // =============================================
-                    // LIQUID EMISSION
-                    // =============================================
-
-                    if (concreteWorld != null)
-                    {
-                        ushort liquidID =
-                            concreteWorld.GetLiquidID(x, y);
-
-                        if (liquidID != 0 &&
-                            concreteWorld.GetLiquidAmount(x, y) > 0)
-                        {
-                            string fluidKey =
-                                FluidIDRegistry.GetString(liquidID);
-
-                            if (!string.IsNullOrWhiteSpace(fluidKey) &&
-                                FluidRegistry.TryGet(fluidKey, out FluidDefinition fluid) &&
-                                fluid != null)
-                            {
-                                r = Max(r, ClampLight(fluid.LightEmissionR));
-                                g = Max(g, ClampLight(fluid.LightEmissionG));
-                                b = Max(b, ClampLight(fluid.LightEmissionB));
-                            }
-                        }
-                    }
-
-
-                    if (
-                        r ==
-                        0
-                        &&
-                        g ==
-                        0
-                        &&
-                        b ==
-                        0
-                    )
-                    {
-
-                        continue;
-
-                    }
-
-
-                    LightNode existing =
-                        world.GetLight(
-                            x,
-                            y
-                        );
-
-
-                    LightNode result =
-                        new LightNode(
-                            existing.Sun,
-
-                            Max(
-                                existing.R,
-                                r
-                            ),
-
-                            Max(
-                                existing.G,
-                                g
-                            ),
-
-                            Max(
-                                existing.B,
-                                b
-                            )
-                        );
-
-
-                    world.SetLight(
-                        x,
-                        y,
-                        result.Sun,
-                        result.R,
-                        result.G,
-                        result.B
-                    );
-
-
-                    propagationQueue.Enqueue(
-                        new LightPoint(
-                            x,
-                            y
-                        )
-                    );
-
-                }
-
+                if(opaqueDepth>0){NextSkyColumn();return;}
+                directSun=(byte)Mathf.Max(0,directSun-op);amount=directSun;
             }
-
+            if(index>=0&&loaded[index]&&amount>0)
+            {var n=values[index];n.Sun=(byte)Mathf.Max(n.Sun,amount);values[index]=n;if(propagate)Enqueue(index);}
         }
-
-
-        // =========================================================
-        // BOUNDARY LIGHT
-        // =========================================================
-
-        private void SeedExistingBoundaryLight(
-            LightBounds bounds
-        )
+        private void Enqueue(int index){if(!queued[index]){queued[index]=true;flood.Enqueue(index);}}
+        private void Spread(int source,int target)
         {
-
-            int left =
-                bounds.MinX -
-                1;
-
-
-            int right =
-                bounds.MaxX +
-                1;
-
-
-            for (
-                int y = bounds.MinY;
-                y <= bounds.MaxY;
-                y++
-            )
-            {
-
-                AddBoundarySource(
-                    left,
-                    y
-                );
-
-
-                AddBoundarySource(
-                    right,
-                    y
-                );
-
-            }
-
-
-            int bottom =
-                bounds.MinY -
-                1;
-
-
-            int top =
-                bounds.MaxY +
-                1;
-
-
-            for (
-                int x = bounds.MinX;
-                x <= bounds.MaxX;
-                x++
-            )
-            {
-
-                AddBoundarySource(
-                    x,
-                    bottom
-                );
-
-
-                AddBoundarySource(
-                    x,
-                    top
-                );
-
-            }
-
+            if(!loaded[target])return;int op=opacity[target];bool solid=op>=MaxLight;int attenuation=solid?1:1+op;
+            LightNode a=values[source],b=values[target];
+            var next=new LightNode((byte)Mathf.Max(b.Sun,a.Sun-attenuation),(byte)Mathf.Max(b.R,a.R-attenuation),(byte)Mathf.Max(b.G,a.G-attenuation),(byte)Mathf.Max(b.B,a.B-attenuation));
+            if(next.Sun==b.Sun&&next.R==b.R&&next.G==b.G&&next.B==b.B)return;
+            values[target]=next;if(!solid)Enqueue(target);
         }
-
-
-        private void AddBoundarySource(
-            int x,
-            int y
-        )
+        private void Publish()
         {
-
-            if (
-                !world.IsLoaded(
-                    x,
-                    y
-                )
-            )
-            {
-
-                return;
-
-            }
-
-
-            LightNode light =
-                world.GetLight(
-                    x,
-                    y
-                );
-
-
-            if (
-                light.IsEmpty
-            )
-            {
-
-                return;
-
-            }
-
-
-            propagationQueue.Enqueue(
-                new LightPoint(
-                    x,
-                    y
-                )
-            );
-
+            var data=world.GetLightData(active.x*Chunk.SizeX,active.y*Chunk.SizeY);if(data==null)return;
+            data.ApplyRegion(values,Halo*Width+Halo,Width);
+            // The GPU light textures include a one-cell neighbor border.
+            for(int x=active.x-1;x<=active.x+1;x++)for(int y=active.y-1;y<=active.y+1;y++)
+                world.GetLightData(x*Chunk.SizeX,y*Chunk.SizeY)?.MarkDirty();
         }
-
-
-        // =========================================================
-        // PROPAGATION
-        // =========================================================
-
-        private void Propagate(
-            LightBounds bounds
-        )
-        {
-
-            while (
-                propagationQueue.Count >
-                0
-            )
-            {
-
-                LightPoint sourcePoint =
-                    propagationQueue.Dequeue();
-
-
-                LightNode source =
-                    world.GetLight(
-                        sourcePoint.X,
-                        sourcePoint.Y
-                    );
-
-
-                if (
-                    source.IsEmpty
-                )
-                {
-
-                    continue;
-
-                }
-
-
-                for (
-                    int direction = 0;
-                    direction < 4;
-                    direction++
-                )
-                {
-
-                    int targetX =
-                        sourcePoint.X +
-                        DirectionX[
-                            direction
-                        ];
-
-
-                    int targetY =
-                        sourcePoint.Y +
-                        DirectionY[
-                            direction
-                        ];
-
-
-                    if (
-                        !bounds.Contains(
-                            targetX,
-                            targetY
-                        )
-                    )
-                    {
-
-                        continue;
-
-                    }
-
-
-                    if (
-                        !world.IsLoaded(
-                            targetX,
-                            targetY
-                        )
-                    )
-                    {
-
-                        continue;
-
-                    }
-
-
-                    PropagateTo(
-                        source,
-                        targetX,
-                        targetY
-                    );
-
-                }
-
-            }
-
-        }
-
-
-        private void PropagateTo(
-            LightNode source,
-            int targetX,
-            int targetY
-        )
-        {
-
-            ushort targetBlock =
-                world.GetBlock(
-                    targetX,
-                    targetY
-                );
-
-
-            int opacity =
-                GetOpacity(
-                    targetBlock
-                );
-
-
-            bool fullyOpaque =
-                targetBlock !=
-                0
-                &&
-                opacity >=
-                MaxLight;
-
-
-            int attenuation =
-                fullyOpaque
-                    ? 1
-                    : 1 +
-                      opacity;
-
-
-            LightNode candidate =
-                new LightNode(
-                    SubtractLight(
-                        source.Sun,
-                        attenuation
-                    ),
-
-                    SubtractLight(
-                        source.R,
-                        attenuation
-                    ),
-
-                    SubtractLight(
-                        source.G,
-                        attenuation
-                    ),
-
-                    SubtractLight(
-                        source.B,
-                        attenuation
-                    )
-                );
-
-
-            if (
-                candidate.IsEmpty
-            )
-            {
-
-                return;
-
-            }
-
-
-            LightNode existing =
-                world.GetLight(
-                    targetX,
-                    targetY
-                );
-
-
-            LightNode merged =
-                new LightNode(
-                    Max(
-                        existing.Sun,
-                        candidate.Sun
-                    ),
-
-                    Max(
-                        existing.R,
-                        candidate.R
-                    ),
-
-                    Max(
-                        existing.G,
-                        candidate.G
-                    ),
-
-                    Max(
-                        existing.B,
-                        candidate.B
-                    )
-                );
-
-
-            if (
-                merged.Sun ==
-                existing.Sun
-                &&
-                merged.R ==
-                existing.R
-                &&
-                merged.G ==
-                existing.G
-                &&
-                merged.B ==
-                existing.B
-            )
-            {
-
-                return;
-
-            }
-
-
-            world.SetLight(
-                targetX,
-                targetY,
-                merged.Sun,
-                merged.R,
-                merged.G,
-                merged.B
-            );
-
-
-            if (
-                fullyOpaque
-            )
-            {
-
-                return;
-
-            }
-
-
-            propagationQueue.Enqueue(
-                new LightPoint(
-                    targetX,
-                    targetY
-                )
-            );
-
-        }
-
-
-        // =========================================================
-        // DIRTY
-        // =========================================================
-
-        private void MarkRegionDirty(
-            LightBounds bounds
-        )
-        {
-
-            HashSet<ChunkLightData> dirty =
-                new HashSet<ChunkLightData>();
-
-
-            for (
-                int x = bounds.MinX;
-                x <= bounds.MaxX;
-                x++
-            )
-            {
-
-                for (
-                    int y = bounds.MinY;
-                    y <= bounds.MaxY;
-                    y++
-                )
-                {
-
-                    if (
-                        !world.IsLoaded(
-                            x,
-                            y
-                        )
-                    )
-                    {
-
-                        continue;
-
-                    }
-
-
-                    ChunkLightData data =
-                        world.GetLightData(
-                            x,
-                            y
-                        );
-
-
-                    if (
-                        data !=
-                        null
-                    )
-                    {
-
-                        dirty.Add(
-                            data
-                        );
-
-                    }
-
-                }
-
-            }
-
-
-            foreach (
-                ChunkLightData data
-                in dirty
-            )
-            {
-
-                data.MarkDirty();
-
-            }
-
-        }
-
-
-        // =========================================================
-        // BLOCK PROPERTIES
-        // =========================================================
-
-        private int GetOpacity(
-            ushort blockID
-        )
-        {
-
-            if (
-                blockID ==
-                0
-            )
-            {
-
-                return 0;
-
-            }
-
-
-            BlockDefinition definition =
-                world.GetBlockDefinition(
-                    blockID
-                );
-
-
-            if (
-                definition ==
-                null
-            )
-            {
-
-                return
-                    MaxLight;
-
-            }
-
-
-            return
-                Mathf.Clamp(
-                    definition.LightOpacity,
-                    0,
-                    MaxLight
-                );
-
-        }
-
-
-        // =========================================================
-        // LOADED WORLD BOUNDS
-        // =========================================================
-
-        private bool TryGetLoadedBounds(
-            out LightBounds bounds
-        )
-        {
-
-            bounds =
-                default;
-
-
-            Game.World.World concreteWorld =
-                world
-                as
-                Game.World.World;
-
-
-            if (
-                concreteWorld ==
-                null
-            )
-            {
-
-                return false;
-
-            }
-
-
-            bool found =
-                false;
-
-
-            int minX =
-                0;
-
-
-            int minY =
-                0;
-
-
-            int maxX =
-                0;
-
-
-            int maxY =
-                0;
-
-
-            foreach (
-                var pair
-                in concreteWorld.GetLoadedChunks()
-            )
-            {
-
-                Chunk chunk =
-                    pair.Value;
-
-
-                if (
-                    chunk ==
-                    null
-                )
-                {
-
-                    continue;
-
-                }
-
-
-                int chunkMinX =
-                    chunk.X *
-                    Chunk.SizeX;
-
-
-                int chunkMinY =
-                    chunk.Y *
-                    Chunk.SizeY;
-
-
-                int chunkMaxX =
-                    chunkMinX +
-                    Chunk.SizeX -
-                    1;
-
-
-                int chunkMaxY =
-                    chunkMinY +
-                    Chunk.SizeY -
-                    1;
-
-
-                if (
-                    !found
-                )
-                {
-
-                    minX =
-                        chunkMinX;
-
-
-                    minY =
-                        chunkMinY;
-
-
-                    maxX =
-                        chunkMaxX;
-
-
-                    maxY =
-                        chunkMaxY;
-
-
-                    found =
-                        true;
-
-
-                    continue;
-
-                }
-
-
-                if (
-                    chunkMinX <
-                    minX
-                )
-                {
-
-                    minX =
-                        chunkMinX;
-
-                }
-
-
-                if (
-                    chunkMinY <
-                    minY
-                )
-                {
-
-                    minY =
-                        chunkMinY;
-
-                }
-
-
-                if (
-                    chunkMaxX >
-                    maxX
-                )
-                {
-
-                    maxX =
-                        chunkMaxX;
-
-                }
-
-
-                if (
-                    chunkMaxY >
-                    maxY
-                )
-                {
-
-                    maxY =
-                        chunkMaxY;
-
-                }
-
-            }
-
-
-            if (
-                !found
-            )
-            {
-
-                return false;
-
-            }
-
-
-            bounds =
-                new LightBounds(
-                    minX,
-                    minY,
-                    maxX,
-                    maxY
-                );
-
-
-            return true;
-
-        }
-
-
-        // =========================================================
-        // HELPERS
-        // =========================================================
-
-        private static byte SubtractLight(
-            byte value,
-            int amount
-        )
-        {
-
-            int result =
-                value -
-                amount;
-
-
-            if (
-                result <=
-                0
-            )
-            {
-
-                return 0;
-
-            }
-
-
-            if (
-                result >=
-                MaxLight
-            )
-            {
-
-                return MaxLight;
-
-            }
-
-
-            return
-                (byte)result;
-
-        }
-
-
-        private static byte ClampLight(
-            int value
-        )
-        {
-
-            if (
-                value <=
-                0
-            )
-            {
-
-                return 0;
-
-            }
-
-
-            if (
-                value >=
-                MaxLight
-            )
-            {
-
-                return MaxLight;
-
-            }
-
-
-            return
-                (byte)value;
-
-        }
-
-
-        private static byte Max(
-            byte a,
-            byte b
-        )
-        {
-
-            return
-                a >
-                b
-                    ? a
-                    : b;
-
-        }
-
-
-        private struct LightPoint
-        {
-
-            public readonly int X;
-
-            public readonly int Y;
-
-
-            public LightPoint(
-                int x,
-                int y
-            )
-            {
-
-                X =
-                    x;
-
-
-                Y =
-                    y;
-
-            }
-
-        }
-
-
-        private struct LightBounds
-        {
-
-            public readonly int MinX;
-
-            public readonly int MinY;
-
-
-            public readonly int MaxX;
-
-            public readonly int MaxY;
-
-
-            public LightBounds(
-                int minX,
-                int minY,
-                int maxX,
-                int maxY
-            )
-            {
-
-                MinX =
-                    minX;
-
-
-                MinY =
-                    minY;
-
-
-                MaxX =
-                    maxX;
-
-
-                MaxY =
-                    maxY;
-
-            }
-
-
-            public bool Contains(
-                int x,
-                int y
-            )
-            {
-
-                return
-                    x >=
-                    MinX
-                    &&
-                    x <=
-                    MaxX
-                    &&
-                    y >=
-                    MinY
-                    &&
-                    y <=
-                    MaxY;
-
-            }
-
-        }
-
+        private static int FloorDiv(int value,int size){int q=value/size;return value%size<0?q-1:q;}
+        private struct BlockLightInfo{public byte Opacity,R,G,B;}
     }
-
 }

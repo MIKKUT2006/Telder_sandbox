@@ -1,4 +1,4 @@
-﻿
+
 #if UNITY_EDITOR
 
 using System;
@@ -83,6 +83,14 @@ namespace Game.EditorTools
                 StructureEditorController
             >();
 
+            editor.AddComponent<
+                TEditorContentEditorController
+            >();
+
+            editor.AddComponent<
+                TEditorMenuController
+            >();
+
             // Do not add the normal GameBootstrap here.
             // StructureEditorContentBootstrap initializes only the
             // content registries required to preview block textures.
@@ -97,7 +105,7 @@ namespace Game.EditorTools
 
             EditorUtility.DisplayDialog(
                 "Structure Editor",
-                "Готово.\n\nСоздана отдельная сцена редактора структур.\nЗапусти её в Play Mode.\n\nСлева — блоки.\nЦентр — сетка.\nСправа — spawn rules, biome, height, free-space и loot сундука.\n\nF5 — сохранить JSON.",
+                "Готово.\n\nСоздана сцена T-Editor. Запусти её в Play Mode.\n\nСначала откроется меню: Структуры, Предметы, Мобы.\n\nРедактор ресурсов изменяет JSON внутри Assets/GameData и читает текстуры непосредственно из ResourcePacks/Default.",
                 "OK"
             );
         }

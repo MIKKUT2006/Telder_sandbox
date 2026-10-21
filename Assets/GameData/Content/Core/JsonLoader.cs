@@ -32,7 +32,10 @@ namespace Game.Content
             T data =
                 JsonUtility.FromJson<T>(json);
 
-
+            // Unity can materialize absent inline serializable class fields.
+            // Gameplay types must be opted into by an actual JSON object.
+            if (data is Game.Blocks.BlockDefinition block)
+                BlockJsonLoader.ApplyGameplaySections(block, json);
 
             return data;
 

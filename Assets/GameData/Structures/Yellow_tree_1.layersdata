@@ -1,0 +1,190 @@
+{
+    "Version": 2,
+    "StructureId": "Yellow_tree_1",
+    "Cells": [
+        {
+            "X": 6,
+            "Y": 4,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 3,
+            "Y": 4,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 5,
+            "Y": 3,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 5,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 4,
+            "Y": 4,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 5,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 7,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 4,
+            "Y": 7,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 4,
+            "Y": 5,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 6,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 5,
+            "Y": 5,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 2
+        },
+        {
+            "X": 5,
+            "Y": 4,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 3
+        },
+        {
+            "X": 5,
+            "Y": 2,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 4,
+            "Y": 6,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 6,
+            "Y": 6,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 7,
+            "Y": 5,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 7,
+            "Y": 4,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 2,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 2
+        },
+        {
+            "X": 6,
+            "Y": 2,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 7,
+            "Y": 3,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        },
+        {
+            "X": 3,
+            "Y": 3,
+            "FurnitureId": "game:yellow_leaves",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 1
+        }
+    ]
+}

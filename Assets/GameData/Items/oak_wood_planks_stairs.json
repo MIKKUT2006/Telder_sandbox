@@ -1,0 +1,12 @@
+{
+  "ID": "game:oak_wood_planks_stairs",
+  "Name": "Oak wood planks stairs",
+  "Texture": "oak_wood_planks_stairs",
+  "Type": "Block",
+  "MaxStack": 100,
+  "Tags": [
+    "fuel",
+    "burnable"
+  ],
+  "FuelBurnTime": 7.0
+}

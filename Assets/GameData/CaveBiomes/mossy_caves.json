@@ -9,7 +9,8 @@
   "Dimensions": [
     "volcanic",
     "toxic",
-    "oceanic"
+    "oceanic",
+    "frozen"
   ],
   "StoneBlockId": "game:moss",
   "BackgroundBlockId": "game:moss",

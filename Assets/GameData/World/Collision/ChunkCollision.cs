@@ -149,11 +149,16 @@ namespace Game.World.Collision
                 )
                 {
 
-                    ushort blockID =
-                        chunk.GetBlock(
-                            x,
-                            y
-                        );
+                    int worldX =
+                        chunk.X *
+                        Chunk.SizeX +
+                        x;
+
+
+                    int worldY =
+                        chunk.Y *
+                        Chunk.SizeY +
+                        y;
 
 
                     full[
@@ -162,7 +167,8 @@ namespace Game.World.Collision
                     ] =
                         worldCollision
                             .GetCollisionShape(
-                                blockID
+                                worldX,
+                                worldY
                             )
                         ==
                         BlockCollisionShape.Full;
@@ -370,17 +376,23 @@ namespace Game.World.Collision
                 )
                 {
 
-                    ushort blockID =
-                        chunk.GetBlock(
-                            x,
-                            y
-                        );
+                    int worldX =
+                        chunk.X *
+                        Chunk.SizeX +
+                        x;
+
+
+                    int worldY =
+                        chunk.Y *
+                        Chunk.SizeY +
+                        y;
 
 
                     BlockCollisionShape shape =
                         worldCollision
                             .GetCollisionShape(
-                                blockID
+                                worldX,
+                                worldY
                             );
 
 
@@ -400,7 +412,8 @@ namespace Game.World.Collision
 
                     worldCollision
                         .GetLocalCollisionRects(
-                            blockID,
+                            worldX,
+                            worldY,
                             shapeRects
                         );
 

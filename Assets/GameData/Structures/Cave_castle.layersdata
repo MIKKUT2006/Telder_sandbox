@@ -41,6 +41,142 @@
             "ForegroundTransform": 0,
             "BackgroundTransform": 0,
             "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 8,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 4,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 4,
+            "FurnitureId": "game:small_clay_pot",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 2,
+            "Y": 13,
+            "FurnitureId": "game:big_clay_pot",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 12,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 11,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 10,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 9,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 3,
+            "Y": 8,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 13,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 14,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 15,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 16,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 17,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 7,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 6,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 5,
+            "FurnitureId": "game:ladder",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
         }
     ]
 }

@@ -10,7 +10,8 @@ namespace Game.Combat
         Bow,
         Gun,
         Spear,
-        Bomb
+        Bomb,
+        Harpoon
     }
 
     public enum SwordAttackKind
@@ -31,6 +32,25 @@ namespace Game.Combat
         public float Knockback = 2f;
 
         public float Range = 1.2f;
+
+        // Harpoon: serialized directly in Items/<id>.json -> Weapon.
+        // New values have defaults so other weapons remain unaffected.
+        public float HarpoonThrowSpeed = 27f;
+        public float HarpoonThrowGravity = 14f;
+        public float HarpoonArcLift = 0.28f;
+        public float HarpoonMaxRange = 22f;
+        public float HarpoonMaxFlightTime = 2.1f;
+        public float HarpoonMinRopeLength = 2f;
+        public float HarpoonSwingGravity = 25f;
+        public float HarpoonSwingAcceleration = 32f;
+        public float HarpoonMaxSwingSpeed = 21f;
+        public float HarpoonSwingDrag = 0.10f;
+        public float HarpoonWinchSpeed = 5f;
+        public float HarpoonJumpUpBoost = 9f;
+        public float HarpoonJumpOutBoost = 3f;
+        public int HarpoonDurabilityCost = 1;
+        // texture file name in ResourcePacks/Default/textures/items, no extension
+        public string HarpoonDeployedTexture = "";
 
         public float ArmAimOffset = 0f;
 
@@ -78,7 +98,20 @@ namespace Game.Combat
 
         public float ThrustHitRadius = 0.32f;
 
-        public float SpearBaseReach = 1.4f;
+        public float SwordDashDistance = 2f;
+        public float SwordDashDuration = .12f;
+        public float MeleeComboResetTime = 1.2f;
+        public string[] SpearPattern = { "Thrust", "PowerThrust" };
+        public float SpearPowerReachMultiplier = 1.2f;
+        public float SpearPowerDamageMultiplier = 1.2f;
+
+        public bool IsPowerSpearAttack(int index)
+        {
+            return SpearPattern != null && SpearPattern.Length > 0 &&
+                string.Equals(SpearPattern[Mathf.Abs(index % SpearPattern.Length)], "PowerThrust", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public float SpearBaseReach = 2.1f;
 
         public float SpearThrustDistance = 1.55f;
 
@@ -211,6 +244,16 @@ namespace Game.Combat
 
         public void Normalize()
         {
+            SwordDashDistance = Mathf.Clamp(SwordDashDistance, 0, 2);
+            if (SwordDashDuration <= 0) SwordDashDuration = .12f;
+            if (MeleeComboResetTime <= 0) MeleeComboResetTime = 1.2f;
+            if (SpearPowerReachMultiplier <= 0) SpearPowerReachMultiplier = 1.2f;
+            if (SpearPowerDamageMultiplier <= 0) SpearPowerDamageMultiplier = 1.2f;
+            SwordDashDuration = Mathf.Clamp(SwordDashDuration, .06f, .3f);
+            MeleeComboResetTime = Mathf.Max(.3f, MeleeComboResetTime);
+            SpearPowerReachMultiplier = Mathf.Clamp(SpearPowerReachMultiplier, 1, 1.5f);
+            SpearPowerDamageMultiplier = Mathf.Clamp(SpearPowerDamageMultiplier, 1, 2);
+            if (SpearPattern == null || SpearPattern.Length == 0) SpearPattern = new[] { "Thrust", "PowerThrust" };
             Damage =
                 Mathf.Max(
                     0f,

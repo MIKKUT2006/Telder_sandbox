@@ -1,0 +1,15 @@
+{
+  "ID": "game:herb_plant",
+  "Name": "Росток зелени",
+  "Texture": "crop_stage_0",
+  "Type": "Block",
+  "MaxStack": 100,
+  "CraftIngredients": [
+    {
+      "ItemId": "game:short_grass",
+      "Count": 2
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 1
+}

@@ -2,14 +2,38 @@
   "ID": "game:harpoon",
   "Name": "Harpoon",
   "Texture": "harpoon",
+  "Type": "Weapon",
   "MaxStack": 1,
-
-  "ToolType": "",
-  "ToolLevel": 2,
- 
-
-  "HeldScale": 1.52,
-  "HeldRotation": 0,
-  "HeldOffsetX": 0.37,
-  "HeldOffsetY": -0.01
+  "Weapon": {
+    "Kind": "Harpoon",
+    "Damage": 0,
+    "HarpoonThrowSpeed": 27.0,
+    "HarpoonThrowGravity": 14.0,
+    "HarpoonArcLift": 0.28,
+    "HarpoonMaxRange": 22.0,
+    "HarpoonMaxFlightTime": 2.1,
+    "HarpoonMinRopeLength": 2.0,
+    "HarpoonSwingGravity": 25.0,
+    "HarpoonSwingAcceleration": 32.0,
+    "HarpoonMaxSwingSpeed": 21.0,
+    "HarpoonSwingDrag": 0.1,
+    "HarpoonWinchSpeed": 5.0,
+    "HarpoonJumpUpBoost": 9.0,
+    "HarpoonJumpOutBoost": 3.0,
+    "HarpoonDurabilityCost": 1,
+    "HarpoonDeployedTexture": "harpoon_deployed"
+  },
+  "HeldOffsetX": 0.4,
+  "HeldOffsetY": -0.8,
+  "HeldScale": 3,
+  "HeldRotation": -9,
+  "CraftIngredients": [
+    {
+      "ItemId": "game:raw_iron_ore",
+      "Count": 15
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 1,
+  "Durability": 450
 }

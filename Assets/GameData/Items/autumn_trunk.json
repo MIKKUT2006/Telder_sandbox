@@ -1,0 +1,13 @@
+{
+  "ID": "game:autumn_trunk",
+  "Name": "autumn trunk",
+  "Texture": "autumn_trunk",
+  "Type": "Block",
+  "MaxStack": 100,
+  "Tags": [
+    "fuel",
+    "burnable",
+    "wood"
+  ],
+  "FuelBurnTime": 10.0
+}

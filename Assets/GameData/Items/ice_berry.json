@@ -4,11 +4,17 @@
   "Texture": "ice_berry",
   "Type": "Item",
   "MaxStack": 100,
-
   "Tags": [
     "eat"
   ],
   "EatTime": 1.0,
   "HungerRestore": 15.0,
-  "HealthRestore": 5.0
+  "HealthRestore": 5.0,
+  "Effects": [
+    {
+      "Type": "Freeze",
+      "Duration": 12,
+      "Level": 1
+    }
+  ]
 }

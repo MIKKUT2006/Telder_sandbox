@@ -10,6 +10,14 @@ namespace Game.World.Lighting
         private readonly LightNode[] lights;
 
         public bool IsDirty { get; private set; }
+        public bool IsInitialized { get; private set; }
+
+        // One main-thread publication after the whole halo has converged.
+        public void ApplyRegion(LightNode[] source,int offset,int stride)
+        {
+            for(int y=0;y<Height;y++)Array.Copy(source,offset+y*stride,lights,y*Width,Width);
+            IsInitialized=true;IsDirty=true;
+        }
 
         public ChunkLightData()
         {
@@ -92,6 +100,7 @@ namespace Game.World.Lighting
 
         public void Clear()
         {
+            IsInitialized=false;
             Array.Clear(
                 lights,
                 0,

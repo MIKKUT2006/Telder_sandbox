@@ -141,6 +141,8 @@ namespace Game.World.Dimensions
 
             SetupCollider();
             CreateParticles();
+            Game.Audio.TelderAudioSystem.AttachLoop(gameObject, "portal.loop");
+            Game.Audio.TelderAudioSystem.PlayAt("portal.open", transform.position, GetInstanceID());
         }
 
 
@@ -378,6 +380,7 @@ namespace Game.World.Dimensions
 
             collapsing =
                 true;
+            Game.Audio.TelderAudioSystem.PlayAt("portal.close", transform.position, GetInstanceID());
 
             BoxCollider2D collider =
                 GetComponent<

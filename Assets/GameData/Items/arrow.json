@@ -3,5 +3,13 @@
   "ID": "game:arrow",
   "Texture": "arrow",
   "Type": "Misc",
-  "MaxStack": 100
+  "MaxStack": 100,
+  "CraftIngredients": [
+    {
+      "Tag": "planks",
+      "Count": 2
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 4
 }

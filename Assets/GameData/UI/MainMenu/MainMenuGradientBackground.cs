@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 namespace Game.UI.MainMenu
@@ -56,6 +57,28 @@ namespace Game.UI.MainMenu
             50f;
 
 
+        // Если true — компонент уничтожает свою камеру,
+        // когда активная сцена перестаёт быть похожей на меню.
+        // Отключи, если камеру меню переиспользует что-то ещё.
+        [Header("Lifetime")]
+
+        [SerializeField]
+        private bool destroyOnLeavingMenu =
+            true;
+
+
+        // Дополнительные имена сцен, которые считаются "меню".
+        // Проверка регистронезависимая и идёт по вхождению подстроки.
+        [SerializeField]
+        private string[] menuSceneMarkers =
+            new string[]
+            {
+                "menu",
+                "mainmenu",
+                "main_menu"
+            };
+
+
         private Camera targetCamera;
 
 
@@ -71,12 +94,19 @@ namespace Game.UI.MainMenu
         private Texture2D texture;
 
 
+        // Scene lifetime tracking.
+        private bool sceneHookInstalled;
+
+
         // =====================================================
         // UNITY
         // =====================================================
 
         private void Awake()
         {
+
+            InstallSceneHook();
+
 
             Initialize();
 
@@ -85,6 +115,9 @@ namespace Game.UI.MainMenu
 
         private void OnEnable()
         {
+
+            InstallSceneHook();
+
 
             Initialize();
 
@@ -102,8 +135,9 @@ namespace Game.UI.MainMenu
         private void LateUpdate()
         {
 
-            ForceCamera();
+            if (!enabled) return;   // ← защита от гонок
 
+            ForceCamera();
             UpdateQuad();
 
         }
@@ -135,10 +169,189 @@ namespace Game.UI.MainMenu
 #endif
 
 
+        private void OnDisable()
+        {
+
+            RemoveSceneHook();
+
+        }
+
+
         private void OnDestroy()
         {
 
+            RemoveSceneHook();
+
             Cleanup();
+
+        }
+
+
+        // =====================================================
+        // SCENE HOOK
+        // =====================================================
+
+        private void InstallSceneHook()
+        {
+
+            if (sceneHookInstalled)
+            {
+
+                return;
+
+            }
+
+
+            SceneManager.sceneLoaded +=
+                OnSceneLoaded;
+
+
+            sceneHookInstalled =
+                true;
+
+        }
+
+
+        private void RemoveSceneHook()
+        {
+
+            if (!sceneHookInstalled)
+            {
+
+                return;
+
+            }
+
+
+            SceneManager.sceneLoaded -=
+                OnSceneLoaded;
+
+
+            sceneHookInstalled =
+                false;
+
+        }
+
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (!destroyOnLeavingMenu)
+                return;
+
+            if (IsMenuLikeScene(scene.name))
+            {
+                // Вернулись в меню — включаемся и пересобираем градиент.
+                enabled = true;
+                Initialize();
+                BuildTexture();
+                UpdateQuad();
+                return;
+            }
+
+            // Ушли из меню. Камеру НЕ трогаем — она общая для всех сцен.
+            // Убираем только визуал меню и выключаем себя.
+            DisableMenuVisuals();
+        }
+
+        private void DisableMenuVisuals()
+        {
+            if (quadObject != null)
+            {
+                if (Application.isPlaying)
+                    Destroy(quadObject);
+                else
+                    DestroyImmediate(quadObject);
+
+                quadObject = null;
+            }
+
+            quadRenderer = null;
+
+            // Камеру возвращаем в нормальное состояние, чтобы игра
+            // могла использовать свои clearFlags/background.
+            if (targetCamera != null)
+            {
+                targetCamera.clearFlags = CameraClearFlags.Skybox;
+                targetCamera.depth = 0f;
+                // backgroundColor не трогаем — его выставит игра.
+            }
+
+            // Отключаем сам компонент. Камера остаётся живой,
+            // просто перестаёт быть "фоном меню".
+            enabled = false;
+        }
+
+
+        private bool IsMenuLikeScene(
+            string sceneName
+        )
+        {
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    sceneName
+                )
+            )
+            {
+
+                return false;
+
+            }
+
+
+            string lower =
+                sceneName.ToLowerInvariant();
+
+
+            if (
+                menuSceneMarkers == null ||
+                menuSceneMarkers.Length == 0
+            )
+            {
+
+                return lower.Contains("menu");
+
+            }
+
+
+            for (
+                int i = 0;
+                i < menuSceneMarkers.Length;
+                i++
+            )
+            {
+
+                string marker =
+                    menuSceneMarkers[i];
+
+
+                if (
+                    string.IsNullOrWhiteSpace(
+                        marker
+                    )
+                )
+                {
+
+                    continue;
+
+                }
+
+
+                if (
+                    lower.Contains(
+                        marker.ToLowerInvariant()
+                    )
+                )
+                {
+
+                    return true;
+
+                }
+
+            }
+
+
+            return false;
 
         }
 
@@ -208,15 +421,6 @@ namespace Game.UI.MainMenu
                 return;
 
             }
-
-
-            RenderSettings.skybox =
-                null;
-
-
-            RenderSettings.fog =
-                false;
-
 
             targetCamera.enabled =
                 true;
@@ -766,6 +970,10 @@ namespace Game.UI.MainMenu
 
                 }
 
+
+                texture =
+                    null;
+
             }
 
 
@@ -797,6 +1005,10 @@ namespace Game.UI.MainMenu
                     );
 
                 }
+
+
+                material =
+                    null;
 
             }
 

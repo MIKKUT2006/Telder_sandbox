@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Entities;
+using Game.World;
+using Game.World.Items;
+using Game.GameplaySystems.Interactions;
 
 namespace Game.Combat
 {
@@ -34,6 +37,9 @@ namespace Game.Combat
         private Transform owner;
 
         private bool alive;
+        private bool isArrow;
+        private Vector2 trailPosition;
+        private string recoverableArrowId;
 
         public static WeaponProjectile Spawn(
             Vector2 position,
@@ -139,6 +145,7 @@ namespace Game.Combat
 
             damage =
                 (weapon.Damage + Mathf.Max(0f, flatDamageBonus)) *
+                Game.Gameplay.Effects.PlayerFoodEffects.Strength(owner) *
                 Mathf.Max(0f, damageMultiplier) *
                 weapon.ProjectileDamageMultiplier *
                 p;
@@ -166,6 +173,12 @@ namespace Game.Combat
                     weapon.ProjectileItem)
                     ? weapon.AmmoItem
                     : weapon.ProjectileItem;
+
+            isArrow = weapon.GetKind() == WeaponKind.Bow;
+            trailPosition = position;
+            recoverableArrowId = isArrow
+                ? (!string.IsNullOrWhiteSpace(weapon.AmmoItem) ? weapon.AmmoItem : projectileItem)
+                : null;
 
             renderer2D.sprite =
                 ItemSpriteResolver.Resolve(
@@ -261,6 +274,16 @@ namespace Game.Combat
                     ? Mathf.Min(distance, distance * entityHitT + 0.001f)
                     : distance;
 
+                // Collision geometry is generated asynchronously. Check the tile
+                // world itself, not only Unity colliders / serialized layer masks.
+                // This also catches closed furniture doors.
+                if (TryHitTerrain(start, direction, physicalDistance, out Vector2 wallHit))
+                {
+                    transform.position = wallHit;
+                    EmbedArrowOrDespawn(wallHit, direction);
+                    return;
+                }
+
                 RaycastHit2D[] hits =
                     WeaponDamageUtility.RaycastAllIncludingTriggers(
                         start,
@@ -323,7 +346,10 @@ namespace Game.Combat
                     // Harmless triggers (pickups, sensors, etc.) do not.
                     if (dealtDamage || !collider.isTrigger)
                     {
-                        Despawn();
+                        if (!dealtDamage && !collider.isTrigger)
+                            EmbedArrowOrDespawn(hits[i].point, direction);
+                        else
+                            Despawn();
                         return;
                     }
                 }
@@ -354,7 +380,59 @@ namespace Game.Combat
                 start +
                 movement;
 
+            RecordArrowTravel();
             UpdateRotation();
+        }
+
+        private bool TryHitTerrain(Vector2 start, Vector2 direction,
+            float maxDistance, out Vector2 point)
+        {
+            point = default(Vector2);
+            WorldManager manager = WorldManager.Instance;
+            if (manager == null || manager.GetWorldCollision() == null ||
+                manager.GetLoader() == null || manager.GetSettings() == null)
+                return false;
+
+            int steps = Mathf.Max(1, Mathf.CeilToInt(maxDistance / 0.075f));
+            float length = maxDistance / steps;
+            int chunkSize = Mathf.Max(1, manager.GetSettings().ChunkSize);
+            var blocks = manager.GetWorldCollision();
+            var loader = manager.GetLoader();
+            for (int i = 1; i <= steps; i++)
+            {
+                Vector2 sample = start + direction * (length * i);
+                int x = Mathf.FloorToInt(sample.x);
+                int y = Mathf.FloorToInt(sample.y);
+                if (!loader.IsChunkLoaded(Mathf.FloorToInt(sample.x / chunkSize),
+                    Mathf.FloorToInt(sample.y / chunkSize)))
+                    continue; // Never mistake not-yet-generated terrain for a wall.
+
+                if (blocks.IsSolid(x, y) ||
+                    InteractiveBlockRuntime.IntersectsClosedFurniture(
+                        new Rect(sample.x - 0.01f, sample.y - 0.01f, 0.02f, 0.02f)))
+                {
+                    // Put the arrow tip just inside the solid tile so it can
+                    // verify its support on later physics ticks.
+                    point = sample;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void EmbedArrowOrDespawn(Vector2 point, Vector2 flightDirection)
+        {
+            if (isArrow && !string.IsNullOrWhiteSpace(recoverableArrowId))
+            {
+                ItemDropSpawner spawner = ItemDropSpawner.EnsureInstance();
+                if (spawner != null)
+                {
+                    float angle = Mathf.Atan2(flightDirection.y, flightDirection.x) * Mathf.Rad2Deg;
+                    spawner.SpawnEmbedded(recoverableArrowId, point,
+                        Quaternion.Euler(0f, 0f, angle));
+                }
+            }
+            Despawn();
         }
 
         private void ApplyWorldSize(
@@ -415,14 +493,24 @@ namespace Game.Combat
                 );
         }
 
+        private void RecordArrowTravel()
+        {
+            if (isArrow && renderer2D != null)
+                PixelArrowTrail.Record(trailPosition, transform.position, renderer2D.sortingLayerName, renderer2D.sortingOrder);
+            trailPosition = transform.position;
+        }
+
         private void Despawn()
         {
             if (!alive)
                 return;
 
+            RecordArrowTravel();
             alive = false;
             owner = null;
             velocity = Vector2.zero;
+            isArrow = false;
+            recoverableArrowId = null;
 
             if (renderer2D != null)
                 renderer2D.sprite = null;

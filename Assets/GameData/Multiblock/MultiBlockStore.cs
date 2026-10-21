@@ -71,7 +71,14 @@ namespace Game.GameplaySystems.Multiblock
             return null;
         }
 
+        // Procedural structures are reconstructed when chunks load.
+        // Do not synchronously write the save file for every generated door/bed.
         public static bool Add(MultiBlockRecord record)
+        {
+            return Add(record, true);
+        }
+
+        public static bool Add(MultiBlockRecord record, bool persist)
         {
             Ensure();
             if (record == null || string.IsNullOrWhiteSpace(record.BlockId))
@@ -90,7 +97,8 @@ namespace Game.GameplaySystems.Multiblock
 
             data.Entries.Add(record);
             Index(record);
-            Save();
+            if (persist)
+                Save();
             return true;
         }
 

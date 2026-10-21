@@ -1,0 +1,33 @@
+{
+  "ID": "game:snow_brick",
+
+  "Name": "Snow brick",
+
+  "Texture": "snow_brick",
+
+  "Hardness": 1,
+
+  "Solid": true,
+  "Drop": "game:snow_brick",
+  "DropCount": 1,
+
+  "VisualOffsetX": 0.0,
+  "VisualOffsetY": 0.0,
+  "VisualScale": 1.0,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CollisionShape": "Full",
+  "CollisionRects": [],
+
+  "CraftIngredients": [
+    {
+      "ItemId": "game:snow",
+      "Count": 2
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 1
+}

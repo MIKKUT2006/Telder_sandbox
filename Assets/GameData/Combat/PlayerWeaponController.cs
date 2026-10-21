@@ -1,3 +1,4 @@
+using Game.InputSupport;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,6 +21,7 @@ namespace Game.Combat
 
 
         public readonly bool FacingRight;
+        public readonly bool PowerThrust;
 
 
         public PlayerWeaponPoseRequest(
@@ -28,7 +30,8 @@ namespace Game.Combat
             SwordAttackKind swordAttack,
             Vector2 aimDirection,
             float phase,
-            bool facingRight
+            bool facingRight,
+            bool powerThrust = false
         )
         {
             Weapon = weapon;
@@ -37,6 +40,7 @@ namespace Game.Combat
             AimDirection = aimDirection;
             Phase = phase;
             FacingRight = facingRight;
+            PowerThrust = powerThrust;
         }
     }
 
@@ -134,6 +138,11 @@ namespace Game.Combat
 
 
         private int swordSequenceIndex;
+        private int spearSequenceIndex;
+        private bool spearPowerAttack, dashStarted;
+        private float lastMeleeEnd = -100f;
+        private string comboWeaponId;
+        private PlayerController movementMotor;
 
 
         private float attackStartTime;
@@ -186,6 +195,10 @@ namespace Game.Combat
 
         private void Awake()
         {
+            if (GetComponent<PixelSwordTrail>() == null)
+                gameObject.AddComponent<PixelSwordTrail>();
+
+            movementMotor = GetComponent<PlayerController>();
             WeaponMetadataRegistry.Initialize();
 
 
@@ -255,12 +268,15 @@ namespace Game.Combat
 
         private void OnDisable()
         {
-            ClearFacingOverride();
+            CancelAttack();
         }
 
 
         private void Update()
         {
+            if (Time.timeScale < 0.001f || Game.UI.Settings.SettingsTabsController.IsOpen ||
+                (Game.Inventory.UI.InventoryUI.Instance != null && Game.Inventory.UI.InventoryUI.Instance.IsOpen))
+                return;
             switch (state)
             {
                 case AttackState.Idle:
@@ -320,7 +336,8 @@ namespace Game.Combat
                     swordAttack,
                     aimDirection,
                     phase,
-                    attackFacingRight
+                    attackFacingRight,
+                    spearPowerAttack
                 );
 
 
@@ -352,9 +369,7 @@ namespace Game.Combat
 
 
             if (
-                !Input.GetMouseButtonDown(
-                    attackMouseButton
-                )
+                !GameInput.Pressed(GameAction.Attack)
             )
             {
                 return;
@@ -370,6 +385,7 @@ namespace Game.Combat
             if (
                 ignoreAttackOverUI &&
                 EventSystem.current != null &&
+                !GameInput.UsingGamepadAim &&
                 EventSystem.current.IsPointerOverGameObject()
             )
             {
@@ -410,6 +426,15 @@ namespace Game.Combat
             }
 
 
+            // The grappling tool uses its own rope physics and must NOT
+            // start a melee attack or write a sword pose.
+            if (selectedKind == WeaponKind.Harpoon)
+            {
+                var controller = GetComponent<Game.Harpoon.HarpoonController2D>();
+                if (controller != null) controller.TryFire();
+                return;
+            }
+
             if (
                 (
                     selectedKind == WeaponKind.Bow ||
@@ -438,6 +463,9 @@ namespace Game.Combat
                 selected;
 
 
+            Game.Audio.TelderAudioSystem.PlayAt(selectedKind == WeaponKind.Bow ? "weapon.bow.draw" :
+                selectedKind == WeaponKind.Gun ? "weapon.gun" : "weapon.swing", transform.position, GetInstanceID());
+
             selectedWeaponItemId =
                 id;
 
@@ -457,6 +485,20 @@ namespace Game.Combat
                 animationController == null
                     ? true
                     : animationController.IsFacingRight();
+
+            if (kind == WeaponKind.Sword || kind == WeaponKind.Spear)
+            {
+                Vector2 cursorDirection = ReadMouseDirection();
+                if (Mathf.Abs(cursorDirection.x) > .01f) attackFacingRight = cursorDirection.x > 0;
+            }
+            // On a controller the combat reticle is the facing intention.
+            // A sword swing must mirror to the aimed side (not to the side
+            // where the player happened to be moving last frame).
+            if (GameInput.UsingGamepadAim && GameInput.CurrentAimMode == GamepadAimMode.Weapon)
+            {
+                float aimedX = GameInput.WorldAimPosition.x - transform.position.x;
+                if (Mathf.Abs(aimedX) > .05f) attackFacingRight = aimedX > 0f;
+            }
 
 
             if (
@@ -487,7 +529,10 @@ namespace Game.Combat
                 kind == WeaponKind.Spear
             )
             {
-                // Freeze facing for this melee attack.
+                if (comboWeaponId != id || Time.time - lastMeleeEnd > weapon.MeleeComboResetTime)
+                    swordSequenceIndex = spearSequenceIndex = 0;
+                comboWeaponId = id; dashStarted = false; spearPowerAttack = false;
+                // Freeze sword facing through the strike; the spear follows the cursor.
                 SetFacingOverride(
                     attackFacingRight
                 );
@@ -522,6 +567,11 @@ namespace Game.Combat
                 }
 
 
+                if (kind == WeaponKind.Spear)
+                {
+                    spearPowerAttack = weapon.IsPowerSpearAttack(spearSequenceIndex++);
+                    if (spearPowerAttack) attackDuration *= 1.25f;
+                }
                 state =
                     AttackState.Melee;
 
@@ -606,14 +656,17 @@ namespace Game.Combat
             );
 
 
-            if (weapon.TrackCursorDuringAttack)
-            {
+            float t = NormalizedAttackTime();
+            if (kind == WeaponKind.Spear || (weapon.TrackCursorDuringAttack && t < MeleeAttackMotion.StrikeStart))
                 RefreshMeleeAim();
+            if (kind == WeaponKind.Sword && swordAttack == SwordAttackKind.Thrust && !dashStarted &&
+                t >= MeleeAttackMotion.StrikeStart && t <= .78f)
+            {
+                dashStarted = true;
+                if (movementMotor != null)
+                    movementMotor.TryStartCombatDash(attackFacingRight ? 1f : -1f,
+                        weapon.SwordDashDistance, weapon.SwordDashDuration);
             }
-
-
-            float t =
-                NormalizedAttackTime();
 
 
             if (
@@ -747,9 +800,7 @@ namespace Game.Combat
 
 
             if (
-                !Input.GetMouseButtonUp(
-                    attackMouseButton
-                )
+                !GameInput.Released(GameAction.Attack)
             )
             {
                 return;
@@ -815,6 +866,16 @@ namespace Game.Combat
                 ReadMouseDirection();
 
 
+            if (kind == WeaponKind.Spear)
+            {
+                if (d.sqrMagnitude > .000001f)
+                {
+                    aimDirection = d.normalized;
+                    if (Mathf.Abs(d.x) > .01f) attackFacingRight = d.x > 0;
+                    SetFacingOverride(attackFacingRight);
+                }
+                return;
+            }
             if (!meleeOnlyInFront)
             {
                 aimDirection =
@@ -904,7 +965,7 @@ namespace Game.Combat
 
             Vector3 mouseWorld =
                 playerCamera.ScreenToWorldPoint(
-                    Input.mousePosition
+                    GameInput.PointerPosition
                 );
 
 
@@ -1020,14 +1081,8 @@ namespace Game.Combat
             float t
         )
         {
-            float relative =
-                Mathf.LerpAngle(
-                    weapon.SwordSwingStartAngle,
-                    weapon.SwordSwingEndAngle,
-                    Smooth01(
-                        t
-                    )
-                );
+            if (!MeleeAttackMotion.IsStrike(t)) return;
+            float relative = MeleeAttackMotion.SwingAngle(weapon, t);
 
 
             // IMPORTANT:
@@ -1063,7 +1118,7 @@ namespace Game.Combat
                 swingTip,
                 weapon.SwingHitRadius,
                 new WeaponDamageInfo(
-                    weapon.Damage,
+                    weapon.Damage * Game.Gameplay.Effects.PlayerFoodEffects.Strength(this) * (kind == WeaponKind.Spear && spearPowerAttack ? weapon.SpearPowerDamageMultiplier : 1f),
                     weapon.Knockback,
                     direction,
                     swingTip,
@@ -1080,20 +1135,18 @@ namespace Game.Combat
         }
 
 
-        private void DamageSwordThrust(
-            float t
-        )
+        private void DamageSwordThrust(float t)
         {
+            if (!MeleeAttackMotion.IsStrike(t)) return;
             float extension =
-                ThrustEnvelope(
-                    t
-                )
+                MeleeAttackMotion.Thrust(t)
                 *
                 weapon.ThrustDistance;
 
 
+            Vector2 origin = rig != null ? rig.GetFrontShoulderWorldPosition() : (Vector2)transform.position;
             Vector2 center =
-                GetMuzzleWorld()
+                origin
                 +
                 aimDirection
                 *
@@ -1104,11 +1157,11 @@ namespace Game.Combat
 
 
             WeaponDamageUtility.DamageActiveEntitiesAlongSegment(
-                GetMuzzleWorld(),
+                origin,
                 center,
                 weapon.ThrustHitRadius,
                 new WeaponDamageInfo(
-                    weapon.Damage,
+                    weapon.Damage * Game.Gameplay.Effects.PlayerFoodEffects.Strength(this) * (kind == WeaponKind.Spear && spearPowerAttack ? weapon.SpearPowerDamageMultiplier : 1f),
                     weapon.Knockback,
                     aimDirection,
                     center,
@@ -1125,35 +1178,33 @@ namespace Game.Combat
         }
 
 
-        private void DamageSpear(
-            float t
-        )
+        private void DamageSpear(float t)
         {
+            if (!MeleeAttackMotion.IsStrike(t)) return;
             float extension =
-                ThrustEnvelope(
-                    t
-                )
+                MeleeAttackMotion.Thrust(t)
                 *
                 weapon.SpearThrustDistance;
 
 
+            Vector2 origin = rig != null ? rig.GetFrontShoulderWorldPosition() : (Vector2)transform.position;
             Vector2 center =
-                GetMuzzleWorld()
+                origin
                 +
                 aimDirection
                 *
                 (
                     weapon.SpearBaseReach +
-                    extension
+                    extension * (spearPowerAttack ? weapon.SpearPowerReachMultiplier : 1f)
                 );
 
 
             WeaponDamageUtility.DamageActiveEntitiesAlongSegment(
-                GetMuzzleWorld(),
+                origin,
                 center,
                 weapon.SpearHitRadius,
                 new WeaponDamageInfo(
-                    weapon.Damage,
+                    weapon.Damage * Game.Gameplay.Effects.PlayerFoodEffects.Strength(this) * (kind == WeaponKind.Spear && spearPowerAttack ? weapon.SpearPowerDamageMultiplier : 1f),
                     weapon.Knockback,
                     aimDirection,
                     center,
@@ -1181,7 +1232,7 @@ namespace Game.Combat
             // enemies existed, which made swords visually pass through every enemy.
             WeaponDamageInfo entityInfo =
                 new WeaponDamageInfo(
-                    weapon.Damage,
+                    weapon.Damage * Game.Gameplay.Effects.PlayerFoodEffects.Strength(this) * (kind == WeaponKind.Spear && spearPowerAttack ? weapon.SpearPowerDamageMultiplier : 1f),
                     weapon.Knockback,
                     direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right,
                     center,
@@ -1252,7 +1303,7 @@ namespace Game.Combat
 
                 WeaponDamageInfo info =
                     new WeaponDamageInfo(
-                        weapon.Damage,
+                        weapon.Damage * Game.Gameplay.Effects.PlayerFoodEffects.Strength(this) * (kind == WeaponKind.Spear && spearPowerAttack ? weapon.SpearPowerDamageMultiplier : 1f),
                         weapon.Knockback,
                         direction.normalized,
                         center,
@@ -1537,6 +1588,7 @@ namespace Game.Combat
 
         private void EndAttack()
         {
+            if (state == AttackState.Melee) lastMeleeEnd = Time.time;
             ClearFacingOverride();
 
 
@@ -1566,6 +1618,8 @@ namespace Game.Combat
 
         private void CancelAttack()
         {
+            if (movementMotor != null) movementMotor.CancelCombatDash();
+            swordSequenceIndex = spearSequenceIndex = 0; comboWeaponId = null;
             ClearFacingOverride();
 
 

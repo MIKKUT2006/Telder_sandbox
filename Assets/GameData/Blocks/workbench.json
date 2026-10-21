@@ -36,7 +36,7 @@
 
   "CraftIngredients": [
     {
-      "ItemId": "game:stone",
+      "Tag": "wood",
       "Count": 8
     }
   ],

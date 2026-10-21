@@ -6,6 +6,11 @@ namespace Game.World.Generation
     {
         private readonly CaveGenerator generator;
 
+        public bool IsSurfaceEntrance(int worldX,int worldY,int surfaceHeight)
+        {
+            return generator.IsSurfaceEntrance(worldX,worldY,surfaceHeight);
+        }
+
 
         // =====================================================
         // CONSTRUCTOR
@@ -26,11 +31,11 @@ namespace Game.World.Generation
             this.generator =
                 generator;
 
-            // seed ñïåöèàëüíî îñòàâëåí â ïàðàìåòðàõ,
-            // ÷òîáû ñóùåñòâóþùèé WorldGenerator
-            // íå ïðèøëîñü ìåíÿòü.
+            // seed ÑÐ¿ÐµÑ†Ð¸Ð°Ð»ÑŒÐ½Ð¾ Ð¾ÑÑ‚Ð°Ð²Ð»ÐµÐ½ Ð² Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð°Ñ…,
+            // Ñ‡Ñ‚Ð¾Ð±Ñ‹ ÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÑŽÑ‰Ð¸Ð¹ WorldGenerator
+            // Ð½Ðµ Ð¿Ñ€Ð¸ÑˆÐ»Ð¾ÑÑŒ Ð¼ÐµÐ½ÑÑ‚ÑŒ.
             //
-            // Ðåàëüíûé Seed óæå íàõîäèòñÿ âíóòðè
+            // Ð ÐµÐ°Ð»ÑŒÐ½Ñ‹Ð¹ Seed ÑƒÐ¶Ðµ Ð½Ð°Ñ…Ð¾Ð´Ð¸Ñ‚ÑÑ Ð²Ð½ÑƒÑ‚Ñ€Ð¸
             // CaveGenerator -> WorldSettings.
         }
 

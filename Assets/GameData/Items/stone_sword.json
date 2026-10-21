@@ -4,6 +4,14 @@
   "Texture": "stone_sword",
   "Type": "Weapon",
   "MaxStack": 1,
+  "CraftIngredients": [
+    {
+      "ItemId": "game:stone",
+      "Count": 10
+    }
+  ],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
   "Weapon": {
     "Kind": "Sword",
     "Damage": 5,
@@ -14,14 +22,18 @@
     "UseBackArm": false,
     "TrackCursorDuringAttack": true,
     "SwordPattern": [
-      "Swing"
+      "Swing",
+      "Thrust"
     ],
     "SwordSwingStartAngle": 105,
     "SwordSwingEndAngle": -25,
     "SwingReach": 1.35,
     "SwingHitRadius": 0.48,
     "ThrustDistance": 0.9,
-    "ThrustHitRadius": 0.34
+    "ThrustHitRadius": 0.34,
+    "SwordDashDistance": 2,
+    "SwordDashDuration": 0.12,
+    "MeleeComboResetTime": 1.2
   },
   "HeldOffsetX": 0.5,
   "HeldOffsetY": -0.0625,

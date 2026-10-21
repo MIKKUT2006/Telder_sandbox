@@ -1,0 +1,7 @@
+{
+  "ID": "game:portal_crystal",
+  "Name": "portal crystal",
+  "Texture": "portal_crystal",
+  "Type": "Material",
+  "MaxStack": 100
+}

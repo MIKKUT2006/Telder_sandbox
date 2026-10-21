@@ -1,0 +1,27 @@
+{
+  "ID": "game:dead_bush",
+
+  "Name": "Dead bush",
+
+  "Texture": "dead_bush",
+
+  "Hardness": 1,
+
+  "Solid": true,
+  "Drop": "game:dead_bush",
+  "DropCount": 1,
+  "Tags": [
+    "grass",
+    "wave"
+  ],
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": [],
+  "alwaysFurniture": true
+}

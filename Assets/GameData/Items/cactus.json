@@ -1,0 +1,7 @@
+{
+  "ID": "game:cactus",
+  "Name": "Cactus",
+  "Texture": "cactus",
+  "Type": "Block",
+  "MaxStack": 100
+}

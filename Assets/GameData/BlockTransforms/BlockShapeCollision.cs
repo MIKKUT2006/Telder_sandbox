@@ -15,6 +15,7 @@ namespace Game.BlockTransforms
 
         private static FieldInfo worldField;
 
+
         public static bool Intersects(
             WorldCollision worldCollision,
             float minX,
@@ -22,38 +23,23 @@ namespace Game.BlockTransforms
             float maxX,
             float maxY)
         {
-            if (worldCollision == null || minX >= maxX || minY >= maxY)
-                return false;
-
-            int firstX = Mathf.FloorToInt(minX);
-            int lastX = Mathf.FloorToInt(maxX - 0.00001f);
-            int firstY = Mathf.FloorToInt(minY);
-            int lastY = Mathf.FloorToInt(maxY - 0.00001f);
-
-            for (int x = firstX; x <= lastX; x++)
+            if (worldCollision == null ||
+                minX >= maxX ||
+                minY >= maxY)
             {
-                for (int y = firstY; y <= lastY; y++)
-                {
-                    if (!worldCollision.IsSolid(x, y))
-                        continue;
-
-                    Vector2 center;
-                    Vector2 size;
-                    if (!TryGetWorldRect(worldCollision, x, y, out center, out size))
-                        continue;
-
-                    float bx0 = center.x - size.x * 0.5f;
-                    float bx1 = center.x + size.x * 0.5f;
-                    float by0 = center.y - size.y * 0.5f;
-                    float by1 = center.y + size.y * 0.5f;
-
-                    if (maxX > bx0 && minX < bx1 && maxY > by0 && minY < by1)
-                        return true;
-                }
+                return false;
             }
 
-            return false;
+            Rect bounds = Rect.MinMaxRect(
+                minX,
+                minY,
+                maxX,
+                maxY
+            );
+
+            return worldCollision.OverlapsAny(bounds);
         }
+
 
         public static bool IsCustomCell(
             WorldCollision worldCollision,

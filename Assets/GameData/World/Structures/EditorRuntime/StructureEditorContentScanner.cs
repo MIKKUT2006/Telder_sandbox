@@ -19,8 +19,19 @@ namespace Game.World.Structures.EditorRuntime
             public List<string> Tags;
             public bool closed;
             public bool Closed;
+            public MultiBlockJson MultiBlock;
         }
 
+        [Serializable]
+        private class MultiBlockJson
+        {
+            public int Width = 1;
+            public int Height = 1;
+            public int AnchorX;
+            public int AnchorY;
+            public string Kind;
+            public string Texture;
+        }
 
         [Serializable]
         private class ItemJson
@@ -52,6 +63,13 @@ namespace Game.World.Structures.EditorRuntime
             public bool IsChest;
             public bool Closed;
 
+            public int MultiWidth = 1;
+            public int MultiHeight = 1;
+            public int MultiAnchorX;
+            public int MultiAnchorY;
+            public string MultiKind;
+            public bool IsMultiBlock => MultiWidth > 1 || MultiHeight > 1;
+
             // Prebuilt once during content refresh.
             // The palette does not concatenate these strings every frame.
             public string DisplayLabel;
@@ -78,8 +96,7 @@ namespace Game.World.Structures.EditorRuntime
 
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Blocks"
                 );
 
@@ -180,7 +197,19 @@ namespace Game.World.Structures.EditorRuntime
                                 name,
 
                             Texture =
-                                block.Texture,
+                                block.MultiBlock != null &&
+                                !string.IsNullOrWhiteSpace(block.MultiBlock.Texture)
+                                    ? block.MultiBlock.Texture : block.Texture,
+
+                            MultiWidth = block.MultiBlock != null
+                                ? Mathf.Max(1, block.MultiBlock.Width) : 1,
+                            MultiHeight = block.MultiBlock != null
+                                ? Mathf.Max(1, block.MultiBlock.Height) : 1,
+                            MultiAnchorX = block.MultiBlock != null
+                                ? Mathf.Max(0, block.MultiBlock.AnchorX) : 0,
+                            MultiAnchorY = block.MultiBlock != null
+                                ? Mathf.Max(0, block.MultiBlock.AnchorY) : 0,
+                            MultiKind = block.MultiBlock != null ? block.MultiBlock.Kind : null,
 
                             IsChest =
                                 isChest,
@@ -297,8 +326,7 @@ namespace Game.World.Structures.EditorRuntime
 
             string itemFolder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Items"
                 );
 
@@ -448,8 +476,7 @@ namespace Game.World.Structures.EditorRuntime
             return
                 LoadBiomeIdsFromFolder(
                     Path.Combine(
-                        Application.dataPath,
-                        "GameData",
+                        Game.Content.DataPaths.GameDataFolder,
                         "Biomes"
                     )
                 );
@@ -461,8 +488,7 @@ namespace Game.World.Structures.EditorRuntime
             return
                 LoadBiomeIdsFromFolder(
                     Path.Combine(
-                        Application.dataPath,
-                        "GameData",
+                        Game.Content.DataPaths.GameDataFolder,
                         "CaveBiomes"
                     )
                 );

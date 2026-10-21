@@ -1,0 +1,18 @@
+{
+  "ID": "game:cup",
+  "Name": "Чашка",
+  "Texture": "cup",
+  "Type": "Misc",
+  "MaxStack": 100,
+  "Tags": [
+    "cup"
+  ],
+  "CraftIngredients": [
+    {
+      "ItemId": "game:oak_trunk",
+      "Count": 1
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 3
+}

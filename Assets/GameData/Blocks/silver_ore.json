@@ -9,7 +9,7 @@
   "BlocksLight": true,
   "LightLevel": 0,
   "DropCount": 1,
-  "Drop": "game:silver_ore",
+  "Drop": "game:raw_silver_ore",
   "Tags": [],
 
   "LightOpacity": 15,
@@ -22,5 +22,5 @@
   "CollisionShape": "Full",
   "CollisionRects": [],
   "RequiredTool": "pickaxe",
-  "RequiredToolLevel": 1
+  "RequiredToolLevel": 2
 }

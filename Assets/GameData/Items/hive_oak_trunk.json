@@ -1,0 +1,12 @@
+{
+  "Name": "hive_oak_trunk",
+  "ID": "game:hive_oak_trunk",
+  "Texture": "hive_oak_trunk",
+  "Type": "Block",
+  "MaxStack": 100,
+  "Tags": [
+    "fuel",
+    "burnable"
+  ],
+  "FuelBurnTime": 7.0
+}

@@ -1,5 +1,6 @@
 using UnityEngine;
 using Game.World.Collision;
+using Game.GameplaySystems.Interactions;
 
 namespace Game.Entities.Physics
 {
@@ -158,6 +159,12 @@ namespace Game.Entities.Physics
             int maxBlockX = Mathf.FloorToInt(maxX);
             int minBlockY = Mathf.FloorToInt(minY);
             int maxBlockY = Mathf.FloorToInt(maxY);
+
+            // Closed doors/hatches can live on the furniture layer, where
+            // WorldCollision.IsSolid alone cannot detect them.
+            if (InteractiveBlockRuntime.IntersectsClosedFurniture(
+                Rect.MinMaxRect(minX, minY, maxX, maxY)))
+                return true;
 
             for (int x = minBlockX; x <= maxBlockX; x++)
             {

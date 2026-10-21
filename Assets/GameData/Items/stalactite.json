@@ -1,0 +1,7 @@
+{
+  "ID": "game:stalactite",
+  "Name": "Stalactite",
+  "Texture": "stalactite",
+  "Type": "Block",
+  "MaxStack": 100
+}

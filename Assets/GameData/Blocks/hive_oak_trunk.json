@@ -1,0 +1,38 @@
+{
+  "ID": "game:hive_oak_trunk",
+  "Name": "Hive oak trunk",
+  "Texture": "hive_oak_trunk",
+
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+
+  "LightLevel": 0,
+  "Material": 0,
+
+  "Drop": "game:wax",
+  
+  "DropCount": 1,
+
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "pickaxe",
+
+  "Tags": [
+    ""
+  ],
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": [],
+  "RequiredToolLevel": 1
+}

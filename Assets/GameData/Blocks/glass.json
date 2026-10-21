@@ -1,0 +1,32 @@
+{
+  "ID": "game:glass",
+  "Name": "Glass",
+  "Texture": "glass",
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+  "LightLevel": 0,
+  "Material": 0,
+  "Drop": "game:glass",
+  "DropCount": 1,
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+  
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [
+    {
+    "ItemId": "game:sand",
+      "Count": 1
+  }
+  ],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "Full",
+  "CollisionRects": []
+}

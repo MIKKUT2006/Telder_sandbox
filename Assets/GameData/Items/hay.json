@@ -1,0 +1,7 @@
+{
+  "ID": "game:hay",
+  "Name": "Hay",
+  "Texture": "hay",
+  "Type": "Block",
+  "MaxStack": 100
+}

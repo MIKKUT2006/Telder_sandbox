@@ -1,3 +1,4 @@
+using Game.InputSupport;
 
 using System;
 using System.Collections.Generic;
@@ -98,6 +99,44 @@ namespace Game.UI.MainMenu
             new List<Vector3>();
 
 
+        private int selectedGamepadPlanet;
+        public bool GamepadSelectionActive
+        {
+            get
+            {
+                return createdPlanets.Count > 0 && createdPlanets[0] != null &&
+                    createdPlanets[0].activeInHierarchy &&
+                    (SaveContextMenuController.Instance == null || !SaveContextMenuController.Instance.IsOpen);
+            }
+        }
+
+        private void Update()
+        {
+            if (!GameInput.GamepadConnected || !GamepadSelectionActive) return;
+            if (GameInput.Pressed(GameAction.HotbarNext)) selectedGamepadPlanet++;
+            if (GameInput.Pressed(GameAction.HotbarPrevious)) selectedGamepadPlanet--;
+            int count = createdPlanets.Count;
+            selectedGamepadPlanet = (selectedGamepadPlanet % count + count) % count;
+            SavePlanet chosen = null;
+            for (int i = 0; i < count; ++i)
+            {
+                SavePlanet planet = createdPlanets[i] != null ? createdPlanets[i].GetComponentInChildren<SavePlanet>() : null;
+                if (planet == null) continue;
+                planet.SetGamepadHovered(i == selectedGamepadPlanet);
+                if (i == selectedGamepadPlanet) chosen = planet;
+            }
+            if (chosen == null) return;
+            if (GameInput.Pressed(GameAction.UiConfirm)) LoadSave(chosen.SaveId);
+            else if (GameInput.Pressed(GameAction.Interact))
+                SaveContextMenuController.EnsureExists(this).Open(chosen.SaveId, chosen.DisplayName);
+            else if (GameInput.Pressed(GameAction.Inventory)) CreateNewTelderWorld();
+            else if (GameInput.Pressed(GameAction.UiCancel))
+            {
+                MainMenuController menu = FindFirstObjectByType<MainMenuController>();
+                if (menu != null) menu.ShowHome();
+            }
+        }
+
         private void Awake()
         {
             if (menuCamera == null)
@@ -111,6 +150,7 @@ namespace Game.UI.MainMenu
         {
 
             ClearPlanets();
+            selectedGamepadPlanet = 0;
 
 
             List<TelderSaveSummary> saves =
@@ -137,6 +177,14 @@ namespace Game.UI.MainMenu
 
         public void CreateNewTelderWorld()
         {
+            // Never load the world scene while Android is unpacking GameData.
+            if (!Game.Content.MobileGameDataBootstrap.IsReady)
+            {
+                Debug.LogWarning("TELDER: GameData is still being prepared. " +
+                    "Wait for mobile content installation to finish.");
+                return;
+            }
+
 
             string name =
                 worldNameInput !=
@@ -185,6 +233,14 @@ namespace Game.UI.MainMenu
             string saveId
         )
         {
+            // Never load the world scene while Android is unpacking GameData.
+            if (!Game.Content.MobileGameDataBootstrap.IsReady)
+            {
+                Debug.LogWarning("TELDER: GameData is still being prepared. " +
+                    "Wait for mobile content installation to finish.");
+                return;
+            }
+
 
             if (
                 !SaveGameRuntime.LoadSave(
@@ -199,7 +255,7 @@ namespace Game.UI.MainMenu
 
 
             Time.timeScale = 1f;
-            WorldLoadingOverlay.Show("Загрузка мира...");
+            WorldLoadingOverlay.Show("Выполняем скачок по вселенным...");
 
             SceneManager.LoadScene(
                 gameSceneName
@@ -326,7 +382,8 @@ namespace Game.UI.MainMenu
 
 
             label.text =
-                save.DisplayName;
+                save.DisplayName +
+                (save.Is3D ? "  [3D]" : "");
 
 
             RectTransform rect =
@@ -349,7 +406,7 @@ namespace Game.UI.MainMenu
             planet.Configure(
                 this,
                 save.SaveId,
-                save.DisplayName,
+                save.DisplayName + (save.Is3D ? "  [3D]" : ""),
                 label,
                 planetMaterial
             );

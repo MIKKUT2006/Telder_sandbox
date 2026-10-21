@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -22,6 +22,8 @@ namespace Game.Items.Durability
         public int RepairItemCount = 0;
 
         public string UpgradeType = "";
+
+        public int ToolLevel = 1;
 
         public int UpgradeValue = 0;
 
@@ -269,6 +271,11 @@ namespace Game.Items.Durability
                     "Tags"
                 );
 
+            data.ToolLevel =
+                ReadIntMember(
+                    definition,
+                    "ToolLevel"
+                );
 
             return data;
         }
@@ -290,8 +297,7 @@ namespace Game.Items.Durability
 
             string root =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Items"
                 );
 
@@ -396,32 +402,14 @@ namespace Game.Items.Durability
 
 
         private static bool HasAnyDurabilityData(
-            ItemDurabilityMetadataData data
-        )
+    ItemDurabilityMetadataData data)
         {
-            return
-                data !=
-                null
-                &&
-                (
-                    data.Durability >
-                    0
-                    ||
-                    !string.IsNullOrWhiteSpace(
-                        data.RepairItem
-                    )
-                    ||
-                    !string.IsNullOrWhiteSpace(
-                        data.UpgradeType
-                    )
-                    ||
-                    (
-                        data.Tags !=
-                        null
-                        &&
-                        data.Tags.Count >
-                        0
-                    )
+            return data != null
+                && (
+                    data.Durability > 0
+                    || !string.IsNullOrWhiteSpace(data.RepairItem)
+                    || !string.IsNullOrWhiteSpace(data.UpgradeType)
+                    || (data.Tags != null && data.Tags.Count > 0)
                 );
         }
 

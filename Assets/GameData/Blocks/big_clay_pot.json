@@ -3,7 +3,7 @@
   "Name": "Big clay pot",
   "Texture": "big_clay_pot",
 
-  "Hardness": 1.0,
+  "Hardness": 0.5,
   "ExplosionResistance": 1.0,
 
   "Solid": true,

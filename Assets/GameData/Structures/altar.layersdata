@@ -1,5 +1,38 @@
 {
     "Version": 2,
     "StructureId": "altar",
-    "Cells": []
+    "Cells": [
+        {
+            "X": 2,
+            "Y": 3,
+            "FurnitureId": "game:campfire",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "FurnitureId": "game:campfire",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 6,
+            "Y": 3,
+            "FurnitureId": "game:campfire",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 8,
+            "Y": 3,
+            "FurnitureId": "game:campfire",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        }
+    ]
 }

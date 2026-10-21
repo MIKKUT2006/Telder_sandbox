@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using UnityEngine;
 using Game.Content;
@@ -22,7 +22,7 @@ namespace Game.Achievements
 
         public static void LoadDefaultFolder()
         {
-            string folder = Path.Combine(Application.dataPath, "GameData", "Achievements");
+            string folder = Path.Combine(Game.Content.DataPaths.GameDataFolder, "Achievements");
             Directory.CreateDirectory(folder);
             string[] files = Directory.GetFiles(folder, "*.json", SearchOption.AllDirectories);
             Array.Sort(files, StringComparer.OrdinalIgnoreCase);
@@ -44,7 +44,8 @@ namespace Game.Achievements
                 def.HiddenUntilUnlocked = dto.HiddenUntilUnlocked;
                 def.SortOrder = dto.SortOrder;
                 if (dto.Conditions != null) def.Conditions.AddRange(dto.Conditions);
-                AchievementRegistry.Register(def);
+                if (!AchievementRegistry.Contains(def.ID))
+                    AchievementRegistry.Register(def);
             }
             catch (Exception e)
             {

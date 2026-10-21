@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -83,8 +83,7 @@ namespace Game.World.Biomes.Surface
 
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "SurfaceFlora"
                 );
 

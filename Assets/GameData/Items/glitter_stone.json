@@ -1,0 +1,7 @@
+{
+  "ID": "game:glitter_stone",
+  "Name": "glitter stone",
+  "Texture": "glitter_stone",
+  "Type": "Block",
+  "MaxStack": 100
+}

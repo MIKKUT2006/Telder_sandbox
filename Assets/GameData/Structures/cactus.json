@@ -1,0 +1,65 @@
+{
+    "ID": "cactus",
+    "DisplayName": "cactus",
+    "Width": 1,
+    "Height": 3,
+    "Depth": 1,
+    "OriginX": 0,
+    "OriginY": 0,
+    "OriginZ": 0,
+    "GeometryMode": 0,
+    "Type": 1,
+    "SpawnType": 1,
+    "SpawnChance": 1.0,
+    "RegionSize": 64,
+    "UseHeightRange": false,
+    "MinY": 10,
+    "MaxY": 90,
+    "RequireFreeSpace": true,
+    "FreeSpacePadding": 1,
+    "BiomeSource": 0,
+    "Biomes": [
+        "game:desert"
+    ],
+    "Cells": [
+        {
+            "X": 0,
+            "Y": 2,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 0,
+            "Y": 1,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 0,
+            "Y": 0,
+            "Z": 0,
+            "ForegroundId": "",
+            "BackgroundId": "",
+            "Loot": [],
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
+        }
+    ]
+}

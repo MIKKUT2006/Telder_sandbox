@@ -1,0 +1,7 @@
+{
+  "ID": "game:wool",
+  "Name": "wool",
+  "Texture": "wool",
+  "Type": "Block",
+  "MaxStack": 100
+}

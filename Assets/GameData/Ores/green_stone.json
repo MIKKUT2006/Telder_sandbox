@@ -1,0 +1,8 @@
+{
+  "ID": "game:green_stone",
+  "MinDepth": 0,
+  "MaxDepth": 50,
+  "Rarity": 0.07,
+  "VeinSize": 9,
+  "MinVeinSize": 4
+}

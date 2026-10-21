@@ -1,0 +1,7 @@
+{
+  "ID": "game:cauldron",
+  "Name": "Cauldron",
+  "Texture": "cauldron",
+  "Type": "Block",
+  "MaxStack": 100
+}

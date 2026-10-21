@@ -1,0 +1,766 @@
+{
+  "Language": "en",
+  "DisplayName": "English",
+  "Entries": [
+    {
+      "Key": "ui.menu.play",
+      "Source": "ИГРАТЬ",
+      "Text": "PLAY"
+    },
+    {
+      "Key": "ui.menu.worlds",
+      "Source": "TELDER МИРЫ",
+      "Text": "TELDER WORLDS"
+    },
+    {
+      "Key": "ui.menu.welcome",
+      "Source": "С возвращением!",
+      "Text": "Welcome back!"
+    },
+    {
+      "Key": "ui.menu.world_name",
+      "Source": "Название Telder мира",
+      "Text": "Telder world name"
+    },
+    {
+      "Key": "ui.menu.quit",
+      "Source": "ВЫЙТИ",
+      "Text": "QUIT"
+    },
+    {
+      "Key": "ui.menu.information",
+      "Source": "Информация",
+      "Text": "Information"
+    },
+    {
+      "Key": "ui.menu.single",
+      "Source": "ОДИНОЧНАЯ ИГРА",
+      "Text": "SINGLE PLAYER"
+    },
+    {
+      "Key": "ui.menu.network",
+      "Source": "СЕТЕВАЯ ИГРА",
+      "Text": "MULTIPLAYER"
+    },
+    {
+      "Key": "ui.menu.settings",
+      "Source": "НАСТРОЙКИ",
+      "Text": "SETTINGS"
+    },
+    {
+      "Key": "ui.menu.info",
+      "Source": "ИНФОРМАЦИЯ",
+      "Text": "INFO"
+    },
+    {
+      "Key": "ui.menu.exit",
+      "Source": "ВЫХОД",
+      "Text": "EXIT"
+    },
+    {
+      "Key": "ui.menu.editor",
+      "Source": "РЕДАКТОР",
+      "Text": "EDITOR"
+    },
+    {
+      "Key": "ui.menu.continue",
+      "Source": "ПРОДОЛЖИТЬ",
+      "Text": "CONTINUE"
+    },
+    {
+      "Key": "ui.menu.main_menu",
+      "Source": "ГЛАВНОЕ МЕНЮ",
+      "Text": "MAIN MENU"
+    },
+    {
+      "Key": "ui.menu.return",
+      "Source": "НАЗАД",
+      "Text": "BACK"
+    },
+    {
+      "Key": "ui.menu.create",
+      "Source": "СОЗДАТЬ",
+      "Text": "CREATE"
+    },
+    {
+      "Key": "ui.menu.save",
+      "Source": "СОХРАНИТЬ",
+      "Text": "SAVE"
+    },
+    {
+      "Key": "ui.menu.cancel",
+      "Source": "ОТМЕНА",
+      "Text": "CANCEL"
+    },
+    {
+      "Key": "ui.menu.rename",
+      "Source": "ПЕРЕИМЕНОВАТЬ",
+      "Text": "RENAME"
+    },
+    {
+      "Key": "ui.menu.delete",
+      "Source": "УДАЛИТЬ",
+      "Text": "DELETE"
+    },
+    {
+      "Key": "ui.menu.confirm",
+      "Source": "ПОДТВЕРДИТЬ",
+      "Text": "CONFIRM"
+    },
+    {
+      "Key": "ui.menu.loading",
+      "Source": "Загрузка мира...",
+      "Text": "Loading world..."
+    },
+    {
+      "Key": "ui.menu.warp",
+      "Source": "Выполняем скачок по вселенным...",
+      "Text": "Traveling between universes..."
+    },
+    {
+      "Key": "ui.settings.title",
+      "Source": "НАСТРОЙКИ",
+      "Text": "SETTINGS"
+    },
+    {
+      "Key": "ui.settings.general",
+      "Source": "ОБЩИЕ",
+      "Text": "GENERAL"
+    },
+    {
+      "Key": "ui.settings.graphics",
+      "Source": "ГРАФИКА",
+      "Text": "GRAPHICS"
+    },
+    {
+      "Key": "ui.settings.controls",
+      "Source": "УПРАВЛЕНИЕ",
+      "Text": "CONTROLS"
+    },
+    {
+      "Key": "ui.settings.language",
+      "Source": "Язык",
+      "Text": "Language"
+    },
+    {
+      "Key": "ui.settings.master_volume",
+      "Source": "Общая громкость",
+      "Text": "Master volume"
+    },
+    {
+      "Key": "ui.settings.music",
+      "Source": "Музыка",
+      "Text": "Music"
+    },
+    {
+      "Key": "ui.settings.sound",
+      "Source": "Звуки",
+      "Text": "Sound effects"
+    },
+    {
+      "Key": "ui.settings.rumble",
+      "Source": "Вибрация",
+      "Text": "Vibration"
+    },
+    {
+      "Key": "ui.settings.gamepad",
+      "Source": "ГЕЙМПАД",
+      "Text": "GAMEPAD"
+    },
+    {
+      "Key": "ui.settings.keyboard",
+      "Source": "КЛАВИАТУРА",
+      "Text": "KEYBOARD"
+    },
+    {
+      "Key": "ui.settings.on",
+      "Source": "ВКЛ",
+      "Text": "ON"
+    },
+    {
+      "Key": "ui.settings.off",
+      "Source": "ВЫКЛ",
+      "Text": "OFF"
+    },
+    {
+      "Key": "ui.settings.deadzone",
+      "Source": "Мёртвая зона стика",
+      "Text": "Stick deadzone"
+    },
+    {
+      "Key": "ui.settings.cursor_speed",
+      "Source": "Скорость курсора",
+      "Text": "Cursor speed"
+    },
+    {
+      "Key": "ui.settings.build_radius",
+      "Source": "Радиус строительства",
+      "Text": "Build radius"
+    },
+    {
+      "Key": "ui.settings.aim_radius",
+      "Source": "Радиус прицела оружия",
+      "Text": "Weapon aim radius"
+    },
+    {
+      "Key": "ui.settings.gamepad_aim",
+      "Source": "Прицел геймпада",
+      "Text": "Gamepad aim"
+    },
+    {
+      "Key": "ui.settings.force_aim",
+      "Source": "Принудительный прицел",
+      "Text": "Force aim"
+    },
+    {
+      "Key": "ui.settings.aim_diag",
+      "Source": "Диагностика прицела",
+      "Text": "Aim diagnostics"
+    },
+    {
+      "Key": "ui.settings.screen",
+      "Source": "ЭКРАН",
+      "Text": "DISPLAY"
+    },
+    {
+      "Key": "ui.settings.screen_mode",
+      "Source": "Режим экрана",
+      "Text": "Screen mode"
+    },
+    {
+      "Key": "ui.settings.window",
+      "Source": "ОКНО",
+      "Text": "WINDOWED"
+    },
+    {
+      "Key": "ui.settings.borderless",
+      "Source": "БЕЗ РАМОК",
+      "Text": "BORDERLESS"
+    },
+    {
+      "Key": "ui.settings.fullscreen",
+      "Source": "ПОЛНЫЙ",
+      "Text": "FULLSCREEN"
+    },
+    {
+      "Key": "ui.settings.lighting",
+      "Source": "ОСВЕЩЕНИЕ",
+      "Text": "LIGHTING"
+    },
+    {
+      "Key": "ui.settings.detail",
+      "Source": "Детализация",
+      "Text": "Quality"
+    },
+    {
+      "Key": "ui.settings.low",
+      "Source": "НИЗКАЯ",
+      "Text": "LOW"
+    },
+    {
+      "Key": "ui.settings.medium",
+      "Source": "СРЕДНЯЯ",
+      "Text": "MEDIUM"
+    },
+    {
+      "Key": "ui.settings.high",
+      "Source": "ВЫСОКАЯ",
+      "Text": "HIGH"
+    },
+    {
+      "Key": "ui.settings.aim_help",
+      "Source": "Прицел появляется автоматически при обнаружении геймпада. Если Steam Input скрывает устройство, включи принудительный прицел.",
+      "Text": "Aim appears automatically when a gamepad is detected. If Steam Input hides your controller, enable Force aim."
+    },
+    {
+      "Key": "ui.settings.detail_help",
+      "Source": "Низкая: пиксельный свет, 2 чанка/кадр.\nСредняя: плавный свет, 4 чанка/кадр. Высокая: 6.",
+      "Text": "Low: pixel lighting, 2 chunks/frame.\nMedium: smooth lighting, 4 chunks/frame. High: 6."
+    },
+    {
+      "Key": "ui.craft.title",
+      "Source": "КРАФТ",
+      "Text": "CRAFTING"
+    },
+    {
+      "Key": "ui.craft.workbench",
+      "Source": "КРАФТ — ВЕРСТАК",
+      "Text": "CRAFTING — WORKBENCH"
+    },
+    {
+      "Key": "ui.achievements.title",
+      "Source": "ДОСТИЖЕНИЯ",
+      "Text": "ACHIEVEMENTS"
+    },
+    {
+      "Key": "ui.achievements.button",
+      "Source": "Достижения",
+      "Text": "Achievements"
+    },
+    {
+      "Key": "ui.achievements.unlocked",
+      "Source": "Достижение получено!",
+      "Text": "Achievement unlocked!"
+    },
+    {
+      "Key": "ui.character.editor",
+      "Source": "РЕДАКТОР ПЕРСОНАЖА",
+      "Text": "CHARACTER EDITOR"
+    },
+    {
+      "Key": "ui.character.color",
+      "Source": "ПОКРАСКА",
+      "Text": "COLORING"
+    },
+    {
+      "Key": "ui.character.preset",
+      "Source": "НАЗВАНИЕ ПРЕСЕТА:",
+      "Text": "PRESET NAME:"
+    },
+    {
+      "Key": "ui.character.placeholder",
+      "Source": "Название...",
+      "Text": "Name..."
+    },
+    {
+      "Key": "ui.character.empty",
+      "Source": "Пресеты ещё не сохранены",
+      "Text": "No saved presets yet"
+    },
+    {
+      "Key": "ui.character.new",
+      "Source": "Новый персонаж",
+      "Text": "New character"
+    },
+    {
+      "Key": "ui.character.no_hair",
+      "Source": "БЕЗ ВОЛОС",
+      "Text": "NO HAIR"
+    },
+    {
+      "Key": "ui.character.brightness",
+      "Source": "ЯРКОСТЬ",
+      "Text": "BRIGHTNESS"
+    },
+    {
+      "Key": "ui.character.done",
+      "Source": "ГОТОВО",
+      "Text": "DONE"
+    },
+    {
+      "Key": "ui.character.legs",
+      "Source": "НОГИ",
+      "Text": "LEGS"
+    },
+    {
+      "Key": "ui.character.boots",
+      "Source": "БОТИНКИ",
+      "Text": "BOOTS"
+    },
+    {
+      "Key": "ui.character.arms",
+      "Source": "РУКИ",
+      "Text": "ARMS"
+    },
+    {
+      "Key": "ui.character.sleeves",
+      "Source": "РУКАВА",
+      "Text": "SLEEVES"
+    },
+    {
+      "Key": "ui.character.torso",
+      "Source": "ТОРС",
+      "Text": "TORSO"
+    },
+    {
+      "Key": "ui.character.clothes",
+      "Source": "ОДЕЖДА",
+      "Text": "CLOTHES"
+    },
+    {
+      "Key": "ui.character.head",
+      "Source": "ГОЛОВА",
+      "Text": "HEAD"
+    },
+    {
+      "Key": "ui.character.eyes",
+      "Source": "ГЛАЗА",
+      "Text": "EYES"
+    },
+    {
+      "Key": "ui.character.hair",
+      "Source": "ВОЛОСЫ",
+      "Text": "HAIR"
+    },
+    {
+      "Key": "ui.character.accessories",
+      "Source": "УКРАШЕНИЯ",
+      "Text": "ACCESSORIES"
+    },
+    {
+      "Key": "ui.dimension.current",
+      "Source": "Текущее измерение",
+      "Text": "Current dimension"
+    },
+    {
+      "Key": "ui.dimension.visited",
+      "Source": "ПОСЕЩЕННЫЕ ИЗМЕРЕНИЯ",
+      "Text": "VISITED DIMENSIONS"
+    },
+    {
+      "Key": "ui.dimension.open",
+      "Source": "ОТКРЫТЬ",
+      "Text": "OPEN"
+    },
+    {
+      "Key": "ui.dimension.name",
+      "Source": "ИМЯ ИЗМЕРЕНИЯ",
+      "Text": "DIMENSION NAME"
+    },
+    {
+      "Key": "ui.dimension.seed_hint",
+      "Source": "СИД — ЦИФРЫ ИЛИ ТЕКСТ (НЕОБЯЗАТЕЛЬНО)",
+      "Text": "SEED — NUMBER OR TEXT (OPTIONAL)"
+    },
+    {
+      "Key": "ui.dimension.seed",
+      "Source": "СИД",
+      "Text": "SEED"
+    },
+    {
+      "Key": "ui.dimension.random",
+      "Source": "СЛУЧАЙНО",
+      "Text": "RANDOM"
+    },
+    {
+      "Key": "ui.dimension.type",
+      "Source": "ТИП",
+      "Text": "TYPE"
+    },
+    {
+      "Key": "ui.dimension.modifiers",
+      "Source": "Модификаторы измерений",
+      "Text": "Dimension modifiers"
+    },
+    {
+      "Key": "ui.dimension.create_random",
+      "Source": "СОЗДАТЬ СЛУЧАЙНЫЙ РАЗЛОМ",
+      "Text": "CREATE RANDOM RIFT"
+    },
+    {
+      "Key": "ui.dimension.create",
+      "Source": "СОЗДАТЬ РАЗЛОМ",
+      "Text": "CREATE RIFT"
+    },
+    {
+      "Key": "ui.dimension.no_mods",
+      "Source": "НЕТ МОДИФИКАТОРОВ",
+      "Text": "NO MODIFIERS"
+    },
+    {
+      "Key": "ui.dimension.system_missing",
+      "Source": "Система порталов не найдена.",
+      "Text": "Portal system not found."
+    },
+    {
+      "Key": "ui.dimension.selection_failed",
+      "Source": "Не удалось выбрать измерение.",
+      "Text": "Could not select dimension."
+    },
+    {
+      "Key": "ui.controls.jump",
+      "Source": "Прыжок",
+      "Text": "Jump"
+    },
+    {
+      "Key": "ui.controls.attack",
+      "Source": "Атака / копать",
+      "Text": "Attack / mine"
+    },
+    {
+      "Key": "ui.controls.use",
+      "Source": "Использовать / ставить",
+      "Text": "Use / place"
+    },
+    {
+      "Key": "ui.controls.interact",
+      "Source": "Взаимодействие",
+      "Text": "Interact"
+    },
+    {
+      "Key": "ui.controls.inventory",
+      "Source": "Инвентарь",
+      "Text": "Inventory"
+    },
+    {
+      "Key": "ui.controls.pause",
+      "Source": "Пауза",
+      "Text": "Pause"
+    },
+    {
+      "Key": "ui.controls.hotbar_previous",
+      "Source": "Хотбар назад",
+      "Text": "Previous hotbar slot"
+    },
+    {
+      "Key": "ui.controls.hotbar_next",
+      "Source": "Хотбар вперёд",
+      "Text": "Next hotbar slot"
+    },
+    {
+      "Key": "ui.controls.drop",
+      "Source": "Выбросить",
+      "Text": "Drop item"
+    },
+    {
+      "Key": "ui.controls.quick_move",
+      "Source": "Быстрый перенос",
+      "Text": "Quick move"
+    },
+    {
+      "Key": "ui.controls.split",
+      "Source": "Разделить стак",
+      "Text": "Split stack"
+    },
+    {
+      "Key": "ui.controls.rotate",
+      "Source": "Поворот блока",
+      "Text": "Rotate block"
+    },
+    {
+      "Key": "ui.controls.layer",
+      "Source": "Слой блоков",
+      "Text": "Block layer"
+    },
+    {
+      "Key": "ui.controls.left",
+      "Source": "Движение влево",
+      "Text": "Move left"
+    },
+    {
+      "Key": "ui.controls.right",
+      "Source": "Движение вправо",
+      "Text": "Move right"
+    },
+    {
+      "Key": "ui.controls.confirm",
+      "Source": "Подтвердить",
+      "Text": "Confirm"
+    },
+    {
+      "Key": "ui.controls.cancel",
+      "Source": "Отмена",
+      "Text": "Cancel"
+    },
+    {
+      "Key": "ui.controls.up",
+      "Source": "Меню вверх",
+      "Text": "Menu up"
+    },
+    {
+      "Key": "ui.controls.down",
+      "Source": "Меню вниз",
+      "Text": "Menu down"
+    },
+    {
+      "Key": "ui.controls.menu_left",
+      "Source": "Меню влево",
+      "Text": "Menu left"
+    },
+    {
+      "Key": "ui.controls.menu_right",
+      "Source": "Меню вправо",
+      "Text": "Menu right"
+    },
+    {
+      "Key": "ui.controls.dimensions",
+      "Source": "Меню измерений",
+      "Text": "Dimension menu"
+    },
+    {
+      "Key": "ui.controls.third_person",
+      "Source": "Вид от 3-го лица",
+      "Text": "Third-person camera"
+    },
+    {
+      "Key": "ui.controls.slot1",
+      "Source": "Хотбар 1",
+      "Text": "Hotbar 1"
+    },
+    {
+      "Key": "ui.controls.slot2",
+      "Source": "Хотбар 2",
+      "Text": "Hotbar 2"
+    },
+    {
+      "Key": "ui.controls.slot3",
+      "Source": "Хотбар 3",
+      "Text": "Hotbar 3"
+    },
+    {
+      "Key": "ui.controls.slot4",
+      "Source": "Хотбар 4",
+      "Text": "Hotbar 4"
+    },
+    {
+      "Key": "ui.controls.slot5",
+      "Source": "Хотбар 5",
+      "Text": "Hotbar 5"
+    },
+    {
+      "Key": "ui.controls.slot6",
+      "Source": "Хотбар 6",
+      "Text": "Hotbar 6"
+    },
+    {
+      "Key": "ui.controls.slot7",
+      "Source": "Хотбар 7",
+      "Text": "Hotbar 7"
+    },
+    {
+      "Key": "ui.controls.slot8",
+      "Source": "Хотбар 8",
+      "Text": "Hotbar 8"
+    },
+    {
+      "Key": "ui.controls.slot9",
+      "Source": "Хотбар 9",
+      "Text": "Hotbar 9"
+    },
+    {
+      "Key": "item.game:stone_axe.name",
+      "Source": "Stone axe",
+      "Text": "Stone axe"
+    },
+    {
+      "Key": "item.game:stone_axe.description",
+      "Source": "Простой топор для рубки деревьев.",
+      "Text": "A basic axe for chopping trees."
+    },
+    {
+      "Key": "item.game:iron_ingot.name",
+      "Source": "iron ingot",
+      "Text": "Iron ingot"
+    },
+    {
+      "Key": "item.game:portal_crystal.name",
+      "Source": "portal crystal",
+      "Text": "Portal crystal"
+    },
+    {
+      "Key": "item.game:portal_crystal.description",
+      "Source": "Кристалл, питающий портальную пушку.",
+      "Text": "A crystal used to power the portal gun."
+    },
+    {
+      "Key": "item.game:bomb.name",
+      "Source": "Bomb",
+      "Text": "Bomb"
+    },
+    {
+      "Key": "item.game:bomb.description",
+      "Source": "Взрывается после броска.",
+      "Text": "Explodes after being thrown."
+    },
+    {
+      "Key": "block.game:stone.name",
+      "Source": "Stone",
+      "Text": "Stone"
+    },
+    {
+      "Key": "block.game:grass.name",
+      "Source": "Grass",
+      "Text": "Grass"
+    },
+    {
+      "Key": "block.game:furnace.name",
+      "Source": "Furnace",
+      "Text": "Furnace"
+    },
+    {
+      "Key": "ui.special.title",
+      "Source": "ОСОБЫЕ МИРЫ",
+      "Text": "SPECIAL WORLDS"
+    },
+    {
+      "Key": "ui.special.subtitle",
+      "Source": "Мини-испытания. Не влияют на сохранения обычных миров.",
+      "Text": "Mini challenges. Your survival worlds remain unchanged."
+    },
+    {
+      "Key": "ui.special.harpoon",
+      "Source": "ГАРПУН\nЯркие пещеры · бесконечный паркур",
+      "Text": "HARPOON\nBright caves · endless parkour"
+    },
+    {
+      "Key": "ui.special.back",
+      "Source": "НАЗАД",
+      "Text": "BACK"
+    },
+    {
+      "Key": "ui.special.error",
+      "Source": "Не удалось создать испытание. Проверь Unity Console / Android Logcat.",
+      "Text": "Could not start the challenge. Check Unity Console / Android Logcat."
+    },
+    {
+      "Key": "ui.special.menu",
+      "Source": "Главное меню",
+      "Text": "Main menu"
+    },
+    {
+      "Key": "ui.special.hud",
+      "Source": "ГАРПУН",
+      "Text": "HARPOON"
+    },
+    {
+      "Key": "ui.special.record",
+      "Source": "Рекорд",
+      "Text": "Best"
+    },
+    {
+      "Key": "ui.special.help",
+      "Source": "A/D — движение  •  ЛКМ — гарпун/отцепиться  •  Space — прыжок  •  W/S — верёвка  •  R — новый маршрут",
+      "Text": "A/D — move  •  LMB — hook/detach  •  Space — jump  •  W/S — rope  •  R — new course"
+    },
+    {
+      "Key": "ui.special.pause",
+      "Source": "II  ПАУЗА",
+      "Text": "II  PAUSE"
+    },
+    {
+      "Key": "ui.special.pause_title",
+      "Source": "ГАРПУН — ПАУЗА",
+      "Text": "HARPOON — PAUSED"
+    },
+    {
+      "Key": "ui.special.continue",
+      "Source": "Продолжить",
+      "Text": "Resume"
+    },
+    {
+      "Key": "ui.special.restart",
+      "Source": "Новая пещера",
+      "Text": "New cave"
+    },
+    {
+      "Key": "ui.special.exit",
+      "Source": "Особые миры / Меню",
+      "Text": "Special worlds / Menu"
+    },
+    {
+      "Key": "ui.special.jump",
+      "Source": "ПРЫЖОК",
+      "Text": "JUMP"
+    },
+    {
+      "Key": "ui.special.release",
+      "Source": "ОТПУСТИТЬ",
+      "Text": "RELEASE"
+    },
+    {
+      "Key": "ui.special.attempts",
+      "Source": "Падений",
+      "Text": "Deaths"
+    }
+  ]
+}

@@ -28,7 +28,7 @@ namespace Game.Items
 
         public static ItemDefinition Get(ContentID id)
         {
-            items.TryGetValue(id, out ItemDefinition item);
+            TryGet(id, out ItemDefinition item);
             return item;
         }
 
@@ -42,7 +42,10 @@ namespace Game.Items
 
         public static bool TryGet(ContentID id, out ItemDefinition item)
         {
-            return items.TryGetValue(id, out item);
+            if (items.TryGetValue(id, out item)) return true;
+            if (!Game.Gameplay.Cooking.StewRecipe.TryItem(id, out item)) return false;
+            items[id] = item;
+            return true;
         }
 
         public static bool TryGet(string id, out ItemDefinition item)
@@ -57,7 +60,7 @@ namespace Game.Items
 
         public static bool Contains(ContentID id)
         {
-            return items.ContainsKey(id);
+            return TryGet(id, out _);
         }
 
         public static bool Contains(string id)

@@ -2,43 +2,48 @@
   "ID": "game:campfire",
   "Name": "Campfire",
   "Texture": "campfire",
-
   "Hardness": 0.25,
   "ExplosionResistance": 0.25,
-
   "Solid": false,
   "Transparent": true,
   "BlocksLight": false,
-
   "Material": 0,
-
   "Drop": "game:campfire",
   "DropCount": 1,
-
   "PlaceSound": "",
   "BreakSound": "",
   "RequiredTool": "",
-
   "Tags": [
     "campfire",
-    "light"
+    "light",
+    "held_light"
   ],
-
   "closed": false,
-
   "LightOpacity": 0,
   "LightEmissionR": 15,
   "LightEmissionG": 11,
   "LightEmissionB": 6,
-
   "CraftIngredients": [
     {
-      "ItemId": "game:oak_trunk",
-      "Count": 3
+      "Tag": "wood",
+      "Count": 5
     }
   ],
   "CraftWithoutWorkbench": true,
   "CraftResultCount": 1,
   "CollisionShape": "Full",
-  "CollisionRects": []
+  "CollisionRects": [],
+  "Animation": {
+    "Frames": [
+      "campfire_0",
+      "campfire_1",
+      "campfire_2",
+      "campfire_3",
+      "campfire_4",
+      "campfire_5"
+    ],
+    "FPS": 6.0,
+    "PingPong": false,
+    "RandomStart": true
+  }
 }

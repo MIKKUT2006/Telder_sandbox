@@ -39,6 +39,10 @@ namespace Game.Resources
                     !isMultiBlock
                 );
 
+                if (block.Plant != null && block.Plant.Stages != null)
+                    foreach (string stage in block.Plant.Stages)
+                        LoadReference(stage, folder, files, loaded, false);
+
                 LoadAnimation(block.Animation, folder, files, loaded);
 
                 if (block.States == null)
@@ -82,6 +86,12 @@ namespace Game.Resources
 
             if (!files.TryGetValue(normalized, out string path))
             {
+                if (Game.Gameplay.PixelFoodAssets.Texture(normalized) != null)
+                {
+                    TextureManager.TryGet(normalized, out _);
+                    loaded.Add(normalized);
+                    return;
+                }
                 if (warnIfMissing)
                 {
                     UnityEngine.Debug.LogWarning(

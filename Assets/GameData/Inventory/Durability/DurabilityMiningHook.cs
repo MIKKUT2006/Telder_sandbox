@@ -1,3 +1,4 @@
+using Game.InputSupport;
 using UnityEngine;
 using Game.Inventory;
 using Game.Inventory.UI;
@@ -40,7 +41,7 @@ namespace Game.Items.Durability
         private void Update()
         {
             captured = false;
-            if (inventory == null || !Input.GetMouseButton(0)) return;
+            if (inventory == null || !GameInput.Held(GameAction.Attack)) return;
             if (InventoryUI.Instance != null && InventoryUI.Instance.IsOpen) return;
 
             if (playerCamera == null) playerCamera = Camera.main;
@@ -48,7 +49,7 @@ namespace Game.Items.Durability
             if (world == null && worldManager != null) world = worldManager.GetWorld();
             if (playerCamera == null || world == null) return;
 
-            Vector3 screen = Input.mousePosition;
+            Vector3 screen = GameInput.PointerPosition;
             screen.z = Mathf.Abs(playerCamera.transform.position.z);
             Vector3 mouse = playerCamera.ScreenToWorldPoint(screen);
 

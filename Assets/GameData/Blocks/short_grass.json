@@ -4,27 +4,28 @@
   "Texture": "short_grass",
   "Hardness": 1.0,
   "ExplosionResistance": 1.0,
-  "Solid": true,
-  "Transparent": false,
-  "BlocksLight": true,
+  "Solid": false,
+  "Transparent": true,
+  "BlocksLight": false,
   "LightLevel": 0,
   "Material": 0,
-  "Drop": "",
+  "Drop": "game:short_grass",
   "DropCount": 1,
   "PlaceSound": "",
   "BreakSound": "",
   "RequiredTool": "",
   "Tags": [
-    "grass"
+    "grass",
+    "wave"
   ],
-
-  "LightOpacity": 15,
+  "LightOpacity": 0,
   "LightEmissionR": 0,
   "LightEmissionG": 0,
   "LightEmissionB": 0,
   "CraftIngredients": [],
   "CraftWithoutWorkbench": false,
   "CraftResultCount": 1,
-  "CollisionShape": "Full",
-  "CollisionRects": []
+  "CollisionShape": "None",
+  "CollisionRects": [],
+  "alwaysFurniture": true
 }

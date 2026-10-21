@@ -54,5 +54,9 @@
     "RegionSize": 48,
     "MaxSurfaceVariation": 7,
     "EdgeRoughness": 0.22
+  },
+  "Weather":{
+    "Precipitation": "Snow",
+    "FogChance": "0.15"
   }
 }

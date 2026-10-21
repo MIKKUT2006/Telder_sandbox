@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Reflection;
 
@@ -15,9 +15,21 @@ namespace Game.World.Structures.EditorRuntime
 
         private void Awake()
         {
-
             TryInitializeContent();
 
+            // The structure-editor scene is now the entry point for T-Editor.
+            // Add the menu/editor components automatically so an existing scene
+            // created by the old wizard does not need to be rebuilt by hand.
+            TEditorContentEditorController contentEditor =
+                GetComponent<TEditorContentEditorController>();
+            if (contentEditor == null)
+                contentEditor = gameObject.AddComponent<TEditorContentEditorController>();
+            contentEditor.enabled = false;
+
+            TEditorMenuController menu =
+                GetComponent<TEditorMenuController>();
+            if (menu == null)
+                menu = gameObject.AddComponent<TEditorMenuController>();
         }
 
 

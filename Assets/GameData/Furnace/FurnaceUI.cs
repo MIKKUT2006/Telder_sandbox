@@ -266,6 +266,8 @@ namespace Game.GameplaySystems.Furnace
         // FURNACE SLOT INTERACTION
         // =====================================================
 
+        public void GamepadQuickMove(FurnaceSlotKind kind) { if (IsOpen) QuickMoveToPlayer(kind); }
+
         internal void LeftClick(FurnaceSlotKind kind)
         {
             if (!IsOpen || inventoryUI == null)

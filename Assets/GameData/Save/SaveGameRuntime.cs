@@ -39,6 +39,72 @@ namespace Game.Save
         }
 
 
+        private static bool droppedItemsRestored = true;
+
+        // Scene-load handshake prevents autosave from erasing unloaded drops.
+        public static void MarkDroppedItemsRestorePending()
+        {
+            droppedItemsRestored = false;
+        }
+
+        public static void RestoreDroppedItems()
+        {
+            if (droppedItemsRestored || !HasActiveSave)
+                return;
+
+            RuntimeDimension runtime = GetCurrentDimensionRuntime();
+            Game.World.Items.ItemDropSpawner spawner =
+                Game.World.Items.ItemDropSpawner.EnsureInstance();
+            if (runtime == null || spawner == null)
+                return;
+
+            droppedItemsRestored = true;
+            if (runtime.Data == null || runtime.Data.DroppedItems == null)
+                return;
+
+            foreach (DroppedItemSaveData drop in runtime.Data.DroppedItems)
+            {
+                if (drop != null && drop.Count > 0 && !string.IsNullOrWhiteSpace(drop.ItemId))
+                {
+                    if (drop.Embedded && drop.Count == 1)
+                        spawner.SpawnEmbedded(drop.ItemId,
+                            new Vector2(drop.EmbeddedTipX, drop.EmbeddedTipY),
+                            Quaternion.Euler(0f, 0f, drop.RotationZ));
+                    else
+                        spawner.SpawnRestored(drop.ItemId, drop.Count,
+                            new Vector2(drop.X, drop.Y),
+                            new Vector2(drop.VelocityX, drop.VelocityY));
+                }
+            }
+        }
+
+        private static void SaveDroppedItems(RuntimeDimension runtime)
+        {
+            if (!droppedItemsRestored || runtime == null || runtime.Data == null)
+                return;
+
+            if (runtime.Data.DroppedItems == null)
+                runtime.Data.DroppedItems = new List<DroppedItemSaveData>();
+            else
+                runtime.Data.DroppedItems.Clear();
+
+            foreach (Game.World.Items.DroppedItem drop in Game.World.Items.DroppedItem.ActiveItems)
+            {
+                if (drop == null || drop.Count <= 0 || string.IsNullOrWhiteSpace(drop.ItemId))
+                    continue;
+
+                Vector2 v = drop.CurrentVelocity;
+                Vector3 pos = drop.transform.position;
+                runtime.Data.DroppedItems.Add(new DroppedItemSaveData
+                {
+                    ItemId = drop.ItemId, Count = drop.Count,
+                    X = pos.x, Y = pos.y, VelocityX = v.x, VelocityY = v.y,
+                    Embedded = drop.IsEmbedded, RotationZ = drop.transform.eulerAngles.z,
+                    EmbeddedTipX = drop.EmbeddedTip.x, EmbeddedTipY = drop.EmbeddedTip.y
+                });
+            }
+        }
+
         private static TelderSaveData currentSave;
 
         private static string currentSaveId;
@@ -54,6 +120,44 @@ namespace Game.Save
                 StringComparer.OrdinalIgnoreCase
             );
 
+
+        // A scene reload creates a new PlayerInventory before the initial chunks
+        // are ready. A timer/autosave during that interval must never replace the
+        // old inventory with this newly constructed (empty) inventory.
+        private static List<InventorySlotSaveData> transferInventory;
+        private static int transferHotbarIndex;
+        public static bool IsInventoryTransferPending => transferInventory != null;
+
+        public static void BeginInventoryTransfer()
+        {
+            if (!HasActiveSave) return;
+            transferInventory = CloneInventorySlots(currentSave.Inventory);
+            transferHotbarIndex = currentSave.SelectedHotbarIndex;
+        }
+
+        public static void CompleteInventoryTransfer()
+        {
+            transferInventory = null;
+        }
+
+        private static List<InventorySlotSaveData> CloneInventorySlots(
+            List<InventorySlotSaveData> source)
+        {
+            var result = new List<InventorySlotSaveData>();
+            if (source == null) return result;
+            foreach (var slot in source)
+            {
+                if (slot == null) continue;
+                result.Add(new InventorySlotSaveData
+                {
+                    Slot = slot.Slot, ItemId = slot.ItemId, Count = slot.Count,
+                    CurrentDurability = slot.CurrentDurability,
+                    BonusMaxDurability = slot.BonusMaxDurability,
+                    InstalledUpgradeId = slot.InstalledUpgradeId
+                });
+            }
+            return result;
+        }
 
         private static bool applyingChanges;
 
@@ -90,6 +194,21 @@ namespace Game.Save
             string displayName
         )
         {
+            return CreateNewSave(
+                displayName,
+                false
+            );
+        }
+
+
+        // Compatibility overload used by the 3D world creation flow.
+        // Existing 2D callers can keep using CreateNewSave(name).
+        public static bool CreateNewSave(
+            string displayName,
+            bool is3D
+        )
+        {
+            CompleteInventoryTransfer();
             DimensionDatabase.Initialize();
 
 
@@ -134,6 +253,9 @@ namespace Game.Save
                         )
                             ? "Telder мир"
                             : displayName.Trim(),
+
+                    Is3D =
+                        is3D,
 
                     CurrentDimensionName =
                         startDimension.Name,
@@ -238,6 +360,7 @@ namespace Game.Save
                 }
 
 
+                CompleteInventoryTransfer();
                 currentSave =
                     data;
 
@@ -263,6 +386,25 @@ namespace Game.Save
                         new List<
                             InventorySlotSaveData
                         >();
+                }
+
+
+                if (currentSave.Version < 2)
+                {
+                    // V1 stored only item id/count. Missing durability fields can
+                    // deserialize as zero, which would make old tools appear broken.
+                    for (int i = 0; i < currentSave.Inventory.Count; i++)
+                    {
+                        InventorySlotSaveData slot = currentSave.Inventory[i];
+                        if (slot == null)
+                            continue;
+
+                        slot.CurrentDurability = -1;
+                        slot.BonusMaxDurability = 0;
+                        slot.InstalledUpgradeId = string.Empty;
+                    }
+
+                    currentSave.Version = 2;
                 }
 
 
@@ -548,6 +690,9 @@ namespace Game.Save
 
                             DisplayName =
                                 data.DisplayName,
+
+                            Is3D =
+                                data.Is3D,
 
                             CurrentDimensionName =
                                 data.CurrentDimensionName,
@@ -837,6 +982,13 @@ namespace Game.Save
             }
 
 
+            if (data.Entities == null)
+            {
+                data.Entities =
+                    new List<EntitySaveData>();
+            }
+
+
             RuntimeDimension runtime =
                 new RuntimeDimension
                 {
@@ -978,6 +1130,15 @@ namespace Game.Save
         // =====================================================
         // WORLD CHANGES
         // =====================================================
+
+        // Read procedural sky occlusion without materializing chunks above a cave.
+        public static bool TryGetForegroundOverride(int x,int y,out ushort blockId)
+        {
+            blockId=0;if(!HasActiveSave)return false;
+            RuntimeDimension runtime=GetCurrentDimensionRuntime();
+            if(runtime==null||!runtime.Changes.TryGetValue(Pack(x,y),out BlockChangeSaveData change)||!change.HasForeground)return false;
+            blockId=StringToBlockId(change.ForegroundId);return true;
+        }
 
         public static void RecordForegroundChange(
             int worldX,
@@ -1433,14 +1594,36 @@ namespace Game.Save
 
         public static void SaveCurrentScene()
         {
-            Game.World.Fluids.LiquidRuntime liquidRuntime = UnityEngine.Object.FindFirstObjectByType<Game.World.Fluids.LiquidRuntime>();
-            if (liquidRuntime != null) liquidRuntime.Flush();
-            Game.Achievements.AchievementRuntime.Instance.Save();
+            Game.World.Voxel3D.VoxelWorld3DRuntime.Instance?.SaveState();
+            Game.Gameplay.Plants.PlantRuntime.Flush();
+            Game.Gameplay.Cooking.CauldronRuntime.Instance?.ForceSave();
+            foreach(var effect in UnityEngine.Object.FindObjectsByType<Game.Gameplay.Effects.PlayerFoodEffects>(FindObjectsSortMode.None)) effect.ForceSave();
+            // A reload can put a brand-new, empty PlayerInventory into the scene.
+            // Ignore saves until the transfer snapshot has been restored.
+            if (IsInventoryTransferPending) return;
             if (
                 !HasActiveSave
             )
             {
                 return;
+            }
+
+
+            Game.World.Fluids.LiquidRuntime liquidRuntime =
+                UnityEngine.Object.FindFirstObjectByType<Game.World.Fluids.LiquidRuntime>();
+            if (liquidRuntime != null)
+                liquidRuntime.Flush();
+
+            if (Game.Achievements.AchievementRuntime.Instance != null)
+                Game.Achievements.AchievementRuntime.Instance.Save();
+
+
+            // Furniture is stored in a dimension-scoped sidecar file.
+            // Flush it together with the main save so exiting/reloading cannot
+            // leave inventory saved while placed furniture is stale.
+            if (Game.World.Furniture.FurnitureLayerManager.Instance != null)
+            {
+                Game.World.Furniture.FurnitureLayerManager.Instance.Flush();
             }
 
 
@@ -1508,6 +1691,24 @@ namespace Game.Save
                     position.z;
             }
 
+
+            Game.PlayerStats.PlayerStats playerStats =
+                UnityEngine.Object.FindFirstObjectByType<
+                    Game.PlayerStats.PlayerStats
+                >();
+
+
+            if (playerStats != null)
+            {
+                currentSave.HasPlayerStats = true;
+                currentSave.PlayerHealth = playerStats.Health;
+                currentSave.PlayerHunger = playerStats.Hunger;
+                currentSave.PlayerAirSeconds = playerStats.AirSeconds;
+            }
+
+
+            SaveEntities(runtime);
+            SaveDroppedItems(runtime);
 
             currentSave.LastPlayedUtc =
                 DateTime.UtcNow
@@ -1587,62 +1788,170 @@ namespace Game.Save
             }
 
 
-            string[] ids =
-                new string[
-                    PlayerInventory.SlotCount
-                ];
+            // Restore the structured slot records instead of only parallel ID/count
+            // arrays. This preserves durability and installed Tool Bench upgrades.
+            inventory.RestoreFromSave(
+                transferInventory ?? currentSave.Inventory
+            );
 
 
-            int[] counts =
-                new int[
-                    PlayerInventory.SlotCount
-                ];
+            inventory.SelectHotbarSlot(
+                Mathf.Clamp(
+                    transferInventory != null ? transferHotbarIndex : currentSave.SelectedHotbarIndex,
+                    0,
+                    PlayerInventory.HotbarSize - 1
+                )
+            );
 
 
+            // SelectHotbarSlot intentionally does nothing when the index is already
+            // selected, so always broadcast once after a load/dimension transition.
+            // HeldItemVisualController and weapon bridges rely on this notification.
+            inventory.NotifyExternalChange();
+        }
+
+
+        public static void RestorePlayerStats(
+            Game.PlayerStats.PlayerStats stats
+        )
+        {
             if (
-                currentSave.Inventory != null
+                !HasActiveSave ||
+                stats == null ||
+                !currentSave.HasPlayerStats
             )
             {
-                for (
-                    int i = 0;
-                    i < currentSave.Inventory.Count;
-                    i++
-                )
-                {
-                    InventorySlotSaveData slot =
-                        currentSave.Inventory[i];
-
-
-                    if (
-                        slot == null ||
-                        slot.Slot < 0 ||
-                        slot.Slot >=
-                        PlayerInventory.SlotCount
-                    )
-                    {
-                        continue;
-                    }
-
-
-                    ids[
-                        slot.Slot
-                    ] =
-                        slot.ItemId;
-
-
-                    counts[
-                        slot.Slot
-                    ] =
-                        slot.Count;
-                }
+                return;
             }
 
 
-            inventory.RestoreFromSave(
-                ids,
-                counts,
-                currentSave.SelectedHotbarIndex
+            stats.RestoreState(
+                currentSave.PlayerHealth,
+                currentSave.PlayerHunger,
+                currentSave.PlayerAirSeconds
             );
+        }
+
+
+        public static List<EntitySaveData> GetCurrentSavedEntities()
+        {
+            List<EntitySaveData> result =
+                new List<EntitySaveData>();
+
+
+            if (!HasActiveSave)
+                return result;
+
+
+            RuntimeDimension runtime =
+                GetCurrentDimensionRuntime();
+
+
+            if (
+                runtime == null ||
+                runtime.Data == null ||
+                runtime.Data.Entities == null
+            )
+            {
+                return result;
+            }
+
+
+            for (int i = 0; i < runtime.Data.Entities.Count; i++)
+            {
+                EntitySaveData source = runtime.Data.Entities[i];
+                if (source == null || string.IsNullOrWhiteSpace(source.DefinitionId))
+                    continue;
+
+                result.Add(
+                    new EntitySaveData
+                    {
+                        DefinitionId = source.DefinitionId,
+                        Stars = source.Stars,
+                        Health = source.Health,
+                        X = source.X,
+                        Y = source.Y,
+                        Z = source.Z,
+                        HeldItemId = source.HeldItemId
+                    }
+                );
+            }
+
+
+            return result;
+        }
+
+
+        private static void SaveEntities(
+            RuntimeDimension runtime
+        )
+        {
+            if (runtime == null || runtime.Data == null)
+                return;
+
+
+            // Do not erase valid snapshots while the scene spawn manager is still
+            // asynchronously restoring them. This matters during a very fast
+            // autosave/teleport immediately after loading a world.
+            Game.Entities.Spawn.EntitySpawnManager spawnManager =
+                UnityEngine.Object.FindFirstObjectByType<
+                    Game.Entities.Spawn.EntitySpawnManager
+                >();
+
+            if (spawnManager != null && !spawnManager.PersistenceRestoreFinished)
+                return;
+
+
+            if (runtime.Data.Entities == null)
+                runtime.Data.Entities = new List<EntitySaveData>();
+            else
+                runtime.Data.Entities.Clear();
+
+
+            if (spawnManager != null)
+            {
+                foreach (EntitySaveData deferred in spawnManager.DeferredRestores)
+                    runtime.Data.Entities.Add(new EntitySaveData
+                    {
+                        DefinitionId = deferred.DefinitionId, Stars = deferred.Stars,
+                        Health = deferred.Health, X = deferred.X, Y = deferred.Y,
+                        Z = deferred.Z, HeldItemId = deferred.HeldItemId
+                    });
+            }
+
+            IReadOnlyList<Game.Entities.EntityActor> active =
+                Game.Entities.EntityActor.ActiveActors;
+
+
+            for (int i = 0; i < active.Count; i++)
+            {
+                Game.Entities.EntityActor actor = active[i];
+
+                if (
+                    actor == null ||
+                    actor.IsDead ||
+                    string.IsNullOrWhiteSpace(actor.DefinitionId)
+                )
+                {
+                    continue;
+                }
+
+
+                Vector3 position = actor.transform.position;
+
+                runtime.Data.Entities.Add(
+                    new EntitySaveData
+                    {
+                        DefinitionId = actor.DefinitionId,
+                        Stars = actor.Stars,
+                        Health = actor.Health,
+                        X = position.x,
+                        Y = position.y,
+                        Z = position.z,
+                        HeldItemId = actor.HeldItemId
+                    }
+                );
+            }
         }
 
 
@@ -1684,7 +1993,16 @@ namespace Game.Save
                             stack.ItemId,
 
                         Count =
-                            stack.Count
+                            stack.Count,
+
+                        CurrentDurability =
+                            stack.CurrentDurability,
+
+                        BonusMaxDurability =
+                            stack.BonusMaxDurability,
+
+                        InstalledUpgradeId =
+                            stack.InstalledUpgradeId
                     }
                 );
             }

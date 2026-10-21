@@ -1,0 +1,22 @@
+{
+  "ID": "game:vines",
+  "Name": "Vines",
+  "Texture": "vines",
+  "Hardness": 1,
+  "Solid": false,
+  "Transparent": true,
+  "BlocksLight": false,
+  "Drop": "game:vines",
+  "DropCount": 1,
+  "LightOpacity": 0,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "Tags": ["vines", "hanging", "wave", "foliage"],
+  "alwaysFurniture": true,
+  "CraftIngredients": [],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "None",
+  "CollisionRects": []
+}

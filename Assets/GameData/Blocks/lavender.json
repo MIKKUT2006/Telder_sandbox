@@ -9,7 +9,7 @@
   "BlocksLight": true,
   "LightLevel": 0,
   "Material": 0,
-  "Drop": "",
+  "Drop": "game:lavender",
   "DropCount": 1,
   "PlaceSound": "",
   "BreakSound": "",
@@ -17,7 +17,7 @@
   "Tags": [
     "grass"
   ],
-
+  "alwaysFurniture": true,
   "LightOpacity": 15,
   "LightEmissionR": 0,
   "LightEmissionG": 0,

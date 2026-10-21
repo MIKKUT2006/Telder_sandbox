@@ -1,0 +1,15 @@
+{
+  "ID": "game:oak_sapling",
+  "Name": "Саженец дуба",
+  "Texture": "sapling_stage_0",
+  "Type": "Block",
+  "MaxStack": 100,
+  "CraftIngredients": [
+    {
+      "ItemId": "game:leaves",
+      "Count": 2
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 1
+}

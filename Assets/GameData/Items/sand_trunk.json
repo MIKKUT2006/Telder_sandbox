@@ -1,0 +1,12 @@
+{
+  "ID": "game:sand_trunk",
+  "Name": "Sand Trunk",
+  "Texture": "sand_trunk",
+  "Type": "Block",
+  "MaxStack": 100,
+  "Tags": [
+    "fuel",
+    "burnable"
+  ],
+  "FuelBurnTime": 12.0
+}

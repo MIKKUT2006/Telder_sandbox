@@ -54,7 +54,16 @@ namespace Game.Resources
             if (string.IsNullOrWhiteSpace(key))
                 return false;
 
-            return textures.TryGetValue(key, out texture) && texture != null;
+            if (textures.TryGetValue(key, out texture) && texture != null) return true;
+            texture = Game.Gameplay.PixelFoodAssets.Texture(key);
+            if (texture != null) { textures[key] = texture; return true; }
+            if (string.Equals(key, "vines", StringComparison.OrdinalIgnoreCase))
+            {
+                texture = Game.Visuals.PixelEffects.PixelVineTexture.Create();
+                textures[key] = texture;
+                return true;
+            }
+            return false;
         }
 
         public static Texture2D Get(string name)

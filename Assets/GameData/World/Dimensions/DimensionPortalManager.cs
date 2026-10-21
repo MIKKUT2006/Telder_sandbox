@@ -126,6 +126,16 @@ namespace Game.World.Dimensions
 
         private string pendingDimension;
 
+        private bool portalGunBeamActive;
+        private Vector3 portalGunBeamStart;
+        private Vector3 portalGunBeamEnd;
+        private Color portalGunBeamColor = new Color(0.38f, 0.91f, 1f, 1f);
+        private float portalGunBeamWidth = 5f;
+        private float portalGunBeamDistortion = 6f;
+        private float portalGunBeamStrength = 1f;
+
+        public bool HasActivePortalGunBeam => portalGunBeamActive;
+
 
         private void Awake()
         {
@@ -196,6 +206,77 @@ namespace Game.World.Dimensions
             }
 
             return best;
+        }
+
+
+        public void SetPortalGunBeam(
+            Vector3 worldStart,
+            Vector3 worldEnd,
+            Color color,
+            float widthPixels,
+            float distortionPixels,
+            float strength
+        )
+        {
+            portalGunBeamStart = worldStart;
+            portalGunBeamEnd = worldEnd;
+            portalGunBeamColor = color;
+            portalGunBeamWidth = Mathf.Max(1f, widthPixels);
+            portalGunBeamDistortion = Mathf.Max(0f, distortionPixels);
+            portalGunBeamStrength = Mathf.Max(0f, strength);
+            portalGunBeamActive =
+                (worldEnd - worldStart).sqrMagnitude > 0.0001f;
+        }
+
+
+        public void ClearPortalGunBeam()
+        {
+            portalGunBeamActive = false;
+        }
+
+
+        public void ApplyPortalGunBeamToMaterial(
+            Material material,
+            Camera camera
+        )
+        {
+            if (material == null)
+                return;
+
+            // The shared fullscreen shader is also used while a beam is travelling
+            // before a portal exists. Explicitly reset portal uniforms so values
+            // from the previous portal cannot leave a stale rift on screen.
+            if (CurrentPortal == null)
+            {
+                material.SetFloat("_RiftOpen", 0f);
+                material.SetFloat("_RiftCollapse", 0f);
+                material.SetVector("_RiftCenter", new Vector4(-10f, -10f, 0f, 0f));
+                material.SetVector("_RiftRadius", new Vector4(0.0001f, 0.0001f, 0f, 0f));
+                material.SetVector("_RiftVisualRadius", new Vector4(0.0001f, 0.0001f, 0f, 0f));
+                material.SetInt("_RiftParticleCount", 0);
+            }
+
+            if (!portalGunBeamActive || camera == null)
+            {
+                material.SetFloat("_PortalBeamActive", 0f);
+                return;
+            }
+
+            Vector3 startViewport = camera.WorldToViewportPoint(portalGunBeamStart);
+            Vector3 endViewport = camera.WorldToViewportPoint(portalGunBeamEnd);
+            if (startViewport.z <= 0f || endViewport.z <= 0f)
+            {
+                material.SetFloat("_PortalBeamActive", 0f);
+                return;
+            }
+
+            material.SetVector("_PortalBeamStart", new Vector4(startViewport.x, startViewport.y, 0f, 0f));
+            material.SetVector("_PortalBeamEnd", new Vector4(endViewport.x, endViewport.y, 0f, 0f));
+            material.SetColor("_PortalBeamColor", portalGunBeamColor);
+            material.SetFloat("_PortalBeamWidth", portalGunBeamWidth);
+            material.SetFloat("_PortalBeamDistortion", portalGunBeamDistortion);
+            material.SetFloat("_PortalBeamStrength", portalGunBeamStrength);
+            material.SetFloat("_PortalBeamActive", 1f);
         }
 
 

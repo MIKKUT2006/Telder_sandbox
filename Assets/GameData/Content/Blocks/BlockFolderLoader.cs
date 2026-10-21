@@ -16,13 +16,13 @@ namespace Game.Content
         // JSON EXTRA DATA
         // =====================================================
         //
-        // JsonUtility / JsonLoader не умеет сам преобразовать:
+        // JsonUtility / JsonLoader РЅРµ СѓРјРµРµС‚ СЃР°Рј РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ:
         //
         // "Drop": "game:stone"
         //
-        // в ContentID.
+        // РІ ContentID.
         //
-        // Поэтому строковые ContentID-поля читаем отдельно.
+        // РџРѕСЌС‚РѕРјСѓ СЃС‚СЂРѕРєРѕРІС‹Рµ ContentID-РїРѕР»СЏ С‡РёС‚Р°РµРј РѕС‚РґРµР»СЊРЅРѕ.
         //
 
         [Serializable]
@@ -30,6 +30,7 @@ namespace Game.Content
         {
 
             public string Drop;
+            public BlockLootEntryDefinition[] Loot;
 
         }
 
@@ -127,7 +128,7 @@ namespace Game.Content
             // READ RAW JSON
             // =================================================
             //
-            // Он нужен отдельно для ContentID-полей.
+            // РћРЅ РЅСѓР¶РµРЅ РѕС‚РґРµР»СЊРЅРѕ РґР»СЏ ContentID-РїРѕР»РµР№.
             //
 
             string rawJson;
@@ -280,6 +281,25 @@ namespace Game.Content
 
 
             // =================================================
+            // PARSE LOOT TABLE
+            // =================================================
+
+            // This extra-data pass detects whether JSON explicitly defines Loot.
+            // An explicitly empty array means that the block drops nothing.
+            if (extraData != null && extraData.Loot != null)
+            {
+                block.Loot = new System.Collections.Generic.List<BlockLootEntryDefinition>(extraData.Loot);
+                block.HasLootTable = true;
+            }
+            else
+            {
+                block.HasLootTable = false;
+                if (block.Loot == null)
+                    block.Loot = new System.Collections.Generic.List<BlockLootEntryDefinition>();
+            }
+
+
+            // =================================================
             // PARSE DROP
             // =================================================
 
@@ -351,8 +371,8 @@ namespace Game.Content
             // FIX DROP COUNT
             // =================================================
             //
-            // Если Drop указан, но DropCount случайно <= 0,
-            // считаем, что должен выпадать 1 предмет.
+            // Р•СЃР»Рё Drop СѓРєР°Р·Р°РЅ, РЅРѕ DropCount СЃР»СѓС‡Р°Р№РЅРѕ <= 0,
+            // СЃС‡РёС‚Р°РµРј, С‡С‚Рѕ РґРѕР»Р¶РµРЅ РІС‹РїР°РґР°С‚СЊ 1 РїСЂРµРґРјРµС‚.
             //
 
             if (
@@ -387,6 +407,8 @@ namespace Game.Content
             // =================================================
             // REGISTER
             // =================================================
+
+            if (block.Plant != null) { block.alwaysFurniture = true; block.Solid = false; block.Transparent = true; block.BlocksLight = false; block.CollisionShape = "None"; block.LightOpacity = 0; }
 
             BlockRegistry.Register(
                 block

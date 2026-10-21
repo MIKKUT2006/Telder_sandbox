@@ -269,6 +269,7 @@ namespace Game.Chests.UI
             }
 
 
+            Game.Audio.TelderAudioSystem.Play("chest.open");
             currentChest.Changed +=
                 HandleChestChanged;
 
@@ -328,7 +329,7 @@ namespace Game.Chests.UI
 
         public void CloseChestVisualOnly()
         {
-
+            if (IsOpen) Game.Audio.TelderAudioSystem.Play("chest.close");
             UnsubscribeCurrentChest();
 
 
@@ -417,6 +418,12 @@ namespace Game.Chests.UI
         // =====================================================
         // LEFT CLICK
         // =====================================================
+
+        public void GamepadQuickMoveFromChest(int slotIndex)
+        {
+            if (IsOpen && currentChest != null && playerInventory != null)
+                currentChest.QuickMoveToPlayer(slotIndex, playerInventory);
+        }
 
         public void LeftClickChest(
             int chestSlotIndex

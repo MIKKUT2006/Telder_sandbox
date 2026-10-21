@@ -1,0 +1,7 @@
+{
+  "ID": "game:wooden_door",
+  "Name": "Wooden Door",
+  "Texture": "wooden_door",
+  "Type": "Block",
+  "MaxStack": 20
+}

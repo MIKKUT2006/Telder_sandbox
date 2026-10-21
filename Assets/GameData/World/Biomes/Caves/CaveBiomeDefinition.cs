@@ -48,6 +48,10 @@ namespace Game.World.Biomes.Caves
             new List<string>();
 
 
+        // Optional whitelist of the SURFACE biomes directly above this X column.
+        // Empty list = under any surface biome. Example: ["game:snowy_forest"].
+        public List<string> SurfaceBiomes = new List<string>();
+
         // Optional terrain overrides.
         //
         // Empty string = keep surface biome material.

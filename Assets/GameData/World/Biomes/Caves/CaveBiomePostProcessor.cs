@@ -64,6 +64,8 @@ namespace Game.World.Biomes.Caves
                     chunkMinX +
                     localX;
 
+                string surfaceBiomeId = generator.GetDominantBiome(worldX)?.ID;
+
 
                 if (
                     !WorldGenerationBiomeProbe
@@ -95,7 +97,8 @@ namespace Game.World.Biomes.Caves
                             worldX,
                             worldY,
                             settings.Seed,
-                            dimensionKeys
+                            dimensionKeys,
+                            surfaceBiomeId
                         );
 
 
@@ -187,6 +190,8 @@ namespace Game.World.Biomes.Caves
                     chunkMinX +
                     localX;
 
+                string surfaceBiomeId = generator.GetDominantBiome(worldX)?.ID;
+
 
                 for (
                     int localY = 1;
@@ -204,7 +209,8 @@ namespace Game.World.Biomes.Caves
                             worldX,
                             worldY,
                             settings.Seed,
-                            dimensionKeys
+                            dimensionKeys,
+                            surfaceBiomeId
                         );
 
 
@@ -331,6 +337,8 @@ namespace Game.World.Biomes.Caves
                     chunkMinX +
                     localX;
 
+                string surfaceBiomeId = generator.GetDominantBiome(worldX)?.ID;
+
 
                 if (
                     !WorldGenerationBiomeProbe
@@ -362,7 +370,8 @@ namespace Game.World.Biomes.Caves
                             worldX,
                             worldY,
                             settings.Seed,
-                            dimensionKeys
+                            dimensionKeys,
+                            surfaceBiomeId
                         );
 
 
@@ -466,6 +475,8 @@ namespace Game.World.Biomes.Caves
                     chunkMinX +
                     localX;
 
+                string surfaceBiomeId = generator.GetDominantBiome(worldX)?.ID;
+
 
                 for (
                     int localY = 1;
@@ -483,7 +494,8 @@ namespace Game.World.Biomes.Caves
                             worldX,
                             worldY,
                             settings.Seed,
-                            dimensionKeys
+                            dimensionKeys,
+                            surfaceBiomeId
                         );
 
 

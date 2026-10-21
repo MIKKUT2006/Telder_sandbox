@@ -4,7 +4,8 @@ namespace Game.World.Weather
     {
         Clear,
         Rain,
-        Snow
+        Snow,
+        Fog
     }
 
     public enum WeatherControlMode
@@ -12,6 +13,7 @@ namespace Game.World.Weather
         Auto,
         Clear,
         Rain,
-        Snow
+        Snow,
+        Fog
     }
 }

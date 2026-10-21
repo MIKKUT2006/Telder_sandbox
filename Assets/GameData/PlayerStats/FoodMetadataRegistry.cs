@@ -17,6 +17,7 @@ namespace Game.PlayerStats
             public float EatTime;
             public float HungerRestore;
             public float HealthRestore;
+            public Game.Gameplay.Effects.FoodEffectDefinition[] Effects;
         }
 
 
@@ -32,6 +33,7 @@ namespace Game.PlayerStats
             public float HungerRestore;
 
             public float HealthRestore;
+            public Game.Gameplay.Effects.FoodEffectDefinition[] Effects;
         }
 
 
@@ -79,8 +81,7 @@ namespace Game.PlayerStats
 
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Items"
                 );
 
@@ -134,12 +135,29 @@ namespace Game.PlayerStats
                 return false;
 
 
-            return Data.TryGetValue(
-                itemId.Trim(),
-                out metadata
-            );
+            if (Data.TryGetValue(itemId.Trim(), out metadata)) return true;
+            if (!Game.Gameplay.Cooking.StewRecipe.TryRead(itemId, out metadata)) return false;
+            Data[itemId] = metadata;
+            return true;
         }
 
+
+        public static string Describe(string itemId)
+        {
+            if (!TryGet(itemId, out var food)) return null;
+            var text = new System.Text.StringBuilder();
+            text.Append("Насыщение +").Append(food.HungerRestore.ToString("0.##"))
+                .Append(" · здоровье +").Append(food.HealthRestore.ToString("0.##"))
+                .Append("\nПоедание: ").Append(food.EatTime > 0 ? food.EatTime.ToString("0.##") : "1").Append(" с");
+            if (food.Effects != null) foreach (var effect in food.Effects)
+            {
+                if (effect == null || !effect.TryType(out var type) || effect.Duration <= 0) continue;
+                string[] names = { "Заморозка", "Отравление", "Ускорение", "Высокий прыжок", "Сила", "Защита" };
+                text.Append("\n").Append(names[(int)type]).Append(" ").Append(Mathf.Clamp(effect.Level, 1, 10))
+                    .Append(": ").Append(effect.Duration.ToString("0.##")).Append(" с");
+            }
+            return text.ToString();
+        }
 
         public static bool IsFood(
             string itemId)
@@ -205,7 +223,9 @@ namespace Game.PlayerStats
                             data.HungerRestore,
 
                         HealthRestore =
-                            data.HealthRestore
+                            data.HealthRestore,
+
+                        Effects = data.Effects
                     };
 
 

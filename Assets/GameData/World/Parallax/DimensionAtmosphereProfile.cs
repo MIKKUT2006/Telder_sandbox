@@ -35,6 +35,12 @@ namespace Game.World.Parallax
                 s = Mathf.Lerp(0.10f, 0.32f, b);
                 v = Mathf.Lerp(0.48f, 0.72f, c);
             }
+            else if (string.Equals(type, "normal", StringComparison.OrdinalIgnoreCase))
+            {
+                h = Mathf.Lerp(0.51f, 0.61f, a);
+                s = Mathf.Lerp(0.08f, 0.28f, b);
+                v = Mathf.Lerp(0.78f, 1.0f, c);
+            }
             else if (string.Equals(type, "frozen", StringComparison.OrdinalIgnoreCase))
             {
                 h = Mathf.Lerp(0.51f, 0.61f, a);

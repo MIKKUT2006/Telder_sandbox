@@ -33,7 +33,7 @@
   "Stars": {
     "MinStars": 0,
     "MaxStars": 5,
-    "StarWeights": [ 55.0, 25.0, 12.0, 6.0, 2.0 ],
+    "StarWeights": [ 55.0, 25.0, 12.0, 6.0, 2.0],
     "HealthPerExtraStar": 0.35,
     "DamagePerExtraStar": 0.20,
     "LootPerExtraStar": 0.25
@@ -79,7 +79,13 @@
 
   "Loot": [
     {
-      "ItemId": "game:coal_ore",
+      "ItemId": "game:sheep_meat",
+      "Min": 1,
+      "Max": 2,
+      "Chance": 0.8
+    },
+    {
+      "ItemId": "game:wool",
       "Min": 1,
       "Max": 3,
       "Chance": 0.8

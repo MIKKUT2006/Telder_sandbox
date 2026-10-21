@@ -1,0 +1,34 @@
+{
+  "ID": "game:iron_spear",
+  "Name": "Iron Spear",
+  "Texture": "iron_spear",
+  "Type": "Weapon",
+  "MaxStack": 1,
+  "Weapon": {
+    "Kind": "Spear",
+    "Damage": 9,
+    "AttackSpeed": 1.6,
+    "Knockback": 3.0,
+    "ArmAimOffset": -90,
+    "SpearBaseReach": 2.1,
+    "SpearThrustDistance": 1.8,
+    "SpearHitRadius": 0.26,
+    "SpearPattern": [
+      "Thrust",
+      "PowerThrust"
+    ],
+    "TrackCursorDuringAttack": true,
+    "MeleeComboResetTime": 1.2,
+    "SpearPowerReachMultiplier": 1.2,
+    "SpearPowerDamageMultiplier": 1.2
+  },
+  "HeldScale": 3,
+  "CraftIngredients": [
+    {
+      "ItemId": "game:iron_ingot",
+      "Count": 5
+    }
+  ],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1
+}

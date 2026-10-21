@@ -8,6 +8,8 @@ using Game.World;
 using Game.World.Items;
 using Game.World.Projectiles;
 using Game.Items;
+using Game.Fluids;
+using Game.World.Fluids;
 
 namespace Game.Entities
 {
@@ -56,12 +58,19 @@ namespace Game.Entities
         private string heldItemId;
         private WeaponMetadata heldWeapon;
 
+        [Header("Liquid hazard")]
+        [SerializeField] private float defaultHotLiquidDamage = 10f;
+        private float nextLiquidDamageTime;
+        private float nextLiquidPollTime;
+        private ushort lastLiquidDamageID;
+
         private float nextThinkTime;
         private float nextWanderTime;
         private float nextAttackTime;
         private float aggroUntil;
         private float fleeUntil;
         private float attackExecuteAt;
+        private float attackStartedAt;
         private float attackEndAt;
         private float hurtUntil;
         private bool attackPending;
@@ -74,6 +83,40 @@ namespace Game.Entities
         public float MaxHealth { get { return maxHealth; } }
         public bool IsDead { get { return state == BrainState.Dead; } }
         public string HeldItemId { get { return heldItemId; } }
+        private bool bossBusy;
+        public bool IsBoss => definition != null && definition.IsBoss;
+        public EntityBossDefinition BossSettings => IsBoss ? definition.Boss : null;
+        public Game.PlayerStats.PlayerStats BossTarget => playerStats;
+        public string BossVisualAttackState => definition?.Visual?.AnimatorAttackState;
+        public bool IsBossTerrainReady
+        {
+            get
+            {
+                var world=WorldManager.Instance!=null?WorldManager.Instance.GetWorld():null;
+                if(world==null||!IsBoss)return false;
+                Rect b=GetDamageBounds();
+                return world.IsLoaded(Mathf.FloorToInt(b.xMin-1),Mathf.FloorToInt(b.yMin-1))&&
+                    world.IsLoaded(Mathf.FloorToInt(b.xMax+1),Mathf.FloorToInt(b.yMax+1));
+            }
+        }
+        public void SetBossBusy(bool busy)
+        {
+            bossBusy=busy;attackPending=false;movement?.ClearPath();
+            if(!busy&&!IsDead){visual?.SetState(EntityVisualState.Idle,true);nextThinkTime=Time.time;}
+        }
+        public void PlayBossAnimation(string stateName)
+        {
+            var animator=GetComponentInChildren<Animator>(true);
+            if(animator==null||string.IsNullOrWhiteSpace(stateName))return;
+            int hash=Animator.StringToHash(stateName.Trim());
+            if(animator.HasState(0,hash))animator.Play(hash,0,0);
+        }
+        public void MoveBossDirect(Vector2 position)
+        {
+            if(physicsBody!=null)physicsBody.position=position;
+            transform.position=new Vector3(position.x,position.y,transform.position.z);
+        }
+
 
         public int DamageTargetKey
         {
@@ -132,7 +175,11 @@ namespace Game.Entities
         {
             definition = source;
             definition.Normalize();
-            stars = Mathf.Clamp(starCount, 1, 5);
+
+            int minStars = Mathf.Max(0, definition.Stars.MinStars);
+            int maxStars = Mathf.Max(minStars, definition.Stars.MaxStars);
+            stars = Mathf.Clamp(starCount, minStars, maxStars);
+
             playerStats = targetPlayer;
             player = playerStats != null ? playerStats.transform : null;
 
@@ -174,11 +221,30 @@ namespace Game.Entities
             RollEquipment();
             visual.SetHeldItem(heldItemId);
 
+            if(IsBoss)
+            {
+                if(GetComponent<Game.Entities.Boss.AncientGolemBossController>()==null)gameObject.AddComponent<Game.Entities.Boss.AncientGolemBossController>();
+                Game.Entities.Boss.BossHealthBarHUD.Ensure();
+            }
             state = BrainState.Idle;
             nextThinkTime = Time.time + UnityEngine.Random.Range(0f, 0.15f);
             nextWanderTime = Time.time + UnityEngine.Random.Range(0.05f, 0.35f);
 
-            gameObject.name = (string.IsNullOrWhiteSpace(definition.Name) ? definition.ID : definition.Name) + " " + new string('★', stars);
+            //gameObject.name = (string.IsNullOrWhiteSpace(definition.Name) ? definition.ID : definition.Name) + " " + new string('▪', stars);
+        }
+
+        public void RestorePersistentState(float savedHealth, string savedHeldItemId)
+        {
+            health = Mathf.Clamp(savedHealth, 0.01f, Mathf.Max(0.01f, maxHealth));
+
+            heldItemId = string.IsNullOrWhiteSpace(savedHeldItemId)
+                ? null
+                : savedHeldItemId.Trim();
+
+            ResolveHeldWeaponMetadata();
+
+            if (visual != null)
+                visual.SetHeldItem(heldItemId);
         }
 
         private void Update()
@@ -193,6 +259,9 @@ namespace Game.Entities
                 return;
             }
 
+            ApplyLiquidHazardDamage();
+            if (state == BrainState.Dead) return;
+            if(bossBusy){visual.Tick();return;}
             UpdatePendingAttack();
 
             if (Time.time >= nextThinkTime)
@@ -205,9 +274,27 @@ namespace Game.Entities
             visual.Tick();
         }
 
+        private void LateUpdate()
+        {
+            if (definition == null || visual == null || state == BrainState.Dead || bossBusy)
+                return;
+
+            // Apply after the Animator has moved prefab hand bones.
+            if (state == BrainState.Attack && Time.time < attackEndAt)
+            {
+                float phase = Mathf.InverseLerp(attackStartedAt, attackEndAt, Time.time);
+                visual.AimHeldItem(attackDirection, phase, heldWeapon);
+            }
+            else if (player != null && heldWeapon != null && IsRangedWeapon())
+            {
+                Vector2 aim = (Vector2)player.position - (Vector2)transform.position;
+                visual.AimHeldItem(aim, 0f);
+            }
+        }
+
         private void FixedUpdate()
         {
-            if (definition == null || state == BrainState.Dead || movement == null)
+            if (definition == null || state == BrainState.Dead || movement == null || bossBusy)
                 return;
 
             if (state == BrainState.Attack && Time.time < attackEndAt)
@@ -226,6 +313,52 @@ namespace Game.Entities
                 visual.SetFacing(dx);
         }
 
+        private void ApplyLiquidHazardDamage()
+        {
+            if (Time.time < nextLiquidPollTime) return;
+            nextLiquidPollTime = Time.time + .10f;
+            WorldManager manager = WorldManager.Instance;
+            Game.World.World queryWorld = manager != null ? manager.GetWorld() : null;
+            if (queryWorld == null || definition == null) return;
+
+            Vector2 center = physicsBody != null ? physicsBody.position : (Vector2)transform.position;
+            float halfHeight = Mathf.Max(0.1f, definition.ColliderHeight * 0.5f);
+            float halfWidth = Mathf.Max(0.06f, definition.ColliderWidth * 0.35f);
+            Vector2 feet = center + Vector2.down * (halfHeight * 0.70f);
+            Vector2[] points = { feet, center, feet + Vector2.left * halfWidth,
+                feet + Vector2.right * halfWidth };
+            ushort currentID = 0;
+            FluidDefinition hazard = null;
+            for (int i = 0; i < points.Length; i++)
+            {
+                Vector2 sample = points[i];
+                if (!LiquidRuntime.IsPointSubmerged(sample)) continue;
+                ushort id = queryWorld.GetLiquidID(Mathf.FloorToInt(sample.x), Mathf.FloorToInt(sample.y));
+                if (id == 0 || queryWorld.GetLiquidAmount(Mathf.FloorToInt(sample.x), Mathf.FloorToInt(sample.y)) == 0)
+                    continue;
+                if (!FluidRegistry.TryGet(FluidIDRegistry.GetString(id), out FluidDefinition fluid))
+                    continue;
+                if (fluid == null || (!fluid.IsHot && fluid.Damage <= 0f)) continue;
+                currentID = id;
+                hazard = fluid;
+                break;
+            }
+            if (currentID == 0)
+            {
+                lastLiquidDamageID = 0;
+                nextLiquidDamageTime = 0f;
+                return;
+            }
+            if (currentID != lastLiquidDamageID)
+            {
+                lastLiquidDamageID = currentID;
+                nextLiquidDamageTime = Time.time;
+            }
+            if (Time.time < nextLiquidDamageTime) return;
+            nextLiquidDamageTime = Time.time + Mathf.Max(.1f, hazard.DamageInterval);
+            TakeDamage(hazard.Damage > 0f ? hazard.Damage : defaultHotLiquidDamage);
+        }
+
         private void Think()
         {
             if (player == null || playerStats == null || playerStats.IsDead)
@@ -235,6 +368,14 @@ namespace Game.Entities
             }
 
             float distance = Vector2.Distance(transform.position, player.position);
+            if(IsBoss)
+            {
+                state=BrainState.Chase;
+                if(distance>Mathf.Max(2.3f,definition.Combat.AttackRange*.85f))movement.SetTarget(transform.position,player.position);
+                else movement.ClearPath();
+                return;
+            }
+
             EntityDisposition disposition = definition.GetDisposition();
 
             if (disposition == EntityDisposition.Passive && Time.time < fleeUntil)
@@ -330,8 +471,10 @@ namespace Game.Entities
             else if (heldWeapon != null && heldWeapon.GetKind() == WeaponKind.Bomb)
                 windup = 0.28f;
 
+            attackStartedAt = Time.time;
             attackExecuteAt = Time.time + windup;
             attackEndAt = attackExecuteAt + 0.18f;
+            Game.Audio.TelderAudioSystem.PlayAt("mob.attack." + DefinitionId, transform.position, GetInstanceID());
             attackPending = true;
             state = BrainState.Attack;
             movement.ClearPath();
@@ -552,49 +695,56 @@ namespace Game.Entities
                     continue;
 
                 heldItemId = entry.ItemId.Trim();
-                WeaponMetadataRegistry.TryGet(heldItemId, out heldWeapon);
-
-                // A creature may be configured with a custom dynamite/bomb item
-                // whose JSON only says Type = Bomb and has no Weapon block yet.
-                // In that case it used to visibly hold the item but attack as if
-                // unarmed. Give Bomb items sane throwable defaults automatically.
-                if (heldWeapon == null &&
-                    ItemRegistry.TryGet(heldItemId, out ItemDefinition itemDefinition) &&
-                    itemDefinition != null &&
-                    itemDefinition.Type == ItemType.Bomb)
-                {
-                    heldWeapon = new WeaponMetadata
-                    {
-                        Kind = "Bomb",
-                        AIUseMode = "Throwable",
-                        Damage = Mathf.Max(1f, definition.Combat.BaseDamage),
-                        AttackSpeed = 0.8f,
-                        Range = Mathf.Max(6f, definition.Combat.VisionRange),
-                        ProjectileItem = heldItemId,
-                        ProjectileWorldSize = 0.55f,
-                        BombFuseTime = 3f,
-                        BombExplosionWidth = 2,
-                        BombExplosionHeight = 2,
-                        BombThrowSpeed = 8f,
-                        BombGravity = 18f,
-                        BombBounce = 0.32f,
-                        BombDestroyBlocks = true,
-                        BombDestroyBackground = false,
-                        BombDestroyFurniture = true,
-                        BombKnockback = 5f
-                    };
-                }
-
-                if (heldWeapon != null &&
-                    heldWeapon.GetKind() == WeaponKind.Bomb &&
-                    string.IsNullOrWhiteSpace(heldWeapon.ProjectileItem))
-                {
-                    heldWeapon.ProjectileItem = heldItemId;
-                }
-
+                ResolveHeldWeaponMetadata();
                 return;
             }
         }
+
+        private void ResolveHeldWeaponMetadata()
+        {
+            heldWeapon = null;
+
+            if (string.IsNullOrWhiteSpace(heldItemId))
+                return;
+
+            WeaponMetadataRegistry.TryGet(heldItemId, out heldWeapon);
+
+            // Bomb items are allowed to work even without an explicit Weapon block.
+            if (heldWeapon == null &&
+                ItemRegistry.TryGet(heldItemId, out ItemDefinition itemDefinition) &&
+                itemDefinition != null &&
+                itemDefinition.Type == ItemType.Bomb)
+            {
+                heldWeapon = new WeaponMetadata
+                {
+                    Kind = "Bomb",
+                    AIUseMode = "Throwable",
+                    Damage = Mathf.Max(1f, definition.Combat.BaseDamage),
+                    AttackSpeed = 0.8f,
+                    Range = Mathf.Max(6f, definition.Combat.VisionRange),
+                    ProjectileItem = heldItemId,
+                    ProjectileWorldSize = 0.55f,
+                    BombFuseTime = 3f,
+                    BombExplosionWidth = 2,
+                    BombExplosionHeight = 2,
+                    BombThrowSpeed = 8f,
+                    BombGravity = 18f,
+                    BombBounce = 0.32f,
+                    BombDestroyBlocks = true,
+                    BombDestroyBackground = false,
+                    BombDestroyFurniture = true,
+                    BombKnockback = 5f
+                };
+            }
+
+            if (heldWeapon != null &&
+                heldWeapon.GetKind() == WeaponKind.Bomb &&
+                string.IsNullOrWhiteSpace(heldWeapon.ProjectileItem))
+            {
+                heldWeapon.ProjectileItem = heldItemId;
+            }
+        }
+
 
         public bool CanReceiveWeaponDamage(WeaponDamageInfo info)
         {
@@ -660,6 +810,8 @@ namespace Game.Entities
                 return;
 
             health = Mathf.Max(0f, health - amount);
+            Game.Audio.TelderAudioSystem.PlayAt(health <= 0f ? "mob.death." + DefinitionId : "mob.hurt." + DefinitionId,
+                transform.position, GetInstanceID());
             if (movement != null && impulse.sqrMagnitude > 0.001f)
                 movement.AddImpulse(impulse);
 
@@ -746,8 +898,6 @@ namespace Game.Entities
             if (state == BrainState.Attack && Time.time < attackEndAt)
             {
                 visual.SetState(EntityVisualState.Attack);
-                float phase = Mathf.InverseLerp(attackExecuteAt - 0.2f, attackEndAt, Time.time);
-                visual.AimHeldItem(attackDirection, phase);
                 return;
             }
 
@@ -763,11 +913,6 @@ namespace Game.Entities
             else
                 visual.SetState(EntityVisualState.Idle);
 
-            if (player != null && heldWeapon != null && IsRangedWeapon())
-            {
-                Vector2 aim = (Vector2)player.position - (Vector2)transform.position;
-                visual.AimHeldItem(aim, 0f);
-            }
         }
 
         private static Vector2 Rotate(Vector2 v, float degrees)

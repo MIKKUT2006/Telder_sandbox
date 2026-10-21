@@ -66,6 +66,7 @@ namespace Game.Chests
 
         public bool IsChestAt(int worldX, int worldY)
         {
+            if(Game.World.Voxel3D.VoxelGameplayState3D.TryResolve(worldX,worldY,out _,out ushort voxelId))return IsChestBlock(voxelId);
             WorldManager manager = WorldManager.Instance;
 
             if (manager == null || manager.GetWorld() == null)
@@ -84,6 +85,7 @@ namespace Game.Chests
 
         public bool IsClosedChestAt(int worldX, int worldY)
         {
+            if(Game.World.Voxel3D.VoxelGameplayState3D.TryResolve(worldX,worldY,out _,out ushort voxelId))return TryGetChestDefinition(voxelId,out var voxelDef)&&voxelDef.Closed;
             WorldManager manager = WorldManager.Instance;
 
             if (manager == null || manager.GetWorld() == null)
@@ -244,6 +246,7 @@ namespace Game.Chests
             );
         }
 
+        public void NotifyVoxelRemoved(int address){HandleForegroundCleared(address,0);}
         private void HandleForegroundCleared(
             int worldX,
             int worldY
@@ -299,6 +302,8 @@ namespace Game.Chests
 
                 if (stack == null || stack.IsEmpty)
                     continue;
+                if(Game.World.Voxel3D.VoxelGameplayState3D.TryResolve(chest.WorldX,chest.WorldY,out var voxelCell,out _))
+                {Game.World.Voxel3D.VoxelItemDrop3D.Spawn(stack.Clone(),(Vector3)voxelCell+Vector3.one*.5f);continue;}
 
                 if (ItemDropSpawner.Instance == null)
                 {

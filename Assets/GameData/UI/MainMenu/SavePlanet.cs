@@ -1,3 +1,4 @@
+using Game.InputSupport;
 using System.IO;
 
 using TMPro;
@@ -19,6 +20,11 @@ namespace Game.UI.MainMenu
         private Vector3 normalScale;
 
         private bool hovered;
+        private bool controllerHovered;
+        public string SaveId { get { return saveId; } }
+        public string DisplayName { get { return displayName; } }
+        public void SetGamepadHovered(bool value) { controllerHovered = value; }
+
 
 
         private Renderer sphereRenderer;
@@ -33,7 +39,7 @@ namespace Game.UI.MainMenu
 
         [SerializeField]
         private float rotationSpeed =
-            14f;
+            50f;
 
 
         [SerializeField]
@@ -89,6 +95,9 @@ namespace Game.UI.MainMenu
 
 
             LoadPreview();
+            var rings = GetComponent<PixelPlanetRings>();
+            if (rings == null) rings = gameObject.AddComponent<PixelPlanetRings>();
+            rings.SetPreview(previewTexture);
         }
 
 
@@ -106,7 +115,7 @@ namespace Game.UI.MainMenu
             Vector3 targetScale =
                 normalScale *
                 (
-                    hovered
+                    (hovered || controllerHovered)
                         ? hoverScale
                         : 1f
                 );
@@ -123,7 +132,7 @@ namespace Game.UI.MainMenu
                     )
                 );
 
-            if (hovered && Input.GetMouseButtonDown(1))
+            if (hovered && GameInput.Pressed(GameAction.Use))
             {
                 SaveContextMenuController
                     .EnsureExists(owner)

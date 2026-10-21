@@ -12,8 +12,7 @@ namespace Game.World.Structures
             {
                 string path =
                     Path.Combine(
-                        Application.dataPath,
-                        "GameData",
+                        Game.Content.DataPaths.GameDataFolder,
                         "Structures"
                     );
 

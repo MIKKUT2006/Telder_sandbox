@@ -345,6 +345,11 @@ namespace Game.World.Structures.EditorRuntime
             global::UnityEngine.Cursor.visible = true;
             global::UnityEngine.Cursor.lockState = CursorLockMode.None;
 
+            Color previousBackground = GUI.backgroundColor;
+            Color previousContent = GUI.contentColor;
+            GUI.backgroundColor = new Color(0.12f, 0.14f, 0.17f, 1f);
+            GUI.contentColor = new Color(0.93f, 0.95f, 0.98f, 1f);
+
             EnsureStyles();
 
             if (GUI.skin != null && GUI.skin.settings != null)
@@ -360,6 +365,9 @@ namespace Game.World.Structures.EditorRuntime
             DrawBlockPalette();
             DrawGrid();
             DrawSettings();
+
+            GUI.backgroundColor = previousBackground;
+            GUI.contentColor = previousContent;
         }
 
 
@@ -471,11 +479,16 @@ namespace Game.World.Structures.EditorRuntime
 
             GUILayout.BeginHorizontal();
 
+            if (GUILayout.Button("← T-EDITOR", GUILayout.Width(94f)))
+            {
+                if (TEditorMenuController.Instance != null)
+                    TEditorMenuController.Instance.ReturnHome();
+            }
 
             GUILayout.Label(
-                "TELDER STRUCTURE EDITOR",
+                "СТРУКТУРЫ",
                 GUILayout.Width(
-                    205f
+                    112f
                 )
             );
 
@@ -520,6 +533,12 @@ namespace Game.World.Structures.EditorRuntime
                 StructureEditorLootIconCache.Clear();
 
                 RefreshContent();
+            }
+
+
+            if (GUILayout.Button("3D РЕДАКТОР", GUILayout.Width(115f)))
+            {
+                VoxelStructureEditor3D.Open();
             }
 
 
@@ -1175,25 +1194,22 @@ namespace Game.World.Structures.EditorRuntime
                 }
 
 
+
                 ClearAreaSelection();
 
+                selectedCellX = mouseX;
+                selectedCellY = mouseY;
 
-                selectedCellX =
-                    mouseX;
-
-
-                selectedCellY =
-                    mouseY;
-
-
-                Place(
-                    mouseX,
-                    mouseY
-                );
-
+                if (transformEditMode != StructureTransformEditMode.None)
+                {
+                    TransformCell(mouseX, mouseY);
+                }
+                else
+                {
+                    Place(mouseX, mouseY);
+                }
 
                 evt.Use();
-
                 return;
             }
 

@@ -87,6 +87,8 @@ namespace Game.PlayerStats
             health = Mathf.Clamp(startHealth, 0f, maxHealth);
             hunger = Mathf.Clamp(startHunger, 0f, maxHunger);
             airSeconds = maxAirSeconds;
+            if (GetComponent<Game.Gameplay.Effects.PlayerFoodEffects>() == null)
+                gameObject.AddComponent<Game.Gameplay.Effects.PlayerFoodEffects>();
         }
 
         private void Start()
@@ -252,6 +254,7 @@ namespace Game.PlayerStats
             if (amount <= 0f || IsDead)
                 return;
 
+            amount *= Game.Gameplay.Effects.PlayerFoodEffects.Defense(this);
             float oldHealth = health;
             health = Mathf.Clamp(health - amount, 0f, maxHealth);
             float realDamage = oldHealth - health;
@@ -259,6 +262,7 @@ namespace Game.PlayerStats
             if (realDamage <= 0f)
                 return;
 
+            Game.Audio.TelderAudioSystem.PlayAt(health <= 0f ? "player.death" : "player.hurt", transform.position, GetInstanceID());
             HealthChanged?.Invoke(health, maxHealth);
             Damaged?.Invoke(realDamage);
 
@@ -332,9 +336,14 @@ namespace Game.PlayerStats
 
         public void RestoreState(float savedHealth, float savedHunger)
         {
+            RestoreState(savedHealth, savedHunger, maxAirSeconds);
+        }
+
+        public void RestoreState(float savedHealth, float savedHunger, float savedAirSeconds)
+        {
             health = Mathf.Clamp(savedHealth, 0f, maxHealth);
             hunger = Mathf.Clamp(savedHunger, 0f, maxHunger);
-            airSeconds = maxAirSeconds;
+            airSeconds = Mathf.Clamp(savedAirSeconds, 0f, maxAirSeconds);
             headSubmerged = false;
 
             passiveHungerTimer = 0f;

@@ -1,0 +1,40 @@
+{
+  "ID": "game:oak_wood_planks_stairs",
+  "Name": "oak wood planks stairs",
+  "Texture": "oak_wood_planks_stairs",
+
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+
+  "CollisionShape": "StairUpLeft",
+  "CollisionRects": [],
+
+  "Material": 0,
+
+  "Drop": "game:oak_wood_planks_stairs",
+  "DropCount": 1,
+
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+
+  "closed": false,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+
+  "CraftIngredients": [
+    {
+      "ItemId": "game:oak_wood_planks",
+      "Count": 1
+    }
+  ],
+  "CraftWithoutWorkbench": true,
+  "CraftResultCount": 1
+}

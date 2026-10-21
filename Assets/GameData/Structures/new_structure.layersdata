@@ -1,0 +1,22 @@
+{
+    "Version": 2,
+    "StructureId": "new_structure",
+    "Cells": [
+        {
+            "X": 4,
+            "Y": 7,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 5,
+            "Y": 7,
+            "FurnitureId": "",
+            "ForegroundTransform": 1,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        }
+    ]
+}

@@ -1,0 +1,129 @@
+{
+  "ID": "game:ancient_golem",
+  "Name": "Древний каменный голем",
+  "Enabled": true,
+  "Tags": [
+    "boss",
+    "stone",
+    "golem"
+  ],
+  "Behavior": "Aggressive",
+  "MaxHealth": 1100,
+  "ColliderWidth": 2.2,
+  "ColliderHeight": 3.2,
+  "WanderRadius": 5,
+  "Movement": {
+    "Type": "Ground",
+    "Speed": 1.9,
+    "Acceleration": 18,
+    "Gravity": 27,
+    "MaxFallSpeed": 20,
+    "JumpForce": 9,
+    "MaxStepUpCells": 1,
+    "MaxJumpUpCells": 3,
+    "MaxDropCells": 5
+  },
+  "Combat": {
+    "VisionRange": 28,
+    "LoseTargetRange": 38,
+    "BaseDamage": 22,
+    "AttackRange": 3.3,
+    "AttackCooldown": 3,
+    "AggroAfterHitSeconds": 18,
+    "RequireLineOfSight": false
+  },
+  "Stars": {
+    "MinStars": 0,
+    "MaxStars": 4,
+    "StarWeights": [
+      55.0,
+      25.0,
+      12.0,
+      6.0,
+      2.0
+    ],
+    "HealthPerExtraStar": 0.35,
+    "DamagePerExtraStar": 0.2,
+    "LootPerExtraStar": 0.25
+  },
+  "Boss": {
+    "Enabled": true,
+    "HealthBarColor": "#8654D3",
+    "PhaseTwoHealth": 0.5,
+    "SlamCooldown": 2.9,
+    "SlamWindup": 0.72,
+    "ShockwaveDamage": 24,
+    "ShockwaveRange": 20,
+    "ShockwaveSpeed": 15,
+    "SlamParticleTexture": "ResourcePacks/Default/textures/blocks/stone.png",
+    "SlamParticleCount": 28,
+    "SlamParticleSize": 0.18,
+    "SlamParticleSpeed": 4.2,
+    "DashCooldown": 5.8,
+    "DashWindup": 0.5,
+    "DashDistance": 13,
+    "DashSpeed": 21,
+    "DashDamage": 28,
+    "BombCooldown": 6.5,
+    "BombMinCount": 3,
+    "BombMaxCount": 5,
+    "BombDamage": 20,
+    "OrbCooldown": 8,
+    "OrbSpeed": 10.5,
+    "OrbRadius": 0.9,
+    "OrbHealthFraction": 0.5,
+    "AnimationSlam": "Ancient_golem_slam",
+    "AnimationDash": "Dash",
+    "AnimationBomb": "ThrowBomb",
+    "AnimationOrb": "CastOrb",
+    "AnimationPhaseTwo": "PhaseTwo",
+    "ShockwaveTexture": "stone"
+  },
+  "Spawn": {
+    "Enabled": true,
+    "MaxAlive": 1,
+    "Weight": 0.1,
+    "MinLight": 0,
+    "MaxLight": 1,
+    "MinDistanceFromPlayer": 25,
+    "MaxDistanceFromPlayer": 44,
+    "RequiredWidth": 3,
+    "RequiredHeight": 4,
+    "Biomes": [
+      "game:ancient_caves"
+    ]
+  },
+  "Visual": {
+    "PrefabResource": "Entities/ancient_golem",
+    "PrefabScale": 2,
+    "PrefabFacesRight": true,
+    "OffsetX": 0,
+    "OffsetY": 0,
+    "AnimatorIdleState": "Ancient_golem_idle",
+    "AnimatorWalkState": "Ancient_golem_walk",
+    "AnimatorAttackState": "Ancient_golem_slam",
+    "AnimatorHurtState": "Hurt",
+    "AnimatorDeathState": "Death",
+    "AnimatorCrossFade": 0.08,
+    "DeathDespawnDelay": 2,
+    "SortingLayer": "Default",
+    "SortingOrder": 90,
+    "HitEffectColor": "#A079FF",
+    "HitEffectSecondaryColor": "#DDD0FF"
+  },
+  "Equipment": [],
+  "Loot": [
+    {
+      "ItemId": "game:stone",
+      "Min": 18,
+      "Max": 36,
+      "Chance": 1
+    },
+    {
+      "ItemId": "game:portal_gun_upgrader",
+      "Min": 1,
+      "Max": 1,
+      "Chance": 1
+    }
+  ]
+}

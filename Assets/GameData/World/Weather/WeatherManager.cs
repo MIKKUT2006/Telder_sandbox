@@ -18,6 +18,12 @@ namespace Game.World.Weather
         private WorldGenerator generator;
         private WorldCollision worldCollision;
         private WeatherParticleRenderer particleRenderer;
+        private PixelFogRenderer fogRenderer;
+        private float dayNormalized = 0.32f;
+        private float dayLengthSeconds = 720f;
+        private bool freezeDayTime;
+        private float timeSaveClock;
+        private string timeKey;
 
         private WeatherType currentWeather = WeatherType.Clear;
         private WeatherControlMode controlMode = WeatherControlMode.Auto;
@@ -36,6 +42,14 @@ namespace Game.World.Weather
         public WeatherControlMode ControlMode => controlMode;
         public float RainTiltDegrees => rainTiltDegrees;
         public float DebugIntensity => debugIntensity;
+        public float SecondsUntilWeatherChange => Mathf.Max(0f, weatherTimer);
+        public float NormalizedDayTime => dayNormalized;
+        public float DayLengthSeconds => dayLengthSeconds;
+        public bool FreezeDayTime => freezeDayTime;
+        public void SetDayTime(float time) { dayNormalized = Mathf.Repeat(time, 1f); ApplyDayNight(); }
+        public void SetDayLength(float seconds) { dayLengthSeconds = Mathf.Clamp(seconds, 60f, 3600f); }
+        public void SetFreezeDayTime(bool freeze) { freezeDayTime = freeze; }
+        public void ForceNextWeather() { controlMode = WeatherControlMode.Auto; weatherTimer = 0f; TryStartBiomeWeather(true); }
 
         public string CurrentBiomeId =>
             currentBiome != null
@@ -50,8 +64,9 @@ namespace Game.World.Weather
 
         private void OnDestroy()
         {
-            if (Instance == this)
-                Instance = null;
+            StoreDayTime();
+            if (Instance == this) Instance = null;
+            Shader.SetGlobalFloat("_TelderDayFactor", 1f);
         }
 
         public void Initialize(
@@ -62,12 +77,21 @@ namespace Game.World.Weather
         {
             this.player = player;
             this.generator = generator;
+            // Per-save + per-dimension key, not shared between different worlds.
+            string worldId = Game.Save.SaveGameRuntime.HasActiveSave ? Game.Save.SaveGameRuntime.CurrentSaveId : "editor";
+            var dimension = Game.World.Dimensions.DimensionTravelRuntime.Current;
+            timeKey = "Telder.DayTime." + worldId + "." + (dimension != null ? dimension.Name : "default");
+            dayNormalized = PlayerPrefs.GetFloat(timeKey, .32f);
             this.worldCollision = worldCollision;
 
             if (targetCamera == null)
                 targetCamera = Camera.main;
 
             InitializeRenderer();
+            if (fogRenderer == null) fogRenderer = gameObject.GetComponent<PixelFogRenderer>();
+            if (fogRenderer == null) fogRenderer = gameObject.AddComponent<PixelFogRenderer>();
+            fogRenderer.Initialize(targetCamera, generator);
+            ApplyDayNight();
 
             RefreshBiome(true);
 
@@ -131,6 +155,11 @@ namespace Game.World.Weather
 
         private void Update()
         {
+            if (!freezeDayTime && dayLengthSeconds > 0f)
+                dayNormalized = Mathf.Repeat(dayNormalized + Time.deltaTime / dayLengthSeconds, 1f);
+            ApplyDayNight();
+            timeSaveClock += Time.deltaTime;
+            if (timeSaveClock >= 30f) { timeSaveClock = 0f; StoreDayTime(); }
             if (
                 player == null ||
                 generator == null ||
@@ -142,6 +171,7 @@ namespace Game.World.Weather
             {
                 targetCamera = Camera.main;
                 InitializeRenderer();
+                if (fogRenderer != null) fogRenderer.Initialize(targetCamera, generator);
             }
 
             biomeCheckTimer -= Time.deltaTime;
@@ -200,7 +230,7 @@ namespace Game.World.Weather
 
             if (
                 currentWeather != WeatherType.Clear &&
-                currentWeather != allowedWeather
+                currentWeather != allowedWeather && currentWeather != WeatherType.Fog
             )
             {
                 SetCurrentWeather(
@@ -210,6 +240,35 @@ namespace Game.World.Weather
                 );
 
                 ScheduleClearPhase();
+            }
+        }
+
+        private void StoreDayTime()
+        {
+            if (string.IsNullOrWhiteSpace(timeKey)) return;
+            PlayerPrefs.SetFloat(timeKey, dayNormalized);
+        }
+
+        private void ApplyDayNight()
+        {
+            // No per-block rebuild: the existing lit shader receives a single global multiplier.
+            float solar = Mathf.Clamp01(Mathf.Sin((dayNormalized - .25f) * Mathf.PI * 2f));
+            solar = solar * solar * (3f - 2f * solar);
+            float dayFactor = Mathf.Lerp(.26f, 1f, solar);
+            Shader.SetGlobalFloat("_TelderDayFactor", dayFactor);
+            Shader.SetGlobalFloat("_TelderDayTime", dayNormalized);
+
+            if (targetCamera != null)
+            {
+                // Approximate day/night sky darkening for worlds that currently use a flat background.
+                Color nightBottom = new Color(0.05f, 0.06f, 0.10f, 1f);
+                Color dayBottom = new Color(0.63f, 0.52f, 0.42f, 1f);
+                Color sky = Color.Lerp(nightBottom, dayBottom, solar);
+                if (currentWeather == WeatherType.Fog)
+                    sky = Color.Lerp(sky, new Color(0.68f, 0.70f, 0.72f, 1f), 0.18f);
+                else if (currentWeather == WeatherType.Rain || currentWeather == WeatherType.Snow)
+                    sky = Color.Lerp(sky, new Color(0.36f, 0.40f, 0.48f, 1f), 0.16f);
+                targetCamera.backgroundColor = sky;
             }
         }
 
@@ -236,10 +295,10 @@ namespace Game.World.Weather
                 return;
             }
 
-            TryStartBiomeWeather();
+            TryStartBiomeWeather(false);
         }
 
-        private void TryStartBiomeWeather()
+        private void TryStartBiomeWeather(bool force)
         {
             BiomeWeatherSettings settings =
                 GetBiomeWeatherSettings();
@@ -250,8 +309,37 @@ namespace Game.World.Weather
                 return;
             }
 
-            WeatherType type =
-                GetBiomeWeatherType();
+            WeatherType precipitationType = GetBiomeWeatherType();
+            bool hasPrecipitation = precipitationType == WeatherType.Rain || precipitationType == WeatherType.Snow;
+            float precipitationChance = Mathf.Clamp01(settings.Chance);
+            float fogChance = Mathf.Clamp01(settings.FogChance);
+            float eventChance = Mathf.Clamp01(Mathf.Max(precipitationChance, fogChance));
+
+            if (!force && UnityEngine.Random.value > eventChance)
+            {
+                ScheduleClearPhase();
+                return;
+            }
+
+            WeatherType type = WeatherType.Clear;
+            if (force)
+            {
+                type = hasPrecipitation ? precipitationType : (fogChance > 0f ? WeatherType.Fog : WeatherType.Clear);
+            }
+            else
+            {
+                float fogWeight = fogChance;
+                float precipitationWeight = hasPrecipitation ? Mathf.Max(0.01f, precipitationChance) : 0f;
+                float total = fogWeight + precipitationWeight;
+                if (total <= 0f)
+                {
+                    ScheduleClearPhase();
+                    return;
+                }
+
+                float roll = UnityEngine.Random.value * total;
+                type = roll < fogWeight ? WeatherType.Fog : precipitationType;
+            }
 
             if (type == WeatherType.Clear)
             {
@@ -259,50 +347,15 @@ namespace Game.World.Weather
                 return;
             }
 
-            float chance =
-                Mathf.Clamp01(
-                    settings.Chance
-                );
+            float intensity = type == WeatherType.Fog
+                ? Mathf.Clamp(settings.FogIntensity, 0.05f, 1.5f)
+                : Mathf.Clamp(settings.Intensity, 0f, 1.5f);
 
-            if (
-                UnityEngine.Random.value >
-                chance
-            )
-            {
-                ScheduleClearPhase();
-                return;
-            }
+            SetCurrentWeather(type, intensity, true);
 
-            float intensity =
-                Mathf.Clamp(
-                    settings.Intensity,
-                    0f,
-                    1.5f
-                );
-
-            SetCurrentWeather(
-                type,
-                intensity,
-                true
-            );
-
-            float min =
-                Mathf.Max(
-                    1f,
-                    settings.MinDuration
-                );
-
-            float max =
-                Mathf.Max(
-                    min,
-                    settings.MaxDuration
-                );
-
-            weatherTimer =
-                UnityEngine.Random.Range(
-                    min,
-                    max
-                );
+            float min = Mathf.Max(1f, settings.MinDuration);
+            float max = Mathf.Max(min, settings.MaxDuration);
+            weatherTimer = UnityEngine.Random.Range(min, max);
         }
 
         private void ScheduleClearPhase()
@@ -360,7 +413,7 @@ namespace Game.World.Weather
                 )
             )
             {
-                return WeatherType.Clear;
+                return WeatherType.Rain;
             }
 
             string value =
@@ -376,6 +429,9 @@ namespace Game.World.Weather
             {
                 return WeatherType.Rain;
             }
+
+            if (string.Equals(value, "Fog", StringComparison.OrdinalIgnoreCase))
+                return WeatherType.Fog;
 
             if (
                 string.Equals(
@@ -411,6 +467,13 @@ namespace Game.World.Weather
                     );
             }
 
+            if (fogRenderer != null)
+            {
+                string hex = GetBiomeWeatherSettings() != null ? GetBiomeWeatherSettings().FogColor : "#AFBDCA";
+                Color fogColor;
+                if (!ColorUtility.TryParseHtmlString(hex, out fogColor)) fogColor = new Color(.69f,.74f,.8f);
+                fogRenderer.SetFog(type == WeatherType.Fog, fogColor, intensity);
+            }
             if (particleRenderer != null)
             {
                 particleRenderer.SetWeather(
@@ -464,6 +527,11 @@ namespace Game.World.Weather
                     break;
                 }
 
+                case WeatherControlMode.Fog:
+                {
+                    SetCurrentWeather(WeatherType.Fog, debugIntensity, true);
+                    break;
+                }
                 case WeatherControlMode.Snow:
                 {
                     SetCurrentWeather(
@@ -497,6 +565,10 @@ namespace Game.World.Weather
                     debugIntensity,
                     false
                 );
+            }
+            else if (controlMode == WeatherControlMode.Fog)
+            {
+                SetCurrentWeather(WeatherType.Fog, debugIntensity, false);
             }
             else if (
                 controlMode ==

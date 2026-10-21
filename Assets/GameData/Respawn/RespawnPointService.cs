@@ -86,14 +86,40 @@ namespace Game.GameplaySystems.Respawn
                     data.BedAnchorY
                 );
 
-            if (
-                record == null ||
-                !string.Equals(
-                    record.BlockId,
-                    data.BedBlockId,
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
+            // Some saves contain the actual bed furniture but lack its
+            // multi-block occupancy record. Recover it before invalidating
+            // the spawn, otherwise a valid bed silently stops working.
+            if (record == null)
+            {
+                var furniture = Game.World.Furniture.FurnitureLayerManager.EnsureInstance();
+                string placed = furniture != null
+                    ? furniture.GetFurniture(data.BedAnchorX, data.BedAnchorY)
+                    : null;
+
+                if (!string.IsNullOrWhiteSpace(placed) &&
+                    string.Equals(placed, data.BedBlockId, StringComparison.OrdinalIgnoreCase) &&
+                    MultiBlockMetadataRegistry.TryGet(placed, out MultiBlockMetadata meta))
+                {
+                    var repaired = new MultiBlockRecord
+                    {
+                        X = data.BedAnchorX,
+                        Y = data.BedAnchorY,
+                        Width = meta.Width,
+                        Height = meta.Height,
+                        AnchorX = meta.AnchorX,
+                        AnchorY = meta.AnchorY,
+                        BlockId = placed,
+                        Kind = meta.Kind
+                    };
+                    if (MultiBlockStore.Add(repaired))
+                        record = repaired;
+                    else
+                        record = MultiBlockStore.FindAnchor(repaired.X, repaired.Y);
+                }
+            }
+
+            if (record == null ||
+                !string.Equals(record.BlockId, data.BedBlockId, StringComparison.OrdinalIgnoreCase))
             {
                 Clear();
                 return false;

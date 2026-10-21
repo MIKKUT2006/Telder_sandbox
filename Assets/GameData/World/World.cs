@@ -30,6 +30,7 @@ namespace Game.World
         // =====================================================
 
         private readonly LightPropagationEngine lightEngine;
+        public HandheldLightField HandheldLight {get;private set;}
 
 
         // =====================================================
@@ -45,6 +46,12 @@ namespace Game.World
 
         public World()
         {
+            HandheldLight=new HandheldLightField(false,cell=>
+            {
+                if(!IsLoaded(cell.x,cell.y))return 15;
+                var definition=GetBlockDefinition(GetBlock(cell.x,cell.y));
+                return definition?.LightOpacity??0;
+            },cell=>GetLightData(cell.x,cell.y)?.MarkDirty());
             lightEngine =
                 new LightPropagationEngine(
                     this
@@ -223,6 +230,8 @@ namespace Game.World
             chunks.Remove(
                 position
             );
+            lightEngine.ForgetChunk(chunkX,chunkY);
+            HandheldLight.Invalidate();
         }
 
 
@@ -607,10 +616,8 @@ namespace Game.World
                 chunk.GetLightData();
 
 
-            return data.Get(
-                localX,
-                localY
-            );
+            return HandheldLightField.Combine(data.Get(localX,localY),
+                HandheldLight.Get(new UnityEngine.Vector3Int(worldX,worldY,0)));
         }
 
 

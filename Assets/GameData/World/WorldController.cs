@@ -40,6 +40,15 @@ namespace Game.World
 
         private void Start()
         {
+            // 3D dimensions use VoxelChunkLoader3D instead of the classic 2D ChunkLoader.
+            // Do not initialize the 2D world controller in a voxel dimension.
+            if (Game.World.Dimensions.DimensionTravelRuntime.Current != null &&
+                Game.World.Dimensions.DimensionTravelRuntime.Current.Is3D)
+            {
+                enabled = false;
+                return;
+            }
+
             worldManager =
                 WorldManager.Instance;
 

@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using System.Collections;
 
 using Game.Content;
 
@@ -49,13 +50,34 @@ public class GameBootstrap :
         );
 
 
-        EnsureContentInitialized();
+        if (!MobileGameDataBootstrap.IsReady)
+            StartCoroutine(WaitForGameData());
+        else
+            EnsureContentInitialized();
 
+    }
+
+    private IEnumerator WaitForGameData()
+    {
+        while (!MobileGameDataBootstrap.IsReady)
+        {
+            if (MobileGameDataBootstrap.HasError)
+            {
+                Debug.LogError("TELDER CONTENT: Cannot initialize: " +
+                    MobileGameDataBootstrap.ErrorMessage);
+                yield break;
+            }
+            yield return null;
+        }
+
+        EnsureContentInitialized();
     }
 
 
     public static void EnsureContentInitialized()
     {
+        if (!MobileGameDataBootstrap.IsReady)
+            return;
 
         if (
             contentInitialized

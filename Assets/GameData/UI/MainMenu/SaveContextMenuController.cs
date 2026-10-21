@@ -12,10 +12,13 @@ namespace Game.UI.MainMenu
         private SaveSelectionController owner;
         private string saveId;
         private GameObject panel;
+        public bool IsOpen { get { return panel != null && panel.activeSelf; } }
         private TMP_InputField input;
+        private Canvas ownCanvas;
 
         private void Awake()
         {
+            if(Instance!=null&&Instance!=this){Destroy(gameObject);return;}
             Instance = this;
             BuildUI();
             Close();
@@ -23,13 +26,16 @@ namespace Game.UI.MainMenu
 
         public static SaveContextMenuController EnsureExists(SaveSelectionController owner)
         {
+            if(Instance!=null&&owner!=null&&Instance.gameObject.scene!=owner.gameObject.scene)
+            {Destroy(Instance.gameObject);Instance=null;}
             if (Instance != null)
             {
                 Instance.owner = owner;
                 return Instance;
             }
             GameObject go = new GameObject("SaveContextMenu");
-            DontDestroyOnLoad(go);
+            if(owner!=null&&go.scene!=owner.gameObject.scene)
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go,owner.gameObject.scene);
             SaveContextMenuController controller = go.AddComponent<SaveContextMenuController>();
             controller.owner = owner;
             return controller;
@@ -37,6 +43,7 @@ namespace Game.UI.MainMenu
 
         public void Open(string id, string displayName)
         {
+            if(panel==null||input==null||ownCanvas==null)BuildUI();
             saveId = id;
             input.text = displayName ?? string.Empty;
             panel.SetActive(true);
@@ -55,7 +62,7 @@ namespace Game.UI.MainMenu
             if (SaveGameRuntime.RenameSave(saveId, input.text))
             {
                 Close();
-                owner?.Refresh();
+                if(owner!=null)owner.Refresh();
             }
         }
 
@@ -64,28 +71,25 @@ namespace Game.UI.MainMenu
             if (SaveGameRuntime.DeleteSave(saveId))
             {
                 Close();
-                owner?.Refresh();
+                if(owner!=null)owner.Refresh();
             }
         }
 
         private void BuildUI()
         {
-            Canvas canvas = FindFirstObjectByType<Canvas>();
-            if (canvas == null)
-            {
-                GameObject c = new GameObject("SaveContextCanvas");
-                canvas = c.AddComponent<Canvas>();
-                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-                c.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                c.AddComponent<GraphicRaycaster>();
-                DontDestroyOnLoad(c);
-            }
+            if(ownCanvas!=null)Destroy(ownCanvas.gameObject);
+            GameObject c=new GameObject("SaveContextCanvas");c.transform.SetParent(transform,false);
+            Canvas canvas=ownCanvas=c.AddComponent<Canvas>();
+            canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=20000;
+            var scaler=c.AddComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution=new Vector2(1920,1080);scaler.matchWidthOrHeight=.5f;
+            c.AddComponent<GraphicRaycaster>();
 
             panel = new GameObject("SaveContextPanel", typeof(RectTransform), typeof(Image));
             panel.transform.SetParent(canvas.transform, false);
             RectTransform pr = panel.GetComponent<RectTransform>();
             pr.anchorMin = pr.anchorMax = new Vector2(.5f,.5f);
-            pr.sizeDelta = new Vector2(420f, 220f);
+            pr.sizeDelta = new Vector2(420f, 320f);
             panel.GetComponent<Image>().color = new Color(.025f,.025f,.04f,.97f);
 
             input = CreateInput(panel.transform, new Vector2(0,50));
@@ -93,6 +97,8 @@ namespace Game.UI.MainMenu
             CreateButton(panel.transform, "УДАЛИТЬ", new Vector2(0,-70), Delete);
             CreateButton(panel.transform, "ОТМЕНА", new Vector2(0,-125), Close);
         }
+        private void OnDisable(){Close();}
+        private void OnDestroy(){if(Instance==this)Instance=null;}
 
         private TMP_InputField CreateInput(Transform parent, Vector2 pos)
         {

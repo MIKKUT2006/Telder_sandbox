@@ -1,3 +1,4 @@
+using Game.InputSupport;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +13,7 @@ using Game.World.Furniture;
 using Game.World.Items;
 using Game.World.Rendering;
 using Game.GameplaySystems;
+using Game.GameplaySystems.Multiblock;
 
 namespace Game.GameplaySystems.Furnace
 {
@@ -135,7 +137,7 @@ namespace Game.GameplaySystems.Furnace
             if (
                 playerInventory != null &&
                 cam != null &&
-                Input.GetMouseButtonDown(1) &&
+                (GameInput.Pressed(GameAction.Use) || GameInput.Pressed(GameAction.Interact)) &&
                 (ui == null || !ui.IsOpen) &&
                 (InventoryUI.Instance == null || !InventoryUI.Instance.IsOpen)
             )
@@ -150,10 +152,11 @@ namespace Game.GameplaySystems.Furnace
         /// </summary>
         public bool TryOpenAtMouse()
         {
+            if(Game.World.Voxel3D.VoxelWorld3DRuntime.Instance!=null)return false;
             if (playerInventory == null || cam == null || IsUIOpen)
                 return false;
 
-            Vector3 wp = cam.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 wp = cam.ScreenToWorldPoint(GameInput.PointerPosition);
             int x = Mathf.FloorToInt(wp.x);
             int y = Mathf.FloorToInt(wp.y);
 
@@ -172,14 +175,22 @@ namespace Game.GameplaySystems.Furnace
             if (playerInventory == null || IsUIOpen)
                 return false;
 
-            Vector2 target = new Vector2(x + 0.5f, y + 0.5f);
-            if (((Vector2)playerInventory.transform.position - target).sqrMagnitude > 36f)
+            Vector3 target = Game.World.Voxel3D.VoxelGameplayState3D.Position(x,y,new Vector3(x+.5f,y+.5f,playerInventory.transform.position.z));
+            if ((playerInventory.transform.position-target).sqrMagnitude > 36f)
                 return false;
 
-            if (!TryResolveFurnaceAt(x, y, out _))
+            if (!TryResolveFurnaceAt(
+                x,
+                y,
+                out _,
+                out int furnaceX,
+                out int furnaceY
+            ))
+            {
                 return false;
+            }
 
-            FurnaceState state = GetOrCreate(x, y);
+            FurnaceState state = GetOrCreate(furnaceX, furnaceY);
             if (ui == null)
                 ui = gameObject.AddComponent<FurnaceUI>();
 
@@ -212,11 +223,20 @@ namespace Game.GameplaySystems.Furnace
                 ui.Close();
         }
 
-        private bool TryResolveFurnaceAt(int x, int y, out string blockId)
+        private bool TryResolveFurnaceAt(
+            int x,
+            int y,
+            out string blockId,
+            out int furnaceX,
+            out int furnaceY)
         {
             blockId = null;
+            furnaceX = x;
+            furnaceY = y;
+            if(Game.World.Voxel3D.VoxelGameplayState3D.TryResolve(x,y,out _,out ushort voxelId))
+            {blockId=Game.World.Voxel3D.VoxelBlockCatalog.Get(voxelId)?.ID;return FurnaceMetadataRegistry.IsFurnace(blockId);}
 
-            // First check the dedicated Furniture layer.
+            // First check the exact Furniture anchor cell.
             FurnitureLayerManager furniture = FurnitureLayerManager.EnsureInstance();
             if (furniture != null)
             {
@@ -228,9 +248,30 @@ namespace Game.GameplaySystems.Furnace
                 }
             }
 
-            // Furnaces can also be placed by the normal BlockInteraction system.
-            // The previous implementation ignored these blocks completely, which
-            // is why RMB did nothing for a normally placed furnace.
+            // A multi-block stores its SpriteRenderer/furniture entry only at the
+            // anchor cell. RMB on any occupied cell must still resolve to that
+            // anchor, otherwise runtime state could be created at the wrong cell.
+            MultiBlockRecord multiBlock = MultiBlockStore.FindCell(x, y);
+            if (
+                multiBlock != null &&
+                FurnaceMetadataRegistry.IsFurnace(multiBlock.BlockId)
+            )
+            {
+                if (
+                    furniture != null &&
+                    FurnaceMetadataRegistry.IsFurnace(
+                        furniture.GetFurniture(multiBlock.X, multiBlock.Y)
+                    )
+                )
+                {
+                    blockId = multiBlock.BlockId;
+                    furnaceX = multiBlock.X;
+                    furnaceY = multiBlock.Y;
+                    return true;
+                }
+            }
+
+            // Foreground furnaces are still supported for legacy saves/content.
             WorldManager manager = WorldManager.Instance;
             Game.World.World world = manager != null ? manager.GetWorld() : null;
             if (world == null)
@@ -416,7 +457,9 @@ namespace Game.GameplaySystems.Furnace
                 return;
 
             bool burning = state.BurnRemaining > 0f;
-            string visualState = burning ? "burning" : "idle";
+            // No explicit "idle" state is required in JSON. Clearing the runtime
+            // state returns the renderer to the normal block/multi-block texture.
+            string visualState = burning ? "burning" : null;
 
             if (!TryResolveVisualLayer(state, out BlockVisualLayer targetLayer))
             {
@@ -488,6 +531,7 @@ namespace Game.GameplaySystems.Furnace
 
             if (state == null)
                 return false;
+            if(Game.World.Voxel3D.VoxelGameplayState3D.TryResolve(state.X,state.Y,out _,out ushort voxelId))return FurnaceMetadataRegistry.IsFurnace(Game.World.Voxel3D.VoxelBlockCatalog.Get(voxelId)?.ID);
 
             FurnitureLayerManager furniture = FurnitureLayerManager.Instance;
             if (
@@ -541,6 +585,14 @@ namespace Game.GameplaySystems.Furnace
 
         private void DropContents(FurnaceState state)
         {
+            if(state!=null&&Game.World.Voxel3D.VoxelGameplayState3D.TryResolve(state.X,state.Y,out var voxelCell,out _))
+            {
+                Vector3 p=(Vector3)voxelCell+Vector3.one*.5f;
+                if(state.InputCount>0)Game.World.Voxel3D.VoxelItemDrop3D.Spawn(state.InputId,state.InputCount,p);
+                if(state.FuelCount>0)Game.World.Voxel3D.VoxelItemDrop3D.Spawn(state.FuelId,state.FuelCount,p);
+                if(state.OutputCount>0)Game.World.Voxel3D.VoxelItemDrop3D.Spawn(state.OutputId,state.OutputCount,p);
+                return;
+            }
             ItemDropSpawner spawner = ItemDropSpawner.Instance;
             if (spawner == null || state == null)
                 return;

@@ -16,6 +16,7 @@ namespace Game.Achievements
         private readonly Dictionary<string, ProgressEntry> progress = new Dictionary<string, ProgressEntry>(StringComparer.OrdinalIgnoreCase);
         private string loadedSaveId;
         private float exploreTimer;
+        private bool progressDirty;private float nextProgressSave;
         private string lastBiome = "";
         private string lastDimension = "";
 
@@ -42,6 +43,7 @@ namespace Game.Achievements
         private void Update()
         {
             ReloadIfNeeded();
+            if(progressDirty&&Time.unscaledTime>=nextProgressSave)Save();
             exploreTimer += Time.unscaledDeltaTime;
             if (exploreTimer < 1f) return;
             exploreTimer = 0f;
@@ -70,7 +72,8 @@ namespace Game.Achievements
         {
             string id = SaveGameRuntime.HasActiveSave ? SaveGameRuntime.CurrentSaveId : "__session";
             if (string.Equals(id, loadedSaveId, StringComparison.Ordinal)) return;
-            loadedSaveId = id; progress.Clear();
+            if(progressDirty)Save();
+            loadedSaveId = id; progress.Clear();progressDirty=false;
             if (!SaveGameRuntime.HasActiveSave) return;
             string path = GetPath();
             if (!File.Exists(path)) return;
@@ -133,10 +136,10 @@ namespace Game.Achievements
                 if (ConditionsComplete(conditions, entry) && ParentUnlocked(def))
                 {
                     entry.Unlocked = true;
-                    Save();
+                    MarkProgressDirty();
                     Unlocked?.Invoke(def);
                 }
-                else Save();
+                else MarkProgressDirty();
             }
         }
 
@@ -178,16 +181,22 @@ namespace Game.Achievements
             return true;
         }
 
+        private void MarkProgressDirty()
+        {if(!progressDirty)nextProgressSave=Time.unscaledTime+.75f;progressDirty=true;}
+        private void OnApplicationPause(bool paused){if(paused)Save();}
+        private void OnApplicationQuit(){Save();}
+        private void OnDestroy(){Save();if(instance==this)instance=null;}
         public void Save()
         {
-            if (!SaveGameRuntime.HasActiveSave) return;
+            if(!progressDirty)return;
+            if(string.IsNullOrEmpty(loadedSaveId)||loadedSaveId=="__session"){progressDirty=false;return;}
             try
             {
-                string folder = SavePaths.GetSaveFolder(SaveGameRuntime.CurrentSaveId); Directory.CreateDirectory(folder);
-                ProgressFile f = new ProgressFile { Entries = progress.Values.OrderBy(x => x.ID, StringComparer.OrdinalIgnoreCase).ToList() };
-                File.WriteAllText(GetPath(), JsonUtility.ToJson(f, true));
+                string folder=SavePaths.GetSaveFolder(loadedSaveId);Directory.CreateDirectory(folder);
+                var data=new ProgressFile{Entries=progress.Values.OrderBy(x=>x.ID,StringComparer.OrdinalIgnoreCase).ToList()};
+                File.WriteAllText(Path.Combine(folder,"achievements.json"),JsonUtility.ToJson(data,true));progressDirty=false;
             }
-            catch (Exception e) { Debug.LogWarning("ACHIEVEMENTS: progress save failed: " + e.Message); }
+            catch(Exception e){nextProgressSave=Time.unscaledTime+1;Debug.LogWarning("ACHIEVEMENTS: progress save failed: "+e.Message);}
         }
     }
 }

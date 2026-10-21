@@ -1,3 +1,5 @@
+using Game.InputSupport;
+using Game.Combat;
 using Game.Blocks;
 using Game.Content;
 using Game.Inventory;
@@ -9,6 +11,8 @@ using Game.World.Items;
 using Game.World.Structures;
 using Game.GameplaySystems.Furnace;
 using Game.GameplaySystems.Multiblock;
+using Game.GameplaySystems.Interactions;
+using Game.World.Furniture;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -62,6 +66,8 @@ public class BlockInteraction :
     private int miningY;
     private ushort miningBlockID;
     private bool miningBackground;
+    private bool miningFurniture;
+    private FurniturePlacementModeController furnitureModeController;
     private float miningProgress;
     private float currentMiningHardness;
     private float nextMiningHitTime;
@@ -119,6 +125,7 @@ public class BlockInteraction :
 
         inventory =
             GetComponent<PlayerInventory>();
+        furnitureModeController = GetComponent<FurniturePlacementModeController>();
 
         nextPlaceTime = 0f;
 
@@ -179,12 +186,15 @@ public class BlockInteraction :
             return;
         }
 
-        if (Input.GetMouseButton(0))
+        // Swinging a sword should not also mine the block behind the enemy.
+        if (GameInput.Held(GameAction.Attack) &&
+            (inventory == null || !WeaponMetadataRegistry.IsWeapon(inventory.GetSelectedItemId())))
             ProcessMining();
         else
             ResetMining();
 
-        if (Input.GetMouseButton(1))
+        if (GameInput.Held(GameAction.Use) &&
+            (furnitureModeController == null || !furnitureModeController.FurniturePlacementActive))
         {
             if (Time.time >= nextPlaceTime)
             {
@@ -211,7 +221,8 @@ public class BlockInteraction :
             !TryGetMiningTarget(
                 out UnityEngine.Vector2Int position,
                 out ushort blockID,
-                out bool background
+                out bool background,
+                out bool furniture
             )
         )
         {
@@ -237,7 +248,8 @@ public class BlockInteraction :
             miningX != position.x ||
             miningY != position.y ||
             miningBlockID != blockID ||
-            miningBackground != background;
+            miningBackground != background ||
+            miningFurniture != furniture;
 
         if (targetChanged)
         {
@@ -245,7 +257,8 @@ public class BlockInteraction :
                 position.x,
                 position.y,
                 blockID,
-                background
+                background,
+                furniture
             );
         }
 
@@ -272,8 +285,11 @@ public class BlockInteraction :
             workPerSecond *
             Time.deltaTime;
 
+        BlockMiningCracks.Show(miningX, miningY,
+            miningProgress / Mathf.Max(.01f, currentMiningHardness), miningBackground);
+
         EmitMiningHitIfNeeded(
-            toolMiningSpeed
+            toolMiningSpeed / 2
         );
 
         if (
@@ -291,7 +307,8 @@ public class BlockInteraction :
     private bool TryGetMiningTarget(
         out UnityEngine.Vector2Int position,
         out ushort blockID,
-        out bool background
+        out bool background,
+        out bool furniture
     )
     {
         position =
@@ -299,9 +316,33 @@ public class BlockInteraction :
 
         blockID = 0;
         background = false;
+        furniture = false;
 
         if (!TryGetMouseCell(out position))
             return false;
+
+        // Hit-test furniture first regardless of placement mode; include the full footprint
+        // of multiblocks whose visible SpriteRenderer is only at the anchor.
+        var furnitureLayer = FurnitureLayerManager.Instance;
+        var multi = MultiBlockStore.FindCell(position.x, position.y);
+        int fx = multi != null ? multi.X : position.x;
+        int fy = multi != null ? multi.Y : position.y;
+        string furnitureId = furnitureLayer != null ? furnitureLayer.GetFurniture(fx, fy) : null;
+        if (!string.IsNullOrWhiteSpace(furnitureId))
+        {
+            try
+            {
+                ContentID id = ContentID.Parse(furnitureId);
+                if (BlockIDRegistry.Contains(id))
+                {
+                    blockID = BlockIDRegistry.GetID(id);
+                    position = new UnityEngine.Vector2Int(fx, fy);
+                    furniture = true;
+                    return true;
+                }
+            }
+            catch (Exception) { }
+        }
 
         ushort foregroundID =
             world.GetBlock(
@@ -335,7 +376,8 @@ public class BlockInteraction :
         int x,
         int y,
         ushort blockID,
-        bool background
+        bool background,
+        bool furniture
     )
     {
         hasMiningTarget = true;
@@ -344,6 +386,7 @@ public class BlockInteraction :
         miningY = y;
         miningBlockID = blockID;
         miningBackground = background;
+        miningFurniture = furniture;
 
         miningProgress = 0f;
 
@@ -358,12 +401,14 @@ public class BlockInteraction :
 
     private void ResetMining()
     {
+        BlockMiningCracks.Hide();
         hasMiningTarget = false;
 
         miningX = 0;
         miningY = 0;
         miningBlockID = 0;
         miningBackground = false;
+        miningFurniture = false;
 
         miningProgress = 0f;
         currentMiningHardness = 0f;
@@ -381,14 +426,13 @@ public class BlockInteraction :
         if (Time.time < nextMiningHitTime)
             return;
 
-        BlockBreakDebrisSystem
-            .EmitMiningHit(
-                world,
-                miningX,
-                miningY,
-                miningBlockID,
-                miningBackground
-            );
+        if (miningFurniture)
+            Game.World.Effects.PixelImpactParticles.EmitFurniture(miningX, miningY,
+                FurnitureLayerManager.Instance != null
+                    ? FurnitureLayerManager.Instance.GetFurniture(miningX, miningY) : string.Empty, true);
+        else
+            BlockBreakDebrisSystem.EmitMiningHit(world, miningX, miningY,
+                miningBlockID, miningBackground);
 
         float interval =
             miningHitInterval /
@@ -418,6 +462,19 @@ public class BlockInteraction :
         int y = miningY;
         ushort expectedID = miningBlockID;
         bool background = miningBackground;
+        if (miningFurniture)
+        {
+            var furniture = FurnitureLayerManager.Instance;
+            if (furniture == null || string.IsNullOrWhiteSpace(furniture.GetFurniture(x, y)))
+            { ResetMining(); return false; }
+            string furnitureId = furniture.GetFurniture(x, y);
+            bool cascaded = StructureCascadeBreakRuntime.TryBreakTreeFromFurnitureTrunk(
+                worldManager, world, x, y, furnitureId);
+            bool broken = cascaded || furniture.BreakFurniture(x, y);
+            if (broken) Game.World.Effects.PixelImpactParticles.EmitFurniture(x,y,furnitureId,false);
+            ResetMining();
+            return broken;
+        }
 
         if (!background)
         {
@@ -487,6 +544,23 @@ public class BlockInteraction :
         {
             ResetMining();
             return false;
+        }
+
+        if (
+            StructureCascadeBreakRuntime
+                .TryBreakTreeFromTrunk(
+                    worldManager,
+                    world,
+                    x,
+                    y,
+                    currentBackgroundID,
+                    true
+                )
+        )
+        {
+            ForcePlayerCollisionUpdate();
+            ResetMining();
+            return true;
         }
 
         bool backgroundChanged =
@@ -739,69 +813,26 @@ public class BlockInteraction :
         if (blockID == 0)
             return;
 
-        if (ItemDropSpawner.Instance == null)
-        {
-            Debug.LogWarning(
-                "MINING: ItemDropSpawner.Instance is null. " +
-                "Block was removed but its item cannot be spawned."
-            );
-            return;
-        }
-
-        ContentID contentID;
-
         try
         {
-            contentID =
-                BlockIDRegistry.GetContentID(
-                    blockID
-                );
+            ContentID contentID = BlockIDRegistry.GetContentID(blockID);
+            if (!BlockRegistry.Contains(contentID))
+                return;
+
+            BlockDefinition block = BlockRegistry.Get(contentID);
+            if (block == null)
+                return;
+
+            BlockLootDropper.SpawnDrops(
+                block,
+                contentID.ToString(),
+                new Vector2(worldX + 0.5f, worldY + 0.55f));
         }
-        catch
+        catch (System.Exception exception)
         {
-            return;
+            Debug.LogWarning("MINING: Could not resolve block loot: " + exception.Message);
         }
-
-        if (!BlockRegistry.Contains(contentID))
-            return;
-
-        BlockDefinition block =
-            BlockRegistry.Get(contentID);
-
-        if (block == null)
-            return;
-
-        int count =
-            block.DropCount;
-
-        if (count <= 0)
-            return;
-
-        string dropId = null;
-
-        try
-        {
-            dropId =
-                block.Drop.ToString();
-        }
-        catch
-        {
-        }
-
-        if (string.IsNullOrWhiteSpace(dropId))
-            dropId = contentID.ToString();
-
-        ItemDropSpawner.Instance
-            .SpawnFromBlock(
-                dropId,
-                count,
-                new Vector2(
-                    worldX + 0.5f,
-                    worldY + 0.55f
-                )
-            );
     }
-
 
     // =====================================================
     // PLACE BLOCK
@@ -809,6 +840,55 @@ public class BlockInteraction :
 
     private bool PlaceBlock()
     {
+        // RMB first interacts with doors/hatches. This runs before placement,
+        // so opening a door can never also place the selected block behind it.
+        if (
+            (GameInput.Pressed(GameAction.Use) || GameInput.Pressed(GameAction.Interact)) &&
+            TryGetMouseCell(
+                out UnityEngine.Vector2Int interactionPosition
+            )
+        )
+        {
+            Vector2 colliderSize =
+                playerCollision != null
+                    ? playerCollision.GetColliderSize()
+                    : new Vector2(0.8f, 1.8f);
+
+            Rect playerBounds =
+                InteractiveBlockRuntime.GetPlayerBounds(
+                    transform,
+                    colliderSize
+                );
+
+            if (
+                InteractiveBlockRuntime.TryToggleForeground(
+                    world,
+                    interactionPosition.x,
+                    interactionPosition.y,
+                    playerBounds
+                )
+            )
+            {
+                ForcePlayerCollisionUpdate();
+                return true;
+            }
+
+            // 1x1 furniture doors can be interacted with from normal block mode.
+            // Multi-block doors are normally consumed earlier by
+            // MultiBlockPlayerController, but this is also a safe fallback.
+            if (
+                InteractiveBlockRuntime.TryToggleFurniture(
+                    interactionPosition.x,
+                    interactionPosition.y,
+                    playerBounds
+                )
+            )
+            {
+                ForcePlayerCollisionUpdate();
+                return true;
+            }
+        }
+
         // A declared multi-block is owned exclusively by
         // MultiBlockPlayerController/FurnitureLayerManager. Never place it into
         // the foreground tile map as a normal 1x1 block, even if another input
@@ -856,6 +936,34 @@ public class BlockInteraction :
         // foreground block to be placed through the second half of a bed.
         if (MultiBlockStore.FindCell(x, y) != null)
             return false;
+
+        // Building mode selects the destination layer only. Mining automatically
+        // detects Furniture, Foreground, then Background independently of it.
+        if (Game.World.Furniture.FurnitureSupportRuntime.IsFurnitureOnlyBlock(selectedBlockID))
+            return false;
+
+        if (furnitureModeController != null && furnitureModeController.BackgroundPlacementActive)
+        {
+            if (world.GetBackground(x, y) != 0)
+                return false;
+
+            // Allow a wall behind foreground blocks or connected to existing
+            // terrain. Empty sky cannot be spammed with floating back walls.
+            bool supported = world.GetBlock(x, y) != 0 ||
+                HasAdjacentForegroundBlock(x, y) ||
+                world.GetBackground(x - 1, y) != 0 ||
+                world.GetBackground(x + 1, y) != 0 ||
+                world.GetBackground(x, y - 1) != 0 ||
+                world.GetBackground(x, y + 1) != 0;
+            if (!supported)
+                return false;
+
+            if (!worldManager.SetBackground(x, y, selectedBlockID))
+                return false;
+            if (inventory != null && !inventory.TryConsumeSelected(1))
+                Debug.LogWarning("BACKGROUND PLACE: item placed but inventory consume failed.");
+            return true;
+        }
 
         ushort foregroundID =
             world.GetBlock(
@@ -1018,19 +1126,15 @@ public class BlockInteraction :
                 transform.position.y
             );
 
-        return
-            Vector2.Distance(
-                playerPosition,
-                cellCenter
-            ) <=
-            interactionDistance;
+        return (playerPosition - cellCenter).sqrMagnitude <=
+            interactionDistance * interactionDistance;
     }
 
 
     private Vector2 GetMouseWorldPosition()
     {
         Vector3 mouseScreenPosition =
-            Input.mousePosition;
+            GameInput.PointerPosition;
 
         mouseScreenPosition.z =
             Mathf.Abs(

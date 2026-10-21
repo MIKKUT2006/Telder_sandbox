@@ -43,9 +43,7 @@ namespace Game.World.Physics
                 new Dictionary<ushort, bool>();
 
 
-        private readonly Dictionary<long, Chunk>
-            renderDirty =
-                new Dictionary<long, Chunk>();
+
 
 
         private readonly Dictionary<long, Chunk>
@@ -72,9 +70,7 @@ namespace Game.World.Physics
 
         [Header("Batch refresh")]
 
-        [SerializeField]
-        private float renderRefreshInterval =
-            0.05f;
+
 
 
         [SerializeField]
@@ -112,7 +108,7 @@ namespace Game.World.Physics
 
         private float nextSimulation;
 
-        private float nextRenderRefresh;
+
 
         private float nextCollisionRefresh;
 
@@ -351,23 +347,6 @@ namespace Game.World.Physics
 
 
                 SimulateBatch();
-            }
-
-
-            if (
-                now >=
-                nextRenderRefresh
-            )
-            {
-                nextRenderRefresh =
-                    now +
-                    Mathf.Max(
-                        0.025f,
-                        renderRefreshInterval
-                    );
-
-
-                FlushRender();
             }
 
 
@@ -714,6 +693,14 @@ namespace Game.World.Physics
             );
 
 
+            // Touch only the two changed cells; ChunkRenderer coalesces uploads
+            // with ordinary block edits at the end of the frame.
+            if(renderer!=null)
+            {
+                renderer.UpdateBlock(sourceChunk,sourceX,sourceY);
+                renderer.UpdateBlock(targetChunk,targetX,targetLocalY);
+            }
+
             MarkDirty(
                 sourceChunk
             );
@@ -764,10 +751,7 @@ namespace Game.World.Physics
                 );
 
 
-            renderDirty[
-                key
-            ] =
-                chunk;
+
 
 
             collisionDirty[
@@ -777,45 +761,7 @@ namespace Game.World.Physics
         }
 
 
-        private void FlushRender()
-        {
-            if (
-                renderer == null ||
-                renderDirty.Count == 0
-            )
-            {
-                return;
-            }
 
-
-            foreach (
-                KeyValuePair<long, Chunk> pair
-                in renderDirty
-            )
-            {
-                Chunk chunk =
-                    pair.Value;
-
-
-                if (
-                    chunk != null &&
-                    world.GetChunk(
-                        chunk.X,
-                        chunk.Y
-                    )
-                    ==
-                    chunk
-                )
-                {
-                    renderer.Render(
-                        chunk
-                    );
-                }
-            }
-
-
-            renderDirty.Clear();
-        }
 
 
         private void FlushCollision()

@@ -1,0 +1,7 @@
+{
+  "ID": "game:wax",
+  "Name": "Wax",
+  "Texture": "wax",
+  "Type": "Material",
+  "MaxStack": 100
+}

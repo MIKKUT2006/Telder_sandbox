@@ -43,11 +43,100 @@ namespace Game.World.Fluids
             );
 
             ApplyCaveBiomePools(
+                generator,
                 settings,
                 data,
                 chunkX,
                 chunkY
             );
+        }
+
+        // Does the same deterministic surface-lake recipe remove the ground
+        // beneath this column? Structure spawning uses this BEFORE the lake
+        // pass to avoid placing a tree in the water or on a carved-out bank.
+        // No scene/world access is needed (safe on generation workers).
+        public static bool IntersectsSurfaceLake(
+            WorldGenerator generator, WorldSettings settings, int worldX, int margin = 0)
+        {
+            if (generator == null || settings == null)
+                return false;
+            DimensionBiomeProfile profile = generator.GetBiomeProfile();
+            if (profile == null || profile.SurfaceBiomes == null)
+                return false;
+
+            HashSet<int> regionSizes = new HashSet<int>();
+            for (int b = 0; b < profile.SurfaceBiomes.Count; b++)
+            {
+                BiomeDefinition configured = profile.SurfaceBiomes[b];
+                if (!SurfaceSettingsValid(configured))
+                    continue;
+                int regionSize = GetSurfaceRegionSize(configured.LiquidGeneration);
+                if (!regionSizes.Add(regionSize))
+                    continue;
+
+                int first = FloorDiv(worldX - margin - MaxGeneratedRadius, regionSize) - 1;
+                int last = FloorDiv(worldX + margin + MaxGeneratedRadius, regionSize) + 1;
+                for (int regionX = first; regionX <= last; regionX++)
+                {
+                    int seed = Hash(settings.Seed, "surface_liquid", regionX, regionSize);
+                    System.Random rng = new System.Random(seed);
+                    int border = Mathf.Clamp(regionSize / 8, 2, 10);
+                    int centerX = regionX * regionSize +
+                        rng.Next(border, Mathf.Max(border + 1, regionSize - border));
+                    BiomeDefinition biome = generator.GetDominantBiome(centerX);
+                    if (!SurfaceSettingsValid(biome) ||
+                        GetSurfaceRegionSize(biome.LiquidGeneration) != regionSize ||
+                        FloorDiv(centerX, regionSize) != regionX)
+                        continue;
+
+                    if (!TryChooseLiquid(biome.LiquidGeneration.Liquids, false, rng,
+                            out BiomeLiquidEntry liquid))
+                        continue;
+
+                    int radius = PickRadius(liquid, rng, 2,
+                        Mathf.Max(2, Mathf.Min(MaxGeneratedRadius, regionSize / 2 - 1)));
+                    if (centerX + radius < worldX - margin ||
+                        centerX - radius > worldX + margin)
+                        continue;
+
+                    int minSurface = int.MaxValue;
+                    int maxSurface = int.MinValue;
+                    for (int x = centerX - radius; x <= centerX + radius; x += 2)
+                    {
+                        if (!SameBiome(generator.GetDominantBiome(x), biome))
+                            continue;
+                        int h = generator.GetSurfaceHeight(x);
+                        minSurface = Mathf.Min(minSurface, h);
+                        maxSurface = Mathf.Max(maxSurface, h);
+                    }
+                    if (minSurface == int.MaxValue)
+                        continue;
+                    int allowedVariation = biome.LiquidGeneration.MaxSurfaceVariation <= 0
+                        ? 7 : Mathf.Clamp(biome.LiquidGeneration.MaxSurfaceVariation, 1, 32);
+                    if (maxSurface - minSurface > allowedVariation)
+                        continue;
+
+                    int waterTop = minSurface - 1;
+                    float roughness = biome.LiquidGeneration.EdgeRoughness <= 0f
+                        ? 0.22f : Mathf.Clamp01(biome.LiquidGeneration.EdgeRoughness);
+                    for (int x = worldX - margin; x <= worldX + margin; x++)
+                    {
+                        float relative = (x - centerX) / (float)Mathf.Max(1, radius);
+                        float distance = Mathf.Abs(relative);
+                        if (distance > 1f || !SameBiome(generator.GetDominantBiome(x), biome))
+                            continue;
+                        if (1f - distance +
+                            SignedNoise(seed ^ 0x51ED270B, x, waterTop) * roughness * 0.34f <= 0f)
+                            continue;
+
+                        // The lake pass carves from waterTop - depth + 1 all
+                        // the way through the natural grass. Any tree rooted
+                        // here would have its support removed.
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         // =====================================================
@@ -272,6 +361,7 @@ namespace Game.World.Fluids
         // =====================================================
 
         private static void ApplyCaveBiomePools(
+            WorldGenerator generator,
             WorldSettings settings,
             ChunkData data,
             int chunkX,
@@ -287,6 +377,7 @@ namespace Game.World.Fluids
             for (int localX = 0; localX < Chunk.SizeX; localX++)
             {
                 int worldX = chunkMinX + localX;
+                string surfaceBiomeId = generator.GetDominantBiome(worldX)?.ID;
 
                 for (int localY = 1; localY < Chunk.SizeY - 1; localY++)
                 {
@@ -307,7 +398,7 @@ namespace Game.World.Fluids
                         worldX,
                         worldY,
                         settings.Seed,
-                        dimensionKeys
+                        dimensionKeys, surfaceBiomeId
                     );
 
                     if (!CaveSettingsValid(cave))
@@ -379,7 +470,7 @@ namespace Game.World.Fluids
                         worldX,
                         worldY,
                         settings.Seed,
-                        dimensionKeys
+                        dimensionKeys, surfaceBiomeId
                     );
 
                     if (aboveBiome == null ||
@@ -420,7 +511,7 @@ namespace Game.World.Fluids
                             worldX,
                             wy,
                             settings.Seed,
-                            dimensionKeys
+                            dimensionKeys, surfaceBiomeId
                         );
 
                         if (cellBiome == null ||

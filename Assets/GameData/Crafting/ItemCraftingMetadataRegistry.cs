@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -81,8 +81,7 @@ namespace Game.Crafting
 
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Items"
                 );
 
@@ -282,54 +281,32 @@ namespace Game.Crafting
 
 
         private static List<CraftIngredientDefinition>
-            CopyIngredients(
-                List<CraftIngredientDefinition> source
-            )
+     CopyIngredients(List<CraftIngredientDefinition> source)
         {
             List<CraftIngredientDefinition> result =
                 new List<CraftIngredientDefinition>();
 
-
             if (source == null)
                 return result;
 
-
-            for (
-                int i = 0;
-                i < source.Count;
-                i++
-            )
+            for (int i = 0; i < source.Count; i++)
             {
-                CraftIngredientDefinition ingredient =
-                    source[i];
+                CraftIngredientDefinition ingredient = source[i];
 
+                if (ingredient == null) continue;
 
-                if (
-                    ingredient == null
-                    ||
-                    string.IsNullOrWhiteSpace(
-                        ingredient.ItemId
-                    )
-                )
+                bool hasId = !string.IsNullOrWhiteSpace(ingredient.ItemId);
+                bool hasTag = !string.IsNullOrWhiteSpace(ingredient.Tag);
+
+                if (!hasId && !hasTag) continue;
+
+                result.Add(new CraftIngredientDefinition
                 {
-                    continue;
-                }
-
-
-                result.Add(
-                    new CraftIngredientDefinition
-                    {
-                        ItemId =
-                            ingredient.ItemId,
-
-                        Count =
-                            ingredient.Count > 0
-                                ? ingredient.Count
-                                : 1
-                    }
-                );
+                    ItemId = hasId ? ingredient.ItemId.Trim() : null,
+                    Tag = !hasId && hasTag ? ingredient.Tag.Trim() : null,
+                    Count = ingredient.Count > 0 ? ingredient.Count : 1
+                });
             }
-
 
             return result;
         }

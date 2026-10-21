@@ -136,6 +136,8 @@ namespace Game.World.Generation
                     caveSettings
                 );
 
+            caveGenerator.ConfigureSurfaceEntrances(GetSurfaceHeight, GetCaveEntranceProfile);
+
 
             /*
              * No direct call to caveGenerator.IsCave().
@@ -237,25 +239,52 @@ namespace Game.World.Generation
         }
 
 
-        public ChunkData GenerateChunkData(
-            int chunkX,
-            int chunkY
-        )
+        // Geometry-only query for vegetation crossing a not-yet-streamed chunk.
+        public bool HasGeneratedTerrain(int worldX, int worldY)
         {
-            ChunkData data =
-                new ChunkData();
+            BiomeSample sample = biomeSelector.GetSample(worldX);
+            int surface = GetSurfaceHeight(worldX, sample);
+            if (worldY > surface || caveQuery.IsSurfaceEntrance(worldX, worldY, surface)) return false;
+            BiomeRuntimeData fallback = biomeRuntime.Get(sample.Dominant);
+            if (fallback == null) return false;
+            BiomeRuntimeData biome = SelectBlendedMaterialBiome(worldX, worldY, sample, fallback);
+            if (surface - worldY <= biome.Definition.Terrain.SoilDepth) return true;
+            return !caveQuery.IsCave(worldX, worldY, surface);
+        }
 
+        public bool IsSurfaceCaveEntrance(int worldX, int worldY)
+        {
+            return caveQuery.IsSurfaceEntrance(worldX, worldY, GetSurfaceHeight(worldX));
+        }
 
-            // =====================================================
-            // 1. BASE SURFACE BIOME TERRAIN
-            // =====================================================
-
-            for (
-                int localX = 0;
-                localX < Chunk.SizeX;
-                localX++
-            )
+        private SurfaceCaveEntranceProfile GetCaveEntranceProfile(int worldX)
+        {
+            BiomeDefinition biome = GetDominantBiome(worldX);
+            if (biome == null) return SurfaceCaveEntranceProfile.Default;
+            BiomeCaveSettings caves = biome.Caves;
+            string id = biome.ID ?? string.Empty;
+            bool mountain = (caves != null && caves.PreferSlopeEntrances) ||
+                (biome.Terrain != null && biome.Terrain.HillHeightMultiplier >= 2.5f) ||
+                id.IndexOf("mountain", System.StringComparison.OrdinalIgnoreCase) >= 0;
+            return new SurfaceCaveEntranceProfile
             {
+                Enabled = caves == null || caves.EnableSurfaceEntrances,
+                Mountain = mountain,
+                Chance = caves != null ? caves.SurfaceEntranceChance : -1f,
+                Multiplier = caves != null ? caves.EntranceMultiplier : 1f
+            };
+        }
+
+        // ChunkLoader uses these small steps across frames, without touching
+        // Unity/world registries from unsafe background threads.
+        public ChunkData BeginChunkData()
+        {
+            return new ChunkData();
+        }
+
+        public void GenerateTerrainColumn(ChunkData data, int chunkX, int chunkY, int localX)
+        {
+
                 int worldX =
                     chunkX *
                     Chunk.SizeX +
@@ -289,7 +318,7 @@ namespace Game.World.Generation
                     );
 
 
-                    continue;
+                    return;
                 }
 
 
@@ -346,82 +375,47 @@ namespace Game.World.Generation
                         background
                     );
                 }
+                    }
+
+        public const int ChunkPostprocessStageCount = 5;
+        public void CompleteChunkGenerationStage(ChunkData data, int chunkX, int chunkY, int stage)
+        {
+            switch (stage)
+            {
+                case 0:
+                    Game.World.Biomes.Caves.CaveBiomePostProcessor.ApplyToChunkData(
+                        this, settings, data, chunkX, chunkY);
+                    break;
+                case 1:
+                    Game.World.Structures.StructureGenerationRuntime.ApplyToChunk(
+                        this, settings, data, chunkX, chunkY);
+                    break;
+                case 2:
+                    Game.World.Fluids.LiquidLakeGenerator.ApplyToChunk(
+                        this, settings, data, chunkX, chunkY);
+                    break;
+                case 3:
+                    Game.World.Biomes.Surface.SurfaceFloraFurnitureGenerator.ApplyToChunkData(
+                        this, settings, data, chunkX, chunkY);
+                    break;
+                case 4:
+                    Game.World.Vegetation.Caves.CaveVegetationGenerationRuntime.ApplyToChunk(
+                        this, settings, data, chunkX, chunkY);
+                    break;
             }
+        }
 
-
-            // =====================================================
-            // 2. CAVE BIOME MATERIALS + BIOME-SPECIFIC CAVE POCKETS
-            // =====================================================
-
-            Game.World.Biomes.Caves
-                .CaveBiomePostProcessor
-                .ApplyToChunkData(
-                    this,
-                    settings,
-                    data,
-                    chunkX,
-                    chunkY
-                );
-
-
-            // =====================================================
-            // 3. STRUCTURES
-            //
-            // Structures go before flora so plants never appear
-            // inside a newly stamped structure.
-            // =====================================================
-
-            Game.World.Structures
-                .StructureGenerationRuntime
-                .ApplyToChunk(
-                    this,
-                    settings,
-                    data,
-                    chunkX,
-                    chunkY
-                );
-
-
-            // =====================================================
-            // 4. LIQUID LAKES
-            // =====================================================
-            Game.World.Fluids.LiquidLakeGenerator.ApplyToChunk(this, settings, data, chunkX, chunkY);
-
-            // =====================================================
-            // 5. SURFACE FLORA
-            // =====================================================
-
-            Game.World.Biomes.Surface
-                .SurfaceFloraFurnitureGenerator
-                .ApplyToChunkData(
-                    this,
-                    settings,
-                    data,
-                    chunkX,
-                    chunkY
-                );
-
-
-            // =====================================================
-            // 5. CAVE FLORA
-            // =====================================================
-
-            Game.World.Vegetation.Caves
-                .CaveVegetationGenerationRuntime
-                .ApplyToChunk(
-                    this,
-                    settings,
-                    data,
-                    chunkX,
-                    chunkY
-                );
-
-
+        public ChunkData GenerateChunkData(int chunkX, int chunkY)
+        {
+            ChunkData data = BeginChunkData();
+            for (int x = 0; x < Chunk.SizeX; x++)
+                GenerateTerrainColumn(data, chunkX, chunkY, x);
+            for (int stage = 0; stage < ChunkPostprocessStageCount; stage++)
+                CompleteChunkGenerationStage(data, chunkX, chunkY, stage);
             return data;
         }
 
-
-                // [TELDER-V35.1-BIOME-MATERIAL-BLEND]
+        // [TELDER-V35.1-BIOME-MATERIAL-BLEND]
                 // [TELDER-V36-BIOME-BLEND-CACHE]
         private int materialBlendCacheX =
             int.MinValue;
@@ -728,6 +722,10 @@ private ushort GenerateForegroundBlock(
             // =====================================================
             // SURFACE
             // =====================================================
+
+            // Entrances must be queried before the protected topsoil is returned.
+            if (caveQuery.IsSurfaceEntrance(worldX, worldY, surfaceHeight))
+                return 0;
 
             if (
                 worldY ==

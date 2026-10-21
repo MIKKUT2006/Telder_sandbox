@@ -3,8 +3,11 @@
     "DisplayName": "Campfire",
     "Width": 12,
     "Height": 8,
-    "OriginX": 0,
+    "Depth": 1,
+    "OriginX": 6,
     "OriginY": 0,
+    "OriginZ": 0,
+    "GeometryMode": 0,
     "Type": 0,
     "SpawnType": 2,
     "SpawnChance": 0.30000001192092898,
@@ -27,30 +30,20 @@
         {
             "X": 5,
             "Y": 0,
+            "Z": 0,
             "ForegroundId": "",
             "BackgroundId": "",
             "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 7,
-            "Y": 0,
-            "ForegroundId": "",
-            "BackgroundId": "",
-            "Loot": [],
-            "Transform": 0
-        },
-        {
-            "X": 1,
-            "Y": 0,
-            "ForegroundId": "",
-            "BackgroundId": "",
-            "Loot": [],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         },
         {
             "X": 3,
             "Y": 0,
+            "Z": 0,
             "ForegroundId": "game:chest",
             "BackgroundId": "",
             "Loot": [
@@ -65,9 +58,19 @@
                     "Chance": 0.5,
                     "MinCount": 1,
                     "MaxCount": 4
+                },
+                {
+                    "ItemId": "game:portal_crystal",
+                    "Chance": 0.10000000149011612,
+                    "MinCount": 1,
+                    "MaxCount": 1
                 }
             ],
-            "Transform": 0
+            "Transform": 0,
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureId": "",
+            "FurnitureTransform": 0
         }
     ]
 }

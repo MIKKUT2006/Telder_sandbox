@@ -1,0 +1,7 @@
+{
+  "ID": "game:green_lantern",
+  "Name": "green lantern",
+  "Texture": "green_lantern",
+  "Type": "Block",
+  "MaxStack": 100
+}

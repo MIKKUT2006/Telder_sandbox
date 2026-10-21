@@ -7,6 +7,20 @@ namespace Game.World.Generation
     {
         private readonly WorldSettings worldSettings;
         private readonly CaveSettings settings;
+        private SurfaceCaveEntranceGenerator surfaceEntrances;
+
+        public void ConfigureSurfaceEntrances(Func<int,int> heightAt,
+            Func<int,SurfaceCaveEntranceProfile> profileAt = null)
+        {
+            surfaceEntrances = new SurfaceCaveEntranceGenerator(
+                worldSettings.Seed, settings, heightAt, profileAt, IsNaturalCave);
+        }
+
+        public bool IsSurfaceEntrance(int worldX,int worldY,int surfaceHeight)
+        {
+            return surfaceEntrances != null &&
+                surfaceEntrances.Contains(worldX,worldY,surfaceHeight);
+        }
 
 
         // =====================================================
@@ -241,14 +255,17 @@ namespace Game.World.Generation
                 settings.EnableSurfaceEntrances
             )
             {
-                GenerateSurfaceEntrances(
-                    mask,
-                    originX,
-                    originY,
-                    width,
-                    height,
-                    surfaceHeights
-                );
+                if (surfaceEntrances != null)
+                {
+                    for (int x=0;x<width;x++)
+                        for (int y=0;y<height;y++)
+                            if (IsSurfaceEntrance(originX+x,originY+y,surfaceHeights[x]))
+                                mask[x,y]=true;
+                }
+                else
+                {
+                    GenerateSurfaceEntrances(mask,originX,originY,width,height,surfaceHeights);
+                }
             }
 
 
@@ -264,7 +281,7 @@ namespace Game.World.Generation
             int surfaceHeight
         )
         {
-            return IsNaturalCave(
+            return IsSurfaceEntrance(worldX,worldY,surfaceHeight) || IsNaturalCave(
                 worldX,
                 worldY,
                 surfaceHeight

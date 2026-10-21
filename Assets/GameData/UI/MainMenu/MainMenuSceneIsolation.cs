@@ -84,6 +84,10 @@ namespace Game.UI.MainMenu
 
         private void Isolate()
         {
+            // An additive challenge is active before the old menu is unloaded.
+            // The old scene must stop disabling the new scene's renderers.
+            if (SceneManager.GetActiveScene() != gameObject.scene)
+                return;
 
             if (
                 !menuScene.IsValid()

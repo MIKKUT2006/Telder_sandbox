@@ -1,3 +1,4 @@
+using Game.InputSupport;
 
 using System;
 
@@ -106,7 +107,7 @@ namespace Game.Crafting
 
             Vector3 mouse =
                 worldCamera.ScreenToWorldPoint(
-                    Input.mousePosition
+                    GameInput.PointerPosition
                 );
 
 
@@ -172,9 +173,7 @@ namespace Game.Crafting
 
 
             if (
-                Input.GetMouseButtonDown(
-                    1
-                )
+                (GameInput.Pressed(GameAction.Use) || GameInput.Pressed(GameAction.Interact))
             )
             {
 

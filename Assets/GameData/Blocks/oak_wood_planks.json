@@ -11,6 +11,10 @@
   "Drop": "game:oak_wood_planks",
   "DropCount": 1,
 
+  "Tags": [
+    "wood",
+    "planks"
+  ],
   "CraftIngredients": [
     {
       "ItemId": "game:oak_trunk",

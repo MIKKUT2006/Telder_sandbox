@@ -7,7 +7,6 @@
   "ColliderWidth": 0.8,
   "ColliderHeight": 1.9,
   "WanderRadius": 8.0,
-
   "Movement": {
     "Type": "Ground",
     "Speed": 2.4,
@@ -19,7 +18,6 @@
     "MaxJumpUpCells": 2,
     "MaxDropCells": 5
   },
-
   "Combat": {
     "VisionRange": 12.0,
     "LoseTargetRange": 18.0,
@@ -29,17 +27,20 @@
     "AggroAfterHitSeconds": 12.0,
     "RequireLineOfSight": true
   },
-
   "Stars": {
     "MinStars": 1,
     "MaxStars": 5,
-    "StarWeights": [ 55.0, 25.0, 12.0, 6.0, 2.0 ],
+    "StarWeights": [
+      55.0,
+      25.0,
+      12.0,
+      6.0,
+      2.0
+    ],
     "HealthPerExtraStar": 0.35,
-    "DamagePerExtraStar": 0.20,
+    "DamagePerExtraStar": 0.2,
     "LootPerExtraStar": 0.25
   },
-
-
   "Spawn": {
     "Enabled": true,
     "MaxAlive": 8,
@@ -50,21 +51,20 @@
     "MaxDistanceFromPlayer": 38.0,
     "RequiredWidth": 1,
     "RequiredHeight": 2,
-    "Biomes": [ "*" ]
+    "Biomes": [
+      "*"
+    ]
   },
-
   "Visual": {
     "PrefabResource": "Entities/Wood_golem",
     "PrefabScale": 1.0,
     "PrefabFacesRight": true,
     "OffsetX": 0.0,
     "OffsetY": 0.0,
-
-    "HeldItemAnchorPath": "Armature/Body/RightArm/Hand/HeldItemAnchor",
-    "HeldItemOffsetX": 0.0,
-    "HeldItemOffsetY": 0.0,
-    "HeldItemWorldSize": 0.72,
-
+    "HeldItemAnchorPath": "Facing Root/Rig Root/FrontArmPivot/HandPoint",
+    "HeldItemOffsetX": 0.08,
+    "HeldItemOffsetY": 0,
+    "HeldItemWorldSize": 0.95,
     "AnimatorIdleState": "Idle",
     "AnimatorWalkState": "Walk",
     "AnimatorAttackState": "Attack",
@@ -72,22 +72,25 @@
     "AnimatorDeathState": "Death",
     "AnimatorCrossFade": 0.06,
     "DeathDespawnDelay": 0.9,
-
     "SortingLayer": "Default",
-    "SortingOrder": 80
+    "SortingOrder": 80,
+    "UseItemHeldPose": false,
+    "HeldItemRotation": -9
   },
-
   "Equipment": [
     {
       "ItemId": "game:stone_sword",
       "Chance": 0.5
     },
     {
-      "ItemId": "game:tnt",
-      "Chance": 0.5
+      "ItemId": "game:bomb",
+      "Chance": 0.2
+    },
+    {
+      "ItemId": "game:bow",
+      "Chance": 0.2
     }
   ],
-
   "Loot": [
     {
       "ItemId": "game:coal_ore",

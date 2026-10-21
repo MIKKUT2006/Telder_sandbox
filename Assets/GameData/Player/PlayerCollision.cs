@@ -1,5 +1,6 @@
 
 using Game.World.Collision;
+using Game.GameplaySystems.Interactions;
 
 using UnityEngine;
 
@@ -42,6 +43,7 @@ public class PlayerCollision :
     private float blockSize =
         1f;
 
+    private int ignoredPlatformY = int.MinValue;
 
     // =====================================================
     // WORLD
@@ -88,6 +90,13 @@ public class PlayerCollision :
         Vector2 movement
     )
     {
+        float playerBottom = transform.position.y - colliderSize.y * 0.5f;
+
+        if (ignoredPlatformY != int.MinValue &&
+            playerBottom < ignoredPlatformY - 0.001f)
+        {
+            ignoredPlatformY = int.MinValue;
+        }
 
         if (
             worldCollision ==
@@ -414,6 +423,40 @@ public class PlayerCollision :
                 direction *
                 currentStep;
 
+            float halfHeight = colliderSize.y * 0.5f;
+
+            if (direction < 0f)
+            {
+                float previousBottom =
+                    transform.position.y - halfHeight;
+
+                float nextBottom =
+                    testY - halfHeight;
+
+                Rect horizontalBounds = new Rect(
+                    transform.position.x - colliderSize.x * 0.5f + skin,
+                    0f,
+                    Mathf.Max(0.001f, colliderSize.x - skin * 2f),
+                    0.001f
+                );
+
+                if (worldCollision.TryGetPlatformTop(
+                    horizontalBounds,
+                    previousBottom,
+                    nextBottom,
+                    ignoredPlatformY,
+                    out float platformTop))
+                {
+                    transform.position = new Vector3(
+                        transform.position.x,
+                        platformTop + halfHeight,
+                        transform.position.z
+                    );
+
+                    IsGrounded = true;
+                    return;
+                }
+            }
 
             if (
                 CheckCollisionAt(
@@ -454,7 +497,37 @@ public class PlayerCollision :
         }
 
     }
+    private bool IsPlatformUnderFeet(
+    float bottom,
+    float minX,
+    float maxX
+)
+    {
+        if (worldCollision == null || maxX <= minX)
+            return false;
 
+        Rect horizontalBounds = new Rect(
+            minX,
+            0f,
+            maxX - minX,
+            0.001f
+        );
+
+        const float tolerance = 0.025f;
+
+        if (!worldCollision.TryGetPlatformTop(
+            horizontalBounds,
+            bottom + tolerance,
+            bottom - tolerance,
+            ignoredPlatformY,
+            out float platformTop
+        ))
+        {
+            return false;
+        }
+
+        return Mathf.Abs(platformTop - bottom) <= tolerance;
+    }
 
     // =====================================================
     // GROUND CHECK
@@ -473,12 +546,15 @@ public class PlayerCollision :
         float minX = transform.position.x - halfWidth + skin;
         float maxX = transform.position.x + halfWidth - skin;
 
-        IsGrounded = Game.BlockTransforms.BlockShapeCollision.Intersects(
-            worldCollision,
-            minX,
-            bottom - skin - 0.03f,
-            maxX,
-            bottom + 0.01f);
+        IsGrounded =
+    IntersectsAny(
+        minX,
+        bottom - skin - 0.03f,
+        maxX,
+        bottom + 0.01f
+    )
+    ||
+    IsPlatformUnderFeet(bottom, minX, maxX);
     }
 
 
@@ -548,9 +624,11 @@ public class PlayerCollision :
 
 
         return
-            worldCollision.OverlapsAny(
-                groundProbe
-            );
+    worldCollision.OverlapsAny(groundProbe)
+    ||
+    InteractiveBlockRuntime.IntersectsClosedFurniture(groundProbe)
+    ||
+    IsPlatformUnderFeet(bottom, minX, maxX);
 
     }
 
@@ -575,12 +653,45 @@ public class PlayerCollision :
         float minY = centerY - halfHeight + skin;
         float maxY = centerY + halfHeight - skin;
 
-        return Game.BlockTransforms.BlockShapeCollision.Intersects(
-            worldCollision,
-            minX,
-            minY,
-            maxX,
-            maxY);
+        return
+            IntersectsAny(
+                minX,
+                minY,
+                maxX,
+                maxY
+            );
+    }
+
+
+    private bool IntersectsAny(
+        float minX,
+        float minY,
+        float maxX,
+        float maxY
+    )
+    {
+        if (
+            Game.BlockTransforms.BlockShapeCollision.Intersects(
+                worldCollision,
+                minX,
+                minY,
+                maxX,
+                maxY
+            )
+        )
+        {
+            return true;
+        }
+
+        return
+            InteractiveBlockRuntime.IntersectsClosedFurniture(
+                new Rect(
+                    minX,
+                    minY,
+                    Mathf.Max(0f, maxX - minX),
+                    Mathf.Max(0f, maxY - minY)
+                )
+            );
     }
 
 
@@ -702,6 +813,44 @@ public class PlayerCollision :
 
     }
 
+    public void DropThroughPlatforms()
+    {
+        if (worldCollision == null)
+            return;
+
+        ignoredPlatformY = int.MinValue;
+
+        float bottom =
+            transform.position.y - colliderSize.y * 0.5f;
+
+        float halfWidth = colliderSize.x * 0.5f;
+
+        Rect horizontalBounds = new Rect(
+            transform.position.x - halfWidth + skin,
+            0f,
+            Mathf.Max(0.001f, colliderSize.x - skin * 2f),
+            0.001f
+        );
+
+        const float tolerance = 0.06f;
+
+        if (worldCollision.TryGetPlatformTop(
+            horizontalBounds,
+            bottom + tolerance,
+            bottom - tolerance,
+            int.MinValue,
+            out float platformTop
+        ))
+        {
+            if (Mathf.Abs(platformTop - bottom) <= tolerance)
+            {
+                ignoredPlatformY =
+                    Mathf.FloorToInt(platformTop - 0.0001f);
+            }
+        }
+
+        IsGrounded = false;
+    }
 
     // =====================================================
     // DEBUG

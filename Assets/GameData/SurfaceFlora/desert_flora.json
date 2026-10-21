@@ -10,6 +10,12 @@
       "Chance": 0.5,
       "NoiseScale": 0.08,
       "NoiseThreshold": 0
+    },
+    {
+      "BlockId": "game:dead_bush",
+      "Chance": 0.1,
+      "NoiseScale": 0.15,
+      "NoiseThreshold": 0
     }
   ]
 }

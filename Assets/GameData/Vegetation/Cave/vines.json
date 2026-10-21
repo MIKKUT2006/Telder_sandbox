@@ -1,0 +1,8 @@
+{
+  "ID": "game:cave_vines",
+  "SpawnType": "HangingVines",
+  "BlockId": "game:vines",
+  "Chance": 0.16,
+  "MinLength": 7,
+  "MaxLength": 9
+}

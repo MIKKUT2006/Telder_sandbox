@@ -220,13 +220,47 @@ namespace Game.UI.Achievements
         public void OnPointerEnter(UnityEngine.EventSystems.PointerEventData e)
         {
             if (def == null) return;
-            tip = new GameObject("Tooltip", typeof(RectTransform), typeof(Image)); tip.transform.SetParent(transform, false);
-            RectTransform r = tip.GetComponent<RectTransform>(); r.sizeDelta = new Vector2(320, 110); r.anchoredPosition = new Vector2(250, 0);
+
+            if (tip != null)
+                Destroy(tip);
+
+            RectTransform nodeRect = transform as RectTransform;
+            Transform layer = transform.parent != null ? transform.parent : transform;
+
+            tip = new GameObject("Tooltip", typeof(RectTransform), typeof(Image));
+            tip.transform.SetParent(layer, false);
+            tip.transform.SetAsLastSibling();
+
+            RectTransform r = tip.GetComponent<RectTransform>();
+            Vector2 nodeAnchor =
+                nodeRect != null
+                    ? nodeRect.anchorMin
+                    : new Vector2(.5f, .5f);
+            r.anchorMin = nodeAnchor;
+            r.anchorMax = nodeAnchor;
+            r.pivot = new Vector2(0, .5f);
+            r.sizeDelta = new Vector2(320, 110);
+            r.anchoredPosition =
+                (nodeRect != null ? nodeRect.anchoredPosition : Vector2.zero) +
+                new Vector2(225, 0);
+
             tip.GetComponent<Image>().color = new Color(.03f, .03f, .04f, .98f);
-            GameObject t = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI)); t.transform.SetParent(tip.transform, false);
-            RectTransform tr = t.GetComponent<RectTransform>(); tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one; tr.offsetMin = new Vector2(10, 8); tr.offsetMax = new Vector2(-10, -8);
-            TMP_Text tx = t.GetComponent<TMP_Text>(); tx.fontSize = 17; if (font != null) tx.font = font;
-            tx.text = (!unlocked && def.HiddenUntilUnlocked) ? "???" : (def.Title + "\n" + def.Description);
+
+            GameObject t = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+            t.transform.SetParent(tip.transform, false);
+            RectTransform tr = t.GetComponent<RectTransform>();
+            tr.anchorMin = Vector2.zero;
+            tr.anchorMax = Vector2.one;
+            tr.offsetMin = new Vector2(10, 8);
+            tr.offsetMax = new Vector2(-10, -8);
+
+            TMP_Text tx = t.GetComponent<TMP_Text>();
+            tx.fontSize = 17;
+            tx.enableWordWrapping = true;
+            if (font != null) tx.font = font;
+            tx.text = (!unlocked && def.HiddenUntilUnlocked)
+                ? "???"
+                : (def.Title + "\n" + def.Description);
         }
         public void OnPointerExit(UnityEngine.EventSystems.PointerEventData e) { if (tip != null) Destroy(tip); }
     }

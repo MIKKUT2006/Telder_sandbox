@@ -1,0 +1,12 @@
+{
+  "ID": "game:portal_gun_upgrader",
+  "Name": "portal gun upgrader",
+  "Texture": "portal_gun_upgrader",
+  "Type": "Material",
+  "MaxStack": 10,
+  "Tags": [
+  "tool_artifact"
+  ],
+  "UpgradeType": "ToolLevel",
+  "UpgradeValue": 1
+}

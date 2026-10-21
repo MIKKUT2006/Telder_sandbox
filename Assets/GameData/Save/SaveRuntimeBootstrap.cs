@@ -91,7 +91,8 @@ namespace Game.Save
         private void Update()
         {
             if (
-                !SaveGameRuntime.HasActiveSave
+                !SaveGameRuntime.HasActiveSave ||
+                SaveGameRuntime.IsInventoryTransferPending
             )
             {
                 return;
@@ -125,6 +126,7 @@ namespace Game.Save
         {
             if (
                 SaveGameRuntime.HasActiveSave &&
+                !SaveGameRuntime.IsInventoryTransferPending &&
                 WorldManager.Instance != null
             )
             {
@@ -146,6 +148,7 @@ namespace Game.Save
             }
 
 
+            SaveGameRuntime.MarkDroppedItemsRestorePending();
             StartCoroutine(
                 RestoreWhenReady()
             );
@@ -194,13 +197,12 @@ namespace Game.Save
             }
 
 
-            // Даём WorldManager.Start закончить
-            // начальную генерацию и SpawnPlayer().
-            while (
-                manager.GetLoader()
-                    .GetLoadQueueSize() >
-                0
-            )
+            Game.World.Items.ItemDropSpawner.EnsureInstance();
+
+
+            // Inventory must be restored after the real player spawn, not
+            // after the entire view-distance generation queue drains.
+            while (!manager.InitialSpawnReady)
             {
                 yield return null;
             }
@@ -230,6 +232,36 @@ namespace Game.Save
             );
 
 
+            Game.PlayerStats.PlayerStats stats =
+                inventory.GetComponent<
+                    Game.PlayerStats.PlayerStats
+                >();
+
+            if (stats != null)
+            {
+                SaveGameRuntime.RestorePlayerStats(stats);
+            }
+
+
+            HeldItemVisualController heldVisual =
+                inventory.GetComponent<
+                    HeldItemVisualController
+                >();
+
+            if (heldVisual == null)
+            {
+                heldVisual =
+                    inventory.gameObject.AddComponent<
+                        HeldItemVisualController
+                    >();
+            }
+
+            if (heldVisual != null)
+            {
+                heldVisual.ForceRefresh();
+            }
+
+
             if (
                 !SaveGameRuntime
                     .TryGetCurrentPlayerPosition(
@@ -237,6 +269,8 @@ namespace Game.Save
                     )
             )
             {
+                SaveGameRuntime.RestoreDroppedItems();
+                SaveGameRuntime.CompleteInventoryTransfer();
                 yield break;
             }
 
@@ -281,6 +315,8 @@ namespace Game.Save
             inventory.transform.position =
                 savedPosition;
 
+            SaveGameRuntime.RestoreDroppedItems();
+
 
             PlayerCollision collision =
                 inventory.GetComponent<
@@ -296,6 +332,23 @@ namespace Game.Save
 
                 collision.ForceGroundCheck();
             }
+
+
+            // A dimension reload can rebuild the arm/hand hierarchy after the
+            // inventory restore. Refresh once more after positioning so the
+            // selected item is guaranteed to be visible in the new rig.
+            yield return null;
+
+            heldVisual =
+                inventory.GetComponent<
+                    HeldItemVisualController
+                >();
+
+            if (heldVisual != null)
+            {
+                heldVisual.ForceRefresh();
+            }
+            SaveGameRuntime.CompleteInventoryTransfer();
         }
     }
 }

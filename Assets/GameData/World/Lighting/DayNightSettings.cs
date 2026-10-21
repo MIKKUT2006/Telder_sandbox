@@ -7,20 +7,20 @@ namespace Game.World.Lighting
     public class DayNightSettings
     {
         // ѕолный цикл в секундах.
-        public float DayLength = 600f;
+        public float DayLength = 3600f;
 
         // —колько времени занимает переход
         // день -> ночь и ночь -> день.
-        public float TransitionLength = 90f;
+        public float TransitionLength = 300f;
 
         public Color DayColor =
             Color.white;
 
         public Color NightColor =
             new Color(
-                0.08f,
-                0.10f,
-                0.20f
+                0.05f,
+                0.05f,
+                0.08f
             );
 
         public float DayIntensity =

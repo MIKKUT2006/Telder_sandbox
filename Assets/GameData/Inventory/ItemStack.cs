@@ -11,6 +11,7 @@ namespace Game.Inventory
         [SerializeField] private int currentDurability = -1;
         [SerializeField] private int bonusMaxDurability = 0;
         [SerializeField] private string installedUpgradeId = "";
+        [SerializeField] private int bonusToolLevel = 0;
 
         public string ItemId => itemId;
 
@@ -47,7 +48,14 @@ namespace Game.Inventory
         public bool HasInstanceData =>
             currentDurability >= 0 ||
             bonusMaxDurability > 0 ||
+            bonusToolLevel > 0 ||
             !string.IsNullOrWhiteSpace(installedUpgradeId);
+
+        public int BonusToolLevel
+        {
+            get => bonusToolLevel;
+            set => bonusToolLevel = Mathf.Max(0, value);
+        }
 
         public void Set(string newItemId, int newCount)
         {
@@ -56,6 +64,7 @@ namespace Game.Inventory
             currentDurability = -1;
             bonusMaxDurability = 0;
             installedUpgradeId = "";
+            bonusToolLevel = 0;
 
             if (count <= 0 || string.IsNullOrWhiteSpace(itemId))
                 Clear();
@@ -74,6 +83,7 @@ namespace Game.Inventory
             currentDurability = other.currentDurability;
             bonusMaxDurability = other.bonusMaxDurability;
             installedUpgradeId = other.installedUpgradeId;
+            bonusToolLevel = other.bonusToolLevel;
         }
 
         public ItemStack Clone()
@@ -90,6 +100,7 @@ namespace Game.Inventory
             currentDurability = -1;
             bonusMaxDurability = 0;
             installedUpgradeId = "";
+            bonusToolLevel = 0;
         }
     }
 }

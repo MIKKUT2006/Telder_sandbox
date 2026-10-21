@@ -1,3 +1,4 @@
+using Game.InputSupport;
 using System.Collections;
 
 using TMPro;
@@ -94,9 +95,7 @@ namespace Game.UI.Pause
 
 
             if (
-                !Input.GetKeyDown(
-                    KeyCode.Escape
-                )
+                !(GameInput.Pressed(GameAction.Pause) || (IsPaused && GameInput.Pressed(GameAction.UiCancel)))
             )
             {
                 return;
@@ -108,11 +107,11 @@ namespace Game.UI.Pause
             }
 
             if (
-                settingsPanel != null
-                &&
-                settingsPanel.activeSelf
+                Game.UI.Settings.SettingsTabsController.IsOpen ||
+                (settingsPanel != null && settingsPanel.activeSelf)
             )
             {
+                if (GameInput.Pressed(GameAction.UiCancel)) GameInput.ConsumeUiCancel();
                 CloseSettings();
 
                 return;
@@ -152,6 +151,8 @@ namespace Game.UI.Pause
 
         public void ContinueGame()
         {
+            Game.UI.Settings.SettingsTabsController.Close();
+
             IsPaused =
                 false;
 
@@ -182,19 +183,14 @@ namespace Game.UI.Pause
 
         public void OpenSettings()
         {
-            if (
-                settingsPanel != null
-            )
-            {
-                settingsPanel.SetActive(
-                    true
-                );
-            }
+            Game.UI.Settings.SettingsTabsController.Open();
         }
 
 
         public void CloseSettings()
         {
+            Game.UI.Settings.SettingsTabsController.Close();
+
             if (
                 settingsPanel != null
             )

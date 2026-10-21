@@ -1,0 +1,46 @@
+{
+  "ID": "game:herb_plant",
+  "Name": "Росток зелени",
+  "Texture": "crop_stage_0",
+  "Hardness": 0.2,
+  "Solid": false,
+  "Transparent": true,
+  "BlocksLight": false,
+  "LightOpacity": 0,
+  "alwaysFurniture": true,
+  "CollisionShape": "None",
+  "Tags": [
+    "plant",
+    "wave"
+  ],
+  "Drop": "game:herb_plant",
+  "DropCount": 1,
+  "Plant": {
+    "SoilBlocks": [
+      "game:dirt",
+      "game:grass"
+    ],
+    "Stages": [
+      "crop_stage_0",
+      "crop_stage_1",
+      "crop_stage_2",
+      "crop_stage_3"
+    ],
+    "GrowthSeconds": 1200,
+    "MatureLoot": [
+      {
+        "ItemId": "game:herb",
+        "Min": 2,
+        "Max": 3,
+        "Chance": 1
+      },
+      {
+        "ItemId": "game:herb_plant",
+        "Min": 1,
+        "Max": 2,
+        "Chance": 1
+      }
+    ],
+    "Structures": []
+  }
+}

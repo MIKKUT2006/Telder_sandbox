@@ -1,0 +1,55 @@
+{
+  "ID": "game:stalactite",
+  "Name": "stalactite",
+  "Texture": "stalactite",
+
+  "Hardness": 1.0,
+  "ExplosionResistance": 1.0,
+
+  "Solid": true,
+  "Transparent": false,
+  "BlocksLight": true,
+
+  "CollisionShape": "HalfBottom",
+  "CollisionRects": [],
+
+  "Material": 0,
+
+  "Drop": "game:stone",
+  "DropCount": 2,
+
+  "PlaceSound": "",
+  "BreakSound": "",
+  "RequiredTool": "",
+
+  "Tags": [
+    "furniture"
+  ],
+
+  "closed": false,
+
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+
+  "MultiBlock": {
+    "Width": 1,
+    "Height": 2,
+    "AnchorX": 0,
+    "AnchorY": 1,
+    "Kind": "stalactite",
+    "Texture": "stalactite",
+    "RequireFloor": false
+  },
+
+  "CraftIngredients": [
+    {
+      "ItemId": "game:stone",
+      "Count": 2
+    }
+  ],
+
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1
+}

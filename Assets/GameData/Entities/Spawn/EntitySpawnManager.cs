@@ -1,10 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Entities.AI;
 using Game.World;
 using Game.World.Biomes.Caves;
 using Game.World.Lighting;
+using Game.Save;
 
 namespace Game.Entities.Spawn
 {
@@ -17,6 +19,14 @@ namespace Game.Entities.Spawn
         private WorldManager worldManager;
         private float nextSpawnTime;
         private float nextDiagnosticTime;
+        private bool persistenceRestoreFinished;
+        private readonly List<EntitySaveData> deferredRestores = new List<EntitySaveData>();
+
+        // Snapshots outside loaded chunks must survive autosave without creating
+        // physical actors in the void.
+        public IReadOnlyList<EntitySaveData> DeferredRestores => deferredRestores;
+
+        public bool PersistenceRestoreFinished => persistenceRestoreFinished;
 
         private void Start()
         {
@@ -29,6 +39,8 @@ namespace Game.Entities.Spawn
             ResolvePlayer();
             nextSpawnTime = Time.time + 1f;
             nextDiagnosticTime = Time.time + 4f;
+            persistenceRestoreFinished = false;
+            StartCoroutine(RestoreSavedEntities());
 
             int total = 0;
             int enabled = 0;
@@ -55,6 +67,13 @@ namespace Game.Entities.Spawn
             if (player == null || playerStats == null)
                 ResolvePlayer();
 
+            // Saved entities must enter the same alive pool before new spawn
+            // attempts start. Otherwise MaxAlive is calculated as if the restored
+            // mobs did not exist and duplicates are created after loading.
+            if (!persistenceRestoreFinished)
+                return;
+
+            RestoreDeferredEntities();
             CleanupAndDespawnFar();
 
             // Do not globally block all spawning on InitialLightingReady.
@@ -117,6 +136,83 @@ namespace Game.Entities.Spawn
             playerStats = UnityEngine.Object.FindObjectOfType<Game.PlayerStats.PlayerStats>();
             player = playerStats != null ? playerStats.transform : null;
         }
+
+        private IEnumerator RestoreSavedEntities()
+        {
+            float timeout = Time.realtimeSinceStartup + 20f;
+
+            while (Time.realtimeSinceStartup < timeout)
+            {
+                if (worldManager == null)
+                    worldManager = WorldManager.Instance;
+
+                if (player == null || playerStats == null)
+                    ResolvePlayer();
+
+                if (worldManager != null && worldManager.IsReady && player != null && playerStats != null)
+                    break;
+
+                yield return null;
+            }
+
+            if (worldManager == null || player == null || playerStats == null)
+            {
+                persistenceRestoreFinished = true;
+                yield break;
+            }
+
+            // SaveRuntimeBootstrap restores the player asynchronously after initial
+            // chunks finish loading. Wait briefly for that position before adding
+            // saved mobs so the normal distance cleanup cannot delete them against
+            // the temporary spawn position.
+            if (SaveGameRuntime.HasActiveSave &&
+                SaveGameRuntime.TryGetCurrentPlayerPosition(out Vector3 savedPlayerPosition))
+            {
+                float playerTimeout = Time.realtimeSinceStartup + 8f;
+                while (Time.realtimeSinceStartup < playerTimeout &&
+                       ((Vector2)player.position - (Vector2)savedPlayerPosition).sqrMagnitude > 4f)
+                {
+                    yield return null;
+                }
+            }
+
+            List<EntitySaveData> savedEntities =
+                SaveGameRuntime.GetCurrentSavedEntities();
+
+            deferredRestores.Clear();
+            for (int i = 0; i < savedEntities.Count; i++)
+            {
+                EntitySaveData snapshot = savedEntities[i];
+                if (snapshot == null ||
+                    snapshot.Health <= 0f ||
+                    string.IsNullOrWhiteSpace(snapshot.DefinitionId))
+                {
+                    continue;
+                }
+
+                if (!EntityRegistry.TryGet(snapshot.DefinitionId, out EntityDefinition definition) ||
+                    definition == null)
+                {
+                    Debug.LogWarning(
+                        "ENTITIES SAVE: definition not found while restoring: " +
+                        snapshot.DefinitionId);
+                    continue;
+                }
+
+                deferredRestores.Add(snapshot);
+            }
+
+            persistenceRestoreFinished = true;
+            RestoreDeferredEntities();
+
+            if (savedEntities.Count > 0)
+            {
+                Debug.Log(
+                    "ENTITIES SAVE: restored " + alive.Count +
+                    " actor(s), awaiting terrain for " + deferredRestores.Count + ".");
+            }
+        }
+
 
         private EntityDefinition PickDefinition()
         {
@@ -447,6 +543,62 @@ namespace Game.Entities.Spawn
             return worldManager.GetLoader().IsChunkLoaded(chunkX, chunkY);
         }
 
+        private bool HasLoadedTerrainAt(float x, float y, float halfWidth, float halfHeight)
+        {
+            if (worldManager == null || worldManager.GetLoader() == null ||
+                worldManager.GetSettings() == null)
+                return false;
+
+            int size = Mathf.Max(1, worldManager.GetSettings().ChunkSize);
+            int minX = Mathf.FloorToInt((x - halfWidth) / size);
+            int maxX = Mathf.FloorToInt((x + halfWidth) / size);
+            int minY = Mathf.FloorToInt((y - halfHeight - 0.10f) / size);
+            int maxY = Mathf.FloorToInt((y + halfHeight) / size);
+            var loader = worldManager.GetLoader();
+            for (int cx = minX; cx <= maxX; cx++)
+                for (int cy = minY; cy <= maxY; cy++)
+                    if (!loader.IsChunkLoaded(cx, cy))
+                        return false;
+            return true;
+        }
+
+        private void RestoreDeferredEntities()
+        {
+            if (playerStats == null || worldManager == null || !worldManager.IsReady)
+                return;
+
+            for (int i = deferredRestores.Count - 1; i >= 0; i--)
+            {
+                EntitySaveData snapshot = deferredRestores[i];
+                if (!EntityRegistry.TryGet(snapshot.DefinitionId, out EntityDefinition definition) ||
+                    definition == null || !definition.Enabled)
+                {
+                    deferredRestores.RemoveAt(i);
+                    continue;
+                }
+
+                // Do not instantiate entities outside their simulation radius:
+                // they would be despawned and reinstantiated on every Update.
+                float maxDistance = EntitySpawnSettings.Data.DespawnDistance;
+                if (player != null &&
+                    ((Vector2)player.position - new Vector2(snapshot.X, snapshot.Y)).sqrMagnitude >
+                    maxDistance * maxDistance)
+                    continue;
+
+                if (!HasLoadedTerrainAt(snapshot.X, snapshot.Y,
+                    definition.ColliderWidth * 0.5f, definition.ColliderHeight * 0.5f))
+                    continue;
+
+                GameObject go = new GameObject("Entity_" + definition.ID);
+                go.transform.position = new Vector3(snapshot.X, snapshot.Y, snapshot.Z);
+                EntityActor actor = go.AddComponent<EntityActor>();
+                actor.Initialize(definition, Mathf.Clamp(snapshot.Stars, 1, 5), playerStats);
+                actor.RestorePersistentState(snapshot.Health, snapshot.HeldItemId);
+                alive.Add(actor);
+                deferredRestores.RemoveAt(i);
+            }
+        }
+
         private void Spawn(EntityDefinition definition, Vector2 position)
         {
             GameObject go = new GameObject("Entity_" + definition.ID);
@@ -473,6 +625,15 @@ namespace Game.Entities.Spawn
 
                 if (player != null && !actor.IsDead && ((Vector2)actor.transform.position - (Vector2)player.position).sqrMagnitude > maxDistanceSqr)
                 {
+                    // Store living mobs instead of discarding them outside view.
+                    deferredRestores.Add(new EntitySaveData
+                    {
+                        DefinitionId = actor.DefinitionId, Stars = actor.Stars,
+                        Health = actor.Health, X = actor.transform.position.x,
+                        Y = actor.transform.position.y, Z = actor.transform.position.z,
+                        HeldItemId = actor.HeldItemId
+                    });
+                    actor.gameObject.SetActive(false);
                     Destroy(actor.gameObject);
                     alive.RemoveAt(i);
                 }

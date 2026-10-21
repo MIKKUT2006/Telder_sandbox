@@ -269,9 +269,18 @@ namespace Game.Inventory.UI
             )
             {
 
-                owner.LeftClick(
-                    slotIndex
-                );
+                // The collapsed hotbar is a selection bar, not a container.
+                // Tapping it on a phone must equip the slot rather than pick up
+                // its stack onto the inventory cursor.
+                if (!owner.IsOpen && slotIndex >= 0 && slotIndex < Game.Inventory.PlayerInventory.HotbarSize)
+                {
+                    if (owner.PlayerInventory != null)
+                        owner.PlayerInventory.SelectHotbarSlot(slotIndex);
+                }
+                else
+                {
+                    owner.LeftClick(slotIndex);
+                }
 
             }
 
@@ -325,7 +334,7 @@ namespace Game.Inventory.UI
             PointerEventData eventData
         )
         {
-
+            Debug.Log($"[Slot {slotIndex}] OnPointerEnter, owner={(owner != null)}, inv={(owner?.PlayerInventory != null)}, pos={eventData.position}");
             owner?.SetHoveredSlot(
                 this
             );

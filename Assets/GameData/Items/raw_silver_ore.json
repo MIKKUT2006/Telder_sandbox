@@ -1,0 +1,10 @@
+{
+  "ID": "game:raw_silver_ore",
+  "Name": "Raw Silver ore",
+  "Texture": "raw_silver_ore",
+  "Type": "Material",
+  "MaxStack": 100,
+  "SmeltResult": "game:silver_ingot",
+  "SmeltResultCount": 1,
+  "SmeltTime": 7.0
+}

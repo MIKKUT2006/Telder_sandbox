@@ -1,3 +1,4 @@
+using Game.InputSupport;
 using System;
 using System.Collections.Generic;
 
@@ -522,9 +523,7 @@ namespace Game.Inventory.UI
         {
 
             if (
-                !Input.GetKeyDown(
-                    KeyCode.E
-                )
+                !GameInput.Pressed(GameAction.Inventory)
             )
             {
 
@@ -553,7 +552,7 @@ namespace Game.Inventory.UI
 
         public void OpenInventory()
         {
-
+            if (!IsOpen) Game.Audio.TelderAudioSystem.Play("ui.inventory.open");
             IsOpen =
                 true;
 
@@ -631,7 +630,7 @@ namespace Game.Inventory.UI
 
             IsOpen =
                 false;
-
+            Game.Audio.TelderAudioSystem.Play("ui.inventory.close");
 
             hoveredSlot =
                 null;
@@ -663,6 +662,18 @@ namespace Game.Inventory.UI
 
         private void HandleHotbarKeys()
         {
+            if (Game.UI.Settings.SettingsTabsController.IsOpen || Time.timeScale < 0.001f) return;
+            if (!IsOpen)
+            {
+                int offset = GameInput.Pressed(GameAction.HotbarNext) ? 1 :
+                    GameInput.Pressed(GameAction.HotbarPrevious) ? -1 : 0;
+                if (offset != 0)
+                {
+                    int index = (inventory.SelectedHotbarIndex + offset + PlayerInventory.HotbarSize)
+                        % PlayerInventory.HotbarSize;
+                    inventory.SelectHotbarSlot(index);
+                }
+            }
 
             for (
                 int i = 0;
@@ -671,18 +682,7 @@ namespace Game.Inventory.UI
             )
             {
 
-                KeyCode key =
-                    (KeyCode)(
-                        (int)KeyCode.Alpha1 +
-                        i
-                    );
-
-
-                if (
-                    Input.GetKeyDown(
-                        key
-                    )
-                )
+                if (GameInput.Pressed((GameAction)((int)GameAction.Hotbar1 + i)))
                 {
 
                     inventory.SelectHotbarSlot(
@@ -698,6 +698,7 @@ namespace Game.Inventory.UI
 
         private void HandleMouseWheel()
         {
+            if (Game.UI.Settings.SettingsTabsController.IsOpen || Time.timeScale < 0.001f) return;
 
             float wheel =
                 Input.mouseScrollDelta.y;
@@ -761,6 +762,20 @@ namespace Game.Inventory.UI
         // LEFT CLICK / SHIFT CLICK
         // =====================================================
 
+        public void GamepadQuickMoveSlot(int slotIndex)
+        {
+            if (Game.Gameplay.Cooking.CauldronRuntime.Instance?.QuickMoveFromPlayer(slotIndex) == true) return;
+            if (!IsOpen || inventory == null) return;
+            if (FurnaceRuntime.Instance != null && FurnaceRuntime.Instance.IsUIOpen &&
+                FurnaceRuntime.Instance.QuickMoveFromPlayer(slotIndex)) return;
+            if (ChestUIController.Instance != null && ChestUIController.Instance.IsOpen)
+            {
+                ChestUIController.Instance.QuickMoveFromPlayer(slotIndex);
+                return;
+            }
+            inventory.QuickMove(slotIndex);
+        }
+
         public void LeftClick(
             int slotIndex
         )
@@ -799,6 +814,8 @@ namespace Game.Inventory.UI
                 // Smeltable items go to the input slot, fuel goes to the
                 // fuel slot. Items rejected by the furnace keep the normal
                 // hotbar <-> storage quick-move behaviour.
+                if (Game.Gameplay.Cooking.CauldronRuntime.Instance?.QuickMoveFromPlayer(slotIndex) == true) return;
+
                 if (
                     FurnaceRuntime.Instance != null
                     &&
@@ -1050,9 +1067,7 @@ namespace Game.Inventory.UI
         {
 
             if (
-                !Input.GetKeyDown(
-                    KeyCode.G
-                )
+                !GameInput.Pressed(GameAction.Drop)
                 ||
                 hoveredSlot == null
             )
@@ -1083,7 +1098,7 @@ namespace Game.Inventory.UI
             {
 
                 cursorItemRoot.position =
-                    Input.mousePosition;
+                    GameInput.PointerPosition;
 
             }
 

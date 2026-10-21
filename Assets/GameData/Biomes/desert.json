@@ -37,6 +37,10 @@
     "Humidity": 0.55,
     "Weirdness": 0.2
   },
+  "Weather":{
+    "Precipitation": "Rain",
+    "FogChance": "0.15"
+  },
   "LiquidGeneration": {
     "Enabled": true,
     "Liquids": [

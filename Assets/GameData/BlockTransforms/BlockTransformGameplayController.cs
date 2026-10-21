@@ -1,3 +1,4 @@
+using Game.InputSupport;
 using System;
 using System.Reflection;
 using Game.World;
@@ -20,13 +21,13 @@ namespace Game.BlockTransforms
         {
             BlockTransformRuntimeBootstrap.Ensure();
 
-            if (Input.GetKeyDown(KeyCode.Z))
+            if (GameInput.Pressed(GameAction.RotateBlock))
                 CycleMode();
 
             if (Mode == BlockTransformMode.None)
                 return false;
 
-            if (Input.GetMouseButtonDown(0))
+            if (GameInput.Pressed(GameAction.Attack))
             {
                 TryTransform(
                     worldManager,
@@ -70,7 +71,7 @@ namespace Game.BlockTransforms
             if (manager == null || world == null || camera == null || player == null)
                 return;
 
-            Vector3 mouse = camera.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 mouse = camera.ScreenToWorldPoint(GameInput.PointerPosition);
             int x = Mathf.FloorToInt(mouse.x);
             int y = Mathf.FloorToInt(mouse.y);
 

@@ -1,0 +1,30 @@
+{
+  "ID": "game:sand_trunk_stairs",
+
+  "Name": "Sand trunk stairs",
+
+  "Texture": "sand_trunk_stairs",
+
+  "Hardness": 1,
+  "Tags": [
+    "wood"
+  ],
+  "Solid": true,
+  "Drop": "game:sand_trunk_stairs",
+  "DropCount": 1,
+  "RequiredTool": "axe",
+  "LightOpacity": 15,
+  "LightEmissionR": 0,
+  "LightEmissionG": 0,
+  "LightEmissionB": 0,
+  "CraftIngredients": [
+    {
+      "ItemId": "game:sand_trunk",
+      "Count": 2
+    }
+  ],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+  "CollisionShape": "StairUpLeft",
+  "CollisionRects": []
+}

@@ -1,0 +1,12 @@
+{
+  "ID": "game:oak_door",
+  "Name": "Oak door",
+  "Texture": "oak_door",
+  "Type": "Block",
+  "MaxStack": 100,
+  "Tags": [
+    "fuel",
+    "burnable"
+  ],
+  "FuelBurnTime": 10.0
+}

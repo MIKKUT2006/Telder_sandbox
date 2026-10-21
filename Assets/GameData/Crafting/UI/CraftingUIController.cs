@@ -1,10 +1,13 @@
+using Game.Blocks;
+using Game.Inventory;
+using Game.Inventory.UI;
+using Game.Items;
+using Game.Localization;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Game.Blocks;
-using Game.Inventory;
-using Game.Inventory.UI;
 
 namespace Game.Crafting.UI
 {
@@ -205,7 +208,7 @@ namespace Game.Crafting.UI
                 new Vector2(0, -8),
                 new Vector2(cardSize.x - 8, 25),
                 15,
-                recipe.Name
+                GameLocalization.ContentName(recipe.ResultItemId, recipe.Name)
             );
 
             name.alignment = TextAlignmentOptions.Center;
@@ -239,7 +242,13 @@ namespace Game.Crafting.UI
                 {
                     CraftIngredientDefinition ing = recipe.Ingredients[i];
 
-                    if (ing == null || string.IsNullOrWhiteSpace(ing.ItemId))
+                    if (ing == null)
+                        continue;
+
+                    bool hasId = !string.IsNullOrWhiteSpace(ing.ItemId);
+                    bool hasTag = !string.IsNullOrWhiteSpace(ing.Tag);
+
+                    if (!hasId && !hasTag)
                         continue;
 
                     GameObject g = new GameObject(
@@ -258,15 +267,45 @@ namespace Game.Crafting.UI
                         new Vector2(26, 26)
                     );
 
-                    icon.sprite = ItemIconProvider.GetIcon(ing.ItemId);
                     icon.preserveAspect = true;
-                    icon.enabled = icon.sprite != null;
                     icon.raycastTarget = true;
 
                     CraftIngredientIconUI trigger =
                         icon.gameObject.AddComponent<CraftIngredientIconUI>();
 
-                    trigger.Bind(ing.ItemId);
+                    if (hasId)
+                    {
+                        // Конкретный предмет — как было.
+                        Sprite s = ItemIconProvider.GetIcon(ing.ItemId);
+                        icon.sprite = s;
+                        icon.enabled = s != null;
+
+                        trigger.Bind(ing.ItemId);
+                    }
+                    else
+                    {
+                        // Тег — собираем список и сортируем,
+                        // чтобы порядок отображения был стабильным.
+                        List<string> tagItems =
+                            new List<string>(
+                                ItemTagRegistry.GetItemsWithTag(ing.Tag)
+                            );
+
+                        tagItems.Sort(StringComparer.OrdinalIgnoreCase);
+
+                        if (tagItems.Count > 0)
+                        {
+                            Sprite s = ItemIconProvider.GetIcon(tagItems[0]);
+                            icon.sprite = s;
+                            icon.enabled = s != null;
+                        }
+                        else
+                        {
+                            icon.enabled = false;
+                        }
+
+                        trigger.BindTag(ing.Tag, tagItems);
+                    }
 
                     TMP_Text count = CreateText(
                         g.transform,

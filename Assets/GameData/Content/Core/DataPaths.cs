@@ -8,11 +8,14 @@ namespace Game.Content
     public static class DataPaths
     {
 
+        // Android APK is a read-only archive. Runtime JSON and PNG must be
+        // unpacked from StreamingAssets into this writable, regular folder.
         public static string GameDataFolder =>
-            Path.Combine(
-                Application.dataPath,
-                "GameData"
-            );
+#if UNITY_ANDROID && !UNITY_EDITOR
+            Path.Combine(Application.persistentDataPath, "GameData");
+#else
+            Path.Combine(Application.dataPath, "GameData");
+#endif
 
 
 

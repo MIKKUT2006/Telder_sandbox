@@ -117,6 +117,42 @@ namespace Game.World.Fluids
             new Queue<ScheduledActivation>();
         private readonly HashSet<long> scheduledSet = new HashSet<long>();
 
+        private readonly HashSet<Vector2Int> deferredVisuals = new HashSet<Vector2Int>();
+        private bool IsVisualInCamera(int chunkX, int chunkY)
+        {
+            WorldManager manager = WorldManager.Instance;
+            return manager == null || manager.GetLoader() == null ||
+                   manager.GetLoader().IsChunkOnScreen(chunkX, chunkY);
+        }
+
+        private void UpdateDeferredVisibility()
+        {
+            foreach (var entry in visuals)
+            {
+                if (entry.Value != null && entry.Value.Root != null)
+                {
+                    bool visible = IsVisualInCamera(entry.Key.x, entry.Key.y);
+                    if (entry.Value.Root.activeSelf != visible)
+                        entry.Value.Root.SetActive(visible);
+                }
+            }
+            // Do not rebuild every hidden liquid chunk each simulation tick.
+            // One newly visible mesh per discovery tick is enough.
+            if (deferredVisuals.Count == 0) return;
+            Vector2Int first = default(Vector2Int);
+            bool found = false;
+            foreach (Vector2Int key in deferredVisuals)
+            {
+                if (!IsVisualInCamera(key.x, key.y)) continue;
+                first = key;
+                found = true;
+                break;
+            }
+            if (!found) return;
+            deferredVisuals.Remove(first);
+            RebuildChunkVisual(first.x, first.y);
+        }
+
         private readonly Dictionary<Vector2Int, LiquidChunkVisual> visuals =
             new Dictionary<Vector2Int, LiquidChunkVisual>();
 
@@ -132,15 +168,21 @@ namespace Game.World.Fluids
         private float tickTimer;
         private float saveTimer;
         private float hazardTimer;
+        private float discoverTimer;
         private float lightTextureTimer;
+        private readonly List<Vector2Int> lightingKeys = new List<Vector2Int>();
+        private int lightingCursor;
         private float foamTimer;
 
         private string loadedDimensionKey = string.Empty;
+        private string loadedSaveId = string.Empty;
+        private World loadedWorld;
         private int loadedSaveVersion = SaveVersion;
 
         private Material lightingMaterial;
         private Material foamMaterial;
         private ParticleSystem foamSystem;
+        private bool renderingResourcesReady;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
@@ -162,7 +204,23 @@ namespace Game.World.Fluids
 
             instance = this;
 
-            Shader shader = Shader.Find("Game/ChunkLitSprite");
+            // RuntimeInitializeOnLoadMethod is not re-run for every ordinary
+            // SceneManager reload. Dimension travel reloads the Game scene, so
+            // keep the liquid runtime alive and explicitly rebind it to the new
+            // World instance below. This prevents liquids from becoming invisible
+            // after the first dimension transition.
+            DontDestroyOnLoad(gameObject);
+
+        }
+
+        private void EnsureRenderingResources()
+        {
+            if(renderingResourcesReady)return;
+            renderingResourcesReady=true;
+            // PixelLiquid.mat retains the shader in builds. Construct the runtime
+            // material from its shader; no YAML material is loaded in the menu.
+            Shader shader = Shader.Find("Game/TelderPixelLiquid");
+            if (shader == null) shader = ChunkLightingShaderProvider.Get();
             if (shader == null)
             {
                 Debug.LogWarning(
@@ -187,26 +245,34 @@ namespace Game.World.Fluids
             if (wm == null || !wm.IsReady)
                 return;
 
+            if(DimensionTravelRuntime.Current!=null&&DimensionTravelRuntime.Current.Is3D)return;
+            EnsureRenderingResources();
             world = wm.GetWorld();
             if (world == null)
                 return;
 
             EnsureDimensionLoaded();
-            DiscoverChunks();
+            discoverTimer += Time.deltaTime;
+            if (discoverTimer >= .30f)
+            {
+                discoverTimer = 0f;
+                DiscoverChunks();
+                UpdateDeferredVisibility();
+            }
             PumpScheduledActivations();
 
             tickTimer += Time.deltaTime;
             if (tickTimer >= 0.07f)
             {
                 tickTimer = 0f;
-                Simulate(1600);
+                Simulate(320);
             }
 
             // Terrain light textures are updated by ChunkRenderer. Liquids own a
             // matching light texture, so refresh it independently as lighting/day
             // changes; this also avoids depending on renderer execution order.
             lightTextureTimer += Time.deltaTime;
-            if (lightTextureTimer >= 0.10f)
+            if (lightTextureTimer >= 0.25f)
             {
                 lightTextureTimer = 0f;
                 RefreshAllLightTextures();
@@ -241,12 +307,24 @@ namespace Game.World.Fluids
                 ? string.Empty
                 : dimension.Name + "_" + dimension.Seed;
 
-            if (key == loadedDimensionKey)
+            string saveId = SaveGameRuntime.HasActiveSave
+                ? SaveGameRuntime.CurrentSaveId
+                : string.Empty;
+
+            bool worldChanged = world != loadedWorld;
+            bool contextChanged =
+                key != loadedDimensionKey ||
+                !string.Equals(saveId, loadedSaveId, StringComparison.Ordinal);
+
+            if (!worldChanged && !contextChanged)
                 return;
 
+            // Flush using the OLD loadedSaveId before rebinding to a new save/world.
             Flush();
 
+            loadedWorld = world;
             loadedDimensionKey = key;
+            loadedSaveId = saveId;
             loadedSaveVersion = SaveVersion;
 
             saved.Clear();
@@ -258,7 +336,7 @@ namespace Game.World.Fluids
             scheduledSet.Clear();
             foamPoints.Clear();
 
-            if (!SaveGameRuntime.HasActiveSave || string.IsNullOrWhiteSpace(key))
+            if (string.IsNullOrWhiteSpace(loadedSaveId) || string.IsNullOrWhiteSpace(key))
                 return;
 
             string path = SavePath();
@@ -341,15 +419,15 @@ namespace Game.World.Fluids
 
             List<Vector2Int> remove = null;
 
-            foreach (var pair in visuals)
+            // Include deferred chunks that never allocated a liquid mesh.
+            // Otherwise unloaded -> reloaded chunks are never rediscovered.
+            foreach (Vector2Int key in seenChunks)
             {
-                if (world.GetChunk(pair.Key.x, pair.Key.y) != null)
+                if (world.GetChunk(key.x, key.y) != null)
                     continue;
-
                 if (remove == null)
                     remove = new List<Vector2Int>();
-
-                remove.Add(pair.Key);
+                remove.Add(key);
             }
 
             if (remove != null)
@@ -359,6 +437,7 @@ namespace Game.World.Fluids
                     Vector2Int key = remove[i];
                     DestroyVisual(key);
                     seenChunks.Remove(key);
+                    deferredVisuals.Remove(key);
                 }
             }
         }
@@ -1149,37 +1228,40 @@ namespace Game.World.Fluids
 
         private void UpdatePlayerHazard()
         {
+            if (world == null) return;
             Game.PlayerStats.PlayerStats stats =
                 FindFirstObjectByType<Game.PlayerStats.PlayerStats>();
+            if (stats == null || stats.IsDead) return;
 
-            if (stats == null)
-                return;
+            Vector3 center = stats.transform.position;
+            Collider2D collider = stats.GetComponent<Collider2D>();
+            Bounds bounds = collider != null
+                ? collider.bounds
+                : new Bounds(center, new Vector3(.75f, 1.8f, .1f));
 
-            Vector3 position = stats.transform.position;
-
-            if (!IsPointSubmerged(new Vector2(position.x, position.y)))
-                return;
-
-            int x = Mathf.FloorToInt(position.x);
-            int y = Mathf.FloorToInt(position.y);
-
-            byte amount = world.GetLiquidAmount(x, y);
-            ushort id = world.GetLiquidID(x, y);
-
-            if (amount == 0 || id == 0)
-                return;
-
-            string key = FluidIDRegistry.GetString(id);
-
-            if (!FluidRegistry.TryGet(key, out FluidDefinition definition) ||
-                definition == null ||
-                definition.Damage <= 0f)
+            // Damage is caused by contact, not just immersion of the player's centre.
+            float strongestDamagePerSecond = 0f;
+            for (int a = 0; a < 3; a++)
             {
-                return;
+                for (int b = 0; b < 3; b++)
+                {
+                    float px = a == 0 ? bounds.center.x : (a == 1 ? bounds.min.x + .08f : bounds.max.x - .08f);
+                    float py = b == 0 ? bounds.min.y + .08f : (b == 1 ? bounds.center.y : bounds.max.y - .08f);
+                    Vector2 point = new Vector2(px, py);
+                    if (!IsPointSubmerged(point)) continue;
+                    int x = Mathf.FloorToInt(point.x);
+                    int y = Mathf.FloorToInt(point.y);
+                    ushort fluidId = world.GetLiquidID(x, y);
+                    if (fluidId == 0 || world.GetLiquidAmount(x, y) == 0) continue;
+                    string key = FluidIDRegistry.GetString(fluidId);
+                    if (!FluidRegistry.TryGet(key, out FluidDefinition definition) || definition == null) continue;
+                    if (definition.Damage <= 0f) continue;
+                    float dps = definition.Damage / Mathf.Max(.05f, definition.DamageInterval);
+                    strongestDamagePerSecond = Mathf.Max(strongestDamagePerSecond, dps);
+                }
             }
-
-            float interval = Mathf.Max(0.05f, definition.DamageInterval);
-            stats.TakeDamage(definition.Damage * (0.12f / interval));
+            if (strongestDamagePerSecond > 0f)
+                stats.TakeDamage(strongestDamagePerSecond * .12f);
         }
 
         // =====================================================
@@ -1196,16 +1278,26 @@ namespace Game.World.Fluids
 
             if (chunk == null)
             {
+                deferredVisuals.Remove(key);
                 DestroyVisual(key);
                 return;
             }
 
+            if (!IsVisualInCamera(chunkX, chunkY))
+            {
+                deferredVisuals.Add(key);
+                if (visuals.TryGetValue(key, out LiquidChunkVisual cached) && cached.Root != null)
+                    cached.Root.SetActive(false);
+                return;
+            }
+            deferredVisuals.Remove(key);
             DestroyVisual(key);
 
             List<Vector3> vertices = new List<Vector3>();
             List<int> triangles = new List<int>();
             List<Color> colors = new List<Color>();
             List<Vector2> uvs = new List<Vector2>();
+            List<Vector4> liquidUVs = new List<Vector4>();
             List<FoamPoint> chunkFoam = new List<FoamPoint>();
             int worldBaseX = chunkX * Chunk.SizeX;
             int worldBaseY = chunkY * Chunk.SizeY;
@@ -1279,6 +1371,26 @@ namespace Game.World.Fluids
                     uvs.Add(new Vector2(u1, v1));
                     uvs.Add(new Vector2(u0, v1));
 
+                    // A bounded column probe also sees surfaces in adjacent chunks.
+                    // The shader receives depth rather than assuming each tile is a surface.
+                    float depthAbove = 0f;
+                    for (int above = 1; above <= 6; above++)
+                    {
+                        int wx = worldBaseX + x;
+                        int wy = worldBaseY + y + above;
+                        if (world.GetLiquidID(wx, wy) != id || world.GetLiquidAmount(wx, wy) == 0)
+                            break;
+                        depthAbove += world.GetLiquidIsFalling(wx, wy)
+                            ? 1f : Mathf.Clamp01(world.GetLiquidAmount(wx, wy) / 8f);
+                    }
+                    float falling = chunk.GetLiquidIsFalling(x, y) ? 1f : 0f;
+                    float glow = definition == null ? 0f :
+                        Mathf.Max(definition.LightEmissionR, Mathf.Max(definition.LightEmissionG, definition.LightEmissionB)) / 15f;
+                    liquidUVs.Add(new Vector4(depthAbove + height, falling, glow, 0f));
+                    liquidUVs.Add(new Vector4(depthAbove + height, falling, glow, 0f));
+                    liquidUVs.Add(new Vector4(depthAbove, falling, glow, 0f));
+                    liquidUVs.Add(new Vector4(depthAbove, falling, glow, 0f));
+
                     triangles.Add(start);
                     triangles.Add(start + 2);
                     triangles.Add(start + 1);
@@ -1314,6 +1426,7 @@ namespace Game.World.Fluids
             visual.Mesh.SetTriangles(triangles, 0);
             visual.Mesh.SetColors(colors);
             visual.Mesh.SetUVs(0, uvs);
+            visual.Mesh.SetUVs(1, liquidUVs);
             visual.Mesh.RecalculateBounds();
 
             MeshFilter filter = visual.Root.AddComponent<MeshFilter>();
@@ -1326,7 +1439,7 @@ namespace Game.World.Fluids
             visual.LightTexture = new Texture2D(
                 LightTextureWidth,
                 LightTextureHeight,
-                TextureFormat.RGB24,
+                TextureFormat.RGBA32,
                 false
             );
 
@@ -1343,7 +1456,8 @@ namespace Game.World.Fluids
 
             if (lightingMaterial != null &&
                 lightingMaterial.shader != null &&
-                lightingMaterial.shader.name == "Game/ChunkLitSprite")
+                (lightingMaterial.shader.name == "Game/ChunkLitSprite" ||
+                 lightingMaterial.shader.name == "Game/TelderPixelLiquid"))
             {
                 float scaleX = (float)Chunk.SizeX / LightTextureWidth;
                 float scaleY = (float)Chunk.SizeY / LightTextureHeight;
@@ -1356,6 +1470,9 @@ namespace Game.World.Fluids
                     "_LightUVScaleOffset",
                     new Vector4(scaleX, scaleY, offsetX, offsetY)
                 );
+                // Allows pixel shader to sample the chunk's light at exact world-space cells.
+                visual.Properties.SetVector("_ChunkOrigin",
+                    new Vector4(chunkX * Chunk.SizeX, chunkY * Chunk.SizeY, 0f, 0f));
                 visual.Properties.SetFloat("_LayerBrightness", 1f);
                 visual.Properties.SetFloat("_Ambient", 0f);
                 visual.Properties.SetFloat("_LightGamma", 0.72f);
@@ -1365,19 +1482,32 @@ namespace Game.World.Fluids
             }
 
             visuals[key] = visual;
+            if (!lightingKeys.Contains(key)) lightingKeys.Add(key);
             UpdateVisualLightTexture(chunk, visual);
         }
 
+        // Previously refreshed EVERY visible chunk at 10 Hz: expensive GPU uploads.
+        // Round-robin limits the cost, while newly created chunks still refresh immediately.
         private void RefreshAllLightTextures()
         {
-            if (world == null)
-                return;
-
-            foreach (var pair in visuals)
+            if (world == null || lightingKeys.Count == 0) return;
+            int budget = Mathf.Min(2, lightingKeys.Count);
+            for (int i = 0; i < budget; i++)
             {
-                Chunk chunk = world.GetChunk(pair.Key.x, pair.Key.y);
-                if (chunk != null && pair.Value != null)
-                    UpdateVisualLightTexture(chunk, pair.Value);
+                if (lightingCursor >= lightingKeys.Count) lightingCursor = 0;
+                Vector2Int key = lightingKeys[lightingCursor++];
+                LiquidChunkVisual visual;
+                if (!visuals.TryGetValue(key, out visual) || visual == null)
+                {
+                    lightingKeys.Remove(key);
+                    lightingCursor--;
+                    i--;
+                    budget = Mathf.Min(budget, lightingKeys.Count);
+                    continue;
+                }
+                Chunk chunk = world.GetChunk(key.x, key.y);
+                if (chunk != null && visual.Root != null && visual.Root.activeSelf)
+                    UpdateVisualLightTexture(chunk, visual);
             }
         }
 
@@ -1411,16 +1541,11 @@ namespace Game.World.Fluids
                         startWorldY + lightY
                     );
 
-                    float sunlight = node.Sun / 15f;
-                    float red = Mathf.Max(sunlight, node.R / 15f);
-                    float green = Mathf.Max(sunlight, node.G / 15f);
-                    float blue = Mathf.Max(sunlight, node.B / 15f);
-
-                    visual.LightPixels[index++] = new Color(
-                        red,
-                        green,
-                        blue,
-                        1f
+                    visual.LightPixels[index++] = new Color32(
+                        (byte)Mathf.RoundToInt(node.R * (255f / 15f)),
+                        (byte)Mathf.RoundToInt(node.G * (255f / 15f)),
+                        (byte)Mathf.RoundToInt(node.B * (255f / 15f)),
+                        (byte)Mathf.RoundToInt(node.Sun * (255f / 15f))
                     );
                 }
             }
@@ -1465,6 +1590,8 @@ namespace Game.World.Fluids
                 return;
 
             visuals.Remove(key);
+            lightingKeys.Remove(key);
+            if (lightingCursor > lightingKeys.Count) lightingCursor = 0;
 
             if (visual == null)
                 return;
@@ -1495,8 +1622,7 @@ namespace Game.World.Fluids
 
         public void Flush()
         {
-            if (!SaveGameRuntime.HasActiveSave ||
-                saved.Count == 0 ||
+            if (string.IsNullOrWhiteSpace(loadedSaveId) ||
                 string.IsNullOrWhiteSpace(loadedDimensionKey))
             {
                 return;
@@ -1505,7 +1631,7 @@ namespace Game.World.Fluids
             try
             {
                 Directory.CreateDirectory(
-                    SavePaths.GetSaveFolder(SaveGameRuntime.CurrentSaveId)
+                    SavePaths.GetSaveFolder(loadedSaveId)
                 );
 
                 LiquidSaveFile file = new LiquidSaveFile();
@@ -1532,7 +1658,7 @@ namespace Game.World.Fluids
                 .Replace(':', '_');
 
             return Path.Combine(
-                SavePaths.GetSaveFolder(SaveGameRuntime.CurrentSaveId),
+                SavePaths.GetSaveFolder(loadedSaveId),
                 "liquids_" + safe + ".json"
             );
         }

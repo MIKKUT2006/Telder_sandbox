@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -40,8 +40,7 @@ namespace Game.Combat
 
             string folder =
                 Path.Combine(
-                    Application.dataPath,
-                    "GameData",
+                    Game.Content.DataPaths.GameDataFolder,
                     "Items"
                 );
 
@@ -90,13 +89,21 @@ namespace Game.Combat
             );
         }
 
-        public static bool IsWeapon(
-            string itemId)
+        public static bool IsWeapon(string itemId)
         {
-            return TryGet(
-                itemId,
-                out _
-            );
+            if (string.IsNullOrWhiteSpace(itemId)) return false;
+
+            // Weapon Studio can write a Weapon section with Kind = None for
+            // normal tools. Presence of the section is NOT a weapon flag.
+            Game.Items.ItemDefinition item = Game.Items.ItemRegistry.Get(itemId);
+            if (item != null &&
+                (item.Type == Game.Items.ItemType.Block ||
+                 item.Type == Game.Items.ItemType.Tool))
+                return false;
+
+            WeaponMetadata weapon;
+            return TryGet(itemId, out weapon) &&
+                weapon != null && weapon.GetKind() != WeaponKind.None;
         }
 
         private static void TryLoadFile(

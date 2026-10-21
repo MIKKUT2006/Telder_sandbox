@@ -6,13 +6,27 @@
   "Type": "Tool",
   "ToolType": "pickaxe",
   "ToolLevel": 1,
-  "MiningSpeed": 1.0,
+  "MiningSpeed": 1.1,
   "Durability": 350,
   "HeldScale": 1.85,
   "HeldRotation": 2,
   "HeldOffsetX": 0.3125,
-  "HeldOffsetY": 0
-,
+  "HeldOffsetY": 0,
+  "Tags": [
+    "fuel",
+    "burnable",
+    "tool"
+  ],
+  "FuelBurnTime": 6.0,
+  "CraftIngredients": [
+    {
+      "Tag": "wood",
+      "Count": 10
+    }
+  ],
+  "CraftWithoutWorkbench": false,
+  "CraftResultCount": 1,
+
   "Weapon": {
     "Kind": "None",
     "Damage": 10.0,

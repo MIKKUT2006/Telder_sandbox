@@ -1,0 +1,7 @@
+{
+  "ID": "game:silver_ingot",
+  "Name": "Silver ingot",
+  "Texture": "silver_ingot",
+  "Type": "Material",
+  "MaxStack": 100
+}

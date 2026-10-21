@@ -1,0 +1,150 @@
+{
+    "Version": 2,
+    "StructureId": "mineshaft",
+    "Cells": [
+        {
+            "X": 14,
+            "Y": 2,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 14,
+            "Y": 3,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 14,
+            "Y": 4,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 2,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 3,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 2,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 3,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 0,
+            "Y": 2,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 0,
+            "Y": 3,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 11,
+            "Y": 2,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 11,
+            "Y": 3,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 11,
+            "Y": 4,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 7,
+            "Y": 4,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 4,
+            "Y": 4,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 0,
+            "Y": 4,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 18,
+            "Y": 4,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 18,
+            "Y": 3,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        },
+        {
+            "X": 18,
+            "Y": 2,
+            "FurnitureId": "game:oak_wood_fence_02",
+            "ForegroundTransform": 0,
+            "BackgroundTransform": 0,
+            "FurnitureTransform": 0
+        }
+    ]
+}

@@ -1,3 +1,4 @@
+using Game.InputSupport;
 using System;
 using UnityEngine;
 using Game.Inventory;
@@ -6,6 +7,7 @@ using Game.World;
 using Game.World.Furniture;
 using Game.GameplaySystems.Respawn;
 using Game.GameplaySystems.Furnace;
+using Game.GameplaySystems.Interactions;
 
 namespace Game.GameplaySystems.Multiblock
 {
@@ -15,6 +17,7 @@ namespace Game.GameplaySystems.Multiblock
         [SerializeField] private float interactionDistance = 6f;
 
         private PlayerInventory inventory;
+        private PlayerCollision playerCollision;
         private Camera cam;
         private MonoBehaviour legacyFurnitureController;
         private MonoBehaviour legacyBlockInteraction;
@@ -24,6 +27,7 @@ namespace Game.GameplaySystems.Multiblock
         private void Awake()
         {
             inventory = GetComponent<PlayerInventory>();
+            playerCollision = GetComponent<PlayerCollision>();
             cam = Camera.main;
             ResolveLegacy();
         }
@@ -77,7 +81,7 @@ namespace Game.GameplaySystems.Multiblock
             if (InventoryUI.Instance != null && InventoryUI.Instance.IsOpen)
                 return;
 
-            Vector3 wp = cam.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 wp = cam.ScreenToWorldPoint(GameInput.PointerPosition);
             int x = Mathf.FloorToInt(wp.x);
             int y = Mathf.FloorToInt(wp.y);
 
@@ -93,28 +97,56 @@ namespace Game.GameplaySystems.Multiblock
             if (furniture == null)
                 return;
 
+            bool pressedUse = GameInput.Pressed(GameAction.Use) ||
+                              GameInput.Pressed(GameAction.Interact);
             MultiBlockRecord existing = MultiBlockStore.FindCell(x, y);
+            // A more expensive missing-index recovery runs only on the
+            // actual interaction click, never every idle frame.
+            if (existing == null && pressedUse)
+                existing = FindPlacedMultiBlock(furniture, x, y);
             if (existing != null)
             {
-                if (Input.GetMouseButtonDown(1))
+                if (pressedUse)
                 {
                     SuppressLegacyOneFrame();
+
+                    Vector2 colliderSize =
+                        playerCollision != null
+                            ? playerCollision.GetColliderSize()
+                            : new Vector2(0.8f, 1.8f);
+
+                    Rect playerBounds =
+                        InteractiveBlockRuntime.GetPlayerBounds(
+                            transform,
+                            colliderSize
+                        );
+
+                    // Beds must be handled before generic furniture interaction.
+                    // Some older saves have the furniture anchor but no cached
+                    // multi-block record; FindPlacedMultiBlock repairs that index.
                     if (string.Equals(existing.Kind, "bed", StringComparison.OrdinalIgnoreCase) ||
                         MultiBlockMetadataRegistry.HasTag(existing.BlockId, "bed"))
                     {
                         RespawnPointService.SetSpawn(existing);
+                        Game.Audio.TelderAudioSystem.PlayAt("bed.respawn", transform.position, GetInstanceID());
+                        return;
+                    }
+
+                    if (InteractiveBlockRuntime.TryToggleFurniture(x, y, playerBounds))
+                    {
+                        Game.Audio.TelderAudioSystem.PlayAt("door.toggle", new Vector3(x+.5f,y+.5f,0f), GetInstanceID());
+                        if (playerCollision != null)
+                            playerCollision.RefreshAfterWorldChange();
+                        return;
                     }
                 }
 
-                if (Input.GetMouseButtonDown(0))
-                {
-                    SuppressLegacyOneFrame();
-                    Break(existing);
-                }
+                // Mining of multiblocks is performed by BlockInteraction using
+                // the same hardness/progress/debris as normal blocks.
                 return;
             }
 
-            if (!Input.GetMouseButtonDown(1))
+            if (!pressedUse)
                 return;
 
             string itemId = inventory.GetSelectedItemId();
@@ -180,6 +212,54 @@ namespace Game.GameplaySystems.Multiblock
                 furniture.RemoveFurniture(anchorX, anchorY);
                 inventory.AddItem(itemId, 1);
             }
+        }
+
+        // Finds a placed multi-block even if an old save kept only its
+        // furniture anchor, without the 2D occupancy index. Never guesses
+        // from an item held in the player's inventory.
+        private static MultiBlockRecord FindPlacedMultiBlock(
+            FurnitureLayerManager furniture, int cellX, int cellY)
+        {
+            MultiBlockRecord indexed = MultiBlockStore.FindCell(cellX, cellY);
+            if (indexed != null)
+                return indexed;
+
+            // Multi-block anchors may sit left/below the clicked cell.
+            // 8x8 is ample for beds/doors, and this path runs only on a
+            // nearby player interaction, not during chunk generation.
+            for (int ay = cellY - 7; ay <= cellY + 7; ay++)
+            for (int ax = cellX - 7; ax <= cellX + 7; ax++)
+            {
+                string id = furniture.GetFurniture(ax, ay);
+                if (string.IsNullOrWhiteSpace(id) ||
+                    !MultiBlockMetadataRegistry.TryGet(id, out MultiBlockMetadata meta))
+                    continue;
+
+                int left = ax - meta.AnchorX;
+                int bottom = ay - meta.AnchorY;
+                if (cellX < left || cellX >= left + meta.Width ||
+                    cellY < bottom || cellY >= bottom + meta.Height)
+                    continue;
+
+                MultiBlockRecord repaired = new MultiBlockRecord
+                {
+                    X = ax,
+                    Y = ay,
+                    Width = meta.Width,
+                    Height = meta.Height,
+                    AnchorX = meta.AnchorX,
+                    AnchorY = meta.AnchorY,
+                    BlockId = id,
+                    Kind = meta.Kind
+                };
+
+                if (MultiBlockStore.Add(repaired))
+                    return repaired;
+
+                return MultiBlockStore.FindAnchor(ax, ay);
+            }
+
+            return null;
         }
 
         private void Break(MultiBlockRecord record)

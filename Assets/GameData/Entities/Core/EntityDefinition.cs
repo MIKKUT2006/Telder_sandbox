@@ -20,21 +20,22 @@ namespace Game.Entities
     [Serializable]
     public sealed class EntityStarScaling
     {
-        [Range(1, 5)] public int MinStars = 1;
-        [Range(1, 5)] public int MaxStars = 5;
+        [Min(0)] public int MinStars = 0;
+        [Min(0)] public int MaxStars = 7;
 
-        // Relative spawn weights for 1..5 stars.
-        public float[] StarWeights = { 55f, 25f, 12f, 6f, 2f };
+        // StarWeights[stars] = вес для этого числа звёзд.
+        // Индекс 0 — 0 звёзд, индекс 7 — 7 звёзд.
+        public float[] StarWeights = { 55f, 25f, 12f, 6f, 2f, 1f, 0.5f, 0.25f };
 
-        // Multipliers use: 1 + (stars - 1) * value.
+        // Множители: 1 + stars * value. То есть 0★ = базовые значения.
         [Min(0f)] public float HealthPerExtraStar = 0.35f;
         [Min(0f)] public float DamagePerExtraStar = 0.20f;
         [Min(0f)] public float LootPerExtraStar = 0.25f;
 
         public int RollStars()
         {
-            int min = Mathf.Clamp(MinStars, 1, 5);
-            int max = Mathf.Clamp(MaxStars, min, 5);
+            int min = Mathf.Max(0, MinStars);
+            int max = Mathf.Max(min, MaxStars);
 
             float total = 0f;
             for (int star = min; star <= max; star++)
@@ -55,27 +56,19 @@ namespace Game.Entities
         }
 
         public float HealthMultiplier(int stars)
-        {
-            return 1f + (Mathf.Clamp(stars, 1, 5) - 1) * Mathf.Max(0f, HealthPerExtraStar);
-        }
+            => 1f + Mathf.Max(0, stars) * Mathf.Max(0f, HealthPerExtraStar);
 
         public float DamageMultiplier(int stars)
-        {
-            return 1f + (Mathf.Clamp(stars, 1, 5) - 1) * Mathf.Max(0f, DamagePerExtraStar);
-        }
+            => 1f + Mathf.Max(0, stars) * Mathf.Max(0f, DamagePerExtraStar);
 
         public float LootMultiplier(int stars)
-        {
-            return 1f + (Mathf.Clamp(stars, 1, 5) - 1) * Mathf.Max(0f, LootPerExtraStar);
-        }
+            => 1f + Mathf.Max(0, stars) * Mathf.Max(0f, LootPerExtraStar);
 
         private float GetWeight(int stars)
         {
-            int index = stars - 1;
-            if (StarWeights == null || index < 0 || index >= StarWeights.Length)
-                return 1f;
-
-            return StarWeights[index];
+            if (StarWeights == null || stars < 0 || stars >= StarWeights.Length)
+                return 0f;
+            return StarWeights[stars];
         }
     }
 
@@ -186,6 +179,8 @@ namespace Game.Entities
         // "Armature/Body/RightArm/Hand/HeldItemAnchor". If empty, a transform
         // named HeldItemAnchor is searched recursively.
         public string HeldItemAnchorPath;
+        public bool UseItemHeldPose = true;
+        public float HeldItemRotation = 0f;
         public float HeldItemOffsetX = 0.35f;
         public float HeldItemOffsetY = 0.05f;
         [Min(0.01f)] public float HeldItemWorldSize = 0.72f;
@@ -215,6 +210,49 @@ namespace Game.Entities
     }
 
     [Serializable]
+    public sealed class EntityBossDefinition
+    {
+        public bool Enabled = false;
+        public string HealthBarColor = "#8063DB";
+        public float PhaseTwoHealth = 0.5f;
+        public float SlamCooldown = 3.5f;
+        public float SlamWindup = 0.75f;
+        public float ShockwaveDamage = 18f;
+        public float ShockwaveRange = 13f;
+        public float ShockwaveSpeed = 14f;
+        // Optional texture name or PNG path for the moving ground shockwaves.
+        // Empty = original generated purple shockwave sprite.
+        public string ShockwaveTexture = "";
+
+        // Name of a loaded block texture (e.g. "ancient_stone") OR a PNG path
+        // relative to Assets/GameData (e.g.
+        // "ResourcePacks/Default/textures/particles/golem_dust.png").
+        // Full custom texture is used for every flying shard, pixel-filtered.
+        public string SlamParticleTexture = "ancient_stone";
+        public int SlamParticleCount = 28;
+        public float SlamParticleSize = 0.18f;
+        public float SlamParticleSpeed = 4.2f;
+        public float DashCooldown = 7f;
+        public float DashWindup = .45f;
+        public float DashDistance = 10f;
+        public float DashSpeed = 17f;
+        public float DashDamage = 23f;
+        public float BombCooldown = 7f;
+        public int BombMinCount = 3;
+        public int BombMaxCount = 7;
+        public float BombDamage = 16f;
+        public float OrbCooldown = 10f;
+        public float OrbSpeed = 9f;
+        public float OrbRadius = .85f;
+        public float OrbHealthFraction = .5f;
+        public string AnimationSlam = "Slam";
+        public string AnimationDash = "Dash";
+        public string AnimationBomb = "ThrowBomb";
+        public string AnimationOrb = "CastOrb";
+        public string AnimationPhaseTwo = "PhaseTwo";
+    }
+
+    [Serializable]
     public sealed class EntityDefinition
     {
         public string ID;
@@ -222,11 +260,28 @@ namespace Game.Entities
         public bool Enabled = true;
 
         public string Behavior = "Aggressive";
+        public string[] Tags;
+        public EntityBossDefinition Boss = new EntityBossDefinition();
+
+        public bool IsBoss
+        {
+            get
+            {
+                if (Boss != null && Boss.Enabled) return true;
+                if (Tags == null) return false;
+                for (int i = 0; i < Tags.Length; i++)
+                    if (string.Equals(Tags[i], "boss", StringComparison.OrdinalIgnoreCase)) return true;
+                return false;
+            }
+        }
         public EntityMovementDefinition Movement = new EntityMovementDefinition();
         public EntityCombatDefinition Combat = new EntityCombatDefinition();
         public EntitySpawnDefinition Spawn = new EntitySpawnDefinition();
         public EntityStarScaling Stars = new EntityStarScaling();
         public EntityVisualDefinition Visual = new EntityVisualDefinition();
+
+        // Never takes damage from weapons, fluids, explosives or hazards.
+        public bool Invulnerable = false;
 
         [Min(1f)] public float MaxHealth = 50f;
         [Min(0.1f)] public float ColliderWidth = 0.8f;
@@ -256,6 +311,14 @@ namespace Game.Entities
             if (Spawn == null) Spawn = new EntitySpawnDefinition();
             if (Stars == null) Stars = new EntityStarScaling();
             if (Visual == null) Visual = new EntityVisualDefinition();
+            if (Boss == null) Boss = new EntityBossDefinition();
+            Boss.PhaseTwoHealth = Mathf.Clamp(Boss.PhaseTwoHealth, .05f, .95f);
+            Boss.BombMinCount = Mathf.Clamp(Boss.BombMinCount, 1, 20);
+            Boss.BombMaxCount = Mathf.Clamp(Boss.BombMaxCount, Boss.BombMinCount, 20);
+            Boss.OrbHealthFraction = Mathf.Clamp01(Boss.OrbHealthFraction);
+            Boss.SlamParticleCount = Mathf.Clamp(Boss.SlamParticleCount, 0, 128);
+            Boss.SlamParticleSize = Mathf.Clamp(Boss.SlamParticleSize, 0.02f, 1f);
+            Boss.SlamParticleSpeed = Mathf.Clamp(Boss.SlamParticleSpeed, 0.1f, 30f);
 
             Spawn.MinLight = Mathf.Clamp01(Spawn.MinLight);
             Spawn.MaxLight = Mathf.Clamp01(Spawn.MaxLight);
@@ -279,8 +342,8 @@ namespace Game.Entities
             Combat.AttackRange = Mathf.Max(0.1f, Combat.AttackRange);
             Combat.AttackCooldown = Mathf.Max(0.01f, Combat.AttackCooldown);
 
-            Stars.MinStars = Mathf.Clamp(Stars.MinStars, 1, 5);
-            Stars.MaxStars = Mathf.Clamp(Stars.MaxStars, Stars.MinStars, 5);
+            Stars.MinStars = Mathf.Max(0, Stars.MinStars);
+            Stars.MaxStars = Mathf.Max(Stars.MinStars, Stars.MaxStars);
 
             Visual.HitParticleCount = Mathf.Clamp(Visual.HitParticleCount, 1, 24);
             Visual.HitParticleLifetime = Mathf.Max(0.03f, Visual.HitParticleLifetime);
